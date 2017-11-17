@@ -48,7 +48,7 @@
 			
 
 			var dataSize = 100;
-			var dataPath = "~/Develop/SuperCollider/Projects/SCRepo/bounce/data/";
+			var dataPath = "~/Develop/SuperCollider/Projects/SCbounce/data/";
 
 			var pos3D = [0,0,0];
 
@@ -67,10 +67,10 @@
 
 		loadPersonality = {|name|
 
-			var path = PathName.new("~/Develop/SuperCollider/Projects/SCRepo/bounce/personalities/"++name++".sc");
+			var path = PathName.new("~/Develop/SuperCollider/Projects/SCbounce/personalities/"++name++".sc");
 			var file = File.new(path.asAbsolutePath,"r");
 			var str = file.readAllString;
-			var env = Environment.make {interpret(str)};
+			var env = Environment.make {interpret(str)};	
 
 			env
 		};

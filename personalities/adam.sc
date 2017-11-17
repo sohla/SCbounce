@@ -109,7 +109,7 @@ Pdef(ptn,
 		
 		// if(Pdef(ptn).isPlaying, {
 
-		Pdef(ptn).set(\octave,(3+d.rrateMass.ceil));
+		Pdef(ptn).set(\octave,(5+d.rrateMass.half.ceil));
 
 			Pdef(ptn).set(\attack,(1.0 + d.rrateEvent.sumabs).pow(4).reciprocal);
 
