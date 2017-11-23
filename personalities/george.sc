@@ -54,7 +54,7 @@ Pdef(ptn,
 	~secs = 0.03;
 
 	//------------------------------------------------------------	
-	~init = { 
+	~init = { |mo|
 
 		"init GEORGE".postln;
 
@@ -64,6 +64,10 @@ Pdef(ptn,
 		Pdef(ptn).set(\c3,50);
 		Pdef(ptn).set(\legato,10);
 		Pdef(ptn).set(\instrument,\help_dwgplucked);
+
+		Pdef(ptn).set(\type,\midi);
+		Pdef(ptn).set(\midiout,mo);
+		Pdef(ptn).set(\chan,0);
 
 		Pdef(ptn).play;
 	};

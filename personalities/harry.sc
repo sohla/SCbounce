@@ -34,7 +34,7 @@ Pdef(ptn,
 	~secs = 0.03;
 
 	//------------------------------------------------------------	
-	~init = { 
+	~init = { |mo|
 
 		"init HARRY".postln;
 
@@ -44,6 +44,10 @@ Pdef(ptn,
 		Pdef(ptn).set(\attack,0.01);
 		Pdef(ptn).set(\legato,1);
 		Pdef(ptn).set(\instrument,\xylo);
+
+		Pdef(ptn).set(\type,\midi);
+		Pdef(ptn).set(\midiout,mo);
+		Pdef(ptn).set(\chan,0);
 
 		Pdef(ptn).play;
 	};

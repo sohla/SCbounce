@@ -53,7 +53,7 @@ Pdef(ptn,
 	//------------------------------------------------------------	
 	// intial state
 	//------------------------------------------------------------	
-	~init = { 
+	~init = { |mo|
 
 		"init ADAM".postln;
 
@@ -64,6 +64,10 @@ Pdef(ptn,
 		Pdef(ptn).set(\attack,0.001);
 		Pdef(ptn).set(\sustain,0.27);
 		Pdef(ptn).set(\release,0.92);
+
+		Pdef(ptn).set(\type,\midi);
+		Pdef(ptn).set(\midiout,mo);
+		Pdef(ptn).set(\chan,0);
 
 		Pdef(ptn).play;
 	};

@@ -52,14 +52,14 @@
 
 			var pos3D = [0,0,0];
 
-
+			var midiOut;
 		//------------------------------------------------------------	
 		// midi
 		//------------------------------------------------------------	
 
-		// MIDIClient.init;
-		// MIDIClient.destinations;
-		// m = MIDIOut(0);
+		MIDIClient.init;
+		MIDIClient.destinations;
+		midiOut = MIDIOut(0).latency_(Server.default.latency);
 
 		//------------------------------------------------------------	
 		// 
@@ -181,7 +181,7 @@
 
 			// start new personality
 			d.env = loadPersonality.(d.name);
-			d.env.use{ ~init.() };
+			d.env.use{ ~init.(midiOut) };
 			d.rout = createRout.(d);
 			d.rout.reset.play(AppClock);
 
