@@ -202,7 +202,7 @@
 			GUI.skin.plot.background = Color.black;
 			GUI.skin.plot.plotColor = Color.white;
 
-			window = Window("gyro osc tester", Rect(0, height, width, height-250), false).front;
+			window = Window("gyro osc tester", Rect(0, height, width, height-150), false).front;
 			window.view.keyDownAction_({|view,char,mods,uni,code,key|
 				if(uni==114,{
 					devices.keysValuesDo({|k,v|
@@ -232,7 +232,7 @@
 
 		createWindowView = {|view|
 
-			var scroll = ScrollView(view,Rect(0,30,width,height - 250 )).background_(Color.yellow);
+			var scroll = ScrollView(view,Rect(0,30,width,height - 150 )).background_(Color.yellow);
 			
 			StaticText(view)
 					.stringColor_(Color.yellow)
