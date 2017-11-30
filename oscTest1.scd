@@ -150,7 +150,7 @@ d.trueAt("1") == 4
 Server
 s.addr
 
-b = NetAddr.new("127.0.0.1", 9000);    // create the NetAddr
+b = NetAddr.new("127.0.0.1", 9001);    // create the NetAddr
 b.sendMsg("/hello", 0, "world", 1.2345);    // send the application the messa
 
 
