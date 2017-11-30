@@ -86,6 +86,9 @@ Pdef(ptn,
 
 		d.rrateMass = tween.(d.rrateEvent.sumabs.half / 3.0,d.rrateMass,0.9);
 
+		//• play around some before structuring code
+		
+
 		if(d.rrateMass < 0.06,{
 			Pdef(ptn).pause;
 		},{
@@ -98,7 +101,7 @@ Pdef(ptn,
 	 	// set pattern
 	  	if(Pdef(ptn).isPlaying, {
 
-			Pdef(ptn).set(\patch,((d.gyroEvent.pitch + pi).div(pi.twice/4.0)).floor);
+			//Pdef(ptn).set(\patch,((d.gyroEvent.pitch + pi).div(pi.twice/4.0)).floor);
 			
 			//Pdef(ptn).set(\gtranspose,9 + [0,12,24].at(((d.gyroEvent.roll + pi).div(pi.twice/3.0)).floor));
 

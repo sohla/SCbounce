@@ -61,3 +61,13 @@ e.collection;
 	}!3 ).spacing_(0));
 )
 4.mod(3)
+
+
+var square = { |x| x * x };
+var map = { |fn, xs|
+  all {: fn.(x), x <- xs };
+};
+map.(square, [1, 2, 3]);
+
+all{:x, x <- (3)}
+

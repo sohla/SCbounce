@@ -24,22 +24,22 @@ window = Window("")
 	)
 	.front;
 
-slider = EZSlider(window,80@300,"test", initAction:true, initVal: 0.9 ,layout:\vert, margin: 20@20)
-		.controlSpec_(cs)
-		.action_({|o|
-			bc.set(o.value);   
-			});
+// slider = EZSlider(window,80@300,"test", initAction:true, initVal: 0.9 ,layout:\vert, margin: 20@20)
+// 		.controlSpec_(cs)
+// 		.action_({|o|
+// 			bc.set(o.value);   
+// 			});
 
-// window.layout = VLayout(
+window.layout = VLayout(
 
-// 	Slider()//• should try EZSlider too
-// 		.maxWidth_(30)
-// 		.valueAction_(cs.default)
-// 	    .action_({|o|
-// 	        //(cs.map(o.value).asString).postln;
-// 			bc.set(cs.map(o.value));       
-// 	    });
-// );
+	Slider()//• should try EZSlider too
+		.maxWidth_(30)
+		.valueAction_(cs.default)
+	    .action_({|o|
+	        //(cs.map(o.value).asString).postln;
+			bc.set(cs.map(o.value));       
+	    });
+);
 
 synth = Synth.head(s,\help_Bus);
 
