@@ -5,8 +5,8 @@
 
 			var contentView = View().background_(Color.grey(0.2));
 
-			var names = ["adam","george","harry","susan"];
-			var faces = ["🦆","🦊","🐴","🐯"];
+			var names = ["adam","george","harry","susan","eve"];
+			var faces = ["🦆","🦊","🐴","🐯","🍎"];
 			var possibleNames = names.copy;
 
 			var reloadButton;
@@ -25,14 +25,14 @@
 
 		    // data
 			var deviceProto = (
-				\name: "susan",
+				\name: "eve",
 				\ip: "127.0.0.1",
 				\port: "57120",
 				\gyroEvent: (\pitch:0,\roll:0,\yaw:0),
 				\rrateEvent: (\x:0,\y:0,\z:0),
 				\rrateMass: 0,
 				\accelEvent: (\x:0,\y:0,\z:0),
-				\accelMass: 0,
+				\accelMass: 1,
 				\ampValue: 0,
 				\env: nil,	// Environment for injected code
 				\rout: nil,	// Routine calls ~next every ~fps
@@ -837,7 +837,7 @@
 			// altListener.enable;
 			rrateListener.enable;
 			//rotMatListner.enable;
-			accelListener.enable;
+			//accelListener.enable;
 		};
 
 		disableOSCListening = {

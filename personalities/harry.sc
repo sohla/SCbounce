@@ -45,9 +45,9 @@ Pdef(ptn,
 		Pdef(ptn).set(\legato,1);
 		Pdef(ptn).set(\instrument,\xylo);
 
-		Pdef(ptn).set(\type,\midi);
-		Pdef(ptn).set(\midiout,mo);
-		Pdef(ptn).set(\chan,0);
+		// Pdef(ptn).set(\type,\midi);
+		// Pdef(ptn).set(\midiout,mo);
+		// Pdef(ptn).set(\chan,0);
 
 		Pdef(ptn).play;
 	};

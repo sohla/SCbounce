@@ -65,9 +65,9 @@ Pdef(ptn,
 		Pdef(ptn).set(\legato,10);
 		Pdef(ptn).set(\instrument,\help_dwgplucked);
 
-		Pdef(ptn).set(\type,\midi);
-		Pdef(ptn).set(\midiout,mo);
-		Pdef(ptn).set(\chan,0);
+		// Pdef(ptn).set(\type,\midi);
+		// Pdef(ptn).set(\midiout,mo);
+		// Pdef(ptn).set(\chan,0);
 
 		Pdef(ptn).play;
 	};
