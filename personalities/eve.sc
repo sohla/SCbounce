@@ -69,9 +69,9 @@ Pdef(ptn,
 		Pdef(ptn).set(\sustain,0.27);
 		Pdef(ptn).set(\release,0.92);
 
-		// // Pdef(ptn).set(\type,\midi);
-		// // Pdef(ptn).set(\midiout,mo);
-		// Pdef(ptn).set(\chan,0);
+		Pdef(ptn).set(\type,\midi);
+		Pdef(ptn).set(\midiout,mo);
+		Pdef(ptn).set(\chan,0);
 
 		Pdef(ptn).play;
 	};

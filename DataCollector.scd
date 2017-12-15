@@ -34,3 +34,14 @@ e.recover
 
 // we have the same data again:
 e.collection;
+
+(
+File.saveDialog("save this as..","fuk yes", { |path|
+	path.postln;
+
+},{
+
+});
+)
+
+

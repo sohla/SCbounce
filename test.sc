@@ -27,9 +27,6 @@ c = (a.as(Set)-b.as(Set)).as(Array)
 
 Array.fill(16,{|i|i=90.rrand(65)}).asAscii
 
-
-
-
     // create a new DataCollector:
 d = DataCollector.new( "test" );
 d.collection; // empty sorted list
