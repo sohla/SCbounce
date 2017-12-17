@@ -202,7 +202,7 @@
 			GUI.skin.plot.background = Color.black;
 			GUI.skin.plot.plotColor = Color.white;
 
-			window = Window("gyro osc tester", Rect(0, height, width, height-150), false).front;
+			window = Window("bounce", Rect(0, height, width, height-150), false).front;
 			window.view.keyDownAction_({|view,char,mods,uni,code,key|
 				if(uni==114,{
 					devices.keysValuesDo({|k,v|
@@ -517,7 +517,7 @@
 			);
 
 			graph1.add(rate = Canvas3DItem.grid(2)
-				.color_(Color.black(0.9))
+				.color_(Color.white(0.9))
 			    .width_(1)
 			);
 
@@ -692,7 +692,7 @@
 			);
 
 			graph2.add(accelRate = Canvas3DItem.grid(2)
-				.color_(Color.black(0.9))
+				.color_(Color.white(0.9))
 			    .width_(1)
 			);
 
@@ -722,7 +722,7 @@
 
 				accelRate.transforms = [ 
 					Canvas3D.mScale(0.01,data.accelMass ,1.0),
-					Canvas3D.mTranslate(-2.2,0,0)
+					Canvas3D.mTranslate(-1.0,0,0)
 			    ];
 
 				accelX.transforms = [
