@@ -65,7 +65,7 @@ Pdef(ptn,
 
 		Pdef(ptn).set(\type,\midi);
 		Pdef(ptn).set(\midiout,mo);
-		Pdef(ptn).set(\chan,0);
+		Pdef(ptn).set(\chan,3);
 
 		Pdef(ptn).play;
 	};

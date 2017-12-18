@@ -29,7 +29,8 @@ SynthDef(\help_dwgplucked, { |out=0, freq=440, amp=0.5, gate=1, c3=20, pan=0, po
 Pdef(ptn,
 	Pbind(
 //        \degree, Pseq([7,8,2,4,3,1,2,2], inf),
-        \degree, Pseq([0,4,2,7,1,2,3,5], inf),
+        \degree, Pseq([0,1,2,3,4,5,6,7], inf),
+//        \degree, Pseq([0,4,2,7,1,2,3,5], inf),
 		\args, #[],
 		\amp, Pexprand(0.1,0.4,inf),
 		\pan, Pwhite(-0.8,0.8,inf)
@@ -58,16 +59,16 @@ Pdef(ptn,
 
 		"init GEORGE".postln;
 
-		Pdef(ptn).set(\octave,3);
+		Pdef(ptn).set(\octave,5);
 		Pdef(ptn).set(\dur,0.5);
 		Pdef(ptn).set(\attack,0.001);
 		Pdef(ptn).set(\c3,50);
 		Pdef(ptn).set(\legato,10);
 		Pdef(ptn).set(\instrument,\help_dwgplucked);
 
-		// Pdef(ptn).set(\type,\midi);
-		// Pdef(ptn).set(\midiout,mo);
-		// Pdef(ptn).set(\chan,0);
+		Pdef(ptn).set(\type,\midi);
+		Pdef(ptn).set(\midiout,mo);
+		Pdef(ptn).set(\chan,0);
 
 		Pdef(ptn).play;
 	};
@@ -112,7 +113,7 @@ Pdef(ptn,
 
 				Pdef(ptn).set(\attack,(1.0 + d.rrateEvent.sumabs).pow(4).reciprocal);
 
-			 	Pdef(ptn).set(\dur,Array.geom(8, 1, 2).at((d.rrateEvent.sumabs.sqrt).floor).twice.reciprocal);
+			 	Pdef(ptn).set(\dur,Array.geom(8, 1, 2).at((d.rrateEvent.sumabs.sqrt).floor).half.reciprocal);
 			
 			 });
 
