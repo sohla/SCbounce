@@ -68,3 +68,16 @@ map.(square, [1, 2, 3]);
 
 all{:x, x <- (3)}
 
+ServerMeter.new(s, 2, 2);
+
+
+
+
+(
+{
+	var sig = SinOsc.ar(200,0,0.1);
+
+Out.ar(0,Pan2.ar(sig, 0.0, 1.0) );
+
+}.play
+)

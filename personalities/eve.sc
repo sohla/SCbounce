@@ -31,9 +31,9 @@ Pdef(ptn,
 	Pbind(
 //        \degree, Pseq([0,2,4,6,8,7,5,3,1], inf),
         \degree, Pseq([0,2,4,6,8,7,5,3,1], inf),
-		\args, #[],
+		\args, #[]
 //		\amp, Pexprand(0.1,0.4,inf),
-		\pan, Pwhite(-0.8,0.8,inf)
+//		\pan, Pwhite(-0.8,0.0,inf)
 ));
 
 // use this to test patter/synth with default gui
@@ -70,9 +70,9 @@ Pdef(ptn,
 		Pdef(ptn).set(\sustain,0.27);
 		Pdef(ptn).set(\release,1.92);
 
-		// Pdef(ptn).set(\type,\midi);
-		// Pdef(ptn).set(\midiout,mo);
-		// Pdef(ptn).set(\chan,0);
+		Pdef(ptn).set(\type,\midi);
+		Pdef(ptn).set(\midiout,mo);
+		Pdef(ptn).set(\chan,2);
 
 		Pdef(ptn).play;
 	};
@@ -96,7 +96,7 @@ Pdef(ptn,
 
 		Pdef(ptn).set(\octave,4+(((d.gyroEvent.pitch / pi) + 0.5) * 5).floor);
 
-		Pdef(ptn).set(\dur,(1 / (1 + d.accelMass.floor)) * 0.25);
+		Pdef(ptn).set(\dur,(1 / (1 + d.accelMass.floor)) * 0.5);
 
 		if(d.rrateMass  < 0.4,{
 			Pdef(ptn).set(\amp,0.0);
