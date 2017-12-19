@@ -68,7 +68,7 @@ Pdef(ptn,
 
 		Pdef(ptn).set(\type,\midi);
 		Pdef(ptn).set(\midiout,mo);
-		Pdef(ptn).set(\chan,0);
+		Pdef(ptn).set(\chan,1);
 
 		Pdef(ptn).play;
 	};
@@ -88,7 +88,7 @@ Pdef(ptn,
 
 			d.rrateMass = tween.(d.rrateEvent.sumabs.half / 3.0,d.rrateMass,0.9);
 
-			if(d.rrateMass < 0.07,{
+			if(d.rrateMass < 0.09,{
 				Pdef(ptn).pause;
 			},{
 				if(Pdef(ptn).isPlaying.not,{Pdef(ptn).resume});
