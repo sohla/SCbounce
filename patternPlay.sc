@@ -106,13 +106,61 @@ Pstep(Pseq([2,4]), Pseq([1,2,1]), inf).trace.play
 Pstep(Pseq([1,2].collect((_).half)), Pseq([1,2,1]), inf).trace.play
 
 
+Link.enable;
+
+
 (
-Pdef(\c,
-	a = #[0,1,2,4,7,10];
+Ndef(\foo, {
+	Pan2.ar(SinOsc.ar(100,0,EnvGen.kr(Env.perc(0,0.2,0.3),LinkTrig.kr(1))))
+}).play
+
+)
+
+(
+
 Pbind(
 	\note,[Pseq((0,2..19),inf).asStream,4],
-	\dur, Pseq([2,4],inf)
+	\dur, Pseq([0.1,0.2],inf)
+).iter.next()
+
 )
-).play.gui
+
+
+
+( 
+// trigger stream maker 
+f = { |pat, group| 
+        var ev, lastEv, str = pat.iter, hasStarted = 0; 
+        Pn(Pfunc { 
+                ev = str.next(()).play(); 
+                (hasStarted == 1).if { group.release }; 
+                hasStarted = 1; 
+                lastEv = ev; 
+        }).iter 
+}; 
+
+g = Group.new; 
+
+p = Pbind( 
+        \dur, 0.5, 
+        \degree, Pseq([1, 2, 3, 4], inf), 
+        \group, g 
+); 
+
+x = f.(p, g) 
+) 
+
+
 )
+
+// do several times 
+x.next(()) 
+
+
+//• create synth SendTrig( LinkTrig(1))
+//• OSCrespond to trig and call x.next()
+
+g.release; 
+
+
 
