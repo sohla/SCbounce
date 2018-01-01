@@ -1,6 +1,6 @@
 
 // unique name for pattern 
-var ptn = Array.fill(16,{|i|i=90.rrand(65)}).asAscii;
+var ptn = Array.fill(16,{|i|i=90.rrand(65).asAscii});
 
 		var tween = {|input,history,friction = 0.5|
 			(friction * input + ((1 - friction) * history))
@@ -138,3 +138,4 @@ Pdef(ptn,
 	
 
 )
+

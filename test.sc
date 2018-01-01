@@ -81,3 +81,15 @@ Out.ar(0,Pan2.ar(sig, 0.0, 1.0) );
 
 }.play
 )
+
+
+
+
+(
+
+var a = [10,20,30,40,50,60,70];
+a = a.collect({|o,i|i.even.if(o)}).replace([nil]);
+a.postln;
+)
+
+

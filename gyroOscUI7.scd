@@ -37,8 +37,8 @@
 				\env: nil,	// Environment for injected code
 				\rout: nil,	// Routine calls ~next every ~fps
 				\dc: nil, //DataCollector
-				\lc: nil, //DataCollector for playing
-				\lcout: nil //DataCollector Routine re-player
+				\lc: nil, //DataCollector for looping
+				\lcout: nil //Routine for playing lc
 				);
 
 			var loadPersonality;
@@ -757,7 +757,7 @@
 		startOSCListening = {
 
 			buttonListener = OSCFunc({ |msg, time, addr, recvPort|
-				//[msg, time, addr, recvPort].postln;
+				[msg, time, addr, recvPort].postln;
 				if(msg[1].asFloat == 1.0, {
 					if(devices.at(addr.ip) == nil,{
 						{
