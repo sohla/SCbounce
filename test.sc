@@ -93,3 +93,4 @@ a.postln;
 )
 
 
+90.rrand(65).asAscii

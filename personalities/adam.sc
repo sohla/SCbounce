@@ -1,6 +1,6 @@
 
 // unique name for pattern 
-var ptn = Array.fill(16,{|i|i=90.rrand(65)}).asAscii;
+var ptn = Array.fill(16,{|i|i=90.rrand(65).asAscii});
 
 //------------------------------------------------------------	
 // SYNTH DEF
