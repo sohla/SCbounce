@@ -94,3 +94,12 @@ a.postln;
 
 
 90.rrand(65).asAscii
+
+
+
+(
+	var dataPath = "~/Develop/SuperCollider/Projects/SCbounce/data/";
+
+
+
+)

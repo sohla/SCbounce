@@ -245,7 +245,7 @@
 			scroll.canvas = contentView;
 
 			// set this for quick connection to device
-			//addDeviceView.(contentView, addDevice.("127.0.0.1"));
+			addDeviceView.(contentView, addDevice.("127.0.0.1"));
 			//addDeviceView.(contentView, addDevice.("192.168.0.101"));
 
 		};
@@ -294,31 +294,28 @@
 						}),
 
 				Button()
-					.maxWidth_(30)
+					.maxWidth_(80)
 					.states_([
-						["->",Color.white]
+						["↺ load",Color.white],
+						["↺ load",Color.green]
 					])
 					.action_({|b|
 
-					
-						File.openDialog ("load", {|path|
+						if(b.value == 1,{
 
-							d.dc = DataCollector.fromFile(path);
+							File.openDialog ("load", {|path|
+								d.lc = DataCollector.fromFile(path);
+								disableOSCListening.();
+								d.lcout.reset().play(AppClock);
 
-							loopButton.valueAction = 1;
-
-							//• populate d.dc with new data...then set loop
-							// d.dc.backup; 
-							// d.lc = DataCollector.new(d.name++"_data");
-							// d.lc.recover;
-							// disableOSCListening.();
-							// d.lcout.reset().play(AppClock);
-
+							},{
+								"error : loading data file".postln;
+							});
 						},{
-							"error : loading data file".postln;
+
+							d.lcout.stop;
+							enableOSCListening.();
 						});
-
-
 					}),
 				loopButton = Button()
 					.maxWidth_(80)
