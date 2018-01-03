@@ -99,7 +99,12 @@ a.postln;
 
 (
 	var dataPath = "~/Develop/SuperCollider/Projects/SCbounce/data/";
+	var path = PathName.new(dataPath);
 
-
+path.files.postln;
 
 )
+
+a = SortedList[1,2,3]
+a = a.removeEvery(a)
+

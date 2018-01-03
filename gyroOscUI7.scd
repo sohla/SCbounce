@@ -47,7 +47,8 @@
 			var createLCout;
 			
 
-			var dataSize = 100;
+			var dataSizes = [100,200,300,400];
+			var dataSize = dataSizes[0];
 			var dataPath = "~/Develop/SuperCollider/Projects/SCbounce/data/";
 
 			var pos3D = [0,0,0];
@@ -245,7 +246,7 @@
 			scroll.canvas = contentView;
 
 			// set this for quick connection to device
-			addDeviceView.(contentView, addDevice.("127.0.0.1"));
+			//addDeviceView.(contentView, addDevice.("127.0.0.1"));
 			//addDeviceView.(contentView, addDevice.("192.168.0.101"));
 
 		};
@@ -255,6 +256,7 @@
 			var header;
 			var va,vb,vc;
 			var stackView, stackLayout;
+			var dataSizeMenu;
 
 			header = View(view).layout_( HLayout(
 				
@@ -272,7 +274,7 @@
 				StaticText(view)
 					.stringColor_(Color.white)
 					.font_(Font(size:14))
-					.minWidth_(500)
+					.minWidth_(200)
 					.string_("📡  ip ["+d.ip+"] port ["+d.port+"]"),
 
 				reloadButton = Button(view)
@@ -306,6 +308,8 @@
 							File.openDialog ("load", {|path|
 								d.lc = DataCollector.fromFile(path);
 								disableOSCListening.();
+								dataSize = d.lc.collection.size;
+								dataSizeMenu.value = dataSizes.indexOf(dataSize);
 								d.lcout.reset().play(AppClock);
 
 							},{
@@ -339,9 +343,17 @@
 						});
 
 					}),
+				dataSizeMenu = PopUpMenu(view)
+						.maxWidth_(60)
+						.items_(dataSizes)
+						.valueAction_(0)
+						.action_({|b|
+							dataSize = dataSizes.at(b.value);
+						}),
+
 
 				Button(view)
-					.maxWidth_(120)
+					.maxWidth_(80)
 					.states_([
 						["✖️ disconect",Color.red(0.5)],	
 
@@ -754,7 +766,7 @@
 		startOSCListening = {
 
 			buttonListener = OSCFunc({ |msg, time, addr, recvPort|
-				[msg, time, addr, recvPort].postln;
+				//[msg, time, addr, recvPort].postln;
 				if(msg[1].asFloat == 1.0, {
 					if(devices.at(addr.ip) == nil,{
 						{
