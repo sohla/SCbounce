@@ -71,7 +71,19 @@
 			var path = PathName.new("~/Develop/SuperCollider/Projects/SCbounce/personalities/"++name++".sc");
 			var file = File.new(path.asAbsolutePath,"r");
 			var str = file.readAllString;
-			var env = Environment.make {interpret(str)};	
+	
+			var env = Environment.make {
+
+				interpret(str);
+
+				~tween = {|input,history,friction = 0.5|
+					(friction * input + ((1 - friction) * history))
+				};
+
+
+
+
+			};	
 
 			env
 		};
@@ -246,7 +258,7 @@
 			scroll.canvas = contentView;
 
 			// set this for quick connection to device
-			//addDeviceView.(contentView, addDevice.("127.0.0.1"));
+			addDeviceView.(contentView, addDevice.("127.0.0.1"));
 			//addDeviceView.(contentView, addDevice.("192.168.0.101"));
 
 		};

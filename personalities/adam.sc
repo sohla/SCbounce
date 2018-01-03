@@ -77,14 +77,10 @@ Pdef(ptn,
 	//------------------------------------------------------------	
 	~next = {|f,d| 
 		
-		var tween = {|input,history,friction = 0.5|
-			(friction * input + ((1 - friction) * history))
-		};
 
+		//d.accelEvent.mass = ~tween.(d.accelEvent.sumabs.half,d.accelEvent.mass,0.08);
 
-		//d.accelEvent.mass = tween.(d.accelEvent.sumabs.half,d.accelEvent.mass,0.08);
-
-		d.rrateMass = tween.(d.rrateEvent.sumabs.half / 3.0,d.rrateMass,0.9);
+		d.rrateMass = ~tween.(d.rrateEvent.sumabs.half / 3.0,d.rrateMass,0.9);
 
 		//• play around some before structuring code
 		

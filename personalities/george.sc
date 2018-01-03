@@ -76,17 +76,14 @@ Pdef(ptn,
 	//------------------------------------------------------------	
 	~next = {|f,d| 
 		
-		var tween = {|input,history,friction = 0.5|
-			(friction * input + ((1 - friction) * history));
-		};
 
 		// ["running GEORGE...",f%7].postln;
 		// d.postln;
 		//Pdef(ptn).set(\octave,1 + (f%7));
 
-			d.accelMass = tween.(d.accelEvent.sumabs.half,d.accelMass,0.08);
+			d.accelMass = ~tween.(d.accelEvent.sumabs.half,d.accelMass,0.08);
 
-			d.rrateMass = tween.(d.rrateEvent.sumabs.half / 3.0,d.rrateMass,0.9);
+			d.rrateMass = ~tween.(d.rrateEvent.sumabs.half / 3.0,d.rrateMass,0.9);
 
 			if(d.rrateMass < 0.09,{
 				Pdef(ptn).pause;

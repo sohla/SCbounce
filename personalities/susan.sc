@@ -76,12 +76,9 @@ Pdef(ptn,
 	~next = {|f,d| 
 		
 		var val = 0;
-		var tween = {|input,history,friction = 0.5|
-			(friction * input + ((1 - friction) * history))
-		};
 
 
-		d.rrateMass = tween.(d.rrateEvent.sumabs.half / pi,d.rrateMass,0.9);
+		d.rrateMass = ~tween.(d.rrateEvent.sumabs.half / pi,d.rrateMass,0.9);
 
 		if(d.rrateMass < 0.06,{
 			Pdef(ptn).pause;

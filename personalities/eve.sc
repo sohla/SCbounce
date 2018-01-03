@@ -2,9 +2,6 @@
 // unique name for pattern 
 var ptn = Array.fill(16,{|i|i=90.rrand(65).asAscii});
 
-		var tween = {|input,history,friction = 0.5|
-			(friction * input + ((1 - friction) * history))
-		};
 
 var up = 0;
 //------------------------------------------------------------	
@@ -75,6 +72,8 @@ Pdef(ptn,
 		// Pdef(ptn).set(\chan,2);
 
 		Pdef(ptn).play;
+
+		~bla.();
 	};
 
 	//------------------------------------------------------------	
@@ -87,12 +86,12 @@ Pdef(ptn,
 		up = nextRateMass - d.rrateMass;
 
 		if(up.floor > 0,{
-			d.rrateMass = tween.(d.rrateEvent.sumabs,d.rrateMass,0.05);
+			d.rrateMass = ~tween.(d.rrateEvent.sumabs,d.rrateMass,0.04);
 		},{
-			d.rrateMass = tween.(d.rrateEvent.sumabs,d.rrateMass,0.9);
+			d.rrateMass = ~tween.(d.rrateEvent.sumabs,d.rrateMass,0.9);
 		});
 
-		d.accelMass = tween.(d.accelEvent.sumabs,d.accelMass,0.7);
+		d.accelMass = ~tween.(d.accelEvent.sumabs,d.accelMass,0.7);
 
 		Pdef(ptn).set(\octave,4+(((d.gyroEvent.pitch / pi) + 0.5) * 5).floor);
 
@@ -119,8 +118,8 @@ Pdef(ptn,
 	// min and max of plotters output
 	//------------------------------------------------------------	
 
-	~plotMin = -1;
-	~plotMax = 1;
+	~plotMin = -8;
+	~plotMax = 8;
 
 	//------------------------------------------------------------	
 	// utility for output to a plotter : returns a value that

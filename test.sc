@@ -108,3 +108,9 @@ path.files.postln;
 a = SortedList[1,2,3]
 a = a.removeEvery(a)
 
+a.indexOf(2)
+
+b = List[1, 2, 3, 4]
+b.collect({ arg item, i; item + 10 });
+
+
