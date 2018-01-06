@@ -54,7 +54,7 @@ Pdef(ptn,
 
 
 	//------------------------------------------------------------	
-	~next = {|f,d| 
+	~next = {|d| 
 
 
 			//d.accelEvent.mass = ~tween.(d.accelEvent.sumabs.half,d.accelEvent.mass,0.08);

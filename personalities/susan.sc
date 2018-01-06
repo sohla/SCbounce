@@ -73,7 +73,7 @@ Pdef(ptn,
 	//------------------------------------------------------------	
 	// do all the work(logic) taking data in and playing pattern/synth
 	//------------------------------------------------------------	
-	~next = {|f,d| 
+	~next = {|d| 
 		
 		var val = 0;
 

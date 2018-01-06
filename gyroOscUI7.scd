@@ -72,6 +72,7 @@
 			var file = File.new(path.asAbsolutePath,"r");
 			var str = file.readAllString;
 	
+			// after adding personality to an Environment, add useful functions to be used by anyone
 			var env = Environment.make {
 
 				interpret(str);
@@ -97,7 +98,7 @@
 				var i=0;
 				loop{ 
 					d.env.use{
-						~next.(i,d);
+						~next.(d);
 						(~secs.()).yield;
 						i=i+1;
 					};

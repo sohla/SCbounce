@@ -75,7 +75,7 @@ Pdef(ptn,
 	//------------------------------------------------------------	
 	// do all the work(logic) taking data in and playing pattern/synth
 	//------------------------------------------------------------	
-	~next = {|f,d| 
+	~next = {|d| 
 		
 
 		//d.accelEvent.mass = ~tween.(d.accelEvent.sumabs.half,d.accelEvent.mass,0.08);

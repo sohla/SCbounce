@@ -46,6 +46,8 @@ Pdef(ptn,
 
 
 (
+	~init;
+	
 
 	//------------------------------------------------------------	
 	// how ofter does ~next() get called from engine
@@ -79,7 +81,7 @@ Pdef(ptn,
 	//------------------------------------------------------------	
 	// do all the work(logic) taking data in and playing pattern/synth
 	//------------------------------------------------------------	
-	~next = {|f,d| 
+	~next = {|d| 
 		
 		var nextRateMass = d.rrateEvent.sumabs;
 
@@ -126,7 +128,7 @@ Pdef(ptn,
 	// that will be put at the end of plotters data array
 	//------------------------------------------------------------	
 
-	~plot = { |d,p|
+	~plot = { |d|
 		//(((d.gyroEvent.pitch / pi) + 0.5) * 8).floor;
 		//0.2;
 
