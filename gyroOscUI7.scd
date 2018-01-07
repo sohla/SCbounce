@@ -437,9 +437,7 @@
 			createPlotterGroup.(va, Rect(250,0,400,250), [
 				["a",Color.cyan,{|p|
 
-					//p.value = p.value.reverse;
 					p.value = p.value.shift(1).putFirst(d.env.use{ ~plot.(d)});
-					//p.value = p.value.reverse;
 					p.minval_(d.env.use{ ~plotMin});
 					p.maxval_(d.env.use{ ~plotMax});
 				}]

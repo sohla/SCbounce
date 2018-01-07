@@ -5,7 +5,8 @@ var ptn = Array.fill(16,{|i|i=90.rrand(65).asAscii});
 
 var up = 0;
 var rm = 0;
-var buffer = Array.fill(10,{0}); 
+var buffer = Array.fill(12,{0}); 
+var bufavg = 0;
 //------------------------------------------------------------	
 // SYNTH DEF
 //------------------------------------------------------------	
@@ -144,14 +145,28 @@ Pdef(ptn,
 
 
 		var r = buffer.sum / buffer.size;
+		var z = 0;
+		var sum = d.rrateEvent.sumabs / 4;
+		var bs;
 
+		//(sum<0.4).if({sum=0});
 
-		rm = ~tween.(d.rrateEvent.sumabs / 4,rm,0.05);
+		rm = ~tween.(sum,rm,0.1);
 
 		buffer = buffer.shift(1);
-		buffer = buffer.put(0,d.rrateEvent.sumabs / 4);
-		r
-		//rm
+		buffer = buffer.put(0,rm);
+
+		bs = buffer.sum / (buffer.size-1); 
+
+		(bs >= bufavg).if({z= -0.5},{z= 0});
+
+		bufavg = bs; 
+
+		//buffer.postln;
+		//z
+		rm;
+		bufavg;
+		z
 	};
 	
 
