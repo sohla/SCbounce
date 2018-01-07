@@ -5,7 +5,7 @@ var ptn = Array.fill(16,{|i|i=90.rrand(65).asAscii});
 
 var up = 0;
 var rm = 0;
-var buffer = Array.fill(12,{0}); 
+var buffer = Array.fill(40,{0}); 
 var bufavg = 0;
 //------------------------------------------------------------	
 // SYNTH DEF
@@ -97,6 +97,7 @@ Pdef(ptn,
 		});
 
 		d.accelMass = ~tween.(d.accelEvent.sumabs,d.accelMass,0.7);
+		d.gyroMass = ~tween.(d.gyroEvent.sumabs,d.gyroMass,0.7);
 
 		Pdef(ptn).set(\octave,4+(((d.gyroEvent.pitch / pi) + 0.5) * 5).floor);
 
@@ -151,7 +152,7 @@ Pdef(ptn,
 
 		//(sum<0.4).if({sum=0});
 
-		rm = ~tween.(sum,rm,0.1);
+		rm = ~tween.(sum,rm,0.103);
 
 		buffer = buffer.shift(1);
 		buffer = buffer.put(0,rm);
@@ -166,7 +167,9 @@ Pdef(ptn,
 		//z
 		rm;
 		bufavg;
-		z
+		z;
+
+		d.gyroMass/3 - 1
 	};
 	
 
