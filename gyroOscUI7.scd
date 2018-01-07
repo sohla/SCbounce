@@ -29,6 +29,7 @@
 				\ip: "127.0.0.1",
 				\port: "57120",
 				\gyroEvent: (\pitch:0,\roll:0,\yaw:0),
+				\gyroMass: 0,
 				\rrateEvent: (\x:0,\y:0,\z:0),
 				\rrateMass: 0,
 				\accelEvent: (\x:0,\y:0,\z:0),
@@ -79,6 +80,10 @@
 
 				~tween = {|input,history,friction = 0.5|
 					(friction * input + ((1 - friction) * history))
+				};
+
+				~slope = {|input,history|
+					history - input
 				};
 
 
@@ -393,7 +398,7 @@
 				);
 			);	
 
-			createPlotterGroup.(va, Rect(250,0,400,250), [
+			createPlotterGroup.(va, Rect(650,0,400,250), [
 				["pitch",Color.red,{|p|
 					p.value = (d.dc.collection.collect({|a,i| a[\data][0]})); p.minval_(pi); p.maxval_(-pi);
 				}],
@@ -429,12 +434,12 @@
 				}],
 			]);
 
-			createPlotterGroup.(va, Rect(650,0,620,250), [
+			createPlotterGroup.(va, Rect(250,0,400,250), [
 				["a",Color.cyan,{|p|
 
-					p.value = p.value.reverse;
-					p.value = p.value.shift(-1).putLast(d.env.use{ ~plot.(d)});
-					p.value = p.value.reverse;
+					//p.value = p.value.reverse;
+					p.value = p.value.shift(1).putFirst(d.env.use{ ~plot.(d)});
+					//p.value = p.value.reverse;
 					p.minval_(d.env.use{ ~plotMin});
 					p.maxval_(d.env.use{ ~plotMax});
 				}]

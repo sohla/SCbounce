@@ -4,6 +4,8 @@ var ptn = Array.fill(16,{|i|i=90.rrand(65).asAscii});
 
 
 var up = 0;
+var rm = 0;
+var buffer = Array.fill(10,{0}); 
 //------------------------------------------------------------	
 // SYNTH DEF
 //------------------------------------------------------------	
@@ -104,6 +106,7 @@ Pdef(ptn,
 		},{
 			Pdef(ptn).set(\amp,d.rrateMass / 20.0);
 		});
+			Pdef(ptn).set(\amp,0.0);
 
 	};
 
@@ -120,8 +123,8 @@ Pdef(ptn,
 	// min and max of plotters output
 	//------------------------------------------------------------	
 
-	~plotMin = -8;
-	~plotMax = 8;
+	~plotMin = -1;
+	~plotMax = 1;
 
 	//------------------------------------------------------------	
 	// utility for output to a plotter : returns a value that
@@ -134,7 +137,21 @@ Pdef(ptn,
 
 		//1 / (1 + d.accelMass.floor);
 		//d.rrateMass
-		up.floor
+		//up.floor
+
+
+
+
+
+		var r = buffer.sum / buffer.size;
+
+
+		rm = ~tween.(d.rrateEvent.sumabs / 4,rm,0.05);
+
+		buffer = buffer.shift(1);
+		buffer = buffer.put(0,d.rrateEvent.sumabs / 4);
+		r
+		//rm
 	};
 	
 

@@ -113,4 +113,35 @@ a.indexOf(2)
 b = List[1, 2, 3, 4]
 b.collect({ arg item, i; item + 10 });
 
+a = Array.newClear(1);
+a = a.addFirst("a")
+a.pop();a;
+
+
+
+(
+x = Array.newClear(3);
+
+y = List.new(3);
+10.do({ arg i; z = x.add(i); y.add(i); });
+ z.postln; //y.postln;
+
+ x.size.postln;
+ z.size.postln;
+)
+
+a = Array.fill(3,{0});
+a = a.shift(1);
+a = a.put(0,"d");
+a.at(a.size-1)
+
+
+
+
+a = [1,7,5,14];
+a.sum / a.size
+
+
+
+
 
