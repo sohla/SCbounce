@@ -436,7 +436,6 @@
 
 			createPlotterGroup.(va, Rect(250,0,400,250), [
 				["a",Color.cyan,{|p|
-
 					p.value = p.value.shift(1).putFirst(d.env.use{ ~plot.(d)});
 					p.minval_(d.env.use{ ~plotMin});
 					p.maxval_(d.env.use{ ~plotMax});
@@ -495,12 +494,8 @@
 					{
 						var val = specs[2].(plotter).value[0].round(1e-4);
 						st.string_(val);
-
 						if(val > max, {max = val});
-
 						su.string_("max :"+max);
-						//plotter.minval_(-pi);
-						//plotter.maxval_(pi);
 
 						plotter.setProperties(\plotColor, specs[1]).refresh;
 

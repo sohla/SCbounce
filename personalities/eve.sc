@@ -169,7 +169,10 @@ Pdef(ptn,
 		bufavg;
 		z;
 
-		d.gyroMass/3 - 1
+		d.gyroMass/3 - 1;
+
+		[0.9,0.1];
+		0.3
 	};
 	
 

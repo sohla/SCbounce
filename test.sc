@@ -143,5 +143,24 @@ a.sum / a.size
 
 
 
+(4-5).isNegative.if("yes")
+
+(3<4).if("YEA","NA")
 
 
+a = [[1,2],[3,4]];
+a = a.flop;
+a = a.copyToEnd(1);
+
+
+a = a.insert(0,[5,6]);
+a.keep(a.size-1);
+a.flop;
+
+a = a.reshape(2,2)
+a.collect{|a|a}
+
+a.data
+
+a.data.size
+a.value.size
