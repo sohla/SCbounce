@@ -435,7 +435,7 @@
 			]);
 
 			createPlotterGroup.(va, Rect(250,0,400,250), [
-				["a",[Color.blue,Color.green],{|p|
+				["a",[Color.yellow,Color.green],{|p|
 
 					// new improved for parsing arrays! needs the array to have data
 					p.superpose = true;
@@ -444,7 +444,9 @@
 					p.value = p.value.keep(100);
 					p.value = p.value.flop;
 
+					// old way of parsing single values
 					// p.value = p.value.shift(1).putFirst(d.env.use{ ~plot.(d)});
+					
 					p.minval_(d.env.use{ ~plotMin});
 					p.maxval_(d.env.use{ ~plotMax});
 				}]
@@ -501,7 +503,7 @@
 
 					{
 						specs[2].(plotter);
-						// var val = specs[2].(plotter).value[0].round(1e-4);
+						//var val = specs[2].(plotter).value[0].round(1e-4);
 						// st.string_(val);
 						// if(val > max, {max = val});
 						// su.string_("max :"+max);

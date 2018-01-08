@@ -5,8 +5,10 @@ var ptn = Array.fill(16,{|i|i=90.rrand(65).asAscii});
 
 var up = 0;
 var rm = 0;
-var buffer = Array.fill(40,{0}); 
+var buffer = Array.fill(2,{0}); 
 var bufavg = 0;
+
+var rrmf = 0;
 //------------------------------------------------------------	
 // SYNTH DEF
 //------------------------------------------------------------	
@@ -86,14 +88,13 @@ Pdef(ptn,
 	//------------------------------------------------------------	
 	~next = {|d| 
 		
-		var nextRateMass = d.rrateEvent.sumabs;
 
-		up = nextRateMass - d.rrateMass;
+		rrmf = ~tween.(d.rrateEvent.sumabs,rrmf,0.15);
 
-		if(up.floor > 0,{
-			d.rrateMass = ~tween.(d.rrateEvent.sumabs,d.rrateMass,0.04);
+		if(up.isPositive,{
+			d.rrateMass = ~tween.(d.rrateEvent.sumabs,d.rrateMass,0.35);
 		},{
-			d.rrateMass = ~tween.(d.rrateEvent.sumabs,d.rrateMass,0.9);
+			d.rrateMass = ~tween.(d.rrateEvent.sumabs,d.rrateMass,0.05);
 		});
 
 		d.accelMass = ~tween.(d.accelEvent.sumabs,d.accelMass,0.7);
@@ -146,32 +147,25 @@ Pdef(ptn,
 
 
 		var r = buffer.sum / buffer.size;
-		var z = 0;
-		var sum = d.rrateEvent.sumabs / 4;
+		var sum = rrmf;//d.rrateMass ;//(d.rrateEvent.sumabs / 3) - 1;
 		var bs;
 
 		//(sum<0.4).if({sum=0});
 
-		rm = ~tween.(sum,rm,0.03);
+		rm = ~tween.(sum,rm,0.05);
 
 		buffer = buffer.shift(1);
 		buffer = buffer.put(0,rm);
 
 		bs = buffer.sum / (buffer.size-1); 
 
-		(bs >= bufavg).if({z= -0.5},{z= 0});
+		(bs >= bufavg).if({up= 0.5},{up= -0.5});
 
 		bufavg = bs; 
 
-		//buffer.postln;
-		//z
-		rm;
-		bufavg;
-		z;
 
-		d.gyroMass/3 - 1;
 
-		[z,d.gyroMass/3 - 1]
+		[up,d.rrateMass/3]
 	};
 	
 
