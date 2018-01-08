@@ -152,7 +152,7 @@ Pdef(ptn,
 
 		//(sum<0.4).if({sum=0});
 
-		rm = ~tween.(sum,rm,0.103);
+		rm = ~tween.(sum,rm,0.03);
 
 		buffer = buffer.shift(1);
 		buffer = buffer.put(0,rm);
@@ -171,8 +171,7 @@ Pdef(ptn,
 
 		d.gyroMass/3 - 1;
 
-		[0.9,0.1];
-		0.3
+		[z,d.gyroMass/3 - 1]
 	};
 	
 

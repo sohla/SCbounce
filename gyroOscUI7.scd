@@ -435,8 +435,16 @@
 			]);
 
 			createPlotterGroup.(va, Rect(250,0,400,250), [
-				["a",Color.cyan,{|p|
-					p.value = p.value.shift(1).putFirst(d.env.use{ ~plot.(d)});
+				["a",[Color.blue,Color.green],{|p|
+
+					// new improved for parsing arrays! needs the array to have data
+					p.superpose = true;
+					p.value = p.value.flop;
+					p.value = p.value.insert(0,d.env.use{ ~plot.(d)});
+					p.value = p.value.keep(100);
+					p.value = p.value.flop;
+
+					// p.value = p.value.shift(1).putFirst(d.env.use{ ~plot.(d)});
 					p.minval_(d.env.use{ ~plotMin});
 					p.maxval_(d.env.use{ ~plotMax});
 				}]
@@ -465,7 +473,7 @@
 			plotters.do{ |specs,i|
 				var max = 0;
 				var plotter = Plotter(specs[0], Rect(pw*0.3,ph*i,pw*0.7,ph),plotterView)
-					.value_((0..dataSize))
+					.value_((0..dataSize).dup(2)) //need to init arrays with data
 					.refresh;
 
 
@@ -492,10 +500,11 @@
 				plotterView.drawFunc = plotterView.drawFunc <> {
 
 					{
-						var val = specs[2].(plotter).value[0].round(1e-4);
-						st.string_(val);
-						if(val > max, {max = val});
-						su.string_("max :"+max);
+						specs[2].(plotter);
+						// var val = specs[2].(plotter).value[0].round(1e-4);
+						// st.string_(val);
+						// if(val > max, {max = val});
+						// su.string_("max :"+max);
 
 						plotter.setProperties(\plotColor, specs[1]).refresh;
 

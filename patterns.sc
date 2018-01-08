@@ -3,8 +3,8 @@ TempoClock.default.tempo = 120/60;
 
 Pdef(\pat1,
 	Pbind(
-		\instrument, \trig_demo
-		\root,1,
+		\instrument, \trig_demo,
+		//\root, 1,
 		\scale, #[0,4,7],
         \degree, Prand([[0,1,2],[2,3,4]], inf),
 		\dur, Prand([0.2,0.4,0.4,0.2,0.2]*0.1, inf)
@@ -13,6 +13,7 @@ Pdef(\pat1,
 
 Pdef(\pat1).set(\sustain,0.01);
 Pdef(\pat1).set(\attack,0.5);
+Pdef(\pat1).set(\root,0);
 
 
 
