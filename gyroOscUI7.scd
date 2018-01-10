@@ -435,7 +435,7 @@
 			]);
 
 			createPlotterGroup.(va, Rect(250,0,400,250), [
-				["a",[Color.yellow,Color.green],{|p|
+				["a",[Color.yellow,Color.magenta],{|p|
 
 					// new improved for parsing arrays! needs the array to have data
 					p.superpose = true;
