@@ -11,7 +11,6 @@
 		Out.ar(out, Pan2.ar(sig, pan, env * amp));
 	}).add;
 
-
 )
 
 (
