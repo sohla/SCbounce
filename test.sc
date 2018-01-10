@@ -149,8 +149,10 @@ a.sum / a.size
 
 
 a = [[1,2],[3,4]];
+a = [];
 a = a.flop;
 a = a.insert(0,[5,6]);
-a = a.keep(a.size-1);
+a = a.keep(3);
 a = a.flop;
 
+4.isNegative

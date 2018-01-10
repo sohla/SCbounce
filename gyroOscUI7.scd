@@ -435,7 +435,7 @@
 			]);
 
 			createPlotterGroup.(va, Rect(250,0,400,250), [
-				["a",[Color.yellow,Color.magenta],{|p|
+				["a",[Color.yellow,Color.magenta,Color.cyan],{|p|
 
 					// new improved for parsing arrays! needs the array to have data
 					p.superpose = true;
@@ -475,7 +475,7 @@
 			plotters.do{ |specs,i|
 				var max = 0;
 				var plotter = Plotter(specs[0], Rect(pw*0.3,ph*i,pw*0.7,ph),plotterView)
-					.value_((0..dataSize).dup(2)) //need to init arrays with data
+					.value_((0..dataSize).dup(3)) //need to init arrays with data
 					.refresh;
 
 
