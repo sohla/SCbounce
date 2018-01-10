@@ -5,7 +5,7 @@ var ptn = Array.fill(16,{|i|i=90.rrand(65).asAscii});
 
 var up = 0;
 var rm = 0;
-var buffer = Array.fill(2,{0}); 
+var buffer = Array.fill(4,{0}); 
 var bufavg = 0;
 
 var rrmf = 0;
@@ -89,12 +89,12 @@ Pdef(ptn,
 	~next = {|d| 
 		
 
-		rrmf = ~tween.(d.rrateEvent.sumabs,rrmf,0.15);
+		rrmf = ~tween.(d.rrateEvent.sumabs,rrmf,0.25);
 
 		if(up.isPositive,{
-			d.rrateMass = ~tween.(d.rrateEvent.sumabs,d.rrateMass,0.35);
+			d.rrateMass = ~tween.(d.rrateEvent.sumabs,d.rrateMass,0.95);
 		},{
-			d.rrateMass = ~tween.(d.rrateEvent.sumabs,d.rrateMass,0.05);
+			d.rrateMass = ~tween.(d.rrateEvent.sumabs,d.rrateMass,0.15);
 		});
 
 		d.accelMass = ~tween.(d.accelEvent.sumabs,d.accelMass,0.7);
@@ -152,7 +152,7 @@ Pdef(ptn,
 
 		//(sum<0.4).if({sum=0});
 
-		rm = ~tween.(sum,rm,0.05);
+		rm = ~tween.(sum,rm,0.97);
 
 		buffer = buffer.shift(1);
 		buffer = buffer.put(0,rm);
@@ -165,7 +165,7 @@ Pdef(ptn,
 
 
 
-		[up,d.rrateMass/3]
+		[d.rrateEvent.sumabs/3,up ,bufavg/3]
 	};
 	
 
