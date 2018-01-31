@@ -102,14 +102,14 @@ Pdef(ptn,
 
 		Pdef(ptn).set(\octave,4+(((d.gyroEvent.pitch / pi) + 0.5) * 5).floor);
 
-		Pdef(ptn).set(\dur,(1 / (1 + d.accelMass.floor)) * 0.5);
+		Pdef(ptn).set(\dur,(1 / (1 + d.accelMass.floor.squared)) * 0.125);
 
-		if(d.rrateMass  < 0.8,{
+		if(bufavg/3  < 0.2,{
 			Pdef(ptn).set(\amp,0.0);
 		},{
 			Pdef(ptn).set(\amp,d.rrateMass / 20.0);
 		});
-			Pdef(ptn).set(\amp,0.0);
+			//Pdef(ptn).set(\amp,0.0);
 
 	};
 
@@ -152,7 +152,7 @@ Pdef(ptn,
 
 		//(sum<0.4).if({sum=0});
 
-		rm = ~tween.(sum,rm,0.97);
+		rm = ~tween.(sum,rm,0.17);
 
 		buffer = buffer.shift(1);
 		buffer = buffer.put(0,rm);
@@ -165,9 +165,10 @@ Pdef(ptn,
 
 
 
-		[d.rrateEvent.sumabs/3,up ,bufavg/3]
+		[d.rrateEvent.sumabs/3,up ,bufavg/16]
 	};
 	
 
 )
+
 
