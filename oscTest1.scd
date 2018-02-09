@@ -155,3 +155,16 @@ b.sendMsg("/hello", 0, "world", 1.2345);    // send the application the messa
 
 
 b.sendMsg("/playNote", 76, 100);    // send the application the messa
+
+
+
+
+b = NetAddr.new("127.0.0.1", 9001);    // create the NetAddr
+b.sendMsg("/gyrosc/gyro", "1","2","3");    // send the application the messa
+
+
+180/pi
+
+
+
+

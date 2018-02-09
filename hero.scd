@@ -28,6 +28,8 @@ SynthDef(\warp, {arg buffer = 0, envbuf = -1, ws = 0.5, pch = 1.0;
 		splayCount.rand.linlin(0,splayCount,-1.0,1.0),
 	) * 0.7 ;
 
+	//sp = HPF.ar(sp,888);
+
 	Out.ar(0,sp);
 
 	}).send(s);
@@ -43,7 +45,7 @@ p = ("~/Music/SCSamples/lassem_anton.wav").standardizePath;
 p = ("~/Music/SCSamples/lassem_ria2.wav").standardizePath;
 p = ("~/Music/SCSamples/kidsSong2.wav").standardizePath;
 c = Buffer.read(s, p);
-z = Synth(\warp,[\buffer,c,\ws,0.3,\pch,(75).midicps / 435.0]); 
+z = Synth(\warp,[\buffer,c,\ws,0.3,\pch,(70).midicps / 435.0]); 
 z = Synth(\warp,[\buffer,c,\ws,0.3,\pch,(64).midicps / 435.0]);
 z = Synth(\warp,[\buffer,c,\ws,0.3,\pch,(73).midicps / 435.0]);
 z = Synth(\warp,[\buffer,c,\ws,0.3,\pch,(57).midicps / 435.0]);
