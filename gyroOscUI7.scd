@@ -161,6 +161,10 @@
 			});
 
 			stopOSCListening.();
+			s.queryAllNodes;
+
+			Server.freeAll;
+
 		};
 		//------------------------------------------------------------	
 		// 
@@ -264,7 +268,7 @@
 			scroll.canvas = contentView;
 
 			// set this for quick connection to device
-			addDeviceView.(contentView, addDevice.("127.0.0.1"));
+			//addDeviceView.(contentView, addDevice.("127.0.0.1"));
 			//addDeviceView.(contentView, addDevice.("192.168.0.101"));
 
 		};
@@ -617,7 +621,7 @@
 			loc.transform(Canvas3D.mScale(0.02,0.02,0.2));
 
 			// animate
-			graph1.animate(30) {|t|
+			graph1.animate(20) {|t|
 				
 
 				var sx,sy,sz;
@@ -739,7 +743,7 @@
 				.color_(Color.blue(0.9))
 			    .width_(1)
 			);
-			graph2.animate(60) {|t|
+			graph2.animate(20) {|t|
 				
 
 				spot.transforms = [ 
@@ -788,7 +792,6 @@
 		startOSCListening = {
 
 			buttonListener = OSCFunc({ |msg, time, addr, recvPort|
-				//[msg, time, addr, recvPort].postln;
 				if(msg[1].asFloat == 1.0, {
 					if(devices.at(addr.ip) == nil,{
 						{
@@ -824,6 +827,7 @@
 
 
 			rrateListener = OSCFunc({ |msg, time, addr, recvPort|
+				//[msg, time, addr, recvPort].postln;
 
 				if(devices.at(addr.ip) != nil,{
 					devices.at(addr.ip).rrateEvent = (
@@ -897,5 +901,4 @@
 		startOSCListening.();
 
 	)
-
 

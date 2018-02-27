@@ -41,7 +41,7 @@ Pdef(ptn,
 		Pdef(ptn).set(\octave,4);
 		Pdef(ptn).set(\dur,0.125);
 		Pdef(ptn).set(\patch,0);
-		Pdef(ptn).set(\attack,0.01);
+		Pdef(ptn).set(\attack,0.6);
 		Pdef(ptn).set(\legato,1);
 		Pdef(ptn).set(\instrument,\xylo);
 
@@ -84,7 +84,7 @@ Pdef(ptn,
 			
 			 if(Pdef(ptn).isPlaying, {
 
-				Pdef(ptn).set(\attack,(1.0 + d.rrateEvent.sumabs).pow(4).reciprocal);
+				//Pdef(ptn).set(\attack,(1.0 + d.rrateEvent.sumabs).pow(4).reciprocal);
 
 			 	Pdef(ptn).set(\dur,Array.geom(8, 1, 2).at((d.rrateEvent.sumabs.sqrt).floor).twice.reciprocal);
 			

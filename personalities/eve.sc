@@ -16,7 +16,7 @@ var rrmf = 0;
 (
 	SynthDef(\eveSynth, { |out=0, freq=240, gate=1, amp=0.01, pan=0.0, attack=0.01, sustain=0.5, release=1.3|
 	var env = EnvGen.kr(Env.adsr(attack, sustain, sustain, release), gate, doneAction:2);
-	var sig = SinOsc.ar(freq,0,1.0)!2;
+	var sig = LFTri.ar(freq,0,1.0)!2;
 	var verb = FreeVerb2.ar(sig[0],sig[1],0.3 ,500);
 	Out.ar(out, Pan2.ar(verb, pan, env * amp));
 }).add;
@@ -67,32 +67,31 @@ Pdef(ptn,
 		"init EVE".postln;
 
 		Pdef(ptn).set(\instrument,\eveSynth);
-		Pdef(ptn).set(\dur,0.05);
+		Pdef(ptn).set(\dur,0.2);
 		Pdef(ptn).set(\octave,5);
 
-		Pdef(ptn).set(\attack,0.001);
-		Pdef(ptn).set(\sustain,0.27);
-		Pdef(ptn).set(\release,1.92);
+		Pdef(ptn).set(\attack,0.1);
+		Pdef(ptn).set(\sustain,0.17);
+		Pdef(ptn).set(\release,0.92);
 
-		// Pdef(ptn).set(\type,\midi);
-		// Pdef(ptn).set(\midiout,mo);
-		// Pdef(ptn).set(\chan,2);
+		Pdef(ptn).set(\type,\midi);
+		Pdef(ptn).set(\midiout,mo);
+		Pdef(ptn).set(\chan,2);
 
 		Pdef(ptn).play;
 
-		~bla.();
+		//~bla.();
 	};
 
 	//------------------------------------------------------------	
 	// do all the work(logic) taking data in and playing pattern/synth
 	//------------------------------------------------------------	
 	~next = {|d| 
-		
 
-		rrmf = ~tween.(d.rrateEvent.sumabs,rrmf,0.25);
+		rrmf = ~tween.(d.rrateEvent.sumabs,rrmf,0.05);
 
 		if(up.isPositive,{
-			d.rrateMass = ~tween.(d.rrateEvent.sumabs,d.rrateMass,0.95);
+			d.rrateMass = ~tween.(d.rrateEvent.sumabs,d.rrateMass,0.75);
 		},{
 			d.rrateMass = ~tween.(d.rrateEvent.sumabs,d.rrateMass,0.15);
 		});
@@ -100,7 +99,7 @@ Pdef(ptn,
 		d.accelMass = ~tween.(d.accelEvent.sumabs,d.accelMass,0.7);
 		d.gyroMass = ~tween.(d.gyroEvent.sumabs,d.gyroMass,0.7);
 
-		Pdef(ptn).set(\octave,4+(((d.gyroEvent.pitch / pi) + 0.5) * 5).floor);
+		Pdef(ptn).set(\octave,3+(((d.gyroEvent.yaw / pi) + 0.5) * 4).floor);
 
 		Pdef(ptn).set(\dur,(1 / (1 + d.accelMass.floor.squared)) * 0.125);
 
@@ -120,6 +119,7 @@ Pdef(ptn,
 
 		"deinit EVE".postln;
 		Pdef(ptn).stop;
+		Pdef(ptn).clear;
 	};
 
 	//------------------------------------------------------------	
@@ -170,5 +170,4 @@ Pdef(ptn,
 	
 
 )
-
 

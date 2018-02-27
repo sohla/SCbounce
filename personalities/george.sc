@@ -61,14 +61,14 @@ Pdef(ptn,
 
 		Pdef(ptn).set(\octave,5);
 		Pdef(ptn).set(\dur,0.5);
-		Pdef(ptn).set(\attack,0.001);
+		Pdef(ptn).set(\attack,1.5);
 		Pdef(ptn).set(\c3,50);
 		Pdef(ptn).set(\legato,10);
 		Pdef(ptn).set(\instrument,\help_dwgplucked);
 
-		Pdef(ptn).set(\type,\midi);
-		Pdef(ptn).set(\midiout,mo);
-		Pdef(ptn).set(\chan,1);
+		// Pdef(ptn).set(\type,\midi);
+		// Pdef(ptn).set(\midiout,mo);
+		// Pdef(ptn).set(\chan,1);
 
 		Pdef(ptn).play;
 	};
