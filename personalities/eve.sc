@@ -14,7 +14,7 @@ var rrmf = 0;
 //------------------------------------------------------------	
 
 (
-	SynthDef(\eveSynth, { |out=0, freq=240, gate=1, amp=0.01, pan=0.0, attack=0.01, sustain=0.5, release=1.3|
+	SynthDef(\eveSynth, { |out=0, freq=240, gate=1, amp=0.01, pan=0.0, attack=0.01, sustain=0.1, release=1.3|
 	var env = EnvGen.kr(Env.adsr(attack, sustain, sustain, release), gate, doneAction:2);
 	var sig = LFTri.ar(freq,0,1.0)!2;
 	var verb = FreeVerb2.ar(sig[0],sig[1],0.3 ,500);
@@ -23,7 +23,7 @@ var rrmf = 0;
 );
 
 // use to hear this synth onces
-//x = Synth(\adamSynth);s.sendBundle(0.5,[\n_set,x.nodeID,\gate,0]);
+//x = Synth(\eveSynth);s.sendBundle(0.5,[\n_set,x.nodeID,\gate,0]);
 
 //------------------------------------------------------------	
 // PATTERN DEF
