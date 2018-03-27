@@ -160,7 +160,7 @@ b.sendMsg("/playNote", 76, 100);    // send the application the messa
 
 
 b = NetAddr.new("127.0.0.1", 9001);    // create the NetAddr
-b.sendMsg("/gyrosc/gyro", "1","2","3");    // send the application the messa
+b.sendMsg("/gyrosc/gyro", 
 
 
 180/pi
@@ -168,13 +168,15 @@ b.sendMsg("/gyrosc/gyro", "1","2","3");    // send the application the messa
 
 
 b = NetAddr.new("10.1.1.10", 8888);    // create the NetAddr
-b.sendMsg("/led", 99);    // send the application the message "hello" with the parameter "ther
+b.sendMsg("/led",1);    // send the application the message "hello" with the parameter "ther
+b.sendMsg("/onIP", 1,2,3);    // send the application the message "hello" with the parameter "ther
 
 
 // thanks to Eli Fieldsteel for this!
 z = "ifconfig | grep \"status: active\" -B6 | grep \"inet \" | awk 'BEGIN {FS=\"inet \"}{print $2}' | awk 'BEGIN {FS=\" \"}{print $1}'".unixCmdGetStdOut.replace("\n",""); 
-z.split($.) // returns array
-
+a = z.split($.) // returns array
+a[0].asInteger
+b.sendMsg("/onIP", a[0].asInteger,a[1].asInteger,a[2].asInteger,a[3].asInteger);    // send the application the message "hello" with the parameter "ther
 
 
 
