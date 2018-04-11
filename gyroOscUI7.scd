@@ -18,7 +18,7 @@
 
 			var addDevice, removeDevice;
 
-		    var gryoListner, rotMatListner, rrateListener, accelListener, altListener, ampListener;
+		    var gryoListner, rotMatListner, rrateListener, accelListener, quatListener, altListener, ampListener;
 		    var buttonListener;
 
 			var devices = Dictionary();
@@ -34,6 +34,7 @@
 				\rrateMass: 0,
 				\accelEvent: (\x:0,\y:0,\z:0),
 				\accelMass: 1,
+				\quatEvent: (\w:0,\x:0,\y:0,\z:0),
 				\ampValue: 0,
 				\env: nil,	// Environment for injected code
 				\rout: nil,	// Routine calls ~next every ~fps
@@ -623,11 +624,33 @@
 			// animate
 			graph1.animate(20) {|t|
 				
-
 				var sx,sy,sz;
+				var qa = data.quatEvent.asArray;
+				var ny,np,nr;
+				var sqx = qa[1].squared;
+				var sqy = qa[2].squared;
+				var sqz = qa[3].squared;
 
+				var test = qa[1]*qa[2] + qa[3]*qa[0];
+
+				ny = (2.0*qa[2]*qa[0]-2.0*qa[1]*qa[3]).atan2(1.0-2.0*sqy-2.0*sqz);
+				np = (2.0*test).asin;
+				nr = (2.0*qa[1]*qa[0]-2.0*qa[2]*qa[3]).atan2(1.0-2.0*sqx-2.0*sqz);
+
+				if( test > 0.499,{
+					ny = 2.0 * qa[1].atan(qa[0]);
+					np = pi.half;
+					nr = 0;
+				});
+
+				if( test < -0.499,{
+					ny = -2.0 * qa[1].atan(qa[0]);
+					np = -pi.half;
+					nr = 0;
+				});
+
+				//[ny,np,nr].postln;
 				// store data
-
 				data.dc.addData([
 					data.gyroEvent.pitch, 
 					data.gyroEvent.roll, 
@@ -638,7 +661,10 @@
 					data.rrateEvent.x,
 					data.rrateEvent.y,
 					data.rrateEvent.z
+	//•add Quaternion data
 					],t);
+
+
 
 
 			 	data.dc.collection = data.dc.getLast(dataSize); // limit size of collected samples
@@ -669,9 +695,12 @@
 				cube.transforms = [ 
 					Canvas3D.mScale(1,0.5,0.05),
 					Canvas3D.mTranslate(0,0,1.5),
-			        Canvas3D.mRotateX(data.gyroEvent.roll + pi.half),
-			        Canvas3D.mRotateY(data.gyroEvent.yaw.neg),
-			        Canvas3D.mRotateZ(data.gyroEvent.pitch.neg),
+			        // Canvas3D.mRotateX(data.gyroEvent.roll + pi.half),
+			        // Canvas3D.mRotateY(data.gyroEvent.yaw.neg),
+			        // Canvas3D.mRotateZ(data.gyroEvent.pitch.neg),
+			        Canvas3D.mRotateX(nr),
+			        Canvas3D.mRotateY(ny.neg + pi.half),
+			        Canvas3D.mRotateZ(np.neg),
 			    ];
 
 				top.transforms = [ 
@@ -848,6 +877,17 @@
 				});
 			}, '/gyrosc/accel');
 
+
+			quatListener = OSCFunc({ |msg, time, addr, recvPort|
+
+				if(devices.at(addr.ip) != nil,{
+					devices.at(addr.ip).quatEvent = (
+						\w:msg[1].asFloat,
+						\x:msg[2].asFloat,
+						\y:msg[3].asFloat,
+						\z:msg[4].asFloat);
+				});
+			}, '/gyrosc/quat');
 			// altListener = OSCFunc({ |msg, time, addr, recvPort|
 			// 	altValue = (msg[1].asFloat);
 			// }, '/gyrosc/alt');
@@ -868,6 +908,7 @@
 			rrateListener.free;
 			//rotMatListner.free;
 			accelListener.free;
+			quatListener.free;
 		};
 
 		enableOSCListening = {
@@ -876,6 +917,7 @@
 			gryoListner.enable;
 			// altListener.enable;
 			rrateListener.enable;
+			quatListener.enable;
 			//rotMatListner.enable;
 			//accelListener.enable;
 		};
@@ -888,6 +930,7 @@
 			rrateListener.disable;
 			//rotMatListner.disable;
 			accelListener.disable;
+			quatListener.disable;
 		};
 
 
