@@ -626,28 +626,28 @@
 				
 				var sx,sy,sz;
 				var qa = data.quatEvent.asArray;
-				var ny,np,nr;
-				var sqx = qa[1].squared;
-				var sqy = qa[2].squared;
-				var sqz = qa[3].squared;
+				// var ny,np,nr;
+				// var sqx = qa[1].squared;
+				// var sqy = qa[2].squared;
+				// var sqz = qa[3].squared;
 
-				var test = qa[1]*qa[2] + qa[3]*qa[0];
+				// var test = qa[1]*qa[2] + qa[3]*qa[0];
 
-				ny = (2.0*qa[2]*qa[0]-2.0*qa[1]*qa[3]).atan2(1.0-2.0*sqy-2.0*sqz);
-				np = (2.0*test).asin;
-				nr = (2.0*qa[1]*qa[0]-2.0*qa[2]*qa[3]).atan2(1.0-2.0*sqx-2.0*sqz);
+				// ny = (2.0*qa[2]*qa[0]-2.0*qa[1]*qa[3]).atan2(1.0-2.0*sqy-2.0*sqz);
+				// np = (2.0*test).asin;
+				// nr = (2.0*qa[1]*qa[0]-2.0*qa[2]*qa[3]).atan2(1.0-2.0*sqx-2.0*sqz);
 
-				if( test > 0.499,{
-					ny = 2.0 * qa[1].atan(qa[0]);
-					np = pi.half;
-					nr = 0;
-				});
+				// if( test > 0.499,{
+				// 	ny = 2.0 * qa[1].atan(qa[0]);
+				// 	np = pi.half;
+				// 	nr = 0;
+				// });
 
-				if( test < -0.499,{
-					ny = -2.0 * qa[1].atan(qa[0]);
-					np = -pi.half;
-					nr = 0;
-				});
+				// if( test < -0.499,{
+				// 	ny = -2.0 * qa[1].atan(qa[0]);
+				// 	np = -pi.half;
+				// 	nr = 0;
+				// });
 
 				//[ny,np,nr].postln;
 				// store data
@@ -695,12 +695,12 @@
 				cube.transforms = [ 
 					Canvas3D.mScale(1,0.5,0.05),
 					Canvas3D.mTranslate(0,0,1.5),
-			        // Canvas3D.mRotateX(data.gyroEvent.roll + pi.half),
-			        // Canvas3D.mRotateY(data.gyroEvent.yaw.neg),
-			        // Canvas3D.mRotateZ(data.gyroEvent.pitch.neg),
-			        Canvas3D.mRotateX(nr),
-			        Canvas3D.mRotateY(ny.neg + pi.half),
-			        Canvas3D.mRotateZ(np.neg),
+			        Canvas3D.mRotateX(data.gyroEvent.roll + pi.half),
+			        Canvas3D.mRotateY(data.gyroEvent.yaw.neg),
+			        Canvas3D.mRotateZ(data.gyroEvent.pitch.neg),
+			        // Canvas3D.mRotateX(nr),
+			        // Canvas3D.mRotateY(ny.neg + pi.half),
+			        // Canvas3D.mRotateZ(np.neg),
 			    ];
 
 				top.transforms = [ 
