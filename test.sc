@@ -230,3 +230,5 @@ public void set(Quat4d q1) {
 
 				[ny,np,nr].postln;
 */
+
+Quarks.gui
