@@ -51,7 +51,7 @@ lagSynth = Synth(\lag, [\lagTime, 2, \out, bc, \inValue, cs.map(cs.default)]);
 // here is the magic! map each arg
 synth.map(\ffreq,bc);
 
-//bc.scope;
+bc.plot;
 
 window.onClose = ({
 	Buffer.freeAll;

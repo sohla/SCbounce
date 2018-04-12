@@ -625,7 +625,12 @@
 			graph1.animate(20) {|t|
 				
 				var sx,sy,sz;
-				var qa = data.quatEvent.asArray;
+				var qe = data.quatEvent;
+				var q = Quaternion.new(qe.w,qe.x,qe.y,qe.z);
+				var r = q.asEuler;
+
+				r.postln;
+
 				// var ny,np,nr;
 				// var sqx = qa[1].squared;
 				// var sqy = qa[2].squared;
@@ -695,12 +700,12 @@
 				cube.transforms = [ 
 					Canvas3D.mScale(1,0.5,0.05),
 					Canvas3D.mTranslate(0,0,1.5),
-			        Canvas3D.mRotateX(data.gyroEvent.roll + pi.half),
-			        Canvas3D.mRotateY(data.gyroEvent.yaw.neg),
-			        Canvas3D.mRotateZ(data.gyroEvent.pitch.neg),
-			        // Canvas3D.mRotateX(nr),
-			        // Canvas3D.mRotateY(ny.neg + pi.half),
-			        // Canvas3D.mRotateZ(np.neg),
+			        // Canvas3D.mRotateX(data.gyroEvent.roll + pi.half),
+			        // Canvas3D.mRotateY(data.gyroEvent.yaw.neg),
+			        // Canvas3D.mRotateZ(data.gyroEvent.pitch.neg),
+			        Canvas3D.mRotateX(r[2]),
+			         Canvas3D.mRotateY(r[0]),
+			          Canvas3D.mRotateZ(r[1] + pi.half),
 			    ];
 
 				top.transforms = [ 
