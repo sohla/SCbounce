@@ -550,6 +550,7 @@
 			graph1.add(top = Canvas3DItem.grid(4)
 				.color_(Color.green(0.9))
 			    .width_(1)
+			    .transform(Canvas3D.mRotateY(pi/2))
 			);
 
 			graph1.add(rate = Canvas3DItem.grid(2)
@@ -560,7 +561,7 @@
 			graph1.add(loc = Canvas3DItem.regPrism(3)
 				.color_(Color.blue(0.9))
 			    .width_(1)
-			    //
+			    //.transform(Canvas3D.mRotateZ(pi/2))
 			);
 
 
@@ -619,7 +620,7 @@
 				])
 		    );
 
-			loc.transform(Canvas3D.mScale(0.02,0.02,0.2));
+			//loc.transform(Canvas3D.mScale(0.02,0.02,0.2));
 
 			// animate
 			graph1.animate(20) {|t|
@@ -628,31 +629,11 @@
 				var qe = data.quatEvent;
 				var q = Quaternion.new(qe.w,qe.x,qe.y,qe.z);
 				var r = q.asEuler;
+				var tr = [r[0],0 - r[1],0 - r[2] + pi.half];
 
-				r.postln;
-
-				// var ny,np,nr;
-				// var sqx = qa[1].squared;
-				// var sqy = qa[2].squared;
-				// var sqz = qa[3].squared;
-
-				// var test = qa[1]*qa[2] + qa[3]*qa[0];
-
-				// ny = (2.0*qa[2]*qa[0]-2.0*qa[1]*qa[3]).atan2(1.0-2.0*sqy-2.0*sqz);
-				// np = (2.0*test).asin;
-				// nr = (2.0*qa[1]*qa[0]-2.0*qa[2]*qa[3]).atan2(1.0-2.0*sqx-2.0*sqz);
-
-				// if( test > 0.499,{
-				// 	ny = 2.0 * qa[1].atan(qa[0]);
-				// 	np = pi.half;
-				// 	nr = 0;
-				// });
-
-				// if( test < -0.499,{
-				// 	ny = -2.0 * qa[1].atan(qa[0]);
-				// 	np = -pi.half;
-				// 	nr = 0;
-				// });
+				data.gyroEvent.pitch = tr[2];
+				data.gyroEvent.roll = tr[0];
+				data.gyroEvent.yaw = tr[1];
 
 				//[ny,np,nr].postln;
 				// store data
@@ -674,55 +655,39 @@
 
 			 	data.dc.collection = data.dc.getLast(dataSize); // limit size of collected samples
 
-		    	pos3D = [0,0,0];
-		        pos3D = Canvas3D.vectorMatrixMul(pos3D, Canvas3D.mScale(1,0.5,0.05));
-		        pos3D = Canvas3D.vectorMatrixMul(pos3D, Canvas3D.mTranslate(0,0,1.5));
-		        pos3D = Canvas3D.vectorMatrixMul(pos3D, Canvas3D.mRotateX(data.gyroEvent.roll + pi.half));
-		        pos3D = Canvas3D.vectorMatrixMul(pos3D, Canvas3D.mRotateY(data.gyroEvent.yaw.neg));
-		       	pos3D = Canvas3D.vectorMatrixMul(pos3D, Canvas3D.mRotateZ(data.gyroEvent.pitch.neg));
 
 
 		        loc.transforms = [
-			        Canvas3D.mRotateX(data.gyroEvent.roll + pi.half),
-			        Canvas3D.mRotateY(data.gyroEvent.yaw.neg),
-			        Canvas3D.mRotateZ(data.gyroEvent.pitch.neg),
-		        	Canvas3D.mTranslate(pos3D[0],pos3D[1],pos3D[2]),
+		        	Canvas3D.mScale(1,0.02,0.02),
+		        	Canvas3D.mTranslate(1.5,0,0),
+			        Canvas3D.mRotateX(tr[0]),
+			        Canvas3D.mRotateY(tr[1]),
+			        Canvas3D.mRotateZ(tr[2]),
 		        ];
 
 
-				sx = ((pos3D[0] + 1.5) * ( 2.0 / 3.0)).floor;
-				sy = ((pos3D[1] + 1.5) * ( 2.0 / 3.0)).floor;
-				sz = ((pos3D[2] + 1.5) * ( 2.0 / 3.0)).floor;
-
-				//( (sz*4) + (sy*2) + sx).postln;
-				//graph1.background_(Color.hsv(( ( (sz*4) + (sy*2) + sx) / 8.0 ),0.8,0.8,1));
 
 				cube.transforms = [ 
-					Canvas3D.mScale(1,0.5,0.05),
-					Canvas3D.mTranslate(0,0,1.5),
-			        // Canvas3D.mRotateX(data.gyroEvent.roll + pi.half),
-			        // Canvas3D.mRotateY(data.gyroEvent.yaw.neg),
-			        // Canvas3D.mRotateZ(data.gyroEvent.pitch.neg),
-			        Canvas3D.mRotateX(r[2]),
-			         Canvas3D.mRotateY(r[0]),
-			          Canvas3D.mRotateZ(r[1] + pi.half),
+					Canvas3D.mScale(0.05,1,0.5),
+					Canvas3D.mTranslate(1.5,0,0),
+			        Canvas3D.mRotateX(tr[0]),
+			        Canvas3D.mRotateY(tr[1]),
+			        Canvas3D.mRotateZ(tr[2]),
 			    ];
 
 				top.transforms = [ 
-					Canvas3D.mScale(1,1,0.05),
-					Canvas3D.mScale(1,0.5,0.05),
-					Canvas3D.mTranslate(0,0,1.5),
-			        Canvas3D.mRotateX(data.gyroEvent.roll + pi.half),
-			        Canvas3D.mRotateY(data.gyroEvent.yaw.neg),
-			        Canvas3D.mRotateZ(data.gyroEvent.pitch.neg),
-					//Canvas3D.mTranslate(0,altValue.neg * 1  ,0)
+					Canvas3D.mScale(0.05,1,0.5),
+					Canvas3D.mTranslate(1.5,0,0),
+			        Canvas3D.mRotateX(tr[0]),
+			        Canvas3D.mRotateY(tr[1]),
+			        Canvas3D.mRotateZ(tr[2]),
 			    ];
 
 			    ico.transforms = [ 
 					Canvas3D.mScale(0.6,0.6,0.6),
-			        Canvas3D.mRotateX(data.gyroEvent.roll + pi.half),
-			        Canvas3D.mRotateY(data.gyroEvent.yaw.neg),
-			        Canvas3D.mRotateZ(data.gyroEvent.pitch.neg),
+			        Canvas3D.mRotateX(tr[0]),
+			        Canvas3D.mRotateY(tr[1]),
+			        Canvas3D.mRotateZ(tr[2]),
 					//Canvas3D.mTranslate(0,altValue.neg * 1  ,0)
 			    ];
 			    
