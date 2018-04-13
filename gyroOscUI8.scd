@@ -632,6 +632,7 @@
 				var sx,sy,sz;
 				var qe = data.quatEvent;
 				var q = Quaternion.new(qe.w,qe.x,qe.y,qe.z);
+				var s = Quaternion.new(0.2,0.1,0.4,-0.3) + q;
 				var r = q.asEuler;
 				var tr = [r[0],r[1],r[2] + pi.half];
 

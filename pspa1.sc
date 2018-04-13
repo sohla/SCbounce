@@ -54,3 +54,4 @@ d=Buffer.read(s,PathName.new("~/Music/SCSamples/lassem_ria2.wav").asAbsolutePath
 
 //Quaternion.new(0.1,0.2,0.3,0.4).asEuler
 
+ArduinoQuaternion

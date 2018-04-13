@@ -65,7 +65,48 @@ CmdPeriod.doOnce({window.close});
 
 
 
+(
+SynthDef(\mapexample,{arg freq=440;
+	Out.ar(0,SinOsc.ar(freq,0,0.1))
+}).add;
 
+SynthDef(\moda,{|bus|
+	Out.kr(bus,SinOsc.ar(550,0,100,1000))
+}).add;
+
+
+SynthDef(\modb,{|bus|
+	Out.kr(bus,SinOsc.ar(5,0,50,100))
+}).add;
+
+
+SynthDef(\thru,{|bus|
+	Out.kr(bus,In.kr(bus).linlin(0,1,100,1200))
+}).add;
+
+)
+
+g= Synth(\mapexample);
+c = Bus.control(s);
+g.map(\freq, c.index)
+
+
+c.set(660);
+g.map(\freq, c.index)
+c.set(770);
+
+h= {Out.kr(c.index, SinOsc.ar(550,0,100,1000))}.play;
+
+j = Synth(\moda,[\bus,c]);
+k = Synth(\modb,[\bus,c]);
+l = Synth(\thru,[\bus,c]);
+
+h.free;
+j.free;
+k.free;
+l.free;
+
+g.set(\freq, 550)
 
 
 

@@ -162,7 +162,7 @@ a = a.flop;
 
 Quarks.gui
 
-Quaternion
+ Quaternion.new(0,0,0,0) - Quaternion.new(2,4,6,8) + Quaternion.new(0,0,0,1)
 
 Quaternion.new(1.2,0.1,0.2,0.3).conjugate
 
