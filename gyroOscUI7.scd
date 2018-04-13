@@ -633,7 +633,7 @@
 				var qe = data.quatEvent;
 				var q = Quaternion.new(qe.w,qe.x,qe.y,qe.z);
 				var r = q.asEuler;
-				var tr = [r[0],0 - r[1],0 - r[2] + pi.half];
+				var tr = [r[0],r[1],r[2] + pi.half];
 
 				data.gyroEvent.pitch = tr[2];
 				data.gyroEvent.roll = tr[0];
