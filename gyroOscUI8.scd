@@ -21,6 +21,8 @@
 		    var gryoListner, rotMatListner, rrateListener, accelListener, quatListener, altListener, ampListener;
 		    var buttonListener;
 
+		    var oscOut = NetAddr.new("127.0.0.1", 9003); 
+
 			var devices = Dictionary();
 
 		    // data
@@ -167,6 +169,7 @@
 				v.lcout.stop();
 				v.env.use{ ~deinit.() };
 			});
+
 
 			stopOSCListening.();
 			s.queryAllNodes;
@@ -636,6 +639,9 @@
 				var r = q.asEuler;
 				var tr = [r[0],r[1],r[2] + pi.half];
 
+				//send something out to play with
+				oscOut.sendMsg("/bounce/quat",r[0],r[1],r[2]);
+				
 				data.gyroEvent.pitch = tr[2];
 				data.gyroEvent.roll = tr[0];
 				data.gyroEvent.yaw = tr[1];
