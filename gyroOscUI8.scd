@@ -58,6 +58,13 @@
 			var pos3D = [0,0,0];
 
 			var midiOut;
+
+			// var path = PathName.new("~/Develop/SuperCollider/Projects/SCbounce/helloWorld.scd");
+			// var file = File.new(path.asAbsolutePath,"r");
+			// var str = file.readAllString;
+			// interpret(str);
+			// as a loader
+			//import.("helloWorld.scd");
 		//------------------------------------------------------------	
 		// midi
 		//------------------------------------------------------------	
@@ -75,7 +82,7 @@
 			var path = PathName.new("~/Develop/SuperCollider/Projects/SCbounce/personalities/"++name++".sc");
 			var file = File.new(path.asAbsolutePath,"r");
 			var str = file.readAllString;
-	
+
 			// after adding personality to an Environment, add useful functions to be used by anyone
 			var env = Environment.make {
 

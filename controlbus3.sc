@@ -63,7 +63,10 @@ CmdPeriod.doOnce({window.close});
 
 
 
+/*
+	Taking Nick Collins example and expanding
 
+*/
 
 (
 SynthDef(\mapexample,{arg freq=440;
@@ -86,29 +89,31 @@ SynthDef(\thru,{|bus|
 
 )
 
+
+(
 g= Synth(\mapexample);
 c = Bus.control(s);
-g.map(\freq, c.index)
-
-
+g.map(\freq, c.index);
 c.set(660);
-g.map(\freq, c.index)
-c.set(770);
+)
+
+
+c.plotAudio();
+c.set(1440);
 
 h= {Out.kr(c.index, SinOsc.ar(550,0,100,1000))}.play;
+h.free;
 
 j = Synth(\moda,[\bus,c]);
-k = Synth(\modb,[\bus,c]);
-l = Synth(\thru,[\bus,c]);
-
-h.free;
 j.free;
+
+k = Synth(\modb,[\bus,c]);
 k.free;
+
+l = Synth(\thru,[\bus,c]);
 l.free;
 
-g.set(\freq, 550)
 
 
 
-
-
+Quarks.gui
