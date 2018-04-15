@@ -22,11 +22,11 @@ d=Buffer.read(s,PathName.new("~/Music/SCSamples/lassem_ria2.wav").asAbsolutePath
 
     var in, fft, output;
 
-    in=PlayBuf.ar(1,d,BufRateScale.kr(d),1,1000000000,1);
+    in=PlayBuf.ar(1,d,BufRateScale.kr(d),1,0,1);
 
     output=PitchShiftPA.ar(
         in,
-        Lag.kr(Pitch.kr(in)[0],0.2), //pitch tracking - we take just the frequency
+        190, //pitch tracking - we take just the frequency
         MouseX.kr(0.5, 2), //pitchRatio
         MouseY.kr(0.5, 2), //formantRatio
     )!2;
