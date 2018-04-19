@@ -114,6 +114,3 @@ l = Synth(\thru,[\bus,c]);
 l.free;
 
 
-
-
-Quarks.gui

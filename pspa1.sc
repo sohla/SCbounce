@@ -15,18 +15,19 @@ Quarks.gui
 
 d=Buffer.read(s,PathName.new("~/Music/SCSamples/inMemoryKidsStories2.wav").asAbsolutePath);
 d=Buffer.read(s,PathName.new("~/Music/SCSamples/lassem_ria2.wav").asAbsolutePath);
+d=Buffer.read(s,PathName.new("~/Music/SCSamples/lassem_anton.wav").asAbsolutePath);
 
 
 (
 {
-
-    var in, fft, output;
+ 
+   var in, fft, output;
 
     in=PlayBuf.ar(1,d,BufRateScale.kr(d),1,0,1);
 
     output=PitchShiftPA.ar(
         in,
-        190, //pitch tracking - we take just the frequency
+        Lag.kr(Pitch.kr(in)[0],0.5), //pitch tracking - we take just the frequency
         MouseX.kr(0.5, 2), //pitchRatio
         MouseY.kr(0.5, 2), //formantRatio
     )!2;
