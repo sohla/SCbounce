@@ -311,12 +311,12 @@
 						stackLayout.index = b.value;
 					}),
 				Button()
-					.minWidth_(30)
-					.states_({[["⋇"]]})
+					.maxWidth_(40)
+					.states_([["📡"]])
 					.action_({|b|
 							d.ip.class.postln;
 							d.port.class.postln;
-						b = NetAddr.new(d.ip, d.port.asInt);    // create the NetAddr
+						b = NetAddr.new(d.ip, d.port.asInt+1);    // create the NetAddr
 						b.sendMsg("/bounce", "motionReset");    // send the application the messa
 
 					}),
@@ -324,7 +324,7 @@
 					.stringColor_(Color.white)
 					.font_(Font(size:14))
 					.minWidth_(200)
-					.string_("📡  ip ["+d.ip+"] port ["+d.port+"]"),
+					.string_("ip ["+d.ip+"] port ["+d.port+"]"),
 
 				reloadButton = Button(view)
 					.maxWidth_(80)
