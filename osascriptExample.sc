@@ -4,10 +4,39 @@
 
 	var rout = Routine { 
 				loop{ 
-					tracksPlayed.postln;
-					0.1.yield;
+					
+					e = tracksPlayed.invert;
+					
+					f = e.order;
+					f!?{
+						g = f.reverse;
+						e.atAll(g).postln;
+					};
+					1.0.yield;
 				}
 			};
+	var noteOnFunc = MIDIFunc.noteOn({sendFunc.()});
+
+	var sendFunc = ({
+		var nextTrack;
+		{
+			nextTrack ="tell application \"iTunes\"
+			set prevname to current track
+			set secs to player position
+			next track
+			end tell
+			return [name of prevname,secs]".asString.asAppleScriptCmd.unixCmdGetStdOut;
+			//nextTrack.postln;
+			a = nextTrack.split($,);
+			v = tracksPlayed.at(a[0]);
+			n = a[1].asFloat;
+			v!?{ n = n + v.asFloat;};
+			tracksPlayed = tracksPlayed.put(a[0],n);
+		}.defer;
+	});
+
+	MIDIClient.init;
+	MIDIIn.connectAll;
 
 
 	window = Window("")
@@ -24,29 +53,16 @@
 		Button()
 			.states_([["next"]])
 			.maxWidth_(50)
-			.action_({
-				var nextTrack;
-				{
-					nextTrack ="tell application \"iTunes\"
-					set prevname to current track
-					set secs to player position
-					next track
-					end tell
-					return [name of prevname,secs]".asString.asAppleScriptCmd.unixCmdGetStdOut;
-				}.defer;
-			
-				a = nextTrack.split($,);
-				v = tracksPlayed.at(a[0]);
-				n = a[1].asFloat;
-				v!?{ n = n + v.asFloat;};
-				tracksPlayed = tracksPlayed.put(a[0],n);
-			});
+			.action_({ sendFunc.() });
 	, align:\bottom]);
 
 	window.onClose = ({
 
+		noteOnFunc.free;
+		MIDIIn.disconnectAll;
+
 		rout.stop;
-		
+
 		Buffer.freeAll;
 		s.freeAll;
 

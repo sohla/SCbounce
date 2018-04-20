@@ -180,4 +180,12 @@ b.sendMsg("/onIP", a[0].asInteger,a[1].asInteger,a[2].asInteger,a[3].asInteger);
 
 
 
+// laptop 172.20.10.2
+// ipod 172.20.10.3
 
+b = NetAddr.new("172.20.10.3", 53130);    // create the NetAddr
+b.sendMsg("/bounce", "motionReset");    // send the application the messa
+
+
+// OSCReceiver
+// MIDIReceiver

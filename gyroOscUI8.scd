@@ -29,7 +29,7 @@
 			var deviceProto = (
 				\name: "eve",
 				\ip: "127.0.0.1",
-				\port: "57120",
+				\port: 0101,
 				\gyroEvent: (\pitch:0,\roll:0,\yaw:0),
 				\gyroMass: 0,
 				\rrateEvent: (\x:0,\y:0,\z:0),
@@ -286,7 +286,7 @@
 			scroll.canvas = contentView;
 
 			// set this for quick connection to device
-			addDeviceView.(contentView, addDevice.("127.0.0.1"));
+			//addDeviceView.(contentView, addDevice.("127.0.0.1"));
 			//addDeviceView.(contentView, addDevice.("192.168.0.101"));
 
 		};
@@ -310,7 +310,16 @@
 					.action_({|b|
 						stackLayout.index = b.value;
 					}),
+				Button()
+					.minWidth_(30)
+					.states_({[["⋇"]]})
+					.action_({|b|
+							d.ip.class.postln;
+							d.port.class.postln;
+						b = NetAddr.new(d.ip, d.port.asInt);    // create the NetAddr
+						b.sendMsg("/bounce", "motionReset");    // send the application the messa
 
+					}),
 				StaticText(view)
 					.stringColor_(Color.white)
 					.font_(Font(size:14))
@@ -810,6 +819,7 @@
 					if(devices.at(addr.ip) == nil,{
 						{
 							var d = addDevice.(addr.ip);
+							d.port = addr.port;
 							addDeviceView.(contentView, d)
 						}.defer;
 					},{
