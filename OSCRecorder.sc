@@ -2,23 +2,24 @@
 // https://github.com/thormagnusson/OSCrecorder/blob/master/OSCRecorder.sc
 //
 
-var win, dataview, clearbutt, recordbutt, savebutt, openbutt, postbutt, playbutt, connectOSCbutt, ipAddressfield, numberfield;
+var win, headView, titleView, dataview, clearbutt, recordbutt, savebutt, openbutt, postbutt, playbutt, connectOSCbutt, ipAddressfield, numberfield;
 var recording, oscPlayback, timeOffset;
 var oscresponder, oscList, oscSender, oscFunc;
 var file, postFlag;
 
-postFlag = true;
+QtGUI.palette = QPalette.dark; 
+
+postFlag = false;
 recording = false;
-oscSender = NetAddr("10.1.1.4", 7110);
+oscSender = NetAddr("127.0.0.1", 57120);
 timeOffset = Main.elapsedTime;
 
 oscFunc = { |msg, time, addr | 
 		if(msg[0] != '/status.reply') {
 			if(postFlag, {[time-timeOffset, msg].postln });
 			if(recording, {
-				//oscList.add([time-timeOffset, msg]); // this works for Pd (OSC timestamp)
 				oscList.add([Main.elapsedTime-timeOffset, msg]); // this works for OSCeleton (timestamped in SC)
-				// {dataview.string_(oscList.asCompileString)}.defer;
+				{headView.string_(format("frames : %",oscList.size.asInteger));}.defer;
 			});
 		}  
 
@@ -41,8 +42,9 @@ oscList = List.new;
 
 oscPlayback = Task({
 	var timekeep = 0;
-	oscList.do({ | event |
+	oscList.do({ | event, i |
 		var deltatime, msg;
+		{headView.string_(format("frames : %",i));}.defer;
 		deltatime = event[0];
 		msg = event[1];
 		oscSender.sendMsg(*msg); // unpack array to individual arguments
@@ -58,12 +60,21 @@ oscPlayback = Task({
 
 win = Window.new("OSC data recorder", Rect(100, 200, 520, 650));
 
-dataview = TextView(win, Rect(10, 10, 500, 500)).hasVerticalScroller_(true);
+titleView = StaticText(win, Rect(10, 10, 500, 10))
+			.font_(Font("Helvetica", 12))
+			.string_("file :");
+
+headView = StaticText(win, Rect(10, 25, 500, 10))
+			.font_(Font("Helvetica", 12))
+			.string_("frames :");
+
+
+dataview = TextView(win, Rect(10, 40, 500, 470)).hasVerticalScroller_(true).font_(Font("Helvetica", 9));
 
 recordbutt = Button(win, Rect(10, 520, 150, 30))
 				.states_([
-					["Record OSC", Color.black, Color.green(alpha:0.1)],
-					["Stop Recording", Color.black, Color.red(alpha:0.1)]
+					["Record OSC", Color.black, Color.green(alpha:0.5)],
+					["Stop Recording", Color.black, Color.red(alpha:0.5)]
 				])
 				.action_({ arg butt;
 					if(butt.value == 1, {
@@ -79,8 +90,8 @@ recordbutt = Button(win, Rect(10, 520, 150, 30))
 
 postbutt = Button(win, Rect(10, 560, 150, 30))
 				.states_([
-					["Posting", Color.black, Color.green(alpha:0.1)],
-					["Posting Off", Color.black, Color.grey(alpha:0.1)]
+					["Posting", Color.black, Color.green(alpha:0.5)],
+					["Posting Off", Color.black, Color.grey(alpha:0.5)]
 				])
 				.action_({ arg butt;
 					if(butt.value == 1, {
@@ -95,7 +106,7 @@ postbutt = Button(win, Rect(10, 560, 150, 30))
 
 clearbutt = Button(win, Rect(180, 520, 150, 30))
 				.states_([
-					["Clear Window", Color.black, Color.clear]
+					["Clear Window", Color.black, Color.white]
 				])
 				.action_({ arg butt;
 					dataview.string_("");	
@@ -104,8 +115,8 @@ clearbutt = Button(win, Rect(180, 520, 150, 30))
 
 playbutt = Button(win, Rect(350, 520, 150, 30))
 				.states_([
-					["Play OSC", Color.black, Color.green(alpha:0.1)],
-					["Stop OSC", Color.black, Color.red(alpha:0.1)]
+					["Play OSC", Color.black, Color.green(alpha:0.5)],
+					["Stop OSC", Color.black, Color.red(alpha:0.5)]
 				])
 				.action_({ arg butt;
 					if(butt.value == 1, {
@@ -119,13 +130,14 @@ playbutt = Button(win, Rect(350, 520, 150, 30))
 
 openbutt = Button(win, Rect(180, 560, 150, 30))
 				.states_([
-					["Open File", Color.black, Color.clear]
+					["Open File", Color.black, Color.white]
 				])
 				.action_({ arg butt;
 					//oscList = Object.readArchive("test.osc");
 
 					Dialog.getPaths({ arg path;
 						path.postln;
+						titleView.string_(format("file : %",path[0]));
 						oscList = Object.readArchive(path[0]);
 						dataview.string_(oscList.asCompileString);
 					},{
@@ -137,7 +149,7 @@ openbutt = Button(win, Rect(180, 560, 150, 30))
 
 savebutt = Button(win, Rect(350, 560, 150, 30))
 				.states_([
-					["Save File", Color.black, Color.clear]
+					["Save File", Color.black, Color.white]
 				])
 				.action_({ arg butt;
 					Dialog.savePanel({ arg path;
@@ -155,10 +167,11 @@ savebutt = Button(win, Rect(350, 560, 150, 30))
 
 connectOSCbutt = Button(win, Rect(10, 600, 150, 30))
 				.states_([
-					["Connect OSC", Color.black, Color.clear]
+					["Connect OSC", Color.black, Color.white]
 				])
 				.action_({ arg butt;
 					oscSender = NetAddr(ipAddressfield.string, numberfield.string.asInteger);
+					oscSender.sendMsg("/gyrosc/button",1.0);
 					"Connected OSC".postln;
 				});
 
@@ -177,5 +190,5 @@ win.onClose_({
 	thisProcess.removeOSCRecvFunc(oscFunc);
 
 });
-
+CmdPeriod.doOnce({win.close});
 
