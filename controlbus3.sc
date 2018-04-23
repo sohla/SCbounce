@@ -113,4 +113,6 @@ k.free;
 l = Synth(\thru,[\bus,c]);
 l.free;
 
+{ (SinOsc.ar(0.3,0,8)) }.scope;
+
 

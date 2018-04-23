@@ -21,7 +21,7 @@
 		b.set(\freq,160 + msg[3]); 
 	}, '/value');
 )
-b.set(\lpff,1);
+b.set(\lpff,100);
 
 (
 	a.free;
@@ -31,3 +31,4 @@ b.set(\lpff,1);
 
 
 
+OSCBus
