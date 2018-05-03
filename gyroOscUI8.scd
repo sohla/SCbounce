@@ -28,10 +28,9 @@
 			var dataRate = 1; 
 			var renderRate = 20;
 
-						var loadPersonality;
+			var loadPersonality;
 			var reloadDevice;
 			var createRout;
-			var createLCout;
 			
 
 			var dataSizes = [100,200,300,400];
@@ -43,36 +42,7 @@
 			var midiOut;
 
 
-			var dataRoutine = Routine { 
-				var i=0;
-				loop{ 
-					devices.keysValuesDo({|k,data|
-						
-						//[k,d].postln;
-						
-						// take quaternion and convert to ueler angles 
-						var sx,sy,sz;
-						var qe = data.quatEvent;
-						var q = Quaternion.new(qe.w,qe.x,qe.y,qe.z);
-						var s = Quaternion.new(0.2,0.1,0.4,-0.3) + q;
-						var r = q.asEuler;
-						var tr = [r[0],r[1],r[2] + pi.half];
 
-						//send something out to play with
-						oscOut.sendMsg("/bounce/quat",r[0],r[1],r[2]);
-						
-						// save converted data into pry
-						data.gyroEvent.pitch = tr[2];
-						data.gyroEvent.roll = tr[0];
-						data.gyroEvent.yaw = tr[1];
-
-					});
-
-					// next...
-					(1.0/dataRate).yield;
-					i=i+1;
-				};
-			};
 
 		    // data
 			var deviceProto = (
@@ -89,9 +59,7 @@
 				\ampValue: 0,
 				\env: nil,	// Environment for injected code
 				\rout: nil,	// Routine calls ~next every ~fps
-				\dc: nil, //DataCollector
-				\lc: nil, //DataCollector for looping
-				\lcout: nil //Routine for playing lc
+
 				);
 
 
@@ -159,48 +127,9 @@
 		//------------------------------------------------------------	
 		// 
 		//------------------------------------------------------------	
-		createLCout = {|d|
-
-			Routine { 
-				var i=0;
-				loop{ 
-						d.env.use{
-
-							var data = [];
-							i = (i+1).mod(d.lc.collection.size);
-							data = d.lc.collection.reverse[i][\data];
-
-							d.gyroEvent.pitch = data[0];
-							d.gyroEvent.roll = data[1];
-							d.gyroEvent.yaw = data[2];
-
-							d.accelEvent.y = data[3];
-							d.accelEvent.z = data[4];
-							d.accelEvent.x = data[5];
-
-							d.rrateEvent.x = data[6];
-							d.rrateEvent.y = data[7];
-							d.rrateEvent.z = data[8];
-
-							d.quatEvent.w = data[9];
-							d.quatEvent.x = data[10];
-							d.quatEvent.y = data[11];
-							d.quatEvent.z = data[12];
-
-							(~secs.()).yield;
-					};
-				}
-			};
-		};
-		//------------------------------------------------------------	
-		// 
-		//------------------------------------------------------------	
+		
 		startup = {
 
-			DataCollector.makeBackupFolder();
-			DataCollector.folder = PathName.new(dataPath).fullPath;
-
-			//dataRoutine.play();
 
 		};
 
@@ -211,15 +140,12 @@
 
 			devices.keysValuesDo({|k,v|
 				v.rout.stop();
-				v.lcout.stop();
 				v.env.use{ ~deinit.() };
 			});
 
 
 			stopOSCListening.();
 			s.queryAllNodes;
-
-			dataRoutine.stop();
 
 			Server.freeAll;
 
@@ -238,16 +164,10 @@
 			// use only for adding of device (ie. reloading not supported)
 			//d.name = possibleNames.remove(possibleNames.choose);
 
-			// data collector for replay and analysis
-			d.dc = DataCollector.new(d.name++"_data");
-
 			devices.put(ip,d);
 			
 			// load the data
 			reloadDevice.(d);
-
-			// data collector player created at start
-			d.lcout = createLCout.(d);
 
 			d // return the device (data)
 		};
@@ -384,54 +304,8 @@
 							reloadDevice.(d);
 						}),
 
-				Button()
-					.maxWidth_(80)
-					.states_([
-						["↺ load",Color.white],
-						["↺ load",Color.green]
-					])
-					.action_({|b|
 
-						if(b.value == 1,{
 
-							File.openDialog ("load", {|path|
-								d.lc = DataCollector.fromFile(path);
-								disableOSCListening.();
-								dataSize = d.lc.collection.size;
-								dataSizeMenu.value = dataSizes.indexOf(dataSize);
-								d.lcout.reset().play(AppClock);
-
-							},{
-								"error : loading data file".postln;
-							});
-						},{
-
-							d.lcout.stop;
-							enableOSCListening.();
-						});
-					}),
-				loopButton = Button()
-					.maxWidth_(80)
-					.states_([
-						["↻ loop",Color.white],
-						["↻ loop",Color.green]
-					])
-					.action_({|b|
-
-						if(b.value == 1,{
-
-							d.dc.backup; 
-							d.lc = DataCollector.new(d.name++"_data");
-							d.lc.recover;
-							disableOSCListening.();
-							d.lcout.reset().play(AppClock);
-						},{
-
-							d.lcout.stop;
-							enableOSCListening.();
-						});
-
-					}),
 				dataSizeMenu = PopUpMenu(view)
 						.maxWidth_(60)
 						.items_(dataSizes)
@@ -479,13 +353,13 @@
 				["aaccelX",Color.cyan,{|p| d.accelEvent.x }],
 				["accelY",Color.magenta,{|p| d.accelEvent.y }],
 				["accelZ",Color.yellow,{|p| d.accelEvent.z }]
-			],-pi,pi);
+			],-5,5);
 
 			createPlotterGroup.(vc, Rect(250,0,400,250), [
 				["rrateX",Color.cyan,{|p| d.rrateEvent.x }],
 				["rrateY",Color.magenta,{|p| d.rrateEvent.y }],
 				["rrateZ",Color.yellow,{|p| d.rrateEvent.z }]
-			],-pi,pi);
+			],-16,16);
 
 			createPlotterGroup.(va, Rect(250,0,400,250), [
 				["a",[Color.yellow,Color.magenta,Color.cyan],{|p| d.env.use{ ~plot.(d)} }]
@@ -541,23 +415,21 @@
 
 
 				plotterView.drawFunc = plotterView.drawFunc <> {
-
 					{
 						
+						plotter.superpose = true;
+						plotter.value = plotter.value.flop;
+						plotter.value = plotter.value.insert(0,specs[2].(plotter));
+						plotter.value = plotter.value.keep(100);
+						plotter.value = plotter.value.flop;
 
-					plotter.superpose = true;
-					plotter.value = plotter.value.flop;
-					plotter.value = plotter.value.insert(0,specs[2].(plotter));
-					plotter.value = plotter.value.keep(100);
-					plotter.value = plotter.value.flop;
+						// old way of parsing single values
+						// p.value = p.value.shift(1).putFirst(d.env.use{ ~plot.(d)});
+						
+						plotter.minval_(pmin);
+						plotter.maxval_(pmax);
 
-					// old way of parsing single values
-					// p.value = p.value.shift(1).putFirst(d.env.use{ ~plot.(d)});
-					
-					plotter.minval_(pmin);
-					plotter.maxval_(pmax);
-
-					plotter.setProperties(\plotColor, specs[1]).refresh;
+						plotter.setProperties(\plotColor, specs[1]).refresh;
 
 					}.defer(0.1);// need to delay to allow for construction 
 				}
@@ -814,6 +686,8 @@
 
 			gryoListner = OSCFunc({ |msg, time, addr, recvPort|
 
+				// don't store as quaternions will supply us with data
+
 				// if(devices.at(addr.ip) != nil,{
 				// 	devices.at(addr.ip).gyroEvent = (
 				// 		\pitch:msg[1].asFloat,
@@ -888,9 +762,6 @@
 
 
 			}, '/gyrosc/quat');
-			// altListener = OSCFunc({ |msg, time, addr, recvPort|
-			// 	altValue = (msg[1].asFloat);
-			// }, '/gyrosc/alt');
 				
 			ampListener = OSCFunc({ |msg, time, addr, recvPort|
 					if(devices.at(addr.ip) != nil,{
@@ -942,9 +813,6 @@
 		startup.();
 		buildUI.();
 		startOSCListening.();
-
-
-		// dataProcessor.
 
 
 	)
