@@ -25,6 +25,55 @@
 
 			var devices = Dictionary();
 
+			var dataRate = 1; 
+			var renderRate = 20;
+
+						var loadPersonality;
+			var reloadDevice;
+			var createRout;
+			var createLCout;
+			
+
+			var dataSizes = [100,200,300,400];
+			var dataSize = dataSizes[0];
+			var dataPath = "~/Develop/SuperCollider/Projects/SCbounce/data/";
+
+			var pos3D = [0,0,0];
+
+			var midiOut;
+
+
+			var dataRoutine = Routine { 
+				var i=0;
+				loop{ 
+					devices.keysValuesDo({|k,data|
+						
+						//[k,d].postln;
+						
+						// take quaternion and convert to ueler angles 
+						var sx,sy,sz;
+						var qe = data.quatEvent;
+						var q = Quaternion.new(qe.w,qe.x,qe.y,qe.z);
+						var s = Quaternion.new(0.2,0.1,0.4,-0.3) + q;
+						var r = q.asEuler;
+						var tr = [r[0],r[1],r[2] + pi.half];
+
+						//send something out to play with
+						oscOut.sendMsg("/bounce/quat",r[0],r[1],r[2]);
+						
+						// save converted data into pry
+						data.gyroEvent.pitch = tr[2];
+						data.gyroEvent.roll = tr[0];
+						data.gyroEvent.yaw = tr[1];
+
+					});
+
+					// next...
+					(1.0/dataRate).yield;
+					i=i+1;
+				};
+			};
+
 		    // data
 			var deviceProto = (
 				\name: "eve",
@@ -45,19 +94,6 @@
 				\lcout: nil //Routine for playing lc
 				);
 
-			var loadPersonality;
-			var reloadDevice;
-			var createRout;
-			var createLCout;
-			
-
-			var dataSizes = [100,200,300,400];
-			var dataSize = dataSizes[0];
-			var dataPath = "~/Develop/SuperCollider/Projects/SCbounce/data/";
-
-			var pos3D = [0,0,0];
-
-			var midiOut;
 
 			// var path = PathName.new("~/Develop/SuperCollider/Projects/SCbounce/helloWorld.scd");
 			// var file = File.new(path.asAbsolutePath,"r");
@@ -164,6 +200,8 @@
 			DataCollector.makeBackupFolder();
 			DataCollector.folder = PathName.new(dataPath).fullPath;
 
+			//dataRoutine.play();
+
 		};
 
 		//------------------------------------------------------------	
@@ -180,6 +218,8 @@
 
 			stopOSCListening.();
 			s.queryAllNodes;
+
+			dataRoutine.stop();
 
 			Server.freeAll;
 
@@ -430,59 +470,26 @@
 			);	
 
 			createPlotterGroup.(va, Rect(650,0,400,250), [
-				["pitch",Color.red,{|p|
-					p.value = (d.dc.collection.collect({|a,i| a[\data][0]})); p.minval_(pi); p.maxval_(-pi);
-				}],
-				["roll",Color.green,{|p|
-					p.value = (d.dc.collection.collect({|a,i| a[\data][1]})); p.minval_(pi); p.maxval_(-pi);
-				}],
-				["yaw",Color.blue,{|p|
-					p.value = (d.dc.collection.collect({|a,i| a[\data][2]})); p.minval_(pi); p.maxval_(-pi);
-				}],
-			]);
+				["pitch",Color.red,{|p| d.gyroEvent.pitch }],
+				["roll",Color.green,{|p| d.gyroEvent.roll }],
+				["yaw",Color.blue,{|p| d.gyroEvent.yaw }]
+			],-pi,pi);
 
 			createPlotterGroup.(vb, Rect(250,0,400,250), [
-				["aaccelX",Color.cyan,{|p|
-					p.value = (d.dc.collection.collect({|a,i| a[\data][3]})); p.minval_(pi); p.maxval_(-pi);
-				}],
-				["accelY",Color.magenta,{|p|
-					p.value = (d.dc.collection.collect({|a,i| a[\data][4]})); p.minval_(pi); p.maxval_(-pi);
-				}],
-				["accelZ",Color.yellow,{|p|
-					p.value = (d.dc.collection.collect({|a,i| a[\data][5]})); p.minval_(pi); p.maxval_(-pi);
-				}],
-			]);
+				["aaccelX",Color.cyan,{|p| d.accelEvent.x }],
+				["accelY",Color.magenta,{|p| d.accelEvent.y }],
+				["accelZ",Color.yellow,{|p| d.accelEvent.z }]
+			],-pi,pi);
 
 			createPlotterGroup.(vc, Rect(250,0,400,250), [
-				["rrateX",Color.cyan,{|p|
-					p.value = (d.dc.collection.collect({|a,i| a[\data][6]})); p.minval_(pi); p.maxval_(-pi);
-				}],
-				["rrateY",Color.magenta,{|p|
-					p.value = (d.dc.collection.collect({|a,i| a[\data][7]})); p.minval_(pi); p.maxval_(-pi);
-				}],
-				["rrateZ",Color.yellow,{|p|
-					p.value = (d.dc.collection.collect({|a,i| a[\data][8]})); p.minval_(pi); p.maxval_(-pi);
-				}],
-			]);
+				["rrateX",Color.cyan,{|p| d.rrateEvent.x }],
+				["rrateY",Color.magenta,{|p| d.rrateEvent.y }],
+				["rrateZ",Color.yellow,{|p| d.rrateEvent.z }]
+			],-pi,pi);
 
 			createPlotterGroup.(va, Rect(250,0,400,250), [
-				["a",[Color.yellow,Color.magenta,Color.cyan],{|p|
-
-					// new improved for parsing arrays! needs the array to have data
-					p.superpose = true;
-					p.value = p.value.flop;
-					p.value = p.value.insert(0,d.env.use{ ~plot.(d)});
-					p.value = p.value.keep(100);
-					p.value = p.value.flop;
-
-					// old way of parsing single values
-					// p.value = p.value.shift(1).putFirst(d.env.use{ ~plot.(d)});
-					
-					p.minval_(d.env.use{ ~plotMin});
-					p.maxval_(d.env.use{ ~plotMax});
-				}]
-			]);
-
+				["a",[Color.yellow,Color.magenta,Color.cyan],{|p| d.env.use{ ~plot.(d)} }]
+			],-10,10);
 
 			createGyroCanvas.(va,d);
 			createAccelCanvas.(vb,d);
@@ -494,19 +501,22 @@
 		// Plotters
 		//------------------------------------------------------------	
 
-		createPlotterGroup = {|view, bounds, plotters|
+		createPlotterGroup = {|view, bounds, plotters, pmin=(-pi), pmax=pi|
+
 
 			var plotterView = UserView(view,bounds).background_(Color.black).animate_(true);
 			var size = plotters.size;
 			var pw = bounds.width;
 			var ph = bounds.height / size;
 
-			plotterView.drawFunc_({});
+			 plotterView.drawFunc_({});
 
-			plotters.do{ |specs,i|
+			 plotters.do{ |specs,i|
+
+
 				var max = 0;
 				var plotter = Plotter(specs[0], Rect(pw*0.3,ph*i,pw*0.7,ph),plotterView)
-					.value_((0..dataSize).dup(3)) //need to init arrays with data
+					.value_((0..dataSize).dup(plotters.size)) //need to init arrays with data
 					.refresh;
 
 
@@ -533,17 +543,25 @@
 				plotterView.drawFunc = plotterView.drawFunc <> {
 
 					{
-						specs[2].(plotter);
-						//var val = specs[2].(plotter).value[0].round(1e-4);
-						// st.string_(val);
-						// if(val > max, {max = val});
-						// su.string_("max :"+max);
+						
 
-						plotter.setProperties(\plotColor, specs[1]).refresh;
+					plotter.superpose = true;
+					plotter.value = plotter.value.flop;
+					plotter.value = plotter.value.insert(0,specs[2].(plotter));
+					plotter.value = plotter.value.keep(100);
+					plotter.value = plotter.value.flop;
+
+					// old way of parsing single values
+					// p.value = p.value.shift(1).putFirst(d.env.use{ ~plot.(d)});
+					
+					plotter.minval_(pmin);
+					plotter.maxval_(pmax);
+
+					plotter.setProperties(\plotColor, specs[1]).refresh;
 
 					}.defer(0.1);// need to delay to allow for construction 
 				}
-			};
+			 };
 
 
 		};
@@ -646,44 +664,9 @@
 		    );
 
 			// animate
-			graph1.animate(20) {|t|
-				
-				var sx,sy,sz;
-				var qe = data.quatEvent;
-				var q = Quaternion.new(qe.w,qe.x,qe.y,qe.z);
-				var s = Quaternion.new(0.2,0.1,0.4,-0.3) + q;
-				var r = q.asEuler;
-				var tr = [r[0],r[1],r[2] + pi.half];
+			graph1.animate(renderRate) {|t|
 
-				//send something out to play with
-				oscOut.sendMsg("/bounce/quat",r[0],r[1],r[2]);
-				
-				data.gyroEvent.pitch = tr[2];
-				data.gyroEvent.roll = tr[0];
-				data.gyroEvent.yaw = tr[1];
-
-				//[ny,np,nr].postln;
-				// store data
-				data.dc.addData([
-					data.gyroEvent.pitch, 
-					data.gyroEvent.roll, 
-					data.gyroEvent.yaw,
-					data.accelEvent.y.neg,
-					data.accelEvent.z,
-					data.accelEvent.x,
-					data.rrateEvent.x,
-					data.rrateEvent.y,
-					data.rrateEvent.z,
-					data.quatEvent.w,
-					data.quatEvent.x,
-					data.quatEvent.y,
-					data.quatEvent.z
-
-	//•add Quaternion data
-					],t);
-
-			 	data.dc.collection = data.dc.getLast(dataSize); // limit size of collected samples
-
+				var tr = [data.gyroEvent.roll,data.gyroEvent.yaw,data.gyroEvent.pitch];
 		        loc.transforms = [
 		        	Canvas3D.mScale(1,0.02,0.02),
 		        	Canvas3D.mTranslate(1.5,0,0),
@@ -755,18 +738,18 @@
 			);
 
 			graph2.add(accelX = Canvas3DItem.regPrism()
-				.color_(Color.red(0.9))
+				.color_(Color.yellow(0.9))
 			    .width_(1)
 			);
 			graph2.add(accelY = Canvas3DItem.regPrism()
-				.color_(Color.green(0.9))
+				.color_(Color.magenta(0.9))
 			    .width_(1)
 			);
 			graph2.add(accelZ = Canvas3DItem.regPrism()
-				.color_(Color.blue(0.9))
+				.color_(Color.cyan(0.9))
 			    .width_(1)
 			);
-			graph2.animate(20) {|t|
+			graph2.animate(renderRate) {|t|
 				
 
 				spot.transforms = [ 
@@ -831,12 +814,12 @@
 
 			gryoListner = OSCFunc({ |msg, time, addr, recvPort|
 
-				if(devices.at(addr.ip) != nil,{
-					devices.at(addr.ip).gyroEvent = (
-						\pitch:msg[1].asFloat,
-						\roll:msg[2].asFloat,
-						\yaw:msg[3].asFloat);
-				});
+				// if(devices.at(addr.ip) != nil,{
+				// 	devices.at(addr.ip).gyroEvent = (
+				// 		\pitch:msg[1].asFloat,
+				// 		\roll:msg[2].asFloat,
+				// 		\yaw:msg[3].asFloat);
+				// });
 			
 			}, '/gyrosc/gyro');
 
@@ -875,13 +858,35 @@
 
 			quatListener = OSCFunc({ |msg, time, addr, recvPort|
 
+				var sx,sy,sz,qe,q,ss,r;
+				var tr;
+
 				if(devices.at(addr.ip) != nil,{
+
 					devices.at(addr.ip).quatEvent = (
 						\w:msg[1].asFloat,
 						\x:msg[2].asFloat,
 						\y:msg[3].asFloat,
 						\z:msg[4].asFloat);
+
+					// take quaternion and convert to ueler angles 
+					qe = devices.at(addr.ip).quatEvent;
+					q = Quaternion.new(qe.w,qe.x,qe.y,qe.z);
+					// ss = Quaternion.new(0.2,0.1,0.4,-0.3) + q;
+					r = q.asEuler;
+					tr = [r[0],r[1],r[2] + pi.half];
+					//send something out to play with
+					//oscOut.sendMsg("/bounce/quat",r[0],r[1],r[2]);
+					
+					// save converted data into pry
+					devices.at(addr.ip).gyroEvent.pitch = tr[2];
+					devices.at(addr.ip).gyroEvent.roll = tr[0];
+					devices.at(addr.ip).gyroEvent.yaw = tr[1];
 				});
+
+
+
+
 			}, '/gyrosc/quat');
 			// altListener = OSCFunc({ |msg, time, addr, recvPort|
 			// 	altValue = (msg[1].asFloat);
@@ -937,6 +942,10 @@
 		startup.();
 		buildUI.();
 		startOSCListening.();
+
+
+		// dataProcessor.
+
 
 	)
 
