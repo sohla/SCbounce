@@ -10,7 +10,7 @@
 			var possibleNames = names.copy;
 
 			var reloadButton;
-			var loopButton, stackButton;
+			var stackButton;
 
 			var createPlotterGroup, createGyroCanvas, createAccelCanvas, createTransportView;
 			var createWindowView, addDeviceView;
@@ -37,11 +37,7 @@
 			var dataSize = dataSizes[0];
 			var dataPath = "~/Develop/SuperCollider/Projects/SCbounce/data/";
 
-			var pos3D = [0,0,0];
-
 			var midiOut;
-
-
 
 
 		    // data
@@ -205,15 +201,12 @@
 
 			window = Window("bounce", Rect(0, height, width, height-150), false).front;
 			window.view.keyDownAction_({|view,char,mods,uni,code,key|
-				if(uni==114,{
+				if(uni==114,{//r
 					devices.keysValuesDo({|k,v|
 						reloadDevice.(v);
 					});
 				});
-				if(uni==108,{
-					loopButton.valueAction_(loopButton.value.asBoolean.not);
-				});
-				if(uni==97,{
+				if(uni==97,{//a
 					stackButton.valueAction_((stackButton.value+1).mod(3));
 				});
 				if(uni==100,{
@@ -246,7 +239,7 @@
 			scroll.canvas = contentView;
 
 			// set this for quick connection to device
-			//addDeviceView.(contentView, addDevice.("127.0.0.1"));
+			addDeviceView.(contentView, addDevice.("127.0.0.1"));
 			//addDeviceView.(contentView, addDevice.("192.168.0.101"));
 
 		};
@@ -305,7 +298,6 @@
 						}),
 
 
-
 				dataSizeMenu = PopUpMenu(view)
 						.maxWidth_(60)
 						.items_(dataSizes)
@@ -343,25 +335,27 @@
 				);
 			);	
 
-			createPlotterGroup.(va, Rect(650,0,400,250), [
-				["pitch",Color.red,{|p| d.gyroEvent.pitch }],
-				["roll",Color.green,{|p| d.gyroEvent.roll }],
-				["yaw",Color.blue,{|p| d.gyroEvent.yaw }]
-			],-pi,pi);
+			createPlotterGroup.(va, Rect(750,0,500,250), [
+				["a",[Color.red,Color.green,Color.blue],{|p| [d.gyroEvent.pitch,d.gyroEvent.roll,d.gyroEvent.yaw]}]
 
-			createPlotterGroup.(vb, Rect(250,0,400,250), [
+				// ["pitch",Color.red,{|p| d.gyroEvent.pitch }],
+				// ["roll",Color.green,{|p| d.gyroEvent.roll }],
+				// ["yaw",Color.blue,{|p| d.gyroEvent.yaw }]
+			],-pi*2,pi*2);
+
+			createPlotterGroup.(vb, Rect(750,0,500,250), [
 				["aaccelX",Color.cyan,{|p| d.accelEvent.x }],
 				["accelY",Color.magenta,{|p| d.accelEvent.y }],
 				["accelZ",Color.yellow,{|p| d.accelEvent.z }]
 			],-5,5);
 
-			createPlotterGroup.(vc, Rect(250,0,400,250), [
+			createPlotterGroup.(vc, Rect(750,0,500,250), [
 				["rrateX",Color.cyan,{|p| d.rrateEvent.x }],
 				["rrateY",Color.magenta,{|p| d.rrateEvent.y }],
 				["rrateZ",Color.yellow,{|p| d.rrateEvent.z }]
 			],-16,16);
 
-			createPlotterGroup.(va, Rect(250,0,400,250), [
+			createPlotterGroup.(va, Rect(150,0,600,250), [
 				["a",[Color.yellow,Color.magenta,Color.cyan],{|p| d.env.use{ ~plot.(d)} }]
 			],-10,10);
 
@@ -407,11 +401,11 @@
 					.background_(Color.black)
 					.mouseUpAction_({max = 0});
 
-				StaticText(plotterView,Rect(0,ph*i,pw*0.15,ph/2))
-					.string_(specs[0])
-					.align_(\center)
-					.stringColor_(specs[1])
-					.background_(Color.black);
+				// StaticText(plotterView,Rect(0,ph*i,pw*0.15,ph/2))
+				// 	.string_(specs[0])
+				// 	.align_(\center)
+				// 	.stringColor_(specs[1])
+				// 	.background_(Color.black);
 
 
 				plotterView.drawFunc = plotterView.drawFunc <> {
@@ -420,7 +414,7 @@
 						plotter.superpose = true;
 						plotter.value = plotter.value.flop;
 						plotter.value = plotter.value.insert(0,specs[2].(plotter));
-						plotter.value = plotter.value.keep(100);
+						plotter.value = plotter.value.keep(dataSize);
 						plotter.value = plotter.value.flop;
 
 						// old way of parsing single values
