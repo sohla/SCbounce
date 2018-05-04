@@ -335,29 +335,29 @@
 				);
 			);	
 
-			createPlotterGroup.(va, Rect(750,0,500,250), [
+			createPlotterGroup.(vc, Rect(750,0,500,250), [
 				// ["a",[Color.red,Color.green,Color.blue],{|p| [d.gyroEvent.pitch,d.gyroEvent.roll,d.gyroEvent.yaw]}]
 
 				["pitch",Color.red,{|p| d.gyroEvent.pitch }],
 				["roll",Color.green,{|p| d.gyroEvent.roll }],
 				["yaw",Color.blue,{|p| d.gyroEvent.yaw }]
-			],-pi*2,pi*2);
+			],-pi,pi);
 
 			createPlotterGroup.(vb, Rect(750,0,500,250), [
 				["aaccelX",Color.cyan,{|p| d.accelEvent.x }],
 				["accelY",Color.magenta,{|p| d.accelEvent.y }],
 				["accelZ",Color.yellow,{|p| d.accelEvent.z }]
-			],-5,5);
+			],-2,2);
 
-			createPlotterGroup.(vc, Rect(750,0,500,250), [
+			createPlotterGroup.(va, Rect(750,0,500,250), [
 				["rrateX",Color.cyan,{|p| d.rrateEvent.x }],
 				["rrateY",Color.magenta,{|p| d.rrateEvent.y }],
 				["rrateZ",Color.yellow,{|p| d.rrateEvent.z }]
-			],-16,16);
+			],-6,6);
 
 			createPlotterGroup.(va, Rect(150,0,600,250), [
 				["a",[Color.yellow,Color.magenta,Color.cyan],{|p| d.env.use{ ~plot.(d)} }]
-			],-10,10);
+			],-1,1);
 
 			createGyroCanvas.(va,d);
 			createAccelCanvas.(vb,d);

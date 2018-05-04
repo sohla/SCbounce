@@ -5,7 +5,8 @@ var ptn = Array.fill(16,{|i|i=90.rrand(65).asAscii});
 
 var up = 0;
 var rm = 0;
-var buffer = Array.fill(4,{0}); 
+var buffer = Array.fill(2,{0}); 
+var sbuf = Array.fill(2,{0}); 
 var bufavg = 0;
 
 var release = 0;
@@ -91,8 +92,8 @@ Pdef(ptn,
 	//------------------------------------------------------------	
 	~next = {|d| 
 
-		attack = ~tween.(d.rrateEvent.sumabs,attack,0.99);
-		release = ~tween.(d.rrateEvent.sumabs,release,0.09);
+		//attack = ~tween.(d.rrateEvent.sumabs,attack,0.9);
+		release = ~tween.(d.rrateEvent.sumabs,release,0.7);
 
 		if(up.isPositive,{
 			d.rrateMass = ~tween.(d.rrateEvent.sumabs,d.rrateMass,0.75);
@@ -107,7 +108,7 @@ Pdef(ptn,
 
 		Pdef(ptn).set(\dur,(1 / (1 + d.accelMass.floor.squared)) * 0.125);
 
-		if(bufavg/3  < 0.2,{
+		if(bufavg/3  < 22220.2,{
 			Pdef(ptn).set(\amp,0.0);
 		},{
 			Pdef(ptn).set(\amp,d.rrateMass / 20.0);
@@ -143,22 +144,29 @@ Pdef(ptn,
 		var r = buffer.sum / buffer.size;
 		var bs;
 
+		var slope, step;
 		//(sum<0.4).if({sum=0});
 
-		rm = ~tween.(release,rm,0.97);
+		rm = ~tween.(attack,rm,0.97);
 
 		buffer = buffer.shift(1);
-		buffer = buffer.put(0,rm);
+		buffer = buffer.put(0,release);
 
-		bs = buffer.sum / (buffer.size-1); 
+		slope = (buffer[0] - buffer[1]) * 5;
 
-		(bs >= bufavg).if({up= 0.5},{up= -0.5});
+		sbuf = sbuf.shift(1);
+		sbuf = sbuf.put(0,slope);
 
-		bufavg = bs; 
+		step =  (sbuf[0] - sbuf[1]);
 
+		attack = ~tween.(slope,attack,0.19);
+		//bs = buffer.sum / (buffer.size-1); 
+		//(bs >= bufavg).if({up= 0.5},{up= -0.5});
+		// bufavg = bs; 
 
+		bs = buffer.mean;
 
-		[d.rrateEvent.sumabs/3,up ,bufavg]
+		[release * 0.1,slope * 0.05 ,release.linlin(0,1,0,5).round * 0.19 ]
 	};
 	
 
