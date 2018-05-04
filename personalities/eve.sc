@@ -33,7 +33,9 @@ var attack = 0;
 Pdef(ptn,
 	Pbind(
 //        \degree, Pseq([0,2,4,6,8,7,5,3,1], inf),
-        \degree, Pseq([0,2,4,6,8,7,5,3,1,0,1,2,3,4,5,6,7,6,7,5,6,4,5,3,4,2,3,1,2,0,1,5,4,2,4,3,1,3,2,0,1,7,6,0,5,4,0,3,2,0,1,1,1], inf),
+//        \degree, Pseq([0,2,4,6,8,7,5,3,1,0,1,2,3,4,5,6,7,6,7,5,6,4,5,3,4,2,3,1,2,0,1,5,4,2,4,3,1,3,2,0,1,7,6,0,5,4,0,3,2,0,1,1,1], inf),
+		//\note, Prand([0,3,6,9],inf),	
+		\note,  PSaw(4, 10, PLFTri(0.1,24,12)),	
 		\args, #[]
 //		\amp, Pexprand(0.1,0.4,inf),
 //		\pan, Pwhite(-0.8,0.0,inf)
@@ -89,8 +91,8 @@ Pdef(ptn,
 	//------------------------------------------------------------	
 	~next = {|d| 
 
-		release = ~tween.(d.rrateEvent.sumabs,release,0.99);
 		attack = ~tween.(d.rrateEvent.sumabs,attack,0.99);
+		release = ~tween.(d.rrateEvent.sumabs,release,0.09);
 
 		if(up.isPositive,{
 			d.rrateMass = ~tween.(d.rrateEvent.sumabs,d.rrateMass,0.75);
@@ -143,10 +145,10 @@ Pdef(ptn,
 
 		//(sum<0.4).if({sum=0});
 
-		//rm = ~tween.(release,rm,0.97);
+		rm = ~tween.(release,rm,0.97);
 
 		buffer = buffer.shift(1);
-		buffer = buffer.put(0,attack);
+		buffer = buffer.put(0,rm);
 
 		bs = buffer.sum / (buffer.size-1); 
 
