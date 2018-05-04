@@ -239,7 +239,7 @@
 			scroll.canvas = contentView;
 
 			// set this for quick connection to device
-			addDeviceView.(contentView, addDevice.("127.0.0.1"));
+			//addDeviceView.(contentView, addDevice.("127.0.0.1"));
 			//addDeviceView.(contentView, addDevice.("192.168.0.101"));
 
 		};
@@ -336,11 +336,11 @@
 			);	
 
 			createPlotterGroup.(va, Rect(750,0,500,250), [
-				["a",[Color.red,Color.green,Color.blue],{|p| [d.gyroEvent.pitch,d.gyroEvent.roll,d.gyroEvent.yaw]}]
+				// ["a",[Color.red,Color.green,Color.blue],{|p| [d.gyroEvent.pitch,d.gyroEvent.roll,d.gyroEvent.yaw]}]
 
-				// ["pitch",Color.red,{|p| d.gyroEvent.pitch }],
-				// ["roll",Color.green,{|p| d.gyroEvent.roll }],
-				// ["yaw",Color.blue,{|p| d.gyroEvent.yaw }]
+				["pitch",Color.red,{|p| d.gyroEvent.pitch }],
+				["roll",Color.green,{|p| d.gyroEvent.roll }],
+				["yaw",Color.blue,{|p| d.gyroEvent.yaw }]
 			],-pi*2,pi*2);
 
 			createPlotterGroup.(vb, Rect(750,0,500,250), [
@@ -533,6 +533,8 @@
 			graph1.animate(renderRate) {|t|
 
 				var tr = [data.gyroEvent.roll,data.gyroEvent.yaw,data.gyroEvent.pitch];
+				//data.ip.postln;
+		        
 		        loc.transforms = [
 		        	Canvas3D.mScale(1,0.02,0.02),
 		        	Canvas3D.mTranslate(1.5,0,0),
@@ -743,13 +745,15 @@
 					// ss = Quaternion.new(0.2,0.1,0.4,-0.3) + q;
 					r = q.asEuler;
 					tr = [r[0],r[1],r[2] + pi.half];
+
 					//send something out to play with
 					//oscOut.sendMsg("/bounce/quat",r[0],r[1],r[2]);
-					
-					// save converted data into pry
-					devices.at(addr.ip).gyroEvent.pitch = tr[2];
-					devices.at(addr.ip).gyroEvent.roll = tr[0];
-					devices.at(addr.ip).gyroEvent.yaw = tr[1];
+
+					// save converted data as Event
+					devices.at(addr.ip).gyroEvent = (
+						\pitch:tr[2].asFloat,
+						\roll:tr[0].asFloat,
+						\yaw:tr[1].asFloat);
 				});
 
 
