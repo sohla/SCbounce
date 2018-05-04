@@ -5,7 +5,7 @@ var ptn = Array.fill(16,{|i|i=90.rrand(65).asAscii});
 
 var up = 0;
 var rm = 0;
-var buffer = Array.fill(2,{0}); 
+var buffer = Array.fill(20,{0}); 
 var sbuf = Array.fill(2,{0}); 
 var bufavg = 0;
 
@@ -108,7 +108,7 @@ Pdef(ptn,
 
 		Pdef(ptn).set(\dur,(1 / (1 + d.accelMass.floor.squared)) * 0.125);
 
-		if(bufavg/3  < 22220.2,{
+		if(bufavg  < 0.2,{
 			Pdef(ptn).set(\amp,0.0);
 		},{
 			Pdef(ptn).set(\amp,d.rrateMass / 20.0);
@@ -160,13 +160,13 @@ Pdef(ptn,
 		step =  (sbuf[0] - sbuf[1]);
 
 		attack = ~tween.(slope,attack,0.19);
-		//bs = buffer.sum / (buffer.size-1); 
-		//(bs >= bufavg).if({up= 0.5},{up= -0.5});
+		// bs = buffer.sum / (buffer.size-1); 
+		// (bs >= bufavg).if({up= 0.5},{up= -0.5});
 		// bufavg = bs; 
+		bufavg = release.linlin(0,1,0,5).round * 0.19;
+		// bs = buffer.mean;
 
-		bs = buffer.mean;
-
-		[release * 0.1,slope * 0.05 ,release.linlin(0,1,0,5).round * 0.19 ]
+		[release * 0.1, bufavg, d.rrateMass / 20.0 ]
 	};
 	
 
