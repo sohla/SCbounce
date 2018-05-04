@@ -8,7 +8,8 @@ var rm = 0;
 var buffer = Array.fill(4,{0}); 
 var bufavg = 0;
 
-var rrmf = 0;
+var release = 0;
+var attack = 0;
 //------------------------------------------------------------	
 // SYNTH DEF
 //------------------------------------------------------------	
@@ -88,7 +89,8 @@ Pdef(ptn,
 	//------------------------------------------------------------	
 	~next = {|d| 
 
-		rrmf = ~tween.(d.rrateEvent.sumabs,rrmf,0.05);
+		release = ~tween.(d.rrateEvent.sumabs,release,0.99);
+		attack = ~tween.(d.rrateEvent.sumabs,attack,0.99);
 
 		if(up.isPositive,{
 			d.rrateMass = ~tween.(d.rrateEvent.sumabs,d.rrateMass,0.75);
@@ -135,27 +137,16 @@ Pdef(ptn,
 	//------------------------------------------------------------	
 
 	~plot = { |d|
-		//(((d.gyroEvent.pitch / pi) + 0.5) * 8).floor;
-		//0.2;
-
-		//1 / (1 + d.accelMass.floor);
-		//d.rrateMass
-		//up.floor
-
-
-
-
 
 		var r = buffer.sum / buffer.size;
-		var sum = rrmf;//d.rrateMass ;//(d.rrateEvent.sumabs / 3) - 1;
 		var bs;
 
 		//(sum<0.4).if({sum=0});
 
-		rm = ~tween.(sum,rm,0.17);
+		//rm = ~tween.(release,rm,0.97);
 
 		buffer = buffer.shift(1);
-		buffer = buffer.put(0,rm);
+		buffer = buffer.put(0,attack);
 
 		bs = buffer.sum / (buffer.size-1); 
 
@@ -165,7 +156,7 @@ Pdef(ptn,
 
 
 
-		[d.rrateEvent.sumabs/3,up ,bufavg/16]
+		[d.rrateEvent.sumabs/3,up ,bufavg]
 	};
 	
 
