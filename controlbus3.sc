@@ -84,7 +84,7 @@ SynthDef(\modb,{|bus|
 
 
 SynthDef(\thru,{|bus|
-	Out.kr(bus,In.kr(bus).linlin(0,1,100,1200))
+	Out.kr(bus,In.kr(bus).linlin(0,1,100,600))
 }).add;
 
 )
@@ -93,7 +93,7 @@ SynthDef(\thru,{|bus|
 (
 g= Synth(\mapexample);
 c = Bus.control(s);
-g.map(\freq, c.index);
+g.map(\freq, c);
 c.set(660);
 )
 
