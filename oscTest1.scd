@@ -74,6 +74,13 @@ o.free;
 
 
 
+o = OSCFunc({ arg msg, time, addr, recvPort;
+	[msg, time, addr, recvPort].postln;
+}, '/espData');
+
+o.free;
+
+
 
 
 
