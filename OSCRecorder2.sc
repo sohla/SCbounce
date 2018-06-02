@@ -56,7 +56,7 @@ oscPlayback = Task({
 	});
 	{
 		playbutt.value_(0);
-		playbutt.actionValue_(1);
+		playbutt.valueAction_(1);
 		oscPlayback.reset;
 		"playing has stopped".postln;
 	}.defer(0.5);

@@ -163,7 +163,8 @@ Pdef(ptn,
 		// bs = buffer.sum / (buffer.size-1); 
 		// (bs >= bufavg).if({up= 0.5},{up= -0.5});
 		// bufavg = bs; 
-		bufavg = release.linlin(0,1,0,5).round * 0.19;
+		bufavg = reitu
+		
 		// bs = buffer.mean;
 
 		[release * 0.1, bufavg, d.rrateMass / 20.0 ]

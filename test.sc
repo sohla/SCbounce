@@ -203,4 +203,6 @@ a.collect{ |o| o.half}
 
 Quarks.gui
 
+[1,-2,3,7,8].abs.mean
 
+-1.2.round

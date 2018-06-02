@@ -79,7 +79,7 @@ o = OSCFunc({ arg msg, time, addr, recvPort;
 }, '/espData');
 
 o.free;
-
+	
 
 
 
@@ -197,3 +197,42 @@ b.port.asString
 b.ip.class
 // OSCReceiver
 // MIDIReceiver
+
+(
+
+var w = Window().front; 
+var ax=[];
+var cols = 5;
+var rows = 6;
+
+var uberBtn = { |i|
+	var button, stack; 
+	stack = StackLayout(
+		button = Button() 
+			.states_([["off ", Color.rand, Color.rand],["on" , Color.rand, Color.rand]]) 
+			.action_({|b| ("btn["++i++"]").postln;if(b.value == 1,stack.index = 1)}),
+		Button().layout_(
+			HLayout(
+				Slider().action_({|sld|("sld["++i++":A]:"++sld.value).postln}),
+				Slider().action_({|sld|("sld["++i++":B]:"++sld.value).postln}),
+				Slider().action_({|sld|("sld["++i++":C]:"++sld.value).postln})
+				))
+		.states_([button.states.last]) 
+		.action_({|b| button.valueAction_(0); stack.index = 0; })
+	).mode_(1)
+};
+
+
+rows.do{ |ix|
+	var ay=[];
+	cols.do{|iy|
+		ay=ay.add(uberBtn.((ix*cols)+iy));
+	};
+	ax=ax.add(ay);
+};
+
+w.layout = VLayout(*ax.collect { |o| HLayout(*o) }); 
+) 
+
+
+
