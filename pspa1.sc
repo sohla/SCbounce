@@ -17,7 +17,7 @@ d=Buffer.read(s,PathName.new("~/Music/SCSamples/inMemoryKidsStories2.wav").asAbs
 d=Buffer.read(s,PathName.new("~/Music/SCSamples/lassem_ria2.wav").asAbsolutePath);
 d=Buffer.read(s,PathName.new("~/Music/SCSamples/lassem_anton.wav").asAbsolutePath);
 d=Buffer.read(s,PathName.new("~/Music/SCSamples/adultquestionsAll.wav").asAbsolutePath);
-d=Buffer.read(s,PathName.new("~/Music/SCSamples/1 Welcome What is your name RAW.aif").asAbsolutePath);
+d=Buffer.read(s,PathName.new("~/Music/VoiceLab/templateQuestions/5.whatchallenges.wav").asAbsolutePath);
 
 
 (
@@ -65,9 +65,9 @@ var in, fft, sines, noise, freq, hasFreq;
 //in= SoundIn.ar(0);
 in=PlayBuf.ar(1,d,BufRateScale.kr(d),1,0,1);
 
-#freq, hasFreq= Pitch.kr(in);
+hasFreq= Pitch.kr(in);
 
-#sines, noise=SMS.ar(in, 50,50, 8, 1.0, MouseX.kr(0.5,4));
+noise=SMS.ar(in, 10,10, 8, 1.0, MouseX.kr(0.5,4));
 
 Pan2.ar(sines*(hasFreq.lag(0.01,0.01)) + LPF.ar(noise,MouseY.kr(100,10000,'exponential')),0.0)
 }.play
