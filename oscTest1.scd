@@ -236,3 +236,14 @@ w.layout = VLayout(*ax.collect { |o| HLayout(*o) });
 
 
 
+
+b = NetAddr.new("10.0.0.58", 51700);    // create the NetAddr
+b.sendMsg("/bounce", "motionReset");    // send the application the messa
+
+
+
+b = NetAddr.new("10.0.0.57", 51700);    // create the NetAddr
+b.sendMsg("/bounce", "motionReset");    // send the application the messa
+b
+b.port.asString
+b.ip.class

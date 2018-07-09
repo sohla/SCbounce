@@ -25,7 +25,8 @@ var ptn = Array.fill(16,{|i|i=90.rrand(65).asAscii});
 Pdef(ptn,
 	Pbind(
 //        \degree, Pseq([0,2,4,6,8,7,5,3,1], inf),
-        \degree, Pseq([0,1,2,0,2,0,2,1,2,3,3,2,1,3,2,3,4,2,4,2,4,3,4,5,5,4,3,5,4,0,1,2,3,4,5,5,1,2,3,4,5,6,6,2,3,4,5,6,7,6,5,5,3,6,4,7,4,3,1], inf),
+        //\degree, Pseq([0,1,2,0,2,0,2,1,2,3,3,2,1,3,2,3,4,2,4,2,4,3,4,5,5,4,3,5,4,0,1,2,3,4,5,5,1,2,3,4,5,6,6,2,3,4,5,6,7,6,5,5,3,6,4,7,4,3,1], inf),
+		\note, Prand([0,2,5,7,9],inf),
 		\args, #[],
 		\amp, Pexprand(0.1,0.4,inf),
 		\pan, Pwhite(-0.8,0.8,inf)
@@ -65,9 +66,9 @@ Pdef(ptn,
 		Pdef(ptn).set(\sustain,0.27);
 		Pdef(ptn).set(\release,0.92);
 
-		// // Pdef(ptn).set(\type,\midi);
-		// // Pdef(ptn).set(\midiout,mo);
-		// Pdef(ptn).set(\chan,0);
+		// Pdef(ptn).set(\type,\midi);
+		// Pdef(ptn).set(\midiout,mo);
+		// Pdef(ptn).set(\chan,2);
 
 		Pdef(ptn).play;
 	};

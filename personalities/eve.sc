@@ -35,8 +35,8 @@ Pdef(ptn,
 	Pbind(
 //        \degree, Pseq([0,2,4,6,8,7,5,3,1], inf),
 //        \degree, Pseq([0,2,4,6,8,7,5,3,1,0,1,2,3,4,5,6,7,6,7,5,6,4,5,3,4,2,3,1,2,0,1,5,4,2,4,3,1,3,2,0,1,7,6,0,5,4,0,3,2,0,1,1,1], inf),
-		//\note, Prand([0,3,6,9],inf),	
-		\note,  PSaw(4, 10, PLFTri(0.1,24,12)),	
+		\note, Prand([0,2,4,6,8,10],inf),	
+		//\note,  PSaw(4, 10, PLFTri(0.1,24,12)),	
 		\args, #[]
 //		\amp, Pexprand(0.1,0.4,inf),
 //		\pan, Pwhite(-0.8,0.0,inf)
@@ -98,7 +98,7 @@ Pdef(ptn,
 		if(up.isPositive,{
 			d.rrateMass = ~tween.(d.rrateEvent.sumabs,d.rrateMass,0.75);
 		},{
-			d.rrateMass = ~tween.(d.rrateEvent.sumabs,d.rrateMass,0.15);
+			d.rrateMass = ~tween.(d.rrateEvent.sumabs,d.rrateMass,0.35);
 		});
 
 		d.accelMass = ~tween.(d.accelEvent.sumabs,d.accelMass,0.7);
@@ -106,7 +106,7 @@ Pdef(ptn,
 
 		Pdef(ptn).set(\octave,3+(((d.gyroEvent.yaw / pi) + 0.5) * 4).floor);
 
-		Pdef(ptn).set(\dur,(1 / (1 + d.accelMass.floor.squared)) * 0.125);
+		Pdef(ptn).set(\dur,(1 / (1 + d.accelMass.floor.squared)) * 1);
 
 		if(bufavg  < 0.2,{
 			Pdef(ptn).set(\amp,0.0);
@@ -163,7 +163,8 @@ Pdef(ptn,
 		// bs = buffer.sum / (buffer.size-1); 
 		// (bs >= bufavg).if({up= 0.5},{up= -0.5});
 		// bufavg = bs; 
-		bufavg = reitu
+		bufavg = release.linlin(0,1,0,5).round * 0.19;
+
 		
 		// bs = buffer.mean;
 

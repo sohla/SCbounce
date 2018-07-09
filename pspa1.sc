@@ -1,16 +1,26 @@
 (
 x = {
-    var in = SoundIn.ar(0);
-    PitchShiftPA.ar(
+    var in = SoundIn.ar(7);
+    
+    var ps = PitchShiftPA.ar(
         in,
         Lag.kr(Pitch.kr(in)[0],0.2), //pitch tracking - we take just the frequency
-        1,//MouseX.kr(0.5, 2), //pitchRatio
+        MouseX.kr(0.5, 2), //pitchRatio
         MouseY.kr(0.5, 2), //formantRatio
-    )!2
+    );
+
+    Out.ar(0,in+ps!2);    
 }.play
 )
 x.free;
 
+s.meter
+
+o = Server.local.options;
+o.numOutputBusChannels = 14; 
+o.numInputBusChannels = 8;
+s.reboot;
+Delay
 Quarks.gui
 
 d=Buffer.read(s,PathName.new("~/Music/SCSamples/inMemoryKidsStories2.wav").asAbsolutePath);

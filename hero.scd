@@ -11,13 +11,13 @@ SynthDef("help-Diskout", {arg bufnum;
 	DiskOut.ar(bufnum, In.ar(0,2));
 }).send(s);
 
-SynthDef(\warp, {arg buffer = 0, envbuf = -1, ws = 0.5, pch = 1.0;
+SynthDef(\warp, {arg buffer = 0, envbuf = -1, ws = 0.5, pch = 1.0, len = 1;
 	var pos;
 	var mx=0,my=0;
 	var sp,verb;
 	var splayCount = 8;
 
-	mx = LFSaw.kr( (1.0/(30.0)) * MouseX.kr(0.01, 1.0) ,1,0.5,0.5);
+	mx = LFSaw.kr( (1.0/(len)) * MouseX.kr(0.01, 1.0) ,1,0.5,0.5);
 
 	my = MouseY.kr(0.001,1.0,1.0);//splay
 
@@ -41,16 +41,14 @@ FreqScope.new(1300, 200, 0);
 
 
 
-p = ("~/Music/SCSamples/light_wind.wav").standardizePath;
-p = ("~/Music/SCSamples/lassem_ria2.wav").standardizePath;
-p = ("~/Music/SCSamples/kidsSong.wav").standardizePath;
+q = ("~/Music/SCSamples/iAmWatchingYou.wav").standardizePath;
+d = Buffer.read(s, q);
+p = ("~/Music/SCSamples/meow2.wav").standardizePath;
 c = Buffer.read(s, p);
 
-z = Synth(\warp,[\buffer,c,\ws,0.3,\pch,(70).midicps / 435.0]); 
-z = Synth(\warp,[\buffer,c,\ws,0.3,\pch,(58).midicps / 435.0]);
-z = Synth(\warp,[\buffer,c,\ws,0.3,\pch,(82).midicps / 435.0]);
-z = Synth(\warp,[\buffer,c,\ws,0.3,\pch,(46).midicps / 435.0]);
-
+x = Synth(\warp,[\buffer,c,\ws,0.3,\pch,(57).midicps / 435.0, \len,10]); 
+z = Synth(\warp,[\buffer,d,\ws,0.3,\pch,(60).midicps / 435.0, \len, 2]);
+z.free
 
 
 

@@ -29,7 +29,8 @@ SynthDef(\help_dwgplucked, { |out=0, freq=440, amp=0.5, gate=1, c3=20, pan=0, po
 Pdef(ptn,
 	Pbind(
 //        \degree, Pseq([7,8,2,4,3,1,2,2], inf),
-        \degree, Pseq([0,1,2,3,4,5,6,7], inf),
+        //\degree, Pseq([0,1,2,3,4,5,6,7], inf),
+		\note, Prand([0,2,5,7,9],inf),
 //        \degree, Pseq([0,4,2,7,1,2,3,5], inf),
 		\args, #[],
 		\amp, Pexprand(0.1,0.4,inf),
@@ -66,9 +67,9 @@ Pdef(ptn,
 		Pdef(ptn).set(\legato,10);
 		Pdef(ptn).set(\instrument,\help_dwgplucked);
 
-		// Pdef(ptn).set(\type,\midi);
-		// Pdef(ptn).set(\midiout,mo);
-		// Pdef(ptn).set(\chan,1);
+		Pdef(ptn).set(\type,\midi);
+		Pdef(ptn).set(\midiout,mo);
+		Pdef(ptn).set(\chan,2);
 
 		Pdef(ptn).play;
 	};
