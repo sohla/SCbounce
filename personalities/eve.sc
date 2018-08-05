@@ -35,7 +35,7 @@ Pdef(ptn,
 	Pbind(
 //        \degree, Pseq([0,2,4,6,8,7,5,3,1], inf),
 //        \degree, Pseq([0,2,4,6,8,7,5,3,1,0,1,2,3,4,5,6,7,6,7,5,6,4,5,3,4,2,3,1,2,0,1,5,4,2,4,3,1,3,2,0,1,7,6,0,5,4,0,3,2,0,1,1,1], inf),
-		\note, Prand([0,2,4,6,8,10],inf),	
+		\note, Prand([0,1,2,3,4,5,6,7],inf),	
 		//\note,  PSaw(4, 10, PLFTri(0.1,24,12)),	
 		\args, #[]
 //		\amp, Pexprand(0.1,0.4,inf),
@@ -72,15 +72,15 @@ Pdef(ptn,
 
 		Pdef(ptn).set(\instrument,\eveSynth);
 		Pdef(ptn).set(\dur,0.2);
-		Pdef(ptn).set(\octave,5);
+		Pdef(ptn).set(\octave,3);
 
 		Pdef(ptn).set(\attack,0.1);
 		Pdef(ptn).set(\sustain,0.17);
-		Pdef(ptn).set(\release,0.92);
+		Pdef(ptn).set(\release,1.92);
 
-		// Pdef(ptn).set(\type,\midi);
-		// Pdef(ptn).set(\midiout,mo);
-		// Pdef(ptn).set(\chan,2);
+		Pdef(ptn).set(\type,\midi);
+		Pdef(ptn).set(\midiout,mo);
+		Pdef(ptn).set(\chan,2);
 
 		Pdef(ptn).play;
 
@@ -104,9 +104,9 @@ Pdef(ptn,
 		d.accelMass = ~tween.(d.accelEvent.sumabs,d.accelMass,0.7);
 		d.gyroMass = ~tween.(d.gyroEvent.sumabs,d.gyroMass,0.7);
 
-		Pdef(ptn).set(\octave,3+(((d.gyroEvent.yaw / pi) + 0.5) * 4).floor);
+		//Pdef(ptn).set(\octave,3+(((d.gyroEvent.yaw / pi) + 0.5) * 4).floor);
 
-		Pdef(ptn).set(\dur,(1 / (1 + d.accelMass.floor.squared)) * 1);
+		Pdef(ptn).set(\dur,(1 / (1 + d.accelMass.floor.squared)));
 
 		if(bufavg  < 0.2,{
 			Pdef(ptn).set(\amp,0.0);

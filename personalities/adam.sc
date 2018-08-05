@@ -26,7 +26,7 @@ Pdef(ptn,
 	Pbind(
 //        \degree, Pseq([0,2,4,6,8,7,5,3,1], inf),
         //\degree, Pseq([0,1,2,0,2,0,2,1,2,3,3,2,1,3,2,3,4,2,4,2,4,3,4,5,5,4,3,5,4,0,1,2,3,4,5,5,1,2,3,4,5,6,6,2,3,4,5,6,7,6,5,5,3,6,4,7,4,3,1], inf),
-		\note, Prand([0,2,5,7,9],inf),
+		\note, Prand([0,1,2,3,4,5,6,7],inf),
 		\args, #[],
 		\amp, Pexprand(0.1,0.4,inf),
 		\pan, Pwhite(-0.8,0.8,inf)
@@ -60,15 +60,15 @@ Pdef(ptn,
 
 		Pdef(ptn).set(\instrument,\adamSynth);
 		Pdef(ptn).set(\dur,0.2);
-		Pdef(ptn).set(\octave,5);
+		Pdef(ptn).set(\octave,3);
 
 		Pdef(ptn).set(\attack,0.001);
 		Pdef(ptn).set(\sustain,0.27);
 		Pdef(ptn).set(\release,0.92);
 
-		// Pdef(ptn).set(\type,\midi);
-		// Pdef(ptn).set(\midiout,mo);
-		// Pdef(ptn).set(\chan,2);
+		Pdef(ptn).set(\type,\midi);
+		Pdef(ptn).set(\midiout,mo);
+		Pdef(ptn).set(\chan,2);
 
 		Pdef(ptn).play;
 	};
@@ -113,15 +113,18 @@ Pdef(ptn,
 		
 		// if(Pdef(ptn).isPlaying, {
 
-		Pdef(ptn).set(\octave,(5+d.rrateMass.half.ceil));
+		//Pdef(ptn).set(\octave,(5+d.rrateMass.half.ceil));
 
 			Pdef(ptn).set(\attack,(1.0 + d.rrateEvent.sumabs).pow(4).reciprocal);
 
-		 	Pdef(ptn).set(\dur,Array.geom(8, 1, 2).at((d.rrateEvent.sumabs.sqrt.half).floor).twice.reciprocal);
+		 	//Pdef(ptn).set(\dur,Array.geom(5, 1, 2).at((d.rrateEvent.sumabs.half.sqrt).floor).twice.reciprocal);
+
+		 	Pdef(ptn).set(\dur, Array.geom(5, 1, 2).at( (d.rrateEvent.sumabs.half.sqrt).floor).reciprocal );
+
+
 		// });
 
 	};
-
 	//------------------------------------------------------------	
 	// cleanup
 	//------------------------------------------------------------	
@@ -147,7 +150,9 @@ Pdef(ptn,
 		//[0,12,24].at(((d.gyroEvent.roll + pi).div(pi.twice/3.0)).floor);
 		//(10 + ((d.gyroEvent.roll + pi)/(pi.twice) * 100));
 		//(0.1 + ((d.gyroEvent.yaw + pi)/(pi.twice) * 10));
-		Array.geom(8, 1, 2).at((d.rrateEvent.sumabs.sqrt.half).floor).twice.reciprocal;
+		//Array.geom(8, 1, 2).at((d.rrateEvent.sumabs.sqrt.half).floor).twice.reciprocal;
+		Array.geom(5, 1, 2).at( (d.rrateEvent.sumabs.half.sqrt).floor).reciprocal;
+		//(d.rrateEvent.sumabs.half.sqrt).floor.postln;
 	};
 	
 

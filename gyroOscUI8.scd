@@ -42,7 +42,7 @@
 
 		    // data
 			var deviceProto = (
-				\name: "eve",
+				\name: "adam",
 				\ip: "127.0.0.1",
 				\port: 0101,
 				\gyroEvent: (\pitch:0,\roll:0,\yaw:0),
