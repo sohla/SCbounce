@@ -1,17 +1,19 @@
 (
 x = {
-    var in = SoundIn.ar(7);
+    var in = SoundIn.ar(0);
     
     var ps = PitchShiftPA.ar(
         in,
-        Lag.kr(Pitch.kr(in)[0],0.2), //pitch tracking - we take just the frequency
-        MouseX.kr(0.5, 2), //pitchRatio
-        MouseY.kr(0.5, 2), //formantRatio
+        20,//Lag.kr(Pitch.kr(in)[0],0.05), //pitch tracking - we take just the frequency
+        1,//MouseX.kr(0.5, 2), //pitchRatio
+        Lag.kr(MouseY.kr(0.5, 1.5),0.1), //formantRatio
     );
 
-    Out.ar(0,in+ps!2);    
-}.play
+    Out.ar(0,(in*0.2)+ps!2);    
+}
 )
+
+x.play;
 x.free;
 
 s.meter
@@ -38,8 +40,8 @@ d=Buffer.read(s,PathName.new("~/Music/VoiceLab/templateQuestions/5.whatchallenge
    var max = 1.8;
 
 
-    in=PlayBuf.ar(1,d,BufRateScale.kr(d),1,0,1);
-	//in = SoundIn.ar(0);
+  //  in=PlayBuf.ar(1,d,BufRateScale.kr(d),1,0,1);
+	in = SoundIn.ar(0);
 	sms = SMS.ar(in, 50,50, 1.0,0.1, MouseX.kr(min, max));
 
     output=PitchShiftPA.ar(
@@ -72,8 +74,8 @@ Sum
 
 var in, fft, sines, noise, freq, hasFreq;
 
-//in= SoundIn.ar(0);
-in=PlayBuf.ar(1,d,BufRateScale.kr(d),1,0,1);
+in= SoundIn.ar(0);
+//in=PlayBuf.ar(1,d,BufRateScale.kr(d),1,0,1);
 
 hasFreq= Pitch.kr(in);
 
