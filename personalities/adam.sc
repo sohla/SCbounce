@@ -119,7 +119,7 @@ Pdef(ptn,
 
 		 	//Pdef(ptn).set(\dur,Array.geom(5, 1, 2).at((d.rrateEvent.sumabs.half.sqrt).floor).twice.reciprocal);
 
-		 	Pdef(ptn).set(\dur, Array.geom(5, 1, 2).at( (d.rrateEvent.sumabs.half.sqrt).floor).reciprocal );
+		 	Pdef(ptn).set(\dur, Array.geom(5, 1, 2).at( (d.rrateEvent.sumabs.sqrt).floor).reciprocal );
 
 
 		// });
@@ -151,8 +151,10 @@ Pdef(ptn,
 		//(10 + ((d.gyroEvent.roll + pi)/(pi.twice) * 100));
 		//(0.1 + ((d.gyroEvent.yaw + pi)/(pi.twice) * 10));
 		//Array.geom(8, 1, 2).at((d.rrateEvent.sumabs.sqrt.half).floor).twice.reciprocal;
-		Array.geom(5, 1, 2).at( (d.rrateEvent.sumabs.half.sqrt).floor).reciprocal;
+		Array.geom(5, 1, 2).at( (d.rrateEvent.sumabs.half.sqrt).floor).twice.reciprocal;
 		//(d.rrateEvent.sumabs.half.sqrt).floor.postln;
+
+		d.rrateMass;
 	};
 	
 
