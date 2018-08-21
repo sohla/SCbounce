@@ -1,4 +1,3 @@
-
 		(
 
 			var devicesDir = "~/Develop/SuperCollider/Projects/SCbounce/personalities/";

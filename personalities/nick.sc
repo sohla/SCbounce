@@ -9,7 +9,7 @@ var synth;
 //------------------------------------------------------------	
 
 (
-	SynthDef(\nickSynth, { |out=0, freq=240, gate=1, amp=0.3, pan=0.0, attack=0.01, sustain=0.5, release=1.3|
+	SynthDef(\adamSynth, { |out=0, freq=240, gate=1, amp=0.3, pan=0.0, attack=0.01, sustain=0.5, release=1.3|
 	var env = EnvGen.kr(Env.adsr(attack, sustain, sustain, release), gate, doneAction:2);
 	var sig = SinOsc.ar(freq,0,1.0)!2;
 	var verb = FreeVerb2.ar(sig[0],sig[1],0.3 ,500);
@@ -106,7 +106,7 @@ Pdef(ptn,
 				Pdef(ptn).set(\dur,d.rrateMass);
 
 				synth.set(\freq,200 + (smooth*700));
-				synth.set(\amp,smooth);
+				synth.set(\amp,smooth*2);
 
 		//Pdef(ptn).set(\attack,(1.0 + d.rrateEvent.sumabs).pow(4).reciprocal);
 
