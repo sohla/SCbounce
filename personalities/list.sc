@@ -1,0 +1,9 @@
+(
+	[
+		"adam",
+		"george",
+		"harry",
+		"susan",
+		"eve"
+	]
+)

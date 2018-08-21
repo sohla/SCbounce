@@ -1,13 +1,20 @@
 
 		(
+
+			var devicesDir = "~/Develop/SuperCollider/Projects/SCbounce/personalities/";
+			var dataPath = "~/Develop/SuperCollider/Projects/SCbounce/data/";
+
+			var loadDeviceList;
+
+			var names;// = ["adam","george","harry","susan","eve"];
+			//var faces = ["🦆","🦊","🐴","🐯","🍎"];
+
+
 		    var width = Window.screenBounds.width, height = Window.screenBounds.height ;
 			var startup, shutdown, buildUI;
 
 			var contentView = View().background_(Color.grey(0.2));
 
-			var names = ["adam","george","harry","susan","eve"];
-			var faces = ["🦆","🦊","🐴","🐯","🍎"];
-			var possibleNames = names.copy;
 
 			var reloadButton;
 			var stackButton;
@@ -35,7 +42,6 @@
 
 			var dataSizes = [100,200,300,400];
 			var dataSize = dataSizes[0];
-			var dataPath = "~/Develop/SuperCollider/Projects/SCbounce/data/";
 
 			var midiOut;
 
@@ -76,10 +82,19 @@
 		//------------------------------------------------------------	
 		// 
 		//------------------------------------------------------------	
+		loadDeviceList = {
 
+			var path = PathName.new(devicesDir++"list.sc");
+			var file = File.new(path.asAbsolutePath,"r");
+			var str = file.readAllString;
+
+			interpret(str)
+		};
+
+		//------------------------------------------------------------	
 		loadPersonality = {|name|
 
-			var path = PathName.new("~/Develop/SuperCollider/Projects/SCbounce/personalities/"++name++".sc");
+			var path = PathName.new(devicesDir++name++".sc");
 			var file = File.new(path.asAbsolutePath,"r");
 			var str = file.readAllString;
 
@@ -126,7 +141,7 @@
 		
 		startup = {
 
-
+			names = loadDeviceList.();
 		};
 
 		//------------------------------------------------------------	
@@ -156,9 +171,6 @@
 			
 			d.ip = ip;
 
-			// hack : choose from a possible list : list is not kept or updated
-			// use only for adding of device (ie. reloading not supported)
-			//d.name = possibleNames.remove(possibleNames.choose);
 
 			devices.put(ip,d);
 			
@@ -169,6 +181,7 @@
 		};
 
 		reloadDevice = { |d|
+
 
 			// stop personality
 
@@ -250,6 +263,7 @@
 			var va,vb,vc;
 			var stackView, stackLayout;
 			var dataSizeMenu;
+			var popup;
 
 			header = View(view).layout_( HLayout(
 				
@@ -286,11 +300,16 @@
 					])
 					.action_({|b|
 						reloadDevice.(d);
+						
+						// load the list again allows us to make changes
+						names = loadDeviceList.();
+						popup.items = names;
+
 					}),
 
-				PopUpMenu(view)
+				popup = PopUpMenu(view)
 						.minWidth_(160)
-						.items_(names.collect{|o,i|faces[i]+o})
+						.items_(names)
 						.valueAction_(names.find([d.name]))
 						.action_({|b|
 							d.name = names.at(b.value);
