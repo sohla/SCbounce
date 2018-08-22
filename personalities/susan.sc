@@ -25,7 +25,8 @@ SynthDef(\harpsichord1, { arg out = 0, freq = 440, amp = 0.1, pan = 0, rls = 0.5
 
 Pdef(ptn,
 	Pbind(
-        \degree, Pseq([[0,4,8],[3,8,11],[2,5,9]], inf),
+//         \degree, Pseq([[0,4,8],[3,8,11],[2,5,9],[0,5,12],[2,7,10]], inf),
+        \degree, Pseq([[0,4,7],[4,7,10],[-4,0,3]], inf),
 		\args, #[],
 		//\dur,Pseq(#[1.0,0.5,0.5],inf),
 		\amp, Pexprand(0.1,0.4,inf),
@@ -65,7 +66,7 @@ Pdef(ptn,
 
 		Pdef(ptn).set(\type,\midi);
 		Pdef(ptn).set(\midiout,mo);
-		Pdef(ptn).set(\chan,3);
+		Pdef(ptn).set(\chan,4);
 
 		Pdef(ptn).play;
 	};
@@ -80,17 +81,17 @@ Pdef(ptn,
 
 		d.rrateMass = ~tween.(d.rrateEvent.sumabs.half / pi,d.rrateMass,0.9);
 
-		if(d.rrateMass < 0.06,{
+		if(d.rrateMass < 0.1,{
 			Pdef(ptn).pause;
 		},{
 			if(Pdef(ptn).isPlaying.not,{Pdef(ptn).resume});
 		});
 		
-		val = (3+d.rrateMass.ceil);
+		val = (2+d.rrateMass.ceil);
 		Pdef(ptn).set(\octave,val);
 		
-		val = Array.geom(8, 1, 2).at((d.rrateEvent.sumabs.sqrt).floor).reciprocal;
-		Pdef(ptn).set(\dur,val);
+		// val = Array.geom(8, 1, 2).at((d.rrateEvent.sumabs.sqrt).floor).reciprocal;
+		// Pdef(ptn).set(\dur,val);
 
 		val = pi - d.rrateMass;
 		Pdef(ptn).set(\rls,val);

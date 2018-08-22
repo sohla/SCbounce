@@ -70,8 +70,8 @@ Pdef(ptn,
 			if(moving == false,{
 				moving = true;
 
-				midiOut.noteOff(midiChannel, 60 + note -24, 100);
-				midiOut.noteOn(3, 60 + note -24, 100);
+				midiOut.noteOff(midiChannel, 60 + note -12, 70);
+				midiOut.noteOn(3, 60 + note -12, 100);
 				Pdef(ptn).play();
 			});
 
@@ -81,8 +81,8 @@ Pdef(ptn,
 			if(moving == true,{
 				moving = false;
 				Pdef(ptn).stop;
-				midiOut.noteOn(midiChannel, 60 + note -24, 100);
-				midiOut.noteOff(3, 60 + note -24, 100);
+				midiOut.noteOn(midiChannel, 60 + note -12, 70);
+				midiOut.noteOff(3, 60 + note -12, 100);
 				notes = notes.rotate(-1);
 				note = notes[0];
 			});

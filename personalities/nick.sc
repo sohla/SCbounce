@@ -36,7 +36,7 @@ var note = notes[0];
 		d.rrateMass = (2.pow(d.rrateEvent.sumabs.div(2.0)).reciprocal).max(0.125*0.5);
 		smooth = ~tween.(d.rrateEvent.sumabs * 0.1,smooth,0.5);
 
-		if(d.accelMass > 0.03,{
+		if(d.accelMass > 0.1,{
 			if(moving == false,{
 				moving = true;
 			"YES".postln;
