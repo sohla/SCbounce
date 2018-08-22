@@ -80,8 +80,8 @@
 
 		//------------------------------------------------------------	
 		// 
-		//------------------------------------------------------------	
-		loadDeviceList = {
+		//------------------------------------------------------------
+			loadDeviceList = {
 
 			var path = PathName.new(devicesDir++"list.sc");
 			var file = File.new(path.asAbsolutePath,"r");
@@ -303,6 +303,7 @@
 						// load the list again allows us to make changes
 						names = loadDeviceList.();
 						popup.items = names;
+						popup.valueAction = names.find([d.name]);
 
 					}),
 

@@ -5,6 +5,12 @@ var ptn = Array.fill(16,{|i|i=90.rrand(65).asAscii});
 var smooth = 0;
 var synth;
 
+var notes = [0,5,8];
+var note = notes[0];
+
+var moving = false;
+var midiOut;
+var midiChannel = 0;
 
 //------------------------------------------------------------	
 // PATTERN DEF
@@ -12,7 +18,7 @@ var synth;
 
 Pdef(ptn,
 	Pbind(
-		\note, Prand([0,2,7],inf),
+		\note, Prand([0,2,[4,7]],inf),
 		\args, #[],
 		\amp, Pexprand(0.1,0.4,inf),
 		\pan, Pwhite(-0.8,0.8,inf)
@@ -44,7 +50,10 @@ Pdef(ptn,
 
 		Pdef(ptn).set(\type,\midi);
 		Pdef(ptn).set(\midiout,mo);
-		Pdef(ptn).set(\chan,0);
+		Pdef(ptn).set(\chan,midiChannel);
+
+			midiOut = mo;
+	
 	};
 
 	//------------------------------------------------------------	
@@ -56,23 +65,33 @@ Pdef(ptn,
 		d.rrateMass = (2.pow(d.rrateEvent.sumabs.div(2.0)).reciprocal).max(0.125*0.5);
 		smooth = ~tween.(d.rrateEvent.sumabs * 0.1,smooth,0.5);
 
-		if(smooth < 0.05,{
-			Pdef(ptn).stop;
-			//Pdef(ptn).set(\dur,0.125*0.5);
-		},{
-			if(Pdef(ptn).isPlaying.not,{
+		if(smooth > 0.05,{
 
-				// Pdef(ptn).asStream.next().play();
+			if(moving == false,{
+				moving = true;
+
+				midiOut.noteOff(midiChannel, 60 + note -24, 100);
+				midiOut.noteOn(3, 60 + note -24, 100);
 				Pdef(ptn).play();
-
 			});
+
+			midiOut.control(midiChannel, 1, (smooth*127).asInteger );
+		},{
+
+			if(moving == true,{
+				moving = false;
+				Pdef(ptn).stop;
+				midiOut.noteOn(midiChannel, 60 + note -24, 100);
+				midiOut.noteOff(3, 60 + note -24, 100);
+				notes = notes.rotate(-1);
+				note = notes[0];
+			});
+
 		});
 
-	  	if(Pdef(ptn).isPlaying, {
 
-		 });
-
-		Pdef(ptn).set(\octave,5 + (smooth * 3).floor);
+		Pdef(ptn).set(\octave,4 + (smooth * 2).floor);
+		Pdef(ptn).set(\root,note);
 		Pdef(ptn).set(\dur,d.rrateMass);
 
 
@@ -92,6 +111,9 @@ Pdef(ptn,
 
 		"deinit ADAM".postln;
 		Pdef(ptn).stop;
+
+		midiOut.allNotesOff(midiChannel);
+		midiOut.allNotesOff(3);
 	};
 
 	//------------------------------------------------------------	

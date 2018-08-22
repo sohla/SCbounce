@@ -31,7 +31,6 @@ var note = notes[0];
 	// do all the work(logic) taking data in and playing pattern/synth
 	//------------------------------------------------------------	
 	~next = {|d| 
-		
 
 		d.rrateMass = (2.pow(d.rrateEvent.sumabs.div(2.0)).reciprocal).max(0.125*0.5);
 		smooth = ~tween.(d.rrateEvent.sumabs * 0.1,smooth,0.5);
@@ -45,9 +44,6 @@ var note = notes[0];
 			});
 
 			midiOut.control(midiChannel, 1, (smooth*127).asInteger );
-
-			
-
 		},{
 
 			if(moving == true,{
@@ -58,10 +54,6 @@ var note = notes[0];
 			});
 
 		});
-
-		//(smooth*127).asInteger.postln;
-
-
 	};
 
 	//------------------------------------------------------------	

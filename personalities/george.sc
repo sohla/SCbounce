@@ -11,7 +11,7 @@ var synth;
 (
 	SynthDef(\gSynth, { |out=0, freq=240, gate=1, amp=0.3, pan=0.0, attack=0.01, sustain=0.5, release=1.3|
 	var env = EnvGen.kr(Env.adsr(attack, sustain, sustain, release), gate, doneAction:2);
-	var sig = Saw.ar(freq,1.0)!2;
+	var sig = SinOsc.ar(freq,1.0)!2;
 	//var verb = FreeVerb2.ar(sig[0],sig[1],0.3 ,500);
 	Out.ar(out, Pan2.ar(sig, pan, env * amp));
 }).add;
@@ -85,7 +85,9 @@ Pdef(ptn,
 //		d.rrateMass = ~tween.(d.rrateEvent.sumabs.half.half.half,d.rrateMass,0.2);
 
 		d.rrateMass = (2.pow(d.rrateEvent.sumabs.div(2.0)).reciprocal).max(0.125);
-		smooth = ~tween.(d.rrateEvent.sumabs * 0.1,smooth,0.05);
+		smooth = ~tween.(d.rrateEvent.sumabs * 0.1,smooth,0.1);
+
+		if(smooth < 0.01,{ smooth = 0});
 
 		// if(smooth < 0.05,{
 		// 	Pdef(ptn).stop;
@@ -105,8 +107,8 @@ Pdef(ptn,
 				Pdef(ptn).set(\octave,5 + (smooth * 3).floor);
 				Pdef(ptn).set(\dur,d.rrateMass);
 
-				synth.set(\freq,200 + (smooth*5000));
-				synth.set(\amp,smooth*0.5);
+				synth.set(\freq,60 + (smooth*300));
+				synth.set(\amp,smooth*0.2);
 
 		//Pdef(ptn).set(\attack,(1.0 + d.rrateEvent.sumabs).pow(4).reciprocal);
 
