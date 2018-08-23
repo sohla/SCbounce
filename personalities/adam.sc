@@ -5,7 +5,7 @@ var ptn = Array.fill(16,{|i|i=90.rrand(65).asAscii});
 var smooth = 0;
 var synth;
 
-var notes = [0,5,8];
+var notes = [0,5,8,3];
 var note = notes[0];
 
 var moving = false;
@@ -61,8 +61,8 @@ Pdef(ptn,
 	//------------------------------------------------------------	
 	~next = {|d| 
 		
-
-		d.rrateMass = (2.pow(d.rrateEvent.sumabs.div(2.0)).reciprocal).max(0.125*0.5);
+		d.accelMass = d.accelEvent.sumabs * 0.1;
+		d.rrateMass = (2.pow(d.rrateEvent.sumabs.div(1.0)).reciprocal).max(0.125*0.5);
 		smooth = ~tween.(d.rrateEvent.sumabs * 0.1,smooth,0.5);
 
 		if(smooth > 0.05,{
@@ -71,7 +71,7 @@ Pdef(ptn,
 				moving = true;
 
 				midiOut.noteOff(midiChannel, 60 + note -12, 70);
-				midiOut.noteOn(3, 60 + note -12, 100);
+				midiOut.noteOn(3, 60 + note -24, 100);
 				Pdef(ptn).play();
 			});
 
@@ -82,7 +82,7 @@ Pdef(ptn,
 				moving = false;
 				Pdef(ptn).stop;
 				midiOut.noteOn(midiChannel, 60 + note -12, 70);
-				midiOut.noteOff(3, 60 + note -12, 100);
+				midiOut.noteOff(3, 60 + note -24, 100);
 				notes = notes.rotate(-1);
 				note = notes[0];
 			});
@@ -90,11 +90,15 @@ Pdef(ptn,
 		});
 
 
+		if(d.accelMass > 0.2,{
+				midiOut.noteOn(midiChannel, 60 + note - 24, 100);
+		},{
+
+			});
+
 		Pdef(ptn).set(\octave,4 + (smooth * 2).floor);
 		Pdef(ptn).set(\root,note);
-		Pdef(ptn).set(\dur,d.rrateMass);
-
-
+		Pdef(ptn).set(\dur,0.2);
 
 	};
 

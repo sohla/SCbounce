@@ -4,7 +4,7 @@ var smooth = 0;
 var moving = false;
 var midiOut;
 var midiChannel = 2;
-var notes = [0,2,7];
+var notes = [0,-12];
 var note = notes[0];
 //------------------------------------------------------------	
 //
@@ -40,7 +40,7 @@ var note = notes[0];
 			if(moving == false,{
 				moving = true;
 
-				midiOut.noteOn(midiChannel, 60 + note -24, 100);
+				midiOut.noteOn(midiChannel, 60 + note -12, 100);
 			});
 
 			midiOut.control(midiChannel, 1, (smooth*127).asInteger );
@@ -48,7 +48,7 @@ var note = notes[0];
 
 			if(moving == true,{
 				moving = false;
-				midiOut.noteOff(midiChannel, 60 + note -24, 100);
+				midiOut.noteOff(midiChannel, 60 + note -12, 100);
 				notes = notes.rotate(-1);
 				note = notes[0];
 			});
