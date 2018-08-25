@@ -572,7 +572,7 @@
 
 				top.transforms = [ 
 					Canvas3D.mScale(0.05,1,0.5),
-					Canvas3D.mTranslate(0,0,0),
+					Canvas3D.mTranslate(1,0,0),
 			        Canvas3D.mRotateX(tr[0]),
 			        Canvas3D.mRotateY(tr[1]),
 			        Canvas3D.mRotateZ(tr[2]),
