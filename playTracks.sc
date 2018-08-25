@@ -47,7 +47,7 @@
 						e.atAll(g).postln;
 
 					};
-					10.0.yield;
+					82.0.yield;
 					fadeOut.start;
 					2.0.yield;
 					sendFunc.();
