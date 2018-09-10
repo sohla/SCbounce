@@ -3,7 +3,9 @@
 //[ Built-in Microph, Built-in Output, QU-24 Audio, Soundflower (2ch), Soundflower (64ch), Multi-Output Device, CARehearsal ]
 
 ServerOptions.devices
+
 ServerOptions.devices.indexOfEqual("QU-24 Audio");
+ServerOptions.devices.indexOfEqual("PreSonus AudioBox iOne");
 
 o = Server.local.options;
 o.inDevice = ServerOptions.devices[2];
@@ -14,6 +16,8 @@ s.reboot
 s.quit
 s.boot
 )
+
+ NetAddr.langPort
 
 ServerOptions.devices.indexOfEqual("MOTU UltraLite");
 (
