@@ -6,6 +6,7 @@ var midiOut;
 var midiChannel = 2;
 var notes = [0,-12];
 var note = notes[0];
+var isHit = false;
 //------------------------------------------------------------	
 //
 //------------------------------------------------------------	
@@ -31,9 +32,26 @@ var note = notes[0];
 	// do all the work(logic) taking data in and playing pattern/synth
 	//------------------------------------------------------------	
 	~next = {|d| 
-
+		
+		d.accelMass = d.accelEvent.sumabs * 0.1;
 		d.rrateMass = (2.pow(d.rrateEvent.sumabs.div(2.0)).reciprocal).max(0.125*0.5);
 		smooth = ~tween.(d.rrateEvent.sumabs * 0.1,smooth,0.5);
+
+		if(d.accelMass > 0.05,{
+
+			if(isHit == false,{
+				var n = [0,2,5,4].choose + 24;
+				midiOut.noteOn(1, 60+note+n, 120);
+				{midiOut.noteOff(1, 60+note+n, 120)}.defer(0.5);
+
+				isHit = true;
+
+			});
+
+		},{
+			isHit = false;
+		});
+
 
 		if(smooth > 0.05,{
 
@@ -59,7 +77,10 @@ var note = notes[0];
 	//------------------------------------------------------------	
 
 	~plot = { |d,p|
+
 		[d.rrateMass,smooth];
+
+
 	};
 
 	//------------------------------------------------------------	
