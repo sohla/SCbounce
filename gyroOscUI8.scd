@@ -265,7 +265,7 @@
 			var popup;
 			var createGraphs = {
 
-				createPlotterGroup.(vc, Rect(750,0,500,250), [
+				createPlotterGroup.(vc, Rect(650,0,400,250), [
 					// ["a",[Color.red,Color.green,Color.blue],{|p| [d.gyroEvent.pitch,d.gyroEvent.roll,d.gyroEvent.yaw]}]
 
 					["pitch",Color.red,{|p| d.gyroEvent.pitch }],
@@ -273,32 +273,34 @@
 					["yaw",Color.blue,{|p| d.gyroEvent.yaw }]
 				],-pi,pi);
 
-				createPlotterGroup.(vb, Rect(750,0,500,250), [
+				createPlotterGroup.(vb, Rect(650,0,400,250), [
 					["aaccelX",Color.cyan,{|p| d.accelEvent.x }],
 					["accelY",Color.magenta,{|p| d.accelEvent.y }],
 					["accelZ",Color.yellow,{|p| d.accelEvent.z }]
 				],-2,2);
 
-				createPlotterGroup.(va, Rect(750,0,500,250), [
+				createPlotterGroup.(va, Rect(650,0,400,250), [
 					["rrateX",Color.cyan,{|p| d.rrateEvent.x }],
 					["rrateY",Color.magenta,{|p| d.rrateEvent.y }],
 					["rrateZ",Color.yellow,{|p| d.rrateEvent.z }]
 				],-6,6);
 
-				createPlotterGroup.(va, Rect(250,0,600,250), [
+				createPlotterGroup.(va, Rect(250,0,400,250), [
 					["a",[Color.yellow,Color.magenta,Color.cyan],{|p| d.env.use{ ~plot.(d)} }]
 				],-1,1);
 			};
 
 			var removeGraphs = {
-				va.children.postln;
-				//va.children[0].remove;
 				va.children[1].removeAll;
 				va.children[1].remove;
 				va.children[1].removeAll;
 				va.children[1].remove;
-
+				vb.children[1].removeAll;
+				vb.children[1].remove;
+				vc.children[0].removeAll;
+				vc.children[0].remove;
 			};
+
 			header = View(view).layout_( HLayout(
 				
 				stackButton = Button(view)
@@ -397,7 +399,10 @@
 
 			).setAlignment(0,\left).setAlignment(3,\left));
 
-			view.layout.add(stackView = View().background_(Color.yellow).minHeight_(250).layout_( stackLayout = StackLayout(
+			view.layout.add(stackView = View()
+				.background_(Color.yellow)
+				.minHeight_(250)
+				.layout_( stackLayout = StackLayout(
 					va = View().background_(Color.cyan(0.2)),
 					vb = View().background_(Color.blue(0.2)),
 					vc = View().background_(Color.magenta(0.2))
@@ -405,6 +410,18 @@
 				);
 			);	
 
+			// view.layout.add(stackView = View().layout_(
+			// 	HLayout(
+			// 		Knob(),
+			// 		Knob(),
+			// 		Knob(),
+			// 		Knob(),
+			// 		Knob(),
+			// 		Knob(),
+			// 		Knob(),
+			// 		Knob(),
+			// 	);
+			// ));
 
 			createGyroCanvas.(va,d);
 			createAccelCanvas.(vb,d);
@@ -430,18 +447,18 @@
 
 
 				var max = 0;
-				var plotter = Plotter(specs[0], Rect(pw*0.3,ph*i,pw*0.7,ph),plotterView)
+				var plotter = Plotter(specs[0], Rect(pw*0.1,ph*i,pw*0.9,ph),plotterView)
 					.value_((0..dataSize).dup(plotters.size)) //need to init arrays with data
 					.refresh;
 
 
-				var st = StaticText(plotterView,Rect(pw*0.15,ph*i,pw*0.15,ph/2))
+				var st = StaticText(plotterView,Rect(0,ph*i,pw*0.1,ph/2))
 					.string_(specs[0])
 					.align_(\center)
 					.stringColor_(specs[1])
 					.background_(Color.black);
 
-				var su = StaticText(plotterView,Rect(pw*0.15,(ph*i)+(ph/2),pw*0.15,ph/2))
+				var su = StaticText(plotterView,Rect(0,(ph*i)+(ph/2),pw*0.1,ph/2))
 					.string_(max)
 					.align_(\center)
 					.stringColor_(specs[1])
