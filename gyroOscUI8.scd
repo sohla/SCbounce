@@ -42,7 +42,9 @@
 			var dataSizes = [100,200,300,400];
 			var dataSize = dataSizes[0];
 
-			var midiOut;
+			var midiOut, midiController;
+
+			var midiControllers = [];
 
 
 		    // data
@@ -77,6 +79,8 @@
 		MIDIClient.init;
 		MIDIClient.destinations;
 		midiOut = MIDIOut(0).latency_(Server.default.latency);
+		midiController = MIDIOut(2).latency_(Server.default.latency);
+		MIDIIn.connectAll;
 
 		//------------------------------------------------------------	
 		// 
@@ -109,7 +113,6 @@
 				~slope = {|input,history|
 					history - input
 				};
-
 
 
 
@@ -147,6 +150,8 @@
 		// 
 		//------------------------------------------------------------	
 		shutdown = {
+
+			midiControllers.do{|mc|mc.postln;mc.free};
 
 			devices.keysValuesDo({|k,v|
 				v.rout.stop();
@@ -191,6 +196,13 @@
 			// start new personality
 			d.env = loadPersonality.(d.name);
 			d.env.use{ ~init.(midiOut) };
+
+			// reset midi controller ?
+			// 8.do{|i|
+			// 	midiOut.control(0, 81+i, 0 );
+			// 	midiController.control(0, 81+i, 0 )
+			// };
+
 			d.rout = createRout.(d);
 			d.rout.reset.play(AppClock);
 
@@ -251,7 +263,7 @@
 			scroll.canvas = contentView;
 
 			// set this for quick connection to device
-			//addDeviceView.(contentView, addDevice.("127.0.0.1"));
+			addDeviceView.(contentView, addDevice.("127.0.0.1"));
 			//addDeviceView.(contentView, addDevice.("192.168.0.101"));
 
 		};
@@ -265,7 +277,7 @@
 			var popup;
 			var createGraphs = {
 
-				createPlotterGroup.(vc, Rect(650,0,400,250), [
+				createPlotterGroup.(vc, Rect(850,0,400,250), [
 					// ["a",[Color.red,Color.green,Color.blue],{|p| [d.gyroEvent.pitch,d.gyroEvent.roll,d.gyroEvent.yaw]}]
 
 					["pitch",Color.red,{|p| d.gyroEvent.pitch }],
@@ -273,33 +285,62 @@
 					["yaw",Color.blue,{|p| d.gyroEvent.yaw }]
 				],-pi,pi);
 
-				createPlotterGroup.(vb, Rect(650,0,400,250), [
+				createPlotterGroup.(vb, Rect(850,0,400,250), [
 					["aaccelX",Color.cyan,{|p| d.accelEvent.x }],
 					["accelY",Color.magenta,{|p| d.accelEvent.y }],
 					["accelZ",Color.yellow,{|p| d.accelEvent.z }]
 				],-2,2);
 
-				createPlotterGroup.(va, Rect(650,0,400,250), [
+				createPlotterGroup.(va, Rect(850,0,400,250), [
 					["rrateX",Color.cyan,{|p| d.rrateEvent.x }],
 					["rrateY",Color.magenta,{|p| d.rrateEvent.y }],
 					["rrateZ",Color.yellow,{|p| d.rrateEvent.z }]
 				],-6,6);
 
-				createPlotterGroup.(va, Rect(250,0,400,250), [
+				createPlotterGroup.(va, Rect(450,0,400,250), [
 					["a",[Color.yellow,Color.magenta,Color.cyan],{|p| d.env.use{ ~plot.(d)} }]
 				],-1,1);
 			};
 
 			var removeGraphs = {
-				va.children[1].removeAll;
-				va.children[1].remove;
-				va.children[1].removeAll;
-				va.children[1].remove;
+				va.children[2].removeAll;
+				va.children[2].remove;
+				va.children[2].removeAll;
+				va.children[2].remove;
 				vb.children[1].removeAll;
 				vb.children[1].remove;
 				vc.children[0].removeAll;
 				vc.children[0].remove;
 			};
+			var sliders = {|i|
+				Slider()
+				}!8;
+			var sliderView = {|v|
+				UserView(v,Rect(250,0,200,250)).layout_( HLayout(
+					*sliders.collect{|c,i|
+
+						var mc = MIDIFunc.cc({|val, num, chan| 
+							//[c,val, num, chan].postln;
+
+							{
+								c.valueAction_(val/127.0);
+
+								d.env.use{
+									~midiControllerValue.(num,val/127.0);
+								};
+							}.defer(0);
+						},81+i);
+
+						midiControllers = midiControllers.add(mc);	
+
+						c
+					};
+					)
+				);
+
+			};
+
+
 
 			header = View(view).layout_( HLayout(
 				
@@ -393,6 +434,9 @@
 						d.env.use{ ~deinit.() };
 						d.rout.stop;
 
+						// remove midi controller listener
+						midiControllers.do{|mc|mc.postln;mc.free};
+
 						devices.removeAt(d.ip);
 
 					})
@@ -403,26 +447,16 @@
 				.background_(Color.yellow)
 				.minHeight_(250)
 				.layout_( stackLayout = StackLayout(
-					va = View().background_(Color.cyan(0.2)),
+					va = View().background_(Color.grey(0.2)),
 					vb = View().background_(Color.blue(0.2)),
 					vc = View().background_(Color.magenta(0.2))
 					)
 				);
 			);	
 
-			// view.layout.add(stackView = View().layout_(
-			// 	HLayout(
-			// 		Knob(),
-			// 		Knob(),
-			// 		Knob(),
-			// 		Knob(),
-			// 		Knob(),
-			// 		Knob(),
-			// 		Knob(),
-			// 		Knob(),
-			// 	);
-			// ));
 
+
+			sliderView.(va);
 			createGyroCanvas.(va,d);
 			createAccelCanvas.(vb,d);
 

@@ -100,6 +100,12 @@ var isHit = false;
 	~plotMin = 0;
 	~plotMax = 1;
 
+	//------------------------------------------------------------	
+	// midi control
+	//------------------------------------------------------------	
+	~midiControllerValue = {|num,val|
+		[num,val].postln;
+	};
 	
 
 )

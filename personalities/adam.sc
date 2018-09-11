@@ -52,8 +52,10 @@ Pdef(ptn,
 		Pdef(ptn).set(\midiout,mo);
 		Pdef(ptn).set(\chan,midiChannel);
 
-			midiOut = mo;
+		midiOut = mo;
 	
+
+
 	};
 
 	//------------------------------------------------------------	
@@ -128,5 +130,12 @@ Pdef(ptn,
 	~plotMax = 1;
 
 	
+	//------------------------------------------------------------	
+	// midi control
+	//------------------------------------------------------------	
+	~midiControllerValue = {|num,val|
+		[num,val].postln;
+	};
+
 
 )
