@@ -39,13 +39,13 @@ g.elAt(\bt,0,0).valueAction = 0.0
 d = 0;
 {
     loop {
-        0.5.wait;
+        0.01.wait;
         d = d + 0.01;
 		// don't forget to call action
 		g.elAt(\bt,0,0).valueAction = g.elAt(\bt,0,0).value.asBoolean.not.asInt;
         8.do { |i|
-            g.elAt(\kn, 0, i).value_(
-                (d + (i/7)).mod(1.0);
+            g.elAt(\sl, i).value_(
+                (d + (i/8)).mod(1.0);
             );
         };
     }

@@ -83,7 +83,7 @@ var note = notes[0];
 	// midi control
 	//------------------------------------------------------------	
 	~midiControllerValue = {|num,val|
-		[num,val].postln;
+		//[num,val].postln;
 	};
 	
 

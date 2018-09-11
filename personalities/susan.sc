@@ -133,7 +133,7 @@ Pdef(ptn,
 	// midi control
 	//------------------------------------------------------------	
 	~midiControllerValue = {|num,val|
-		[num,val].postln;
+		//[num,val].postln;
 	};
 
 )

@@ -1,4 +1,5 @@
 
+var ptn = Array.fill(16,{|i|i=90.rrand(65).asAscii});
 
 var smooth = 0;
 var moving = false;
@@ -6,8 +7,21 @@ var movingB = false;
 
 var midiOut;
 var midiChannel = 1;
-var notes = [0,2,7,9,11,14];
+var notes = [12,11,7,4,2,9,7];
 var note = notes[0];
+var threshold = 0.7;
+var movement = 0.8;
+//------------------------------------------------------------	
+//
+//------------------------------------------------------------	
+Pdef(ptn,
+	Pbind(
+		\note, Prand([0,2,7,9,11,14],inf),
+		\args, #[],
+		// \amp, 0.8,
+		//\pan, Pwhite(-0.8,0.8,inf)
+));
+
 //------------------------------------------------------------	
 //
 //------------------------------------------------------------	
@@ -26,6 +40,15 @@ var note = notes[0];
 
 		"init NICK".postln;
 
+		Pdef(ptn).set(\dur,0.5);
+		Pdef(ptn).set(\octave,5);
+		Pdef(ptn).set(\amp,0.8);
+
+
+		Pdef(ptn).set(\type,\midi);
+		Pdef(ptn).set(\midiout,mo);
+		Pdef(ptn).set(\chan,midiChannel);
+
 		midiOut = mo;
 	};
 
@@ -36,9 +59,9 @@ var note = notes[0];
 
 		d.accelMass = d.accelEvent.sumabs * 0.1;//~tween.(d.accelEvent.sumabs * 0.1,d.accelMass,0.9);
 		d.rrateMass = (2.pow(d.rrateEvent.sumabs.div(2.0)).reciprocal).max(0.125*0.5);
-		smooth = ~tween.(d.rrateEvent.sumabs * 0.1,smooth,0.5);
+		smooth = ~tween.(d.rrateEvent.sumabs * 0.1 ,smooth,0.5);
 
-		if(d.accelMass > 0.05,{
+		if(d.accelMass > threshold	,{
 			if(moving == false,{
 				moving = true;
 
@@ -52,10 +75,12 @@ var note = notes[0];
 				moving = false;
 				midiOut.noteOff(midiChannel, 60 + note + 24, 100);
 				notes = notes.rotate(-1);
-				note = notes[0];
+				note = notes[0] + 7;
 			});
 
 		});
+		Pdef(ptn).set(\dur,(smooth*24).reciprocal);
+		Pdef(ptn).set(\amp,movement);
 
 
 		if(smooth > 0.1,{
@@ -63,7 +88,7 @@ var note = notes[0];
 			if(movingB == false,{
 				movingB = true;
 
-				midiOut.noteOn(midiChannel, 60 + note , 100);
+				Pdef(ptn).play();
 			});
 
 			//midiOut.control(midiChannel, 1, (smooth*127).asInteger );
@@ -71,9 +96,8 @@ var note = notes[0];
 
 			if(movingB == true,{
 				movingB = false;
-				midiOut.noteOff(midiChannel, 60 + note , 100);
-				notes = notes.rotate(-1);
-				note = notes[0];
+
+				Pdef(ptn).stop();
 			});
 
 		});		
@@ -90,7 +114,7 @@ var note = notes[0];
 	// cleanup
 	//------------------------------------------------------------	
 	~deinit = {
-
+		Pdef(ptn).stop();
 		"deinit NICK".postln;
 		midiOut.allNotesOff(midiChannel);
 
@@ -107,7 +131,11 @@ var note = notes[0];
 	// midi control
 	//------------------------------------------------------------	
 	~midiControllerValue = {|num,val|
-		[num,val].postln;
+		//[num,val].postln;
+
+		if(num == 81,{ threshold = 0.02 + (val * 0.7)});
+		if(num == 82,{ movement = val * 0.8});
+
 	};
 	
 

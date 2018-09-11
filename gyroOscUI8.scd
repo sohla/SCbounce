@@ -2,6 +2,7 @@
 
 			var devicesDir = "~/Develop/SuperCollider/Projects/SCbounce/personalities/";
 			var dataPath = "~/Develop/SuperCollider/Projects/SCbounce/data/";
+			var image = Image.new("~/Develop/SuperCollider/Projects/SCbounce/m-ball_logo_vector600.png".asAbsolutePath);
 
 			var loadDeviceList;
 
@@ -12,7 +13,7 @@
 		    var width = Window.screenBounds.width, height = Window.screenBounds.height ;
 			var startup, shutdown, buildUI;
 
-			var contentView = View().background_(Color.grey(0.2));
+			var contentView = UserView().background_(Color.grey(0.2));
 
 
 			var reloadButton;
@@ -44,7 +45,7 @@
 
 			var midiOut, midiController;
 
-			var midiControllers = [];
+			var midiControllers = []; //hold the sliders and values 
 
 
 		    // data
@@ -62,7 +63,7 @@
 				\ampValue: 0,
 				\env: nil,	// Environment for injected code
 				\rout: nil,	// Routine calls ~next every ~fps
-
+				\enabled: true, // are we running
 				);
 
 
@@ -126,16 +127,18 @@
 		//------------------------------------------------------------	
 		createRout = {|d|
 
-			Routine { 
-				var i=0;
-				loop{ 
-					d.env.use{
-						~next.(d);
-						(~secs.()).yield;
-						i=i+1;
-					};
+			if(d.enabled == true,{
+				Routine { 
+					var i=0;
+					loop{ 
+						d.env.use{
+							~next.(d);
+							(~secs.()).yield;
+							i=i+1;
+						};
+					}
 				}
-			};
+			});
 		};
 		//------------------------------------------------------------	
 		// 
@@ -197,11 +200,6 @@
 			d.env = loadPersonality.(d.name);
 			d.env.use{ ~init.(midiOut) };
 
-			// reset midi controller ?
-			// 8.do{|i|
-			// 	midiOut.control(0, 81+i, 0 );
-			// 	midiController.control(0, 81+i, 0 )
-			// };
 
 			d.rout = createRout.(d);
 			d.rout.reset.play(AppClock);
@@ -223,7 +221,7 @@
 			GUI.skin.plot.background = Color.black;
 			GUI.skin.plot.plotColor = Color.white;
 
-			window = Window("bounce", Rect(0, height, width, height-150), false).front;
+			window = Window("m-ball", Rect(0, height, width, height-150), false).front;
 			window.view.keyDownAction_({|view,char,mods,uni,code,key|
 				if(uni==114,{//r
 					devices.keysValuesDo({|k,v|
@@ -238,6 +236,11 @@
 				});
 				//uni.postln;
 			});
+			contentView.drawFunc = {
+				Pen.scale(1.1,1.1);
+				Pen.drawImage( Point(0,-250), image, operation: 'sourceOver', opacity:0.1);
+
+			};
 
 			window.onClose = {
 				shutdown.();
@@ -250,20 +253,20 @@
 
 		createWindowView = {|view|
 
-			var scroll = ScrollView(view,Rect(0,30,width,height - 150 )).background_(Color.yellow);
+			var scroll = ScrollView(view,Rect(0,30,width,height - 150 ));
 			
 			StaticText(view)
 					.stringColor_(Color.yellow)
 					.font_(Font(size:14))
 					.minHeight_(30)
 					.minWidth_(200)
-					.string_(" :: bounce");
+					.string_(" :: m-ball");
 
 			contentView.layout_(VLayout());
 			scroll.canvas = contentView;
 
 			// set this for quick connection to device
-			addDeviceView.(contentView, addDevice.("127.0.0.1"));
+			//addDeviceView.(contentView, addDevice.("127.0.0.1"));
 			//addDeviceView.(contentView, addDevice.("192.168.0.101"));
 
 		};
@@ -316,7 +319,7 @@
 				Slider()
 				}!8;
 			var sliderView = {|v|
-				UserView(v,Rect(250,0,200,250)).layout_( HLayout(
+				UserView(v,Rect(250,0,200,250)).background_(Color.black).layout_( HLayout(
 					*sliders.collect{|c,i|
 
 						var mc = MIDIFunc.cc({|val, num, chan| 
@@ -343,7 +346,15 @@
 
 
 			header = View(view).layout_( HLayout(
-				
+
+				Button()
+					.maxWidth_(40)
+					.states_([["off",Color.white,Color.red(0.3)],["on",Color.white,Color.green(0.3)]])
+					.valueAction_(1)
+					.action_({|b|
+						d.enabled = b.value.asBoolean;
+						reloadDevice.(d);
+					}),				
 				stackButton = Button(view)
 					.minWidth_(160)
 					.states_([
@@ -441,15 +452,15 @@
 
 					})
 
-			).setAlignment(0,\left).setAlignment(3,\left));
+			).setAlignment(0,\left).setAlignment(1,\left).setAlignment(4,\left));
 
 			view.layout.add(stackView = View()
-				.background_(Color.yellow)
+				//.background_(Color.yellow)
 				.minHeight_(250)
 				.layout_( stackLayout = StackLayout(
-					va = View().background_(Color.grey(0.2)),
-					vb = View().background_(Color.blue(0.2)),
-					vc = View().background_(Color.magenta(0.2))
+					va = View().background_(Color.black),
+					vb = View().background_(Color.black),
+					vc = View().background_(Color.black)
 					)
 				);
 			);	

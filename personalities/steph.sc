@@ -7,6 +7,8 @@ var midiChannel = 2;
 var notes = [0,-12];
 var note = notes[0];
 var isHit = false;
+
+var threshold = 0.7;
 //------------------------------------------------------------	
 //
 //------------------------------------------------------------	
@@ -26,6 +28,7 @@ var isHit = false;
 		"init STEPH".postln;
 
 		midiOut = mo;
+
 	};
 
 	//------------------------------------------------------------	
@@ -37,12 +40,13 @@ var isHit = false;
 		d.rrateMass = (2.pow(d.rrateEvent.sumabs.div(2.0)).reciprocal).max(0.125*0.5);
 		smooth = ~tween.(d.rrateEvent.sumabs * 0.1,smooth,0.5);
 
-		if(d.accelMass > 0.05,{
+		if(d.accelMass > threshold,{
 
 			if(isHit == false,{
-				var n = [0,2,5,4].choose + 24;
+				var n = [0,2,5,4].choose ;
+				// midiOut.control(midiChannel, 2, 0 );
 				midiOut.noteOn(1, 60+note+n, 120);
-				{midiOut.noteOff(1, 60+note+n, 120)}.defer(0.5);
+				{midiOut.noteOff(1, 60+note+n, 0)}.defer(0.04);
 
 				isHit = true;
 
@@ -55,9 +59,10 @@ var isHit = false;
 
 		if(smooth > 0.05,{
 
-			if(moving == false,{
+			if(moving == false && isHit == false,{
 				moving = true;
 
+				// midiOut.control(midiChannel, 2, 70 );
 				midiOut.noteOn(midiChannel, 60 + note -12, 100);
 			});
 
@@ -72,6 +77,9 @@ var isHit = false;
 			});
 
 		});
+
+			midiOut.control(midiChannel, 1, (smooth*127).asInteger );
+
 	};
 
 	//------------------------------------------------------------	
@@ -105,6 +113,9 @@ var isHit = false;
 	//------------------------------------------------------------	
 	~midiControllerValue = {|num,val|
 		[num,val].postln;
+
+		if(num == 81,{ threshold = 0.02 + (val * 0.7)});
+
 	};
 	
 
