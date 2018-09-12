@@ -236,11 +236,11 @@
 				});
 				//uni.postln;
 			});
-			contentView.drawFunc = {
-				Pen.scale(1.1,1.1);
-				Pen.drawImage( Point(0,-250), image, operation: 'sourceOver', opacity:0.1);
+			// contentView.drawFunc = {
+			// 	Pen.scale(1.1,1.1);
+			// 	Pen.drawImage( Point(0,-250), image, operation: 'sourceOver', opacity:0.1);
 
-			};
+			// };
 
 			window.onClose = {
 				shutdown.();
@@ -266,8 +266,9 @@
 			scroll.canvas = contentView;
 
 			// set this for quick connection to device
-			//addDeviceView.(contentView, addDevice.("127.0.0.1"));
-			//addDeviceView.(contentView, addDevice.("192.168.0.101"));
+			addDeviceView.(contentView, addDevice.("127.0.0.1"));
+			addDeviceView.(contentView, addDevice.("192.168.0.101"));
+			addDeviceView.(contentView, addDevice.("192.168.0.102"));
 
 		};
 
@@ -278,9 +279,11 @@
 			var stackView, stackLayout;
 			var dataSizeMenu;
 			var popup;
+			var col = Color.rand(0.1,0.9).alpha_(0.8);
+
 			var createGraphs = {
 
-				createPlotterGroup.(vc, Rect(850,0,400,250), [
+				createPlotterGroup.(vc, Rect(850,5,400,240), col, [
 					// ["a",[Color.red,Color.green,Color.blue],{|p| [d.gyroEvent.pitch,d.gyroEvent.roll,d.gyroEvent.yaw]}]
 
 					["pitch",Color.red,{|p| d.gyroEvent.pitch }],
@@ -288,19 +291,19 @@
 					["yaw",Color.blue,{|p| d.gyroEvent.yaw }]
 				],-pi,pi);
 
-				createPlotterGroup.(vb, Rect(850,0,400,250), [
+				createPlotterGroup.(vb, Rect(850,5,400,240), col, [
 					["aaccelX",Color.cyan,{|p| d.accelEvent.x }],
 					["accelY",Color.magenta,{|p| d.accelEvent.y }],
 					["accelZ",Color.yellow,{|p| d.accelEvent.z }]
 				],-2,2);
 
-				createPlotterGroup.(va, Rect(850,0,400,250), [
+				createPlotterGroup.(va, Rect(850,5,400,240), col, [
 					["rrateX",Color.cyan,{|p| d.rrateEvent.x }],
 					["rrateY",Color.magenta,{|p| d.rrateEvent.y }],
 					["rrateZ",Color.yellow,{|p| d.rrateEvent.z }]
 				],-6,6);
 
-				createPlotterGroup.(va, Rect(450,0,400,250), [
+				createPlotterGroup.(va, Rect(450,5,400,240), col, [
 					["a",[Color.yellow,Color.magenta,Color.cyan],{|p| d.env.use{ ~plot.(d)} }]
 				],-1,1);
 			};
@@ -319,7 +322,7 @@
 				Slider()
 				}!8;
 			var sliderView = {|v|
-				UserView(v,Rect(250,0,200,250)).background_(Color.black).layout_( HLayout(
+				UserView(v,Rect(250,0,200,250)).layout_( HLayout(
 					*sliders.collect{|c,i|
 
 						var mc = MIDIFunc.cc({|val, num, chan| 
@@ -345,7 +348,7 @@
 
 
 
-			header = View(view).layout_( HLayout(
+			header = View(view).background_(col).layout_( HLayout(
 
 				Button()
 					.maxWidth_(40)
@@ -355,19 +358,14 @@
 						d.enabled = b.value.asBoolean;
 						reloadDevice.(d);
 					}),				
-				stackButton = Button(view)
-					.minWidth_(160)
-					.states_([
-						["⚾︎ attitude"],	
-						["⊙ accelerometer"],
-						["⊚ rotation rate"]
-					])
-					.action_({|b|
-						stackLayout.index = b.value;
-					}),
+				StaticText(view)
+					.stringColor_(Color.white)
+					.font_(Font(size:14))
+					.maxWidth_(200)
+					.string_("ip ["+d.ip+"] port ["+d.port+"]"),
 				Button()
 					.maxWidth_(40)
-					.states_([["📡"]])
+					.states_([["Reset"]])
 					.action_({|b|
 							d.ip.class.postln;
 							d.port.class.postln;
@@ -375,17 +373,21 @@
 						b.sendMsg("/bounce", "motionReset");    // send the application the messa
 
 					}),
-				StaticText(view)
-					.stringColor_(Color.white)
-					.font_(Font(size:14))
-					.minWidth_(200)
-					.string_("ip ["+d.ip+"] port ["+d.port+"]"),
-
-				Button(view)
-					.minWidth_(100)
+				stackButton = Button(view)
+					.maxWidth_(100)
 					.states_([
-						["Graphs Off"],	
-						["Graphs On"]
+						["attitude"],	
+						["accelerometer"],
+						["rotation rate"]
+					])
+					.action_({|b|
+						stackLayout.index = b.value;
+					}),
+				Button(view)
+					.maxWidth_(60)
+					.states_([
+						["graphs",Color.white,Color.red(0.3)],	
+						["graphs",Color.white,Color.green(0.3)]
 					])
 					.action_({|b|
 						if(b.value == 1,{
@@ -397,10 +399,19 @@
 							"OFF".postln;
 						});
 					}),
+				dataSizeMenu = PopUpMenu(view)
+						.maxWidth_(60)
+						.items_(dataSizes)
+						.valueAction_(0)
+						.action_({|b|
+							dataSize = dataSizes.at(b.value);
+						}),
+
+
 				reloadButton = Button(view)
 					.maxWidth_(80)
 					.states_([
-						["💾 reload"],	
+						["reload"],	
 					])
 					.action_({|b|
 						reloadDevice.(d);
@@ -421,20 +432,10 @@
 							reloadDevice.(d);
 						}),
 
-
-				dataSizeMenu = PopUpMenu(view)
-						.maxWidth_(60)
-						.items_(dataSizes)
-						.valueAction_(0)
-						.action_({|b|
-							dataSize = dataSizes.at(b.value);
-						}),
-
-
 				Button(view)
-					.maxWidth_(80)
+					.maxWidth_(40)
 					.states_([
-						["✖️ disconect",Color.red(0.5)],	
+						["x",Color.red(0.5)],	
 
 					])
 					.action_({|b|
@@ -452,20 +453,18 @@
 
 					})
 
-			).setAlignment(0,\left).setAlignment(1,\left).setAlignment(4,\left));
-
+			));
+			view.layout.spacing_(1);
 			view.layout.add(stackView = View()
 				//.background_(Color.yellow)
 				.minHeight_(250)
 				.layout_( stackLayout = StackLayout(
-					va = View().background_(Color.black),
-					vb = View().background_(Color.black),
-					vc = View().background_(Color.black)
+					va = UserView().background_(col),
+					vb = View().background_(col),
+					vc = View().background_(col)
 					)
 				);
 			);	
-
-
 
 			sliderView.(va);
 			createGyroCanvas.(va,d);
@@ -478,16 +477,15 @@
 		// Plotters
 		//------------------------------------------------------------	
 
-		createPlotterGroup = {|view, bounds, plotters, pmin=(-pi), pmax=pi|
+		createPlotterGroup = {|view, bounds, col, plotters, pmin=(-pi), pmax=pi|
 
 
-			var plotterView = UserView(view,bounds).background_(Color.black).animate_(true);
+			var plotterView = UserView(view,bounds).animate_(true);
 			var size = plotters.size;
 			var pw = bounds.width;
 			var ph = bounds.height / size;
 
 			 plotterView.drawFunc_({});
-
 			 plotters.do{ |specs,i|
 
 
@@ -499,15 +497,15 @@
 
 				var st = StaticText(plotterView,Rect(0,ph*i,pw*0.1,ph/2))
 					.string_(specs[0])
+					.font_(Font(size:9))
 					.align_(\center)
-					.stringColor_(specs[1])
-					.background_(Color.black);
+					.stringColor_(specs[1]);
 
 				var su = StaticText(plotterView,Rect(0,(ph*i)+(ph/2),pw*0.1,ph/2))
 					.string_(max)
+					.font_(Font(size:9))
 					.align_(\center)
 					.stringColor_(specs[1])
-					.background_(Color.black)
 					.mouseUpAction_({max = 0});
 
 				// StaticText(plotterView,Rect(0,ph*i,pw*0.15,ph/2))
@@ -515,7 +513,7 @@
 				// 	.align_(\center)
 				// 	.stringColor_(specs[1])
 				// 	.background_(Color.black);
-
+				plotter.setProperties(\backgroundColor, Color.gray(0.25));
 
 				plotterView.drawFunc = plotterView.drawFunc <> {
 					{
@@ -551,12 +549,19 @@
 			var p1,p2,p3;
 			var t = (1.0 + (5.0).sqrt) / 2.0;
 
-			graph1 = Canvas3D(view, Rect(0, 0, 250, 250))
+			graph1 = Canvas3D(view, Rect(5, 5, 245, 240))
 			    .scale_(200)
-				.background_(Color.black)
+				.background_(Color(0.25,0.25,0.25))
 			    .perspective_(0.5)
 			    .distance_(3.5);
 
+			graph1.preDrawFunc = {
+				var scale = 0.22;
+				Pen.scale(scale,scale);
+				Pen.drawImage( Point(0,0), image, operation: 'sourceOver', opacity:0.05);
+				Pen.scale(scale.reciprocal,scale.reciprocal);
+
+			};
 
 			// graph1.view.drawFunc= graph1.view.drawFunc<>{
 			// 	("[data"+"}-->".scramble).draw
