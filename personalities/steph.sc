@@ -114,8 +114,9 @@ var threshold = 0.7;
 	~midiControllerValue = {|num,val|
 		[num,val].postln;
 
-		if(num == 81,{ threshold = 0.02 + (val * 0.7)});
+		if(num == 0,{ threshold = 0.02 + (val * 0.7)});
 
+//		midiOut.control(midiChannel, num, val * 127 );
 	};
 	
 

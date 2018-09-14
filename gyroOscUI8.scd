@@ -52,7 +52,7 @@
 			var deviceProto = (
 				\name: "adam",
 				\ip: "127.0.0.1",
-				\port: 0101,
+				\port: 80000,
 				\gyroEvent: (\pitch:0,\roll:0,\yaw:0),
 				\gyroMass: 0,
 				\rrateEvent: (\x:0,\y:0,\z:0),
@@ -267,8 +267,8 @@
 
 			// set this for quick connection to device
 			addDeviceView.(contentView, addDevice.("127.0.0.1"));
-			addDeviceView.(contentView, addDevice.("192.168.0.101"));
-			addDeviceView.(contentView, addDevice.("192.168.0.102"));
+			addDeviceView.(contentView, addDevice.("192.168.0.1"));
+			addDeviceView.(contentView, addDevice.("192.168.0.2"));
 
 		};
 
@@ -320,6 +320,12 @@
 			};
 			var sliders = {|i|
 				Slider()
+					.action_({|o|
+						d.env.use{
+							~midiControllerValue.(i,o.value);
+						};
+
+					})
 				}!8;
 			var sliderView = {|v|
 				UserView(v,Rect(250,0,200,250)).layout_( HLayout(
@@ -331,9 +337,6 @@
 							{
 								c.valueAction_(val/127.0);
 
-								d.env.use{
-									~midiControllerValue.(num,val/127.0);
-								};
 							}.defer(0);
 						},81+i);
 
@@ -362,7 +365,7 @@
 					.stringColor_(Color.white)
 					.font_(Font(size:14))
 					.maxWidth_(200)
-					.string_("ip ["+d.ip+"] port ["+d.port+"]"),
+					.string_(d.ip+":"+d.port),
 				Button()
 					.maxWidth_(40)
 					.states_([["Reset"]])

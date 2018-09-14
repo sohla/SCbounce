@@ -133,8 +133,8 @@ Pdef(ptn,
 	~midiControllerValue = {|num,val|
 		//[num,val].postln;
 
-		if(num == 81,{ threshold = 0.02 + (val * 0.7)});
-		if(num == 82,{ movement = val * 0.8});
+		if(num == 0,{ threshold = 0.02 + (val * 0.7)});
+		if(num == 1,{ movement = val * 0.8});
 
 	};
 	
