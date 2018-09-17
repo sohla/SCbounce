@@ -67,40 +67,40 @@ Pdef(ptn,
 		d.rrateMass = (2.pow(d.rrateEvent.sumabs.div(1.0)).reciprocal).max(0.125*0.5);
 		smooth = ~tween.(d.rrateEvent.sumabs * 0.1,smooth,0.5);
 
-		if(smooth > 0.05,{
+		if(smooth > 0.11,{
 
 			if(moving == false,{
 				moving = true;
 
-				midiOut.noteOff(midiChannel, 60 + note -12, 70);
-				midiOut.noteOn(3, 60 + note -24, 100);
+				//midiOut.noteOn(3, 60 + note -24, 100);
 				Pdef(ptn).play();
 			});
 
-			midiOut.control(midiChannel, 1, (smooth*127).asInteger );
+			midiOut.control(midiChannel, 0, (smooth*127).asInteger );
 		},{
 
 			if(moving == true,{
 				moving = false;
 				Pdef(ptn).stop;
-				midiOut.noteOn(midiChannel, 60 + note -12, 70);
-				midiOut.noteOff(3, 60 + note -24, 100);
+				midiOut.noteOff(3, 60 + note - 24, 90);
+				//midiOut.noteOff(3, 60 + note -24, 100);
 				notes = notes.rotate(-1);
 				note = notes[0];
+				Pdef(ptn).set(\root,note);
+				midiOut.noteOn(3, 60 + note -24, 90);
 			});
 
 		});
 
 
-		if(d.accelMass > 0.2,{
-				midiOut.noteOn(midiChannel, 60 + note - 24, 100);
-		},{
+		// if(d.accelMass > 0.2,{
+		// 		midiOut.noteOn(midiChannel, 60 + note - 24, 100);
+		// },{
 
-			});
+		// 	});
 
-		Pdef(ptn).set(\octave,4 + (smooth * 2).floor);
-		Pdef(ptn).set(\root,note);
-		Pdef(ptn).set(\dur,0.2);
+		Pdef(ptn).set(\octave,5 + (smooth * 3).floor);
+		Pdef(ptn).set(\dur, (0.3- (smooth * 0.2)));
 
 	};
 
@@ -135,7 +135,7 @@ Pdef(ptn,
 	//------------------------------------------------------------	
 	~midiControllerValue = {|num,val|
 		[num,val].postln;
-		midiOut.control(midiChannel, num, val * 127 );
+		//midiOut.control(midiChannel, num, val * 127 );
 	};
 
 
