@@ -1,0 +1,15 @@
+
+
+Speech.init(2);
+Speech.channels[0].speak("hallo");
+Speech.channels[0].isActive;
+Speech.channels[0].voice_(14);
+Speech.channels[0].speak("hallo");
+Speech.channels[0].pitch_(60);
+Speech.channels[0].speak("hallo");
+Speech.channels[0].volume_(-20.dbamp);
+Speech.channels[0].pitchMod_(50);
+Speech.channels[0].speak("hallo");
+Speech.channels[0].stop(\immediate);
+Speech.channels[0].stop(\endOfWord);
+Speech.channels[0].stop(\endOfSentence);

@@ -12,6 +12,10 @@ var moving = false;
 var midiOut;
 var midiChannel = 0;
 
+var threshold = 0.7;
+var isHit = false;
+
+
 //------------------------------------------------------------	
 // PATTERN DEF
 //------------------------------------------------------------	
@@ -67,6 +71,22 @@ Pdef(ptn,
 		d.rrateMass = (2.pow(d.rrateEvent.sumabs.div(1.0)).reciprocal).max(0.125*0.5);
 		smooth = ~tween.(d.rrateEvent.sumabs * 0.1,smooth,0.5);
 
+		if(d.accelMass > threshold,{
+
+			if(isHit == false,{
+				var n = [0.2,7,12,19].choose ;
+				// midiOut.control(midiChannel, 2, 0 );
+				midiOut.noteOn(midiChannel, 60+12+n+note, 10);
+				{midiOut.noteOff(midiChannel, 60+12+n+note, 0)}.defer(0.04);
+
+				isHit = true;
+
+			});
+
+		},{
+			isHit = false;
+		});
+
 		if(smooth > 0.11,{
 
 			if(moving == false,{
@@ -83,7 +103,6 @@ Pdef(ptn,
 				moving = false;
 				Pdef(ptn).stop;
 				midiOut.noteOff(3, 60 + note - 24, 90);
-				//midiOut.noteOff(3, 60 + note -24, 100);
 				notes = notes.rotate(-1);
 				note = notes[0];
 				Pdef(ptn).set(\root,note);
@@ -100,7 +119,7 @@ Pdef(ptn,
 		// 	});
 
 		Pdef(ptn).set(\octave,5 + (smooth * 3).floor);
-		Pdef(ptn).set(\dur, (0.3- (smooth * 0.2)));
+		Pdef(ptn).set(\dur, (0.3- (smooth * 0.22)));
 
 	};
 
@@ -134,8 +153,10 @@ Pdef(ptn,
 	// midi control
 	//------------------------------------------------------------	
 	~midiControllerValue = {|num,val|
-		[num,val].postln;
-		//midiOut.control(midiChannel, num, val * 127 );
+
+		if(num == 4,{ threshold = 0.005 + (val * 0.7)});
+
+		//midiOut.control(4, num, val * 127 );
 	};
 
 

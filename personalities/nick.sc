@@ -65,15 +65,15 @@ Pdef(ptn,
 			if(moving == false,{
 				moving = true;
 
-				midiOut.noteOn(0, 60 - 24 + note, 120);
+				midiOut.noteOn(0, 60 - 24 + note, 90);
 			});
 
-			//midiOut.control(midiChannel, 1, (smooth*80).asInteger );
+			midiOut.control(0, 0, 87 );
 		},{
 
 			if(moving == true,{
 				moving = false;
-				midiOut.noteOff(0, 60 - 24 + note, 120);
+				midiOut.noteOff(0, 60 - 24 + note, 90);
 				notes = notes.rotate(-1);
 				note = notes[0] + 7;
 			});
@@ -136,7 +136,7 @@ Pdef(ptn,
 
 		if(num == 4,{ threshold = 0.005 + (val * 0.7)});
 		// if(num == 1,{ movement = val * 0.8});
-		midiOut.control(midiChannel, num, val * 127 );
+//		midiOut.control(midiChannel, num, val * 127 );
 
 	};
 	

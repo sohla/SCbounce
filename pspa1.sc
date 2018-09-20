@@ -19,8 +19,8 @@ x.free;
 s.meter
 
 o = Server.local.options;
-o.numOutputBusChannels = 14; 
-o.numInputBusChannels = 8;
+o.numOutputBusChannels = 2; 
+o.numInputBusChannels = 2;
 s.reboot;
 Delay
 Quarks.gui
@@ -98,3 +98,6 @@ Pan2.ar(sines*(hasFreq.lag(0.01,0.01)) + LPF.ar(noise,MouseY.kr(100,10000,'expon
 }.play
 
 )
+
+
+"hello".speak(0);

@@ -247,3 +247,14 @@ b.sendMsg("/bounce", "motionReset");    // send the application the messa
 b
 b.port.asString
 b.ip.class
+
+
+
+b = NetAddr.new("192.168.3.234", 56120);    // create the NetAddr
+b.sendMsg("/hmr/default", 1);    // send the application the messa
+
+
+
+b = NetAddr.new("192.168.3.40", 57120);    // create the NetAddr
+b.sendMsg("/hmr/default", 1);    // send the application the messa
+

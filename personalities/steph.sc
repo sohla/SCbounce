@@ -45,8 +45,8 @@ var threshold = 0.7;
 			if(isHit == false,{
 				var n = [0,2,5,4].choose ;
 				// midiOut.control(midiChannel, 2, 0 );
-				midiOut.noteOn(0, 60+24+note+n, 90);
-				{midiOut.noteOff(0, 60+24+note+n, 0)}.defer(0.04);
+				midiOut.noteOn(4, 60-24+note+n, 10);
+				{midiOut.noteOff(4, 60-24+note+n, 0)}.defer(0.1);
 
 				isHit = true;
 
@@ -112,7 +112,7 @@ var threshold = 0.7;
 	// midi control
 	//------------------------------------------------------------	
 	~midiControllerValue = {|num,val|
-		[num,val].postln;
+//		[num,val].postln;
 
 		if(num == 4,{ threshold = 0.005 + (val * 0.7)});
 
