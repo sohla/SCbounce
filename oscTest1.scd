@@ -250,9 +250,12 @@ b.ip.class
 
 
 
-b = NetAddr.new("192.168.3.234", 56120);    // create the NetAddr
+b = NetAddr.new("10.1.1.14", 56120);    // create the NetAddr
 b.sendMsg("/hmr/default", 1);    // send the application the messa
 
+b.sendMsg("/hmr/lx", 6,5,0,0);    // send the application the messa
+
+7.do{|i| b.sendMsg("/hmr/lx", i,0,0,0)};    // send the application the messa
 
 
 b = NetAddr.new("192.168.3.40", 57120);    // create the NetAddr
