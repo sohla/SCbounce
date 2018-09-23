@@ -156,7 +156,7 @@ Pdef(ptn,
 
 		if(num == 4,{ threshold = 0.005 + (val * 0.7)});
 
-		//midiOut.control(4, num, val * 127 );
+		midiOut.control(4, num, val * 127 );
 	};
 
 
