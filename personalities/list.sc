@@ -5,6 +5,9 @@
 		"george",
 		"nick",
 		"matilda",
-		"eve"
+		"eve",
+		"malia",
+		"harvey",
+		"ellis"
 	]
 )

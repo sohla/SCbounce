@@ -1,14 +1,34 @@
 
+// unique name for pattern 
+var ptn = Array.fill(16,{|i|i=90.rrand(65).asAscii});
 
 var smooth = 0;
+var synth;
+
+var notes = [0,7];
+var note = notes[0];
+
 var moving = false;
 var midiOut;
-var midiChannel = 7;
-var notes = [0,-12];
-var note = notes[0];
+var midiChannel = 0;
+
+var threshold = 0.7;
 var isHit = false;
 
-var threshold = 0.07;
+
+//------------------------------------------------------------	
+// PATTERN DEF
+//------------------------------------------------------------	
+
+Pdef(ptn,
+	Pbind(
+		\note, Prand([0,7,10],inf),
+		\args, #[],
+		\amp, Pexprand(0.1,0.4,inf),
+		\pan, Pwhite(-0.8,0.8,inf)
+));
+
+
 //------------------------------------------------------------	
 //
 //------------------------------------------------------------	
@@ -25,9 +45,20 @@ var threshold = 0.07;
 	//------------------------------------------------------------	
 	~init = { |mo|
 
-		"init GEORGE".postln;
+		"init ELLIS".postln;
+
+		Pdef(ptn).set(\instrument,\adamSynth);
+		Pdef(ptn).set(\dur,0.5);
+		Pdef(ptn).set(\octave,5);
+
+
+		Pdef(ptn).set(\type,\midi);
+		Pdef(ptn).set(\midiout,mo);
+		Pdef(ptn).set(\chan,midiChannel);
 
 		midiOut = mo;
+	
+
 
 	};
 
@@ -37,17 +68,16 @@ var threshold = 0.07;
 	~next = {|d| 
 		
 		d.accelMass = d.accelEvent.sumabs * 0.1;
-		d.rrateMass = (2.pow(d.rrateEvent.sumabs.div(2.0)).reciprocal).max(0.125*0.5);
+		d.rrateMass = (2.pow(d.rrateEvent.sumabs.div(1.0)).reciprocal).max(0.125*0.5);
 		smooth = ~tween.(d.rrateEvent.sumabs * 0.1,smooth,0.5);
 
 		if(d.accelMass > threshold,{
 
 			if(isHit == false,{
-				var n = [0,2,5,4,7,7,9,12,11].choose ;
-
-				midiOut.control(0, 0, 0 );
-				midiOut.noteOn(0, 60+36+note+n, 4);
-				{midiOut.noteOff(0, 60+36+note+n, 0)}.defer(0.1);
+				var n = [0.2,7,12,19].choose ;
+				// midiOut.control(midiChannel, 2, 0 );
+				midiOut.noteOn(midiChannel, 60+12+n+note, 10);
+				{midiOut.noteOff(midiChannel, 60+12+n+note, 0)}.defer(0.04);
 
 				isHit = true;
 
@@ -57,13 +87,13 @@ var threshold = 0.07;
 			isHit = false;
 		});
 
-		if(smooth > 0.1,{
+		if(smooth > 0.11,{
 
 			if(moving == false,{
 				moving = true;
 
-				// midiOut.control(midiChannel, 2, 70 );
-				midiOut.noteOn(midiChannel, 60 + note -12, 100);
+				//midiOut.noteOn(3, 60 + note -24, 100);
+				Pdef(ptn).play();
 			});
 
 			midiOut.control(midiChannel, 0, (smooth*127).asInteger );
@@ -71,24 +101,34 @@ var threshold = 0.07;
 
 			if(moving == true,{
 				moving = false;
-				midiOut.noteOff(midiChannel, 60 + note -12, 100);
+				Pdef(ptn).stop;
+				midiOut.noteOff(7, 60 + note , 0);
+				midiOut.noteOff(5, 60 + note , 0);
 				notes = notes.rotate(-1);
 				note = notes[0];
+				Pdef(ptn).set(\root,note);
+				midiOut.noteOn(7, 60 + note, 40);
+				midiOut.noteOn(5, 60 + note , 120);
 			});
 
 		});
 
-//			midiOut.control(midiChannel, 0, (smooth*127).asInteger );
+
+		// if(d.accelMass > 0.2,{
+		// 		midiOut.noteOn(midiChannel, 60 + note - 24, 100);
+		// },{
+
+		// 	});
+
+		Pdef(ptn).set(\octave,4 + (smooth * 4).floor);
+		Pdef(ptn).set(\dur, (0.4- (smooth * 0.36)));
 
 	};
 
 	//------------------------------------------------------------	
 
 	~plot = { |d,p|
-
 		[d.rrateMass,smooth];
-
-
 	};
 
 	//------------------------------------------------------------	
@@ -96,9 +136,11 @@ var threshold = 0.07;
 	//------------------------------------------------------------	
 	~deinit = {
 
-		"deinit GEORGE".postln;
-		midiOut.allNotesOff(midiChannel);
+		"deinit ELLIS".postln;
+		Pdef(ptn).stop;
 
+		midiOut.allNotesOff(midiChannel);
+		midiOut.allNotesOff(3);
 	};
 
 	//------------------------------------------------------------	
@@ -108,16 +150,16 @@ var threshold = 0.07;
 	~plotMin = 0;
 	~plotMax = 1;
 
+	
 	//------------------------------------------------------------	
 	// midi control
 	//------------------------------------------------------------	
 	~midiControllerValue = {|num,val|
-//		[num,val].postln;
 
 		if(num == 4,{ threshold = 0.005 + (val * 0.7)});
 
-		// midiOut.control(midiChannel, num, val * 127 );
+		midiOut.control(4, num, val * 127 );
 	};
-	
+
 
 )

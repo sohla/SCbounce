@@ -6,6 +6,10 @@ var midiOut;
 var midiChannel = 5;
 var notes = [0,12,-17];
 var note = notes[0];
+
+var threshold = 0.1;
+var isHit = false;
+
 //------------------------------------------------------------	
 //
 //------------------------------------------------------------	
@@ -32,8 +36,25 @@ var note = notes[0];
 	//------------------------------------------------------------	
 	~next = {|d| 
 
+		d.accelMass = d.accelEvent.sumabs * 0.1;
 		d.rrateMass = (2.pow(d.rrateEvent.sumabs.div(2.0)).reciprocal).max(0.125*0.5);
 		smooth = ~tween.(d.rrateEvent.sumabs * 0.1,smooth,0.5);
+
+		if(d.accelMass > threshold,{
+
+			if(isHit == false,{
+				var n = [0,2,4,5,7,9,11,12].choose ;
+				// midiOut.control(midiChannel, 2, 0 );
+				midiOut.noteOn(6, 60 + n, 100);
+				{midiOut.noteOff(6, 60 + n, 0)}.defer(0.04);
+
+				isHit = true;
+
+			});
+
+		},{
+			isHit = false;
+		});
 
 		if(smooth > 0.05,{
 
@@ -83,7 +104,11 @@ var note = notes[0];
 	// midi control
 	//------------------------------------------------------------	
 	~midiControllerValue = {|num,val|
+
 		//[num,val].postln;
+
+		if(num == 4,{ threshold = 0.005 + (val * 0.7)});
+
 	};
 	
 
