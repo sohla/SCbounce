@@ -4,7 +4,7 @@
 			var dataPath = "~/Develop/SuperCollider/Projects/SCbounce/data/";
 			var image = Image.new("~/Develop/SuperCollider/Projects/SCbounce/m-ball_logo_vector600.png".asAbsolutePath);
 
-			var midiControlOffset = 1;
+			var midiControlOffset = 81;
 			var loadDeviceList;
 
 			var names;// = ["adam","george","harry","susan","eve"];

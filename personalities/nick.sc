@@ -7,7 +7,7 @@ var movingB = false;
 
 var midiOut;
 var midiChannel = 1;
-var notes = [12,11,7,4,2,9,7,0,2];
+var notes = [12,11,7,0,12,11,7,5,12,11,7,2,12,11,7,0];
 var note = notes[0];
 var threshold = 0.7;
 var movement = 0.8;
@@ -65,10 +65,10 @@ Pdef(ptn,
 			if(moving == false,{
 				moving = true;
 
-				midiOut.noteOn(0, 60 - 24 + note, 90);
+				midiOut.control(0, 0, 10 );
+				midiOut.noteOn(0, 60 - 24 + note, 60);
 			});
 
-			midiOut.control(0, 0, 87 );
 		},{
 
 			if(moving == true,{

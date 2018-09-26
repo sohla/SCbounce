@@ -46,8 +46,8 @@ var threshold = 0.07;
 				var n = [0,2,5,4,7,7,9,12,11].choose ;
 
 				midiOut.control(0, 0, 0 );
-				midiOut.noteOn(0, 60+36+note+n, 4);
-				{midiOut.noteOff(0, 60+36+note+n, 0)}.defer(0.1);
+				midiOut.noteOn(0, 60+24+note+n, 4);
+				{midiOut.noteOff(0, 60+24+note+n, 0)}.defer(0.1);
 
 				isHit = true;
 
@@ -63,7 +63,7 @@ var threshold = 0.07;
 				moving = true;
 
 				// midiOut.control(midiChannel, 2, 70 );
-				midiOut.noteOn(midiChannel, 60 + note -12, 100);
+				midiOut.noteOn(midiChannel, 60 + note -12, 120);
 			});
 
 			midiOut.control(midiChannel, 0, (smooth*127).asInteger );

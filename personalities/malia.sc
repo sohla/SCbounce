@@ -64,12 +64,12 @@ Pdef(ptn,
 		},{
 			if(Pdef(ptn).isPlaying.not,{Pdef(ptn).play});
 
+			midiOut.control(midiChannel, 0, 127.0-(d.rrateMass*127).asInteger );
 		});
 		
 
 		Pdef(ptn).set(\dur,(d.rrateMass *20).reciprocal);
 
-		midiOut.control(midiChannel, 0, 127.0-(d.rrateMass*127).asInteger );
 
 	};
 
@@ -106,7 +106,7 @@ Pdef(ptn,
 	~midiControllerValue = {|num,val|
 		//[num,val].postln;
 
-		midiOut.control(midiChannel, num, val * 127 );
+		//midiOut.control(midiChannel, num, val * 127 );
 
 	};
 

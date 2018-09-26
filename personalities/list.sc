@@ -8,6 +8,7 @@
 		"eve",
 		"malia",
 		"harvey",
-		"ellis"
+		"ellis",
+		"gabe"
 	]
 )

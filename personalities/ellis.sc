@@ -22,9 +22,9 @@ var isHit = false;
 
 Pdef(ptn,
 	Pbind(
-		\note, Prand([0,7,10],inf),
+		\note, Prand([[-12,0],7,10],inf),
 		\args, #[],
-		\amp, Pexprand(0.1,0.4,inf),
+		\amp, Pexprand(0.3,0.6,inf),
 		\pan, Pwhite(-0.8,0.8,inf)
 ));
 
@@ -38,7 +38,7 @@ Pdef(ptn,
 	//------------------------------------------------------------	
 	// how ofter does ~next() get called from engine
 	//------------------------------------------------------------	
-	~secs = 0.03;
+	~secs = 0.02;
 
 	//------------------------------------------------------------	
 	// intial state
@@ -102,13 +102,17 @@ Pdef(ptn,
 			if(moving == true,{
 				moving = false;
 				Pdef(ptn).stop;
+
+
 				midiOut.noteOff(7, 60 + note , 0);
-				midiOut.noteOff(5, 60 + note , 0);
+				midiOut.noteOff(5, 60 + note -24 , 0);
 				notes = notes.rotate(-1);
 				note = notes[0];
 				Pdef(ptn).set(\root,note);
-				midiOut.noteOn(7, 60 + note, 40);
-				midiOut.noteOn(5, 60 + note , 120);
+				
+				midiOut.control(7, 0, (smooth*20).asInteger);
+				midiOut.noteOn(7, 60 + note, 50);
+				midiOut.noteOn(5, 60 + note - 24 , 20);
 			});
 
 		});
@@ -140,7 +144,10 @@ Pdef(ptn,
 		Pdef(ptn).stop;
 
 		midiOut.allNotesOff(midiChannel);
-		midiOut.allNotesOff(3);
+		midiOut.allNotesOff(5);
+		midiOut.allNotesOff(7);
+
+
 	};
 
 	//------------------------------------------------------------	
@@ -158,7 +165,7 @@ Pdef(ptn,
 
 		if(num == 4,{ threshold = 0.005 + (val * 0.7)});
 
-		midiOut.control(4, num, val * 127 );
+		//midiOut.control(4, num, val * 127 );
 	};
 
 

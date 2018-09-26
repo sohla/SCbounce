@@ -7,7 +7,7 @@ var movingB = false;
 
 var midiOut;
 var midiChannel = 8;
-var notes = [12,11,7,4,2,9,7,0,2];
+var notes = [0,12,10,0,0,12,12,10,10,9,7,7,5,2,5];
 var note = notes[0];
 var threshold = 0.7;
 var movement = 0.8;
@@ -66,24 +66,34 @@ Pdef(ptn,
 			if(moving == false,{
 				moving = true;
 
-				midiOut.noteOn(0, 60 - 24 + note, 90);
+				midiOut.noteOn(7, 60 + note, 90);
+
+
+
+				{
+				moving = false;
+				midiOut.noteOff(7, 60 +note , 90);
+				notes = notes.rotate(-1);
+				note = notes[0] ;
+
+				}.defer(2);
 			});
 
-			midiOut.control(0, 0, 87 );
+			midiOut.control(7, 0, 0 );
 		},{
 
-			if(moving == true,{
-				moving = false;
-				midiOut.noteOff(0, 60 - 24 + note, 90);
-				notes = notes.rotate(-1);
-				note = notes[0] + 7;
-			});
+			// if(moving == true,{
+			// 	moving = false;
+			// 	midiOut.noteOff(2, 60 +note + 5, 90);
+			// 	notes = notes.rotate(-1);
+			// 	note = notes[0] + 7;
+			// });
 
 		});
 		Pdef(ptn).set(\dur,(smooth*20).reciprocal);
 		Pdef(ptn).set(\amp,movement);
 
-		midiOut.control(midiChannel, 0, 178);
+		midiOut.control(midiChannel, 0, (smooth*127).asInteger );
 
 		if(smooth > 0.1,{
 
@@ -120,6 +130,7 @@ Pdef(ptn,
 		"deinit NICK".postln;
 		midiOut.allNotesOff(midiChannel);
 
+		midiOut.allNotesOff(7);
 	};
 
 	//------------------------------------------------------------	
@@ -137,7 +148,7 @@ Pdef(ptn,
 
 		if(num == 4,{ threshold = 0.005 + (val * 0.7)});
 		// if(num == 1,{ movement = val * 0.8});
-//		midiOut.control(midiChannel, num, val * 127 );
+		midiOut.control(midiChannel, num, val * 127 );
 
 	};
 	
