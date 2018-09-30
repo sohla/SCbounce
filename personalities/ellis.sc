@@ -96,7 +96,7 @@ Pdef(ptn,
 				Pdef(ptn).play();
 			});
 
-			midiOut.control(midiChannel, 0, (smooth*127).asInteger );
+			midiOut.control(midiChannel, 0, (smooth*100).asInteger );
 		},{
 
 			if(moving == true,{
@@ -125,7 +125,7 @@ Pdef(ptn,
 		// 	});
 
 		Pdef(ptn).set(\octave,4 + (smooth * 4).floor);
-		Pdef(ptn).set(\dur, (0.4- (smooth * 0.36)));
+		Pdef(ptn).set(\dur, (0.5- (smooth * 0.26)));
 
 	};
 

@@ -117,7 +117,7 @@ Pdef(ptn,
 	~midiControllerValue = {|num,val|
 		//[num,val].postln;
 
-		midiOut.control(midiChannel, num, val * 127 );
+		//midiOut.control(midiChannel, num, val * 127 );
 
 	};
 

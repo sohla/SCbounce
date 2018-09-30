@@ -16,7 +16,7 @@ var movement = 0.8;
 //------------------------------------------------------------	
 Pdef(ptn,
 	Pbind(
-		\note, Pseq([0,12,2,14,5,17,4,16],inf),
+		\note, Pseq([0,12,2,14,5,17,4,16].stutter(4),inf),
 		\octave, Prand([5,6,8],inf),
 		\args, #[]
 		// \amp, 0.8,
@@ -139,7 +139,7 @@ Pdef(ptn,
 
 		if(num == 4,{ threshold = 0.005 + (val * 0.7)});
 		// if(num == 1,{ movement = val * 0.8});
-		midiOut.control(midiChannel, num, val * 127 );
+		//midiOut.control(midiChannel, num, val * 127 );
 
 	};
 	

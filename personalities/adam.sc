@@ -119,7 +119,7 @@ Pdef(ptn,
 		// 	});
 
 		Pdef(ptn).set(\octave,5 + (smooth * 3).floor);
-		Pdef(ptn).set(\dur, (0.3- (smooth * 0.22)));
+		Pdef(ptn).set(\dur, (0.4- (smooth * 0.22)));
 
 	};
 
@@ -156,7 +156,7 @@ Pdef(ptn,
 
 		if(num == 4,{ threshold = 0.005 + (val * 0.7)});
 
-		midiOut.control(4, num, val * 127 );
+		//midiOut.control(4, num, val * 127 );
 	};
 
 

@@ -90,7 +90,7 @@ Pdef(ptn,
 			// });
 
 		});
-		Pdef(ptn).set(\dur,(smooth*20).reciprocal);
+		Pdef(ptn).set(\dur,(smooth*16).reciprocal);
 		Pdef(ptn).set(\amp,movement);
 
 		midiOut.control(midiChannel, 0, (smooth*127).asInteger );
@@ -148,7 +148,7 @@ Pdef(ptn,
 
 		if(num == 4,{ threshold = 0.005 + (val * 0.7)});
 		// if(num == 1,{ movement = val * 0.8});
-		midiOut.control(midiChannel, num, val * 127 );
+		//midiOut.control(midiChannel, num, val * 127 );
 
 	};
 	
