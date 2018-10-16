@@ -10,6 +10,9 @@ var note = notes[0];
 var threshold = 0.7;
 var isHit = false;
 
+var amp = 0;
+var ampThreshold = 0.1;
+
 //------------------------------------------------------------	
 //
 //------------------------------------------------------------	
@@ -19,7 +22,7 @@ var isHit = false;
 	//------------------------------------------------------------	
 	// how ofter does ~next() get called from engine
 	//------------------------------------------------------------	
-	~secs = 0.03;
+	~secs = 0.01;
 
 	//------------------------------------------------------------	
 	// intial state
@@ -31,22 +34,21 @@ var isHit = false;
 		midiOut = mo;
 	};
 
-	//------------------------------------------------------------	
-	// do all the work(logic) taking data in and playing pattern/synth
-	//------------------------------------------------------------	
-	~next = {|d| 
 
-		d.accelMass = d.accelEvent.sumabs * 0.1;
-		d.rrateMass = (2.pow(d.rrateEvent.sumabs.div(2.0)).reciprocal).max(0.125*0.5);
-		smooth = ~tween.(d.rrateEvent.sumabs * 0.1,smooth,0.5);
+	~onAmp = {|v|
 
-		if(d.accelMass > threshold,{
+		var ch = 9;
+
+		amp = ~tween.(v / 100,amp,0.9);
+
+		if( amp > ampThreshold,{
+		//if(d.accelMass > threshold,{
 
 			if(isHit == false,{
 				var n = [0,2,4,5,7,9,11,12].choose ;
 				// midiOut.control(midiChannel, 2, 0 );
-				midiOut.noteOn(6, 60 + n, 100);
-				{midiOut.noteOff(6, 60 + n, 0)}.defer(0.04);
+				midiOut.noteOn(ch, 60 + n, (v / 1024) * 512);
+				{midiOut.noteOff(ch, 60 + n, 0)}.defer(0.04);
 
 				isHit = true;
 
@@ -55,6 +57,19 @@ var isHit = false;
 		},{
 			isHit = false;
 		});
+
+	};
+	//------------------------------------------------------------	
+	// do all the work(logic) taking data in and playing pattern/synth
+	//------------------------------------------------------------	
+	~next = {|d| 
+
+		d.accelMass = d.accelEvent.sumabs * 0.1;
+		d.rrateMass = (2.pow(d.rrateEvent.sumabs.div(2.0)).reciprocal).max(0.125*0.5);
+		smooth = ~tween.(d.rrateEvent.sumabs * 0.1,smooth,0.5);
+		
+
+
 
 		if(smooth > 0.05,{
 
@@ -80,7 +95,7 @@ var isHit = false;
 	//------------------------------------------------------------	
 
 	~plot = { |d,p|
-		[d.rrateMass,smooth];
+		[amp];
 	};
 
 	//------------------------------------------------------------	

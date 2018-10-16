@@ -36,6 +36,7 @@ var threshold = 0.7;
 	//------------------------------------------------------------	
 	~next = {|d| 
 		
+
 		d.accelMass = d.accelEvent.sumabs * 0.1;
 		d.rrateMass = (2.pow(d.rrateEvent.sumabs.div(2.0)).reciprocal).max(0.125*0.5);
 		smooth = ~tween.(d.rrateEvent.sumabs * 0.1,smooth,0.5);

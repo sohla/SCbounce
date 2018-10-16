@@ -5,6 +5,9 @@ var ptn = Array.fill(16,{|i|i=90.rrand(65).asAscii});
 var smooth = 0;
 var synth;
 
+var amp = 0;
+var ampThreshold = 0.1;
+
 var notes = [0,5,8,3];
 var note = notes[0];
 
@@ -67,11 +70,15 @@ Pdef(ptn,
 	//------------------------------------------------------------	
 	~next = {|d| 
 		
+		amp = ~tween.((d.ampValue/1024) * 2,amp,0.3);
+
 		d.accelMass = d.accelEvent.sumabs * 0.1;
 		d.rrateMass = (2.pow(d.rrateEvent.sumabs.div(1.0)).reciprocal).max(0.125*0.5);
 		smooth = ~tween.(d.rrateEvent.sumabs * 0.1,smooth,0.5);
 
-		if(d.accelMass > threshold,{
+
+		if( amp > ampThreshold,{
+		// if(d.accelMass > threshold,{
 
 			if(isHit == false,{
 				var n = [0.2,7,12,19].choose ;
@@ -126,7 +133,7 @@ Pdef(ptn,
 	//------------------------------------------------------------	
 
 	~plot = { |d,p|
-		[d.rrateMass,smooth];
+		[ amp ];
 	};
 
 	//------------------------------------------------------------	
