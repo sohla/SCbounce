@@ -19,7 +19,7 @@
 s.doWhenBooted{
 		
 		var scp = PathName.new(Platform.resourceDir).parentPath;
-		var path = PathName.new(scp +/+"gyroOscUI8.scd");
+		var path = PathName.new(scp +/+"gyroOscUI9.scd");
 		var x = File.new(path.asAbsolutePath,"r");
 		var c = x.readAllString;
 		interpret(c);

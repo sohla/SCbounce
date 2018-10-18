@@ -3,7 +3,7 @@
 var smooth = 0;
 var moving = false;
 var midiOut;
-var midiChannel = 7;
+var midiChannel = 2;
 var notes = [0,-12];
 var note = notes[0];
 var isHit = false;
@@ -25,7 +25,7 @@ var threshold = 0.7;
 	//------------------------------------------------------------	
 	~init = { |mo|
 
-		"init GEORGE".postln;
+		"init STEPH".postln;
 
 		midiOut = mo;
 
@@ -36,6 +36,7 @@ var threshold = 0.7;
 	//------------------------------------------------------------	
 	~next = {|d| 
 		
+
 		d.accelMass = d.accelEvent.sumabs * 0.1;
 		d.rrateMass = (2.pow(d.rrateEvent.sumabs.div(2.0)).reciprocal).max(0.125*0.5);
 		smooth = ~tween.(d.rrateEvent.sumabs * 0.1,smooth,0.5);
@@ -43,11 +44,10 @@ var threshold = 0.7;
 		if(d.accelMass > threshold,{
 
 			if(isHit == false,{
-				var n = [0,2,5,4,7,7,9,12,11].choose ;
-
-				midiOut.control(0, 0, 0 );
-				midiOut.noteOn(0, 60+24+note+n, 4);
-				{midiOut.noteOff(0, 60+24+note+n, 0)}.defer(0.1);
+				var n = [0,2,5,4].choose ;
+				// midiOut.control(midiChannel, 2, 0 );
+				midiOut.noteOn(4, 60-24+note+n, 10);
+				{midiOut.noteOff(4, 60-24+note+n, 0)}.defer(0.1);
 
 				isHit = true;
 
@@ -57,16 +57,17 @@ var threshold = 0.7;
 			isHit = false;
 		});
 
+
 		if(smooth > 0.1,{
 
-			if(moving == false,{
+			if(moving == false && isHit == false,{
 				moving = true;
 
 				// midiOut.control(midiChannel, 2, 70 );
-				midiOut.noteOn(midiChannel, 60 + note -12, 120);
+				midiOut.noteOn(midiChannel, 60 + note -12, 100);
 			});
 
-			midiOut.control(midiChannel, 0, (smooth*127).asInteger );
+			//midiOut.control(midiChannel, 0, (smooth*127).asInteger );
 		},{
 
 			if(moving == true,{
@@ -78,7 +79,7 @@ var threshold = 0.7;
 
 		});
 
-//			midiOut.control(midiChannel, 0, (smooth*127).asInteger );
+			midiOut.control(midiChannel, 0, (smooth*127).asInteger );
 
 	};
 
@@ -96,7 +97,7 @@ var threshold = 0.7;
 	//------------------------------------------------------------	
 	~deinit = {
 
-		"deinit GEORGE".postln;
+		"deinit STEPH".postln;
 		midiOut.allNotesOff(midiChannel);
 
 	};
@@ -116,7 +117,7 @@ var threshold = 0.7;
 
 		if(num == 4,{ threshold = 0.005 + (val * 0.7)});
 
-		// midiOut.control(midiChannel, num, val * 127 );
+		//midiOut.control(midiChannel, num, val * 127 );
 	};
 	
 
