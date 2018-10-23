@@ -77,13 +77,11 @@
 			//------------------------------------------------------------	
 			// midi
 			//------------------------------------------------------------	
-
 			MIDIClient.init;
 			MIDIClient.destinations;
-			midiOut = MIDIOut(0).latency_(Server.default.latency);
-			midiController = MIDIOut(2).latency_(Server.default.latency);
+			midiOut = MIDIOut(0).latency_(0);
+			midiController = MIDIOut(2).latency_(0);
 			MIDIIn.connectAll;
-
 			//------------------------------------------------------------	
 			// 
 			//------------------------------------------------------------

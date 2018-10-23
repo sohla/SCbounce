@@ -11,7 +11,7 @@ var threshold = 0.7;
 var isHit = false;
 
 var amp = 0;
-var ampThreshold = 0.1;
+//var ampThreshold = 0.1;
 
 //------------------------------------------------------------	
 //
@@ -22,7 +22,7 @@ var ampThreshold = 0.1;
 	//------------------------------------------------------------	
 	// how ofter does ~next() get called from engine
 	//------------------------------------------------------------	
-	~secs = 0.01;
+	~secs = 0.001;
 
 	//------------------------------------------------------------	
 	// intial state
@@ -39,9 +39,9 @@ var ampThreshold = 0.1;
 
 		var ch = 9;
 
-		amp = ~tween.(v / 100,amp,0.9);
+		amp = v/50;//~tween.(v / 100,amp,0.9);
 
-		if( amp > ampThreshold,{
+		if( amp > threshold,{
 		//if(d.accelMass > threshold,{
 
 			if(isHit == false,{
@@ -122,7 +122,8 @@ var ampThreshold = 0.1;
 
 		//[num,val].postln;
 
-		if(num == 4,{ threshold = 0.005 + (val * 0.7)});
+		if(num == 4,{ threshold = 0.01 + (val * 4.0)});
+
 		// midiOut.control(midiChannel, num, val * 127 );
 
 	};
