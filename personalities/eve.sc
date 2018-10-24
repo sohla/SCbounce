@@ -22,7 +22,7 @@ var amp = 0;
 	//------------------------------------------------------------	
 	// how ofter does ~next() get called from engine
 	//------------------------------------------------------------	
-	~secs = 0.001;
+	~secs = 0.03;
 
 	//------------------------------------------------------------	
 	// intial state
@@ -37,26 +37,23 @@ var amp = 0;
 
 	~onAmp = {|v|
 
-		var ch = 9;
+		// var ch = 9;
+		// var n = [0,2,4,5,7,9,11,12].choose;
+		// amp = v * 2;//~tween.(v,amp,0.9);
 
-		amp = v/50;//~tween.(v / 100,amp,0.9);
-
-		if( amp > threshold,{
-		//if(d.accelMass > threshold,{
-
-			if(isHit == false,{
-				var n = [0,2,4,5,7,9,11,12].choose ;
-				// midiOut.control(midiChannel, 2, 0 );
-				midiOut.noteOn(ch, 60 + n, (v / 1024) * 512);
-				{midiOut.noteOff(ch, 60 + n, 0)}.defer(0.04);
-
-				isHit = true;
-
-			});
-
-		},{
-			isHit = false;
-		});
+		// if( amp > threshold,{
+		// 	if(isHit == false,{
+		// 		{midiOut.noteOn(ch, 60 + n, amp * 512)}.defer(0.01);
+		// 		["hit",threshold,amp].postln;
+		// 		isHit = true;
+		// 	});
+		// },{
+		// 	if(isHit == true,{
+		// 	"OFF".postln;
+		// 		{midiOut.noteOff(ch, 60 + n, 0)}.defer(0.3);
+		// 	});
+		// 	isHit = false;
+		// });
 
 	};
 	//------------------------------------------------------------	
@@ -64,13 +61,33 @@ var amp = 0;
 	//------------------------------------------------------------	
 	~next = {|d| 
 
+
+		var ch = 9;
+		var n = [0,2,4,5,7,9,11,12].choose;
+		amp = d.ampValue * 2;//~tween.(v,amp,0.9);
+
 		d.accelMass = d.accelEvent.sumabs * 0.1;
 		d.rrateMass = (2.pow(d.rrateEvent.sumabs.div(2.0)).reciprocal).max(0.125*0.5);
 		smooth = ~tween.(d.rrateEvent.sumabs * 0.1,smooth,0.5);
 		
 
+		////
 
+		if( amp > threshold,{
+			if(isHit == false,{
+				{midiOut.noteOn(ch, 60 + n, amp * 512)}.defer(0.03);
+				["hit",threshold,amp].postln;
+				isHit = true;
+			});
+		},{
+			if(isHit == true,{
+				"OFF".postln;
+				{midiOut.noteOff(ch, 60 + n, 0)}.defer(0.1);
+			});
+			isHit = false;
+		});
 
+		/////
 		if(smooth > 0.05,{
 
 			if(moving == false,{
@@ -95,7 +112,7 @@ var amp = 0;
 	//------------------------------------------------------------	
 
 	~plot = { |d,p|
-		[amp];
+		[amp,threshold];
 	};
 
 	//------------------------------------------------------------	
@@ -122,8 +139,9 @@ var amp = 0;
 
 		//[num,val].postln;
 
-		if(num == 4,{ threshold = 0.01 + (val * 4.0)});
+		if(num == 4,{ threshold = 0.01 + (val * 0.99)});
 
+		threshold = threshold * 2;
 		// midiOut.control(midiChannel, num, val * 127 );
 
 	};
