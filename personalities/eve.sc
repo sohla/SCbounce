@@ -65,7 +65,7 @@ var amp = 0;
 		var ch = 9;
 		var n = [0,2,4,5,7,9,11,12].choose;
 		var vel;
-		amp = d.ampValue * 8;//~tween.(v,amp,0.9);
+		amp = d.ampValue * 8;
 		vel = amp * 512;
 
 		if(vel < 10,{vel = 10});

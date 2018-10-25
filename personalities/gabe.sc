@@ -7,17 +7,23 @@ var movingB = false;
 
 var midiOut;
 var midiChannel = 9;
-var notes = [0,-2,-3,-5,-2,-3,-7,-8,-12].stutter(8);
+var notes = [0,-2,-3,-5,-2,-3,-7,-8,-12].stutter(4);
 var note = notes[0];
 var threshold = 0.7;
 var movement = 0.8;
+
+var isHit = false;
+
+var amp = 0;
+		var cha = 4;
+
 //------------------------------------------------------------	
 //
 //------------------------------------------------------------	
 Pdef(ptn,
 	Pbind(
-		\note, Pseq([0,12,2,14,5,17,4,16].stutter(4),inf),
-		\octave, Prand([5,6,8],inf),
+		\note, Pseq([0,12,2,14,5,17,4,16,0,12,2,14,9,21,7,19].stutter(4),inf),
+		\octave, Prand([4,5,6,8],inf),
 		\args, #[]
 		// \amp, 0.8,
 		//\pan, Pwhite(-0.8,0.8,inf)
@@ -39,7 +45,7 @@ Pdef(ptn,
 	//------------------------------------------------------------	
 	~init = { |mo|
 
-		"init NICK".postln;
+		"init GABE".postln;
 
 		Pdef(ptn).set(\dur,0.5);
 		Pdef(ptn).set(\amp,0.8);
@@ -50,37 +56,64 @@ Pdef(ptn,
 		Pdef(ptn).set(\chan,midiChannel);
 
 		midiOut = mo;
+		midiOut.control(cha, 0, 100 );
 	};
 
 	//------------------------------------------------------------	
 	// do all the work(logic) taking data in and playing pattern/synth
 	//------------------------------------------------------------	
 	~next = {|d| 
+		
+		var vel;
+		amp = d.ampValue * 8;
+		vel = amp * 512;
 
+		if(vel < 10,{vel = 10});
+		
 		d.accelMass = d.accelEvent.sumabs * 0.1;//~tween.(d.accelEvent.sumabs * 0.1,d.accelMass,0.9);
 		d.rrateMass = (2.pow(d.rrateEvent.sumabs.div(2.0)).reciprocal).max(0.125*0.5);
 		smooth = ~tween.(d.rrateEvent.sumabs * 0.1 ,smooth,0.5);
 
-		if(d.accelMass > threshold	,{
-			if(moving == false,{
-				moving = true;
+		////
 
-				midiOut.control(0, 0, 10 );
-				midiOut.noteOn(0, 60 - 12 + note, 40);
-				midiOut.noteOn(0, 60 - 24 + note, 40);
+		if( amp > threshold,{
+			if(isHit == false,{
+				
+				//midiOut.noteOn(cha, 60 - 12 + note, 30);
+				midiOut.noteOn(cha, 60 - 48 + note, 40);
+				isHit = true;
 			});
-
 		},{
-
-			if(moving == true,{
-				moving = false;
-				midiOut.noteOff(0, 60 - 12 + note, 40);
-				midiOut.noteOff(0, 60 - 24 + note, 40);
+			if(isHit == true,{
+				//midiOut.noteOff(cha, 60 - 12 + note, 30);
+				midiOut.noteOff(cha, 60 - 48 + note, 40);
 				notes = notes.rotate(-1);
-				note = notes[0] + 12;
+				note = notes[0] + 36;
+				isHit = false;
 			});
-
 		});
+
+		////
+		// if(d.accelMass > threshold	,{
+		// 	if(moving == false,{
+		// 		moving = true;
+
+		// 		midiOut.control(0, 0, 10 );
+		// 		midiOut.noteOn(0, 60 - 12 + note, 40);
+		// 		midiOut.noteOn(0, 60 - 24 + note, 40);
+		// 	});
+
+		// },{
+
+		// 	if(moving == true,{
+		// 		moving = false;
+		// 		midiOut.noteOff(0, 60 - 12 + note, 40);
+		// 		midiOut.noteOff(0, 60 - 24 + note, 40);
+		// 		notes = notes.rotate(-1);
+		// 		note = notes[0] + 12;
+		// 	});
+
+		// });
 		Pdef(ptn).set(\dur,(smooth*20).reciprocal);
 		Pdef(ptn).set(\amp,movement);
 
@@ -118,7 +151,7 @@ Pdef(ptn,
 	//------------------------------------------------------------	
 	~deinit = {
 		Pdef(ptn).stop();
-		"deinit NICK".postln;
+		"deinit GABE".postln;
 		midiOut.allNotesOff(midiChannel);
 		midiOut.allNotesOff(0);
 
@@ -137,7 +170,15 @@ Pdef(ptn,
 	~midiControllerValue = {|num,val|
 		//[num,val].postln;
 
-		if(num == 4,{ threshold = 0.005 + (val * 0.7)});
+		//if(num == 4,{ threshold = 0.005 + (val * 0.7)});
+
+
+		if(num == 4,{ threshold = 0.01 + (val * 0.99)});
+
+		threshold = threshold * 2;
+
+
+
 		// if(num == 1,{ movement = val * 0.8});
 		//midiOut.control(midiChannel, num, val * 127 );
 
