@@ -2,7 +2,7 @@
 
 					var devicesDir = "~/Develop/SuperCollider/Projects/SCbounce/personalities/";
 					var dataPath = "~/Develop/SuperCollider/Projects/SCbounce/data/";
-					var image = Image.new("~/Develop/SuperCollider/Projects/SCbounce/m-ball_logo_vector600.png".asAbsolutePath);
+					// var image = Image.new("~/Develop/SuperCollider/Projects/SCbounce/m-ball_logo_vector600.png".asAbsolutePath);
 
 					var midiControlOffset = 1;
 					var loadDeviceList;
@@ -556,13 +556,13 @@
 					    .perspective_(0.5)
 					    .distance_(3.5);
 
-					graph1.preDrawFunc = {
-						var scale = 0.22;
-						Pen.scale(scale,scale);
-						Pen.drawImage( Point(0,0), image, operation: 'sourceOver', opacity:0.05);
-						Pen.scale(scale.reciprocal,scale.reciprocal);
+					// graph1.preDrawFunc = {
+					// 	var scale = 0.22;
+					// 	Pen.scale(scale,scale);
+					// 	Pen.drawImage( Point(0,0), image, operation: 'sourceOver', opacity:0.05);
+					// 	Pen.scale(scale.reciprocal,scale.reciprocal);
 
-					};
+					// };
 
 					// graph1.view.drawFunc= graph1.view.drawFunc<>{
 					// 	("[data"+"}-->".scramble).draw
