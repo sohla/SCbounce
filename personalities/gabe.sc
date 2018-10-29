@@ -10,7 +10,7 @@ var midiChannel = 9;
 var notes = [0,-2,-3,-5,-2,-3,-7,-8,-12].stutter(4);
 var note = notes[0];
 var threshold = 0.7;
-var movement = 0.8;
+var movement = 0.6;
 
 var isHit = false;
 
@@ -65,33 +65,35 @@ Pdef(ptn,
 	~next = {|d| 
 		
 		var vel;
-		amp = d.ampValue * 8;
-		vel = amp * 512;
+		amp = d.ampValue * 4;
+		vel = amp * 255;
 
 		if(vel < 10,{vel = 10});
+		if(vel > 127,{vel = 127});
 		
 		d.accelMass = d.accelEvent.sumabs * 0.1;//~tween.(d.accelEvent.sumabs * 0.1,d.accelMass,0.9);
 		d.rrateMass = (2.pow(d.rrateEvent.sumabs.div(2.0)).reciprocal).max(0.125*0.5);
 		smooth = ~tween.(d.rrateEvent.sumabs * 0.1 ,smooth,0.5);
 
 		////
-
 		if( amp > threshold,{
 			if(isHit == false,{
-				
-				//midiOut.noteOn(cha, 60 - 12 + note, 30);
-				midiOut.noteOn(cha, 60 - 48 + note, 40);
 				isHit = true;
+				{
+					midiOut.noteOn(cha, 60 - 48 + note, 40);
+				}.defer(0.01);
 			});
 		},{
 			if(isHit == true,{
-				//midiOut.noteOff(cha, 60 - 12 + note, 30);
-				midiOut.noteOff(cha, 60 - 48 + note, 40);
-				notes = notes.rotate(-1);
-				note = notes[0] + 36;
 				isHit = false;
+				{
+				midiOut.noteOff(cha, 60 - 48 + note, 40);
+				}.defer(0.2);
+				notes = notes.rotate(-1);
+				note = notes[0] + 12;
 			});
 		});
+
 
 		////
 		// if(d.accelMass > threshold	,{
@@ -142,7 +144,7 @@ Pdef(ptn,
 	//------------------------------------------------------------	
 
 	~plot = { |d,p|
-		[d.rrateMass,smooth];
+		[amp,threshold];
 
 	};
 

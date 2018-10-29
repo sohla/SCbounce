@@ -44,7 +44,7 @@
 					var dataSizes = [100,200,300,400];
 					var dataSize = dataSizes[0];
 
-					var midiOut, midiController;
+					var midiOut;
 
 					var midiControllers = []; //hold the sliders and values 
 
@@ -80,7 +80,6 @@
 				MIDIClient.init;
 				MIDIClient.destinations;
 				midiOut = MIDIOut(0).latency_(0.01);
-				midiController = MIDIOut(2).latency_(0.01);
 				MIDIIn.connectAll;
 				//------------------------------------------------------------	
 				// 

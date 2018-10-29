@@ -32,6 +32,8 @@ var amp = 0;
 		"init EVE".postln;
 
 		midiOut = mo;
+
+		midiOut.control(9, 0, 80);
 	};
 
 
@@ -65,10 +67,12 @@ var amp = 0;
 		var ch = 9;
 		var n = [0,2,4,5,7,9,11,12].choose;
 		var vel;
-		amp = d.ampValue * 8;
-		vel = amp * 512;
+		amp = d.ampValue * 4;
+		vel = amp * 255;
+		n = n - 12;
 
 		if(vel < 10,{vel = 10});
+		if(vel > 127,{vel = 127});
 
 		d.accelMass = d.accelEvent.sumabs * 0.1;
 		d.rrateMass = (2.pow(d.rrateEvent.sumabs.div(2.0)).reciprocal).max(0.125*0.5);
@@ -79,15 +83,19 @@ var amp = 0;
 
 		if( amp > threshold,{
 			if(isHit == false,{
-				{midiOut.noteOn(ch, 60 + n, vel)}.defer(0.03);
-				["hit",threshold,amp].postln;
 				isHit = true;
+				{
+					midiOut.noteOn(ch, 60 + n, vel);
+					//["hit",threshold,amp].postln;
+				}.defer(0.01);
 			});
 		},{
 			if(isHit == true,{
-				"OFF".postln;
-				{midiOut.noteOff(ch, 60 + n, vel)}.defer(0.1);
 				isHit = false;
+				{
+					//"OFF".postln;
+					midiOut.noteOff(ch, 60 + n, vel);
+				}.defer(0.2);
 			});
 		});
 

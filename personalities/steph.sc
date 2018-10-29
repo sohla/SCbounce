@@ -4,7 +4,7 @@ var smooth = 0;
 var moving = false;
 var midiOut;
 var midiChannel = 2;
-var notes = [0,-12];
+var notes = [0,-12,0,-12,0,-12,0,-12,-5,-17,-12];
 var note = notes[0];
 var isHit = false;
 
@@ -28,7 +28,7 @@ var threshold = 0.7;
 		"init STEPH".postln;
 
 		midiOut = mo;
-
+		midiOut.control(4, 0, 100 );
 	};
 
 	//------------------------------------------------------------	
@@ -46,8 +46,8 @@ var threshold = 0.7;
 			if(isHit == false,{
 				var n = [0,2,5,4].choose ;
 				// midiOut.control(midiChannel, 2, 0 );
-				midiOut.noteOn(4, 60-24+note+n, 10);
-				{midiOut.noteOff(4, 60-24+note+n, 0)}.defer(0.1);
+				midiOut.noteOn(4, 60-12+note+n, 80);
+				{midiOut.noteOff(4, 60-12+note+n, 0)}.defer(0.1);
 
 				isHit = true;
 
@@ -60,12 +60,12 @@ var threshold = 0.7;
 
 		if(smooth > 0.1,{
 
-			if(moving == false && isHit == false,{
+			// if(moving == false && isHit == false,{
 				moving = true;
 
 				// midiOut.control(midiChannel, 2, 70 );
 				midiOut.noteOn(midiChannel, 60 + note -12, 100);
-			});
+			// });
 
 			//midiOut.control(midiChannel, 0, (smooth*127).asInteger );
 		},{
