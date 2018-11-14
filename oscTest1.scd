@@ -261,3 +261,46 @@ b.sendMsg("/hmr/lx", 6,5,0,0);    // send the application the messa
 b = NetAddr.new("192.168.3.40", 57120);    // create the NetAddr
 b.sendMsg("/hmr/default", 1);    // send the application the messa
 
+
+
+
+(
+p = SerialPort(
+    "/dev/cu.usbmodem3666050",    //edit to match your port. SerialPort.listDevices
+    baudrate: 115200,    //check that baudrate is the same as in arduino sketch
+    crtscts: true);
+)
+
+(
+r= Routine({
+    var byte, str, res;
+    99999.do{|i|
+
+		var data = p.read;
+
+		data.postln;
+        if(data==8r300, {
+//             str = "";
+//             while({byte = p.read; byte !=13 }, {
+//                 str= str++byte.asAscii;
+//             });
+//             res= str.asInteger;
+//             ("read value:"+res).postln;
+        });
+    };
+}).play;
+)
+
+r.stop;
+p.close;
+
+
+
+
+
+
+k = SLIPDecoder.new("/dev/cu.usbmodem3666050", 115200, 3);
+
+k.start;
+
+k.actions[0] = {|input| input.postln;};
