@@ -261,46 +261,32 @@ b.sendMsg("/hmr/lx", 6,5,0,0);    // send the application the messa
 b = NetAddr.new("192.168.3.40", 57120);    // create the NetAddr
 b.sendMsg("/hmr/default", 1);    // send the application the messa
 
+RduinoDMX
+Array
 
+a = 23
+a.asAscii
+// Int8Array[ 47, 0, 0, 0, 44, 105, 105, 0, 0, 0, 0, 1, 0, 0, 0, 42 ]
+// Int8Array[ 47, 0, 0, 0, 44, 105, 105, 0, 0, 0, 0, 0, 0, 0, 0, 42 ]
+//k.maxPacketSize
 
+k = SLIPDecoder.new("/dev/cu.usbmodem3666050", 115200, 8);
 
-(
-p = SerialPort(
-    "/dev/cu.usbmodem3666050",    //edit to match your port. SerialPort.listDevices
-    baudrate: 115200,    //check that baudrate is the same as in arduino sketch
-    crtscts: true);
-)
-
-(
-r= Routine({
-    var byte, str, res;
-    99999.do{|i|
-
-		var data = p.read;
-
-		data.postln;
-        if(data==8r300, {
-//             str = "";
-//             while({byte = p.read; byte !=13 }, {
-//                 str= str++byte.asAscii;
-//             });
-//             res= str.asInteger;
-//             ("read value:"+res).postln;
-        });
-    };
-}).play;
-)
-
-r.stop;
-p.close;
-
-
-
-
-
-
-k = SLIPDecoder.new("/dev/cu.usbmodem3666050", 115200, 3);
-
+f = [806,772,739,754,915,983,809,772];
+k.actions = Array.fill(8,{|index| {|i,input| if(index==1,{[index,(input-f[index]).clip(0,1024)].postln;},{[index,input-f[index]].post; " \t".post;})} });
 k.start;
+k.stop;
+k.close;
 
-k.actions[0] = {|input| input.postln;};
+y = 4;
+z = 127;
+a = [ 47, 0, 0, 0, 44, 105, 105, 0, 0, 0, 0, 0, 0, 0, y, z ]
+b = (a[a.size-2].asBinaryDigits.at([4,5,6,7]) ++ a[a.size-1].asBinaryDigits)
+c = b.convertDigits(2);
+
+
+3.asBinaryDigits.at([4,5,6,7])
+[1,0].convertDigits(4)
+1.asBinaryDigits.
+
+31.asBinaryDigits.at(6,7)
