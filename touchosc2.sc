@@ -6,18 +6,21 @@ var dataSize = 8;
 var deviceData = Array.fill(dataSize,0);
 var offsets = Array.fill(dataSize,0);
 var reset;
-var isOn = false;
+var isOn = Array.fill(dataSize,false);
 var rout;
 var sumFiltered = 0;
 var midiOut;
-var midiChannel = 4;
+var midiChannel = 0;
+var midiChannelSpec = [0,9,'linear',1].asSpec;
+var seq = [0,3];
+var root = seq[0];
 
 var creatRout = {
 	if(rout.isNil) { 
 		rout = Routine{ 
 			loop{ 
 				f.(); 
-				0.01.yield;
+				0.03.yield;
 			}; 
 		}.play; 
 	};
@@ -38,29 +41,49 @@ var gate = {|input, threshold, fa, fb|
 var f = {
 
 	var step = -2pi / dataSize;
-	var sum = (deviceData.abs.mean - offsets.abs.mean).abs.sqrt;
+//	var notes = [0-24,4,7-12,10,12,14,17,19];
+	var notes = [-24,-12,0,7,12,19,24,26];
 
-	if( sum.isNaN == false, {
-		sumFiltered =  filter.(sum, sumFiltered, 0.2);
-	});
+				if( isOn.asInt.mean.floor.asBoolean,{
 
-	midiOut.control(midiChannel, 0, (sum*10).asInteger );
+				},{
+							seq = seq.rotate(-1);
+							root = seq[0];
 
-	gate.(sumFiltered,1.7,{
+				});
 
-		if(isOn!=true,{
-			"NoteON".postln;
-			midiOut.noteOn(midiChannel, 10, 100);
-			isOn = true;
+	dataSize.do{|i|
+
+		var sum = deviceData[i]-offsets[i];
+		var v = (sum.sqrt * 5).asInteger.clip(0,127);
+
+		// [sum].postln;
+
+		if( sum.isNaN == false, {
+			sumFiltered =  filter.(sum, sumFiltered, 0.02);
 		});
-	},{
-		if(isOn!=false,{
-			"NoteOFF".postln;
-			midiOut.noteOff(midiChannel, 10, 100);
-			isOn = false;
+		midiOut.control(i, 0, v );
+
+		gate.(sum,5.0,{
+
+			if(isOn[i]!=true,{
+				"NoteON".postln;
+				midiOut.noteOn(i, 72 + notes[i] + root, 100);
+				isOn[i] = true;
+			});
+		},{
+			if(isOn[i]!=false,{
+				"NoteOFF".postln;
+				midiOut.noteOff(i, 72 + notes[i] + root, 100);
+				midiOut.allNotesOff(i);
+				isOn[i] = false;
+
+			});
+
 		});
 
-	});
+	};
+
 };
 
 MIDIClient.init;
@@ -75,20 +98,31 @@ reset = {
 
 controlView = {
 
-	VLayout( 
+	HLayout( 
 		Button()
 			.maxWidth_(100)
+			.maxHeight_(40)
 			.states_([["reset"]])
 			.action_({
+				isOn = Array.fill(dataSize,false);
 				reset.();
+				dataSize.do{|i|midiOut.allNotesOff(i)};
+			}),
+		Knob()
+			.maxWidth_(30)
+			.maxHeight_(40)
+			.step_(1)
+			.action_({|o|
+				midiChannel = midiChannelSpec.map(o.value);
 			})
+
 	)
 };
 
 deviceView = {
 
 	UserView()
-		.background_(Color.grey)
+		.background_(Color.black)
 		.animate_(true)
 		.drawFunc={|v|
 
@@ -102,16 +136,18 @@ deviceView = {
 				var step = -2pi / dataSize;
 		
 		        Pen.addWedge(w@h, val, step * i, 2pi/dataSize);
-				Pen.fillColor = Color.hsv(i/dataSize,1,1,1);
+				Pen.fillColor = Color.hsv(i/dataSize,0.5,1,1);
 		        Pen.fill;
 
 				Pen.addArc(w@h, sum * 10.0, 0, 2pi);
+				Pen.strokeColor = Color.white;
 				Pen.stroke;
 			};
 
 		};
 
 };
+QtGUI.palette = QPalette.dark; 
 
 window = Window("")
 	.bounds_(Rect(
@@ -126,7 +162,7 @@ window.layout = VLayout(deviceView.(), controlView.());
 
 window.onClose = ({
 
-	midiOut.allNotesOff(midiChannel);
+	dataSize.do{|i|midiOut.allNotesOff(i)};
 	killRout.();
 	device.stop;
 	device.close;
@@ -142,3 +178,6 @@ CmdPeriod.doOnce({window.close});
 }.defer(0.8);
 
 )
+a = [false,false]
+
+a.asInt.mean.floor.asBoolean
