@@ -272,8 +272,8 @@ a.asAscii
 
 k = SLIPDecoder.new("/dev/cu.usbmodem3666050", 115200, 8);
 
-f = [806,772,739,754,915,983,809,772];
-k.actions = Array.fill(8,{|index| {|i,input| if(index==1,{[index,(input-f[index]).clip(0,1024)].postln;},{[index,input-f[index]].post; " \t".post;})} });
+f = [811,774,849,799,741,753,919,985];
+k.actions = Array.fill(8,{|index| {|i,input| if(index==1,{[index,(input-f[index]).clip(0,1024)].postln;},{[index,(input-f[index]).clip(0,1024)].post; " \t".post;})} });
 k.start;
 k.stop;
 k.close;
