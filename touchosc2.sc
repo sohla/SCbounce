@@ -12,7 +12,13 @@ var sumFiltered = 0;
 var midiOut;
 var midiChannel = 0;
 var midiChannelSpec = [0,9,'linear',1].asSpec;
-var seq = [0,3];
+
+var notes = [-24,-12,0,7,12,19,24,26];
+var seq = [0,3,8,10];
+
+// var notes = [-24,-10,-4,0,3,5,7,8];
+// var seq = [0,3];
+
 var root = seq[0];
 
 var creatRout = {
@@ -42,7 +48,7 @@ var f = {
 
 	var step = -2pi / dataSize;
 //	var notes = [0-24,4,7-12,10,12,14,17,19];
-	var notes = [-24,-12,0,7,12,19,24,26];
+	
 
 				if( isOn.asInt.mean.floor.asBoolean,{
 
@@ -68,13 +74,13 @@ var f = {
 
 			if(isOn[i]!=true,{
 				"NoteON".postln;
-				midiOut.noteOn(i, 72 + notes[i] + root, 100);
+				midiOut.noteOn(i, 60 + notes[i] + root, 100);
 				isOn[i] = true;
 			});
 		},{
 			if(isOn[i]!=false,{
 				"NoteOFF".postln;
-				midiOut.noteOff(i, 72 + notes[i] + root, 100);
+				midiOut.noteOff(i, 60 + notes[i] + root, 100);
 				midiOut.allNotesOff(i);
 				isOn[i] = false;
 
