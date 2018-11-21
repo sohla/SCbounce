@@ -16,8 +16,11 @@ var midiChannelSpec = [0,9,'linear',1].asSpec;
 var notes = [-24,-12,0,7,12,19,24,26];
 var seq = [0,3,8,10];
 
+// var notes = [-24,-17,-12,-5,0,7,12,24];
+// var seq = [12,7,19];
+
 // var notes = [-24,-10,-4,0,3,5,7,8];
-// var seq = [0,3];
+// var seq = [12,15];
 
 var root = seq[0];
 
