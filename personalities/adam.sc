@@ -15,6 +15,7 @@ var midiChannel = 0;
 var threshold = 0.7;
 var isHit = false;
 
+var trigCount = 0;
 
 //------------------------------------------------------------	
 // PATTERN DEF
@@ -111,12 +112,16 @@ Pdef(ptn,
 
 		});
 
+		if(d.ampValue * 20.0 > 0.1 && trigCount == 0, {
+			trigCount = 5;
 
-		// if(d.accelMass > 0.2,{
-		// 		midiOut.noteOn(midiChannel, 60 + note - 24, 100);
-		// },{
+			midiOut.noteOn(15, 30 + 50.rand, 110);
+		});
 
-		// 	});
+		trigCount = trigCount - 1;
+
+		if (trigCount < 0, {trigCount = 0});
+
 
 		Pdef(ptn).set(\octave,5 + (smooth * 3).floor);
 		Pdef(ptn).set(\dur, (0.4- (smooth * 0.22)));
@@ -126,7 +131,7 @@ Pdef(ptn,
 	//------------------------------------------------------------	
 
 	~plot = { |d,p|
-		[d.rrateMass,smooth];
+		[d.ampValue * 10.0];
 	};
 
 	//------------------------------------------------------------	
@@ -161,3 +166,6 @@ Pdef(ptn,
 
 
 )
+
+
+

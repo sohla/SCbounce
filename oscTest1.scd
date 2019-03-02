@@ -261,3 +261,16 @@ b.sendMsg("/hmr/lx", 6,5,0,0);    // send the application the messa
 b = NetAddr.new("192.168.3.40", 57120);    // create the NetAddr
 b.sendMsg("/hmr/default", 1);    // send the application the messa
 
+
+
+
+NetAddr.langPort;
+NetAddr.localAddr;
+
+o = OSCFunc({ arg msg, time, addr, recvPort;
+	(msg, time, addr, recvPort).postln;
+}, '/text');
+
+n = NetAddr("127.0.0.1",5403)
+n.ip.class
+n.port
