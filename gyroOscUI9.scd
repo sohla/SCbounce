@@ -1,8 +1,8 @@
 				(
 
-					var devicesDir = "~/Develop/SuperCollider/Projects/SCbounce/personalities/";
-					var dataPath = "~/Develop/SuperCollider/Projects/SCbounce/data/";
-					var image = Image.new("~/Develop/SuperCollider/Projects/SCbounce/m-ball_logo_vector600.png".asAbsolutePath);
+					var devicesDir = "~/Develop/SuperCollider/SCbounce/personalities/";
+					var dataPath = "~/Develop/SuperCollider/SCbounce/data/";
+					//var image = Image.new("~/Develop/SuperCollider/Projects/SCbounce/m-ball_logo_vector600.png".asAbsolutePath);
 
 					var midiControlOffset = 1;
 					var loadDeviceList;
@@ -79,7 +79,10 @@
 				//------------------------------------------------------------	
 				MIDIClient.init;
 				MIDIClient.destinations;
-				midiOut = MIDIOut(0).latency_(0.01);
+
+				midiOut = MIDIOut.newByName("IAC Driver", "Bus 1", dieIfNotFound: true);
+				midiOut.latency_(0.01);
+
 				midiController = MIDIOut(2).latency_(0.01);
 				MIDIIn.connectAll;
 				//------------------------------------------------------------	
@@ -558,10 +561,10 @@
 					    .distance_(3.5);
 
 					graph1.preDrawFunc = {
-						var scale = 0.22;
-						Pen.scale(scale,scale);
-						Pen.drawImage( Point(0,0), image, operation: 'sourceOver', opacity:0.05);
-						Pen.scale(scale.reciprocal,scale.reciprocal);
+						// var scale = 0.22;
+						// Pen.scale(scale,scale);
+						// Pen.drawImage( Point(0,0), image, operation: 'sourceOver', opacity:0.05);
+						// Pen.scale(scale.reciprocal,scale.reciprocal);
 
 					};
 
@@ -933,3 +936,4 @@
 
 			)
 
+MIDIClient.destinations;

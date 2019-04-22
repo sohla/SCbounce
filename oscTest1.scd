@@ -255,9 +255,25 @@ b.sendMsg("/hmr/default", 1);    // send the application the messa
 
 b.sendMsg("/hmr/lx", 6,5,0,0);    // send the application the messa
 
-7.do{|i| b.sendMsg("/hmr/lx", i,55,55,55)};    // send the application the messa
+7.do{|i| b.sendMsg("/hmr/lx", i,0,0,0)};    // send the application the messa
 
 
 b = NetAddr.new("192.168.3.40", 57120);    // create the NetAddr
 b.sendMsg("/hmr/default", 1);    // send the application the messa
 
+
+
+
+NetAddr.langPort;
+NetAddr.localAddr;
+
+o = OSCFunc({ arg msg, time, addr, recvPort;
+	([msg, time, addr, recvPort]).postln;
+}, '/text');
+
+o.free;
+
+NetAddr.localAddr.sendMsg("/text","Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse turpis est, aliquet sed dolor sit amet, porta feugiat libero. Quisque tincidunt lorem aliqu")
+
+
+SerialPort
