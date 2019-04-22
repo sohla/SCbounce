@@ -77,7 +77,7 @@ Pdef(ptn,
 				midiOut.noteOff(0, 60 - 12 + note, 40);
 				midiOut.noteOff(0, 60 - 24 + note, 40);
 				notes = notes.rotate(-1);
-				note = notes[0] + 12;
+				note = notes[0];
 			});
 
 		});
@@ -135,7 +135,7 @@ Pdef(ptn,
 	// midi control
 	//------------------------------------------------------------	
 	~midiControllerValue = {|num,val|
-		//[num,val].postln;
+		[num,val].postln;
 
 		if(num == 4,{ threshold = 0.005 + (val * 0.7)});
 		// if(num == 1,{ movement = val * 0.8});

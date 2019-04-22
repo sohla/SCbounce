@@ -7,7 +7,7 @@ var midiChannel = 5;
 var notes = [0,0,-5,-2,-2,-8,-10,-10,-12];
 var note = notes[0];
 
-var threshold = 0.7;
+var threshold = 0.2;
 var isHit = false;
 
 var amp = 0;
@@ -65,8 +65,8 @@ var amp = 0;
 		var ch = 9;
 		var n = [0,2,4,5,7,9,11,12].choose;
 		var vel;
-		amp = d.ampValue * 8;//~tween.(v,amp,0.9);
-		vel = amp * 512;
+		amp = (d.ampValue * 8).clip2(1.0);//~tween.(v,amp,0.9);
+		vel = amp * 120;
 
 		if(vel < 10,{vel = 10});
 
@@ -79,14 +79,14 @@ var amp = 0;
 
 		if( amp > threshold,{
 			if(isHit == false,{
-				{midiOut.noteOn(ch, 60 + n, vel)}.defer(0.03);
+				{midiOut.noteOn(ch, 60 + n, vel)}.defer;
+				{midiOut.noteOff(ch, 60 + n, vel)}.defer(0.5);
 				["hit",threshold,amp].postln;
 				isHit = true;
 			});
 		},{
 			if(isHit == true,{
 				"OFF".postln;
-				{midiOut.noteOff(ch, 60 + n, vel)}.defer(0.1);
 				isHit = false;
 			});
 		});
@@ -116,7 +116,7 @@ var amp = 0;
 	//------------------------------------------------------------	
 
 	~plot = { |d,p|
-		[amp,threshold];
+		[amp,threshold,smooth];
 	};
 
 	//------------------------------------------------------------	
@@ -143,12 +143,15 @@ var amp = 0;
 
 		//[num,val].postln;
 
-		if(num == 4,{ threshold = 0.01 + (val * 0.99)});
+		// if(num == 4,{ threshold = 0.01 + (val * 0.99)});
 
-		threshold = threshold * 2;
+		// threshold = threshold * 2;
 		// midiOut.control(midiChannel, num, val * 127 );
 
 	};
 	
 
 )
+
+
+
