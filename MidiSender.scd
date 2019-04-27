@@ -119,6 +119,7 @@ window = Window("")
 		135)
 		.center_(Window.availableBounds.center)
 	)
+	.alwaysOnTop_(true)
 	.front;
 
 window.layout = VLayout(
