@@ -40,6 +40,8 @@
 		var reloadDevice;
 		var createRout;
 		
+		var createGenerator;
+
 
 		var dataSizes = [100,200,300,400];
 		var dataSize = dataSizes[0];
@@ -53,7 +55,7 @@
 		var deviceProto = (
 			\name: "eve",
 			\ip: "127.0.0.1",
-			\port: 80000,
+			\port: 57120,
 			\gyroEvent: (\pitch:0,\roll:0,\yaw:0),
 			\gyroMass: 0,
 			\rrateEvent: (\x:0,\y:0,\z:0),
@@ -65,6 +67,7 @@
 			\env: nil,	// Environment for injected code
 			\rout: nil,	// Routine calls ~next every ~fps
 			\enabled: true, // are we running
+			\generator: nil, // Routine for generating data
 			);
 
 
@@ -123,6 +126,30 @@
 
 		env
 	};
+	//------------------------------------------------------------	
+	// 
+	//------------------------------------------------------------	
+	createGenerator = {|d|
+
+		var oscOut = NetAddr(d.ip, d.port);
+		var p,y,r;
+		var i=0;
+
+		Routine { 
+	    	loop {
+
+				p = sin(i * 2pi);
+				r = cos(i * 2pi);
+				y = sin(i * 2pi);
+
+				oscOut.sendMsg("/gyrosc/accel", p,r,y);
+				
+		        i = i + 0.001;
+				0.001.yield;
+
+		    }
+		}.stop;
+	};
 
 	//------------------------------------------------------------	
 	// 
@@ -160,6 +187,7 @@
 
 		devices.keysValuesDo({|k,v|
 			v.rout.stop();
+			v.generator.stop();
 			v.env.use{ ~deinit.() };
 		});
 
@@ -205,6 +233,9 @@
 
 		d.rout = createRout.(d);
 		d.rout.reset.play(AppClock);
+
+		d.generator = createGenerator.(d);
+		//d.generator.reset.play(AppClock);
 
 	};
 
@@ -256,7 +287,7 @@
 	createWindowView = {|view|
 
 		var scroll = ScrollView(view,Rect(0,30,width,height - 150 ));
-		
+
 		StaticText(view)
 				.stringColor_(Color.yellow)
 				.font_(Font(size:14))
@@ -271,6 +302,9 @@
 		addDeviceView.(contentView, addDevice.("127.0.0.1"));
 		// addDeviceView.(contentView, addDevice.("192.168.0.1"));
 		// addDeviceView.(contentView, addDevice.("192.168.0.2"));
+
+
+
 
 	};
 
@@ -377,6 +411,17 @@
 					b = NetAddr.new(d.ip, d.port.asInt+1);    // create the NetAddr
 					b.sendMsg("/bounce", "motionReset");    // send the application the messa
 
+				}),
+			Button()
+				.maxWidth_(80)
+				.states_([["Generator", Color.white],["Generator",Color.green]])
+				.action_({|b|
+					b.value.postln;
+					if(b.value == 1,{
+						d.generator.reset.play(AppClock);
+					},{
+						d.generator.stop();
+					});
 				}),
 			stackButton = Button(view)
 				.maxWidth_(100)
