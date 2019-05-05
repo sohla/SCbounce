@@ -50,6 +50,7 @@
 
 		var midiControllers = []; //hold the sliders and values 
 
+		var eulerToQuaternion;
 
 	    // data
 		var deviceProto = (
@@ -126,6 +127,51 @@
 
 		env
 	};
+
+
+	//------------------------------------------------------------	
+	// 
+	//------------------------------------------------------------	
+	/*
+https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles
+
+
+Quaterniond toQuaternion( double yaw, double pitch, double roll) // yaw (Z), pitch (Y), roll (X)
+{
+    // Abbreviations for the various angular functions
+    double cy = cos(yaw * 0.5);
+    double sy = sin(yaw * 0.5);
+    double cp = cos(pitch * 0.5);
+    double sp = sin(pitch * 0.5);
+    double cr = cos(roll * 0.5);
+    double sr = sin(roll * 0.5);
+
+    Quaterniond q;
+    q.w() = cy * cp * cr + sy * sp * sr;
+    q.x() = cy * cp * sr - sy * sp * cr;
+    q.y() = sy * cp * sr + cy * sp * cr;
+    q.z() = sy * cp * cr - cy * sp * sr;
+    return q;
+}
+
+*/
+
+	eulerToQuaternion = {|y,p,r|
+
+	    var cy = cos(y * 0.5);
+	    var sy = sin(y * 0.5);
+	    var cp = cos(p * 0.5);
+	    var sp = sin(p * 0.5);
+	    var cr = cos(r * 0.5);
+	    var sr = sin(r * 0.5);
+
+		Quaternion.new(
+    		cy * cp * cr + sy * sp * sr,
+    		cy * cp * sr - sy * sp * cr,
+    		sy * cp * sr + cy * sp * cr,
+    		sy * cp * cr - cy * sp * sr
+		)
+	};
 	//------------------------------------------------------------	
 	// 
 	//------------------------------------------------------------	
@@ -134,15 +180,16 @@
 		var oscOut = NetAddr(d.ip, d.port);
 		var p,y,r;
 		var i=0;
-
+		var q;
 		Routine { 
 	    	loop {
 
-				p = sin(i * 2pi);
-				r = cos(i * 2pi);
-				y = sin(i * 2pi);
+				p = cos(i * 2pi * 0.002) * 90;
+				r = sin(i * 2pi * 0.01) * 90;
+				y = sin(i * 2pi * 0.006) * 90;
 
-				oscOut.sendMsg("/gyrosc/accel", p,r,y);
+				q = eulerToQuaternion.(y,p,r);
+				oscOut.sendMsg("/gyrosc/quat", q.coordinates[0],q.coordinates[1],q.coordinates[2],q.coordinates[3]);
 				
 		        i = i + 0.001;
 				0.001.yield;
@@ -981,26 +1028,3 @@
 
 )
 
-/*
-https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles
-
-
-Quaterniond toQuaternion( double yaw, double pitch, double roll) // yaw (Z), pitch (Y), roll (X)
-{
-    // Abbreviations for the various angular functions
-    double cy = cos(yaw * 0.5);
-    double sy = sin(yaw * 0.5);
-    double cp = cos(pitch * 0.5);
-    double sp = sin(pitch * 0.5);
-    double cr = cos(roll * 0.5);
-    double sr = sin(roll * 0.5);
-
-    Quaterniond q;
-    q.w() = cy * cp * cr + sy * sp * sr;
-    q.x() = cy * cp * sr - sy * sp * cr;
-    q.y() = sy * cp * sr + cy * sp * cr;
-    q.z() = sy * cp * cr - cy * sp * sr;
-    return q;
-}
-
-*/
