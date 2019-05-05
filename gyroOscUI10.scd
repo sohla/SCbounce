@@ -336,6 +336,7 @@ Quaterniond toQuaternion( double yaw, double pitch, double roll) // yaw (Z), pit
 	createWindowView = {|view|
 
 		var scroll = ScrollView(view,Rect(0,30,width,height - 150 ));
+		var d;
 
 		StaticText(view)
 				.stringColor_(Color.yellow)
@@ -348,9 +349,14 @@ Quaterniond toQuaternion( double yaw, double pitch, double roll) // yaw (Z), pit
 		scroll.canvas = contentView;
 
 		// set this for quick connection to device
-		addDeviceView.(contentView, addDevice.("127.0.0.1"));
-		// addDeviceView.(contentView, addDevice.("192.168.0.1"));
-		// addDeviceView.(contentView, addDevice.("192.168.0.2"));
+		//addDeviceView.(contentView, addDevice.("127.0.0.1"));
+
+		// d = addDevice.("127.0.0.1");
+		// d.port = 57120;
+		// addDeviceView.(contentView, d);
+		// d = addDevice.("10.1.1.4");
+		// d.port = 57120;
+		// addDeviceView.(contentView, d);
 
 
 
