@@ -191,6 +191,8 @@ Quaterniond toQuaternion( double yaw, double pitch, double roll) // yaw (Z), pit
 				q = eulerToQuaternion.(y,p,r);
 				oscOut.sendMsg("/gyrosc/quat", q.coordinates[0],q.coordinates[1],q.coordinates[2],q.coordinates[3]);
 				
+				//oscOut.sendMsg("/gyrosc/rrate", p, r, y);
+
 		        i = i + 0.001;
 				0.001.yield;
 
