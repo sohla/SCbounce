@@ -308,3 +308,12 @@ b.sendMsg("/acc", 200,0,0);
 	    }
 	}.play;
 )
+
+
+
+
+b = NetAddr("127.0.0.1",2345);
+b.sendMsg("/Content/a/params/play");    
+b.sendMsg("/Content/a/params/alpha",0);    
+b.sendMsg("/Content/a/params/stop");    
+b.sendMsg("/Content/color/params/color",0,255,255,0);    
