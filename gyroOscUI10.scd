@@ -190,7 +190,7 @@ Quaterniond toQuaternion( double yaw, double pitch, double roll) // yaw (Z), pit
 
 				q = eulerToQuaternion.(y,p,r);
 				oscOut.sendMsg("/gyrosc/quat", q.coordinates[0],q.coordinates[1],q.coordinates[2],q.coordinates[3]);
-				
+
 				//oscOut.sendMsg("/gyrosc/rrate", p, r, y);
 
 		        i = i + 0.001;
@@ -251,14 +251,14 @@ Quaterniond toQuaternion( double yaw, double pitch, double roll) // yaw (Z), pit
 	// 
 	//------------------------------------------------------------	
 
-	addDevice = { |ip|
+	addDevice = { |ip,port|
 
 		var d = Event.new(proto:deviceProto);
 		
 		d.ip = ip;
+		d.port = port;
 
-
-		devices.put(ip,d);
+		devices.put(port,d);
 		
 		// load the data
 		reloadDevice.(d);
@@ -348,18 +348,10 @@ Quaterniond toQuaternion( double yaw, double pitch, double roll) // yaw (Z), pit
 		contentView.layout_(VLayout());
 		scroll.canvas = contentView;
 
-		// set this for quick connection to device
-		//addDeviceView.(contentView, addDevice.("127.0.0.1"));
-
-		// d = addDevice.("127.0.0.1");
-		// d.port = 57120;
+		// example of loading a device (can only make 1 with generator)
+		// d = addDevice.("127.0.0.1",57120);
 		// addDeviceView.(contentView, d);
-		// d = addDevice.("10.1.1.4");
-		// d.port = 57120;
-		// addDeviceView.(contentView, d);
-
-
-
+		// addOSCDeviceListeners.(d);
 
 	};
 
@@ -554,7 +546,7 @@ Quaterniond toQuaternion( double yaw, double pitch, double roll) // yaw (Z), pit
 					// remove midi controller listener
 					midiControllers.do{|mc|mc.postln;mc.free};
 
-					devices.removeAt(d.ip);
+					devices.removeAt(d.port);
 
 				})
 
@@ -901,8 +893,8 @@ Quaterniond toQuaternion( double yaw, double pitch, double roll) // yaw (Z), pit
 		rrateListener = OSCFunc({ |msg, time, addr, recvPort|
 			//[msg, time, addr, recvPort].postln;
 
-			if(devices.at(addr.ip) != nil,{
-				devices.at(addr.ip).rrateEvent = (
+			if(devices.at(addr.port) != nil,{
+				devices.at(addr.port).rrateEvent = (
 					\x:msg[1].asFloat,
 					\y:msg[2].asFloat,
 					\z:msg[3].asFloat);
@@ -912,8 +904,8 @@ Quaterniond toQuaternion( double yaw, double pitch, double roll) // yaw (Z), pit
 
 		accelListener = OSCFunc({ |msg, time, addr, recvPort|
 
-			if(devices.at(addr.ip) != nil,{
-				devices.at(addr.ip).accelEvent = (
+			if(devices.at(addr.port) != nil,{
+				devices.at(addr.port).accelEvent = (
 					\x:msg[1].asFloat,
 					\y:msg[2].asFloat,
 					\z:msg[3].asFloat);
@@ -926,16 +918,15 @@ Quaterniond toQuaternion( double yaw, double pitch, double roll) // yaw (Z), pit
 			var sx,sy,sz,qe,q,ss,r;
 			var tr;
 
-			if(devices.at(addr.ip) != nil,{
-
-				devices.at(addr.ip).quatEvent = (
+			if(devices.at(addr.port) != nil,{
+				devices.at(addr.port).quatEvent = (
 					\w:msg[1].asFloat,
 					\x:msg[2].asFloat,
 					\y:msg[3].asFloat,
 					\z:msg[4].asFloat);
 
 				// take quaternion and convert to ueler angles 
-				qe = devices.at(addr.ip).quatEvent;
+				qe = devices.at(addr.port).quatEvent;
 				q = Quaternion.new(qe.w,qe.x,qe.y,qe.z);
 				// ss = Quaternion.new(0.2,0.1,0.4,-0.3) + q;
 				r = q.asEuler;
@@ -945,7 +936,7 @@ Quaterniond toQuaternion( double yaw, double pitch, double roll) // yaw (Z), pit
 				//oscOut.sendMsg("/bounce/quat",r[0],r[1],r[2]);
 
 				// save converted data as Event
-				devices.at(addr.ip).gyroEvent = (
+				devices.at(addr.port).gyroEvent = (
 					\pitch:tr[2].asFloat,
 					\roll:tr[0].asFloat,
 					\yaw:tr[1].asFloat);
@@ -957,10 +948,10 @@ Quaterniond toQuaternion( double yaw, double pitch, double roll) // yaw (Z), pit
 		}, '/gyrosc/quat', na);
 			
 		ampListener = OSCFunc({ |msg, time, addr, recvPort|
-["Amp",msg, time, addr, recvPort].postln;
-				if(devices.at(addr.ip) != nil,{
-					devices.at(addr.ip).ampValue = msg[1].asFloat;
-					devices.at(addr.ip).env.use{ ~onAmp.(msg[1].asFloat) };
+
+				if(devices.at(addr.port) != nil,{
+					devices.at(addr.port).ampValue = msg[1].asFloat;
+					devices.at(addr.port).env.use{ ~onAmp.(msg[1].asFloat) };
 				});
 		}, '/gyrosc/amp', na);
 
@@ -969,13 +960,13 @@ Quaterniond toQuaternion( double yaw, double pitch, double roll) // yaw (Z), pit
 	startOSCListening = {
 
 		buttonListener = OSCFunc({ |msg, time, addr, recvPort|
+			[msg, time, addr, recvPort].postln;
 			if(msg[1].asFloat == 1.0, {
-				if(devices.at(addr.ip) == nil,{
+				if(devices.at(addr.port) == nil,{
 					{
 
-						var d = addDevice.(addr.ip);
+						var d = addDevice.(addr.ip, addr.port);
 
-						d.port = addr.port;
 						[d.port,recvPort].postln;
 						addDeviceView.(contentView, d);
 
@@ -983,7 +974,7 @@ Quaterniond toQuaternion( double yaw, double pitch, double roll) // yaw (Z), pit
 
 					}.defer;
 				},{
-					devices.removeAt(addr.ip);
+					//devices.removeAt(addr.port);
 				});
 			});
 
