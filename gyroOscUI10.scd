@@ -22,7 +22,7 @@
 
 		var createPlotterGroup, createGyroCanvas, createAccelCanvas, createTransportView;
 		var createWindowView, addDeviceView;
-		var startOSCListening, stopOSCListening, enableOSCListening, disableOSCListening;
+		var startOSCListening, stopOSCListening, enableOSCListening, disableOSCListening, addOSCDeviceListeners;
 
 		var addDevice, removeDevice;
 
@@ -881,37 +881,13 @@ Quaterniond toQuaternion( double yaw, double pitch, double roll) // yaw (Z), pit
 	//------------------------------------------------------------	
 	// osc listneners
 	//------------------------------------------------------------	
+	addOSCDeviceListeners = {|d|
 
-	startOSCListening = {
+		var na = NetAddr.new(d.ip, d.port);
 
-		buttonListener = OSCFunc({ |msg, time, addr, recvPort|
-			if(msg[1].asFloat == 1.0, {
-				if(devices.at(addr.ip) == nil,{
-					{
-						var d = addDevice.(addr.ip);
-						d.port = addr.port;
-						addDeviceView.(contentView, d)
-					}.defer;
-				},{
-					devices.removeAt(addr.ip);
-				});
-			});
+		// gryoListner = OSCFunc({ |msg, time, addr, recvPort|
 
-		}, '/gyrosc/button');
-
-		gryoListner = OSCFunc({ |msg, time, addr, recvPort|
-
-			// don't store as quaternions will supply us with data
-
-			// if(devices.at(addr.ip) != nil,{
-			// 	devices.at(addr.ip).gyroEvent = (
-			// 		\pitch:msg[1].asFloat,
-			// 		\roll:msg[2].asFloat,
-			// 		\yaw:msg[3].asFloat);
-			// });
-		
-		}, '/gyrosc/gyro');
-
+		// }, '/gyrosc/gyro', na);
 
 		// rotMatListner = OSCFunc({ |msg, time, addr, recvPort|
 		// 	// gyroEvent.pitch = msg[1].asFloat;
@@ -932,7 +908,7 @@ Quaterniond toQuaternion( double yaw, double pitch, double roll) // yaw (Z), pit
 					\z:msg[3].asFloat);
 			});
 
-		}, '/gyrosc/rrate');
+		}, '/gyrosc/rrate', na);
 
 		accelListener = OSCFunc({ |msg, time, addr, recvPort|
 
@@ -942,7 +918,7 @@ Quaterniond toQuaternion( double yaw, double pitch, double roll) // yaw (Z), pit
 					\y:msg[2].asFloat,
 					\z:msg[3].asFloat);
 			});
-		}, '/gyrosc/accel');
+		}, '/gyrosc/accel', na);
 
 
 		quatListener = OSCFunc({ |msg, time, addr, recvPort|
@@ -978,16 +954,40 @@ Quaterniond toQuaternion( double yaw, double pitch, double roll) // yaw (Z), pit
 
 
 
-		}, '/gyrosc/quat');
+		}, '/gyrosc/quat', na);
 			
 		ampListener = OSCFunc({ |msg, time, addr, recvPort|
+["Amp",msg, time, addr, recvPort].postln;
 				if(devices.at(addr.ip) != nil,{
 					devices.at(addr.ip).ampValue = msg[1].asFloat;
-
 					devices.at(addr.ip).env.use{ ~onAmp.(msg[1].asFloat) };
 				});
-		}, '/gyrosc/amp');
+		}, '/gyrosc/amp', na);
 
+	};
+	
+	startOSCListening = {
+
+		buttonListener = OSCFunc({ |msg, time, addr, recvPort|
+			if(msg[1].asFloat == 1.0, {
+				if(devices.at(addr.ip) == nil,{
+					{
+
+						var d = addDevice.(addr.ip);
+
+						d.port = addr.port;
+						[d.port,recvPort].postln;
+						addDeviceView.(contentView, d);
+
+						addOSCDeviceListeners.(d);
+
+					}.defer;
+				},{
+					devices.removeAt(addr.ip);
+				});
+			});
+
+		}, '/gyrosc/button');
 	};
 
 	stopOSCListening = {
@@ -1001,27 +1001,27 @@ Quaterniond toQuaternion( double yaw, double pitch, double roll) // yaw (Z), pit
 		quatListener.free;
 	};
 
-	enableOSCListening = {
-		buttonListener.enable;
-		ampListener.enable;
-		gryoListner.enable;
-		// altListener.enable;
-		rrateListener.enable;
-		quatListener.enable;
-		//rotMatListner.enable;
-		//accelListener.enable;
-	};
+	// enableOSCListening = {
+	// 	buttonListener.enable;
+	// 	ampListener.enable;
+	// 	gryoListner.enable;
+	// 	// altListener.enable;
+	// 	rrateListener.enable;
+	// 	quatListener.enable;
+	// 	//rotMatListner.enable;
+	// 	//accelListener.enable;
+	// };
 
-	disableOSCListening = {
-		buttonListener.disable;
-		ampListener.disable;
-		gryoListner.disable;
-		//altListener.disable;
-		rrateListener.disable;
-		//rotMatListner.disable;
-		accelListener.disable;
-		quatListener.disable;
-	};
+	// disableOSCListening = {
+	// 	buttonListener.disable;
+	// 	ampListener.disable;
+	// 	gryoListner.disable;
+	// 	//altListener.disable;
+	// 	rrateListener.disable;
+	// 	//rotMatListner.disable;
+	// 	accelListener.disable;
+	// 	quatListener.disable;
+	// };
 
 
 	//------------------------------------------------------------	
