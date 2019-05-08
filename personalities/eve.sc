@@ -70,11 +70,16 @@ var amp = 0;
 
 		if(vel < 10,{vel = 10});
 
-		d.accelMass = d.accelEvent.sumabs * 0.1;
+		d.accelMass = d.accelEvent.sumabs * 0.33;
 		d.rrateMass = (2.pow(d.rrateEvent.sumabs.div(2.0)).reciprocal).max(0.125*0.5);
 		smooth = ~tween.(d.rrateEvent.sumabs * 0.1,smooth,0.5);
 		
+		////
 
+		if(d.accelMass > 0.7,{
+			{midiOut.noteOn(8, 24 , vel)}.defer;
+			{midiOut.noteOff(8, 24, vel)}.defer(0.5);
+		});
 		////
 
 		if( amp > threshold,{
@@ -116,7 +121,8 @@ var amp = 0;
 	//------------------------------------------------------------	
 
 	~plot = { |d,p|
-		[amp,threshold,smooth];
+		//[amp,threshold,smooth];
+		[d.accelMass]
 	};
 
 	//------------------------------------------------------------	
@@ -133,8 +139,8 @@ var amp = 0;
 	// min and max of plotters output
 	//------------------------------------------------------------	
 
-	~plotMin = 0;
-	~plotMax = 1;
+	~plotMin = -6;
+	~plotMax = 6;
 
 	//------------------------------------------------------------	
 	// midi control

@@ -388,7 +388,7 @@ Quaterniond toQuaternion( double yaw, double pitch, double roll) // yaw (Z), pit
 
 			createPlotterGroup.(va, Rect(450,5,400,240), col, [
 				["a",[Color.yellow,Color.magenta,Color.cyan],{|p| d.env.use{ ~plot.(d)} }]
-			],-1,1);
+			],d.env.use{ ~plotMin.()},d.env.use{ ~plotMax.()});
 		};
 
 		var removeGraphs = {
