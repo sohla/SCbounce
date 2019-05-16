@@ -58,7 +58,7 @@
 			\ip: "127.0.0.1",
 			\port: 57120,
 			\gyroEvent: (\pitch:0,\roll:0,\yaw:0),
-			\gyroMass: 0,
+			//\gyroMass: 0,
 			\rrateEvent: (\x:0,\y:0,\z:0),
 			\rrateMass: 0,
 			\accelEvent: (\x:0,\y:0,\z:0),
@@ -111,7 +111,19 @@
 		// after adding personality to an Environment, add useful functions to be used by anyone
 		var env = Environment.make {
 
+			~model = (
+				\midiOut: midiOut,
+				\midiChannel: 1,
+				\rrateMass: 0,
+				\accelMass: 0,
+				\rrateMassFiltered: 0,
+				\accelMassFiltered: 0,
+				\isHit: false,
+				\isMoving: false,
+			);
+
 			interpret(str);
+
 
 			~tween = {|input,history,friction = 0.5|
 				(friction * input + ((1 - friction) * history))
@@ -120,9 +132,6 @@
 			~slope = {|input,history|
 				history - input
 			};
-
-
-
 		};	
 
 		env
@@ -210,6 +219,11 @@ Quaterniond toQuaternion( double yaw, double pitch, double roll) // yaw (Z), pit
 				var i=0;
 				loop{ 
 					d.env.use{
+						// process data -> personality model 
+						~processDeviceData.(d);
+
+						~processTriggers.(d);
+
 						~next.(d);
 						(~secs.()).yield;
 						i=i+1;
@@ -277,7 +291,7 @@ Quaterniond toQuaternion( double yaw, double pitch, double roll) // yaw (Z), pit
 
 		// start new personality
 		d.env = loadPersonality.(d.name);
-		d.env.use{ ~init.(midiOut) };
+		d.env.use{ ~init.() };
 
 
 		d.rout = createRout.(d);
