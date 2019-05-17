@@ -1,9 +1,21 @@
+<<<<<<< HEAD
 var m = ~model;
 
 m.midiChannel = 9;
 
 //------------------------------------------------------------	
 Pdef(m.ptn,
+=======
+
+
+
+var m = ~model;
+var ptn = m.ptn;
+m.midiChannel = 9;
+
+//------------------------------------------------------------	
+Pdef(ptn,
+>>>>>>> 09a183e88568302c98d2dce73ee8ef345c7a189d
 	Pbind(
 		\note, Pseq([0,9,7,0,-3,-5],inf),
 		\args, #[],
@@ -59,8 +71,13 @@ Pdef(m.ptn,
 	//------------------------------------------------------------	
 	~next = {|d| 
 
+<<<<<<< HEAD
 		Pdef(m.ptn).set(\dur,(m.rrateMassFiltered * 20).reciprocal);
 		Pdef(m.ptn).set(\amp,0.4);
+=======
+		Pdef(ptn).set(\dur,(m.rrateMassFiltered * 20).reciprocal);
+		Pdef(ptn).set(\amp,0.4);
+>>>>>>> 09a183e88568302c98d2dce73ee8ef345c7a189d
 
 	};
 
