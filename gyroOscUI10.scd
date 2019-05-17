@@ -112,6 +112,8 @@
 		var env = Environment.make {
 
 			~model = (
+				\name: name,
+				\ptn: Array.fill(16,{|i|i=90.rrand(65).asAscii}),
 				\midiOut: midiOut,
 				\midiChannel: 1,
 				\rrateMass: 0,
@@ -122,7 +124,76 @@
 				\isMoving: false,
 			);
 
+			//------------------------------------------------------------	
+			// frame rate of rout
+			~secs = 0.03;
+
+			//------------------------------------------------------------	
+			// process data->model
+			~processDeviceData = {|d|
+
+				~model.accelMass = d.accelEvent.sumabs * 0.33;
+				~model.rrateMass = d.rrateEvent.sumabs * 0.1;
+
+				~model.accelMassFiltered = ~tween.(~model.accelMass, ~model.accelMassFiltered, 0.7);
+				~model.rrateMassFiltered = ~tween.(~model.rrateMass, ~model.rrateMassFiltered, 0.5);
+			};
+
+			//------------------------------------------------------------	
+			// process triggers
+			~processTriggers = {|d|
+
+				// isHit
+
+				if(~model.accelMassFiltered > 0.2,{
+					if(~model.isHit == false,{
+						~model.isHit = true;
+						~onHit.(~model.isHit);
+					});
+				},{
+					if(~model.isHit == true,{
+						~model.isHit = false;
+						~onHit.(~model.isHit);
+					});
+				});
+
+				//isMoving
+
+				if(~model.rrateMassFiltered > 0.1,{
+
+					if(~model.isMoving == false,{
+
+						~model.isMoving = true;
+						Pdef(~model.ptn).resume();
+					});
+
+					//midiOut.control(midiChannel, 1, (smooth*127).asInteger );
+				},{
+
+					if(~model.isMoving == true,{
+
+						~model.isMoving = false;
+						Pdef(~model.ptn).pause();
+					});
+				});			
+			};
+
+			//------------------------------------------------------------	
+			~init = { 
+				("init" + ~model.name).postln;
+			};
+			
+			//------------------------------------------------------------	
+			~deinit = {
+				Pdef(~model.ptn).stop();
+				("deinit" + ~model.name).postln;
+				~model.midiOut.allNotesOff(~model.midiChannel);
+
+			};
+
+			//------------------------------------------------------------	
 			interpret(str);
+			//------------------------------------------------------------	
 
 
 			~tween = {|input,history,friction = 0.5|
