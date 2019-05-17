@@ -137,6 +137,7 @@
 
 				~model.accelMassFiltered = ~tween.(~model.accelMass, ~model.accelMassFiltered, 0.7);
 				~model.rrateMassFiltered = ~tween.(~model.rrateMass, ~model.rrateMassFiltered, 0.5);
+
 			};
 
 			//------------------------------------------------------------	
@@ -162,7 +163,6 @@
 				if(~model.rrateMassFiltered > 0.1,{
 
 					if(~model.isMoving == false,{
-
 						~model.isMoving = true;
 						Pdef(~model.ptn).resume();
 					});
