@@ -5,7 +5,7 @@ m.midiChannel = 9;
 Pbind(
 		\note, Pseq([0,9,7,0,-3,-5],inf),
 		\args, #[],
-));
+);
 //------------------------------------------------------------	
 
 (
@@ -57,13 +57,10 @@ Pbind(
 	//------------------------------------------------------------	
 	~next = {|d| 
 
-<<<<<<< HEAD
 		Pdef(m.ptn).set(\dur,(m.rrateMassFiltered * 20).reciprocal);
 		Pdef(m.ptn).set(\amp,0.4);
-=======
-		Pdef(ptn).set(\dur,(m.rrateMassFiltered * 20).reciprocal);
-		Pdef(ptn).set(\amp,0.4);
->>>>>>> 09a183e88568302c98d2dce73ee8ef345c7a189d
+		Pdef(m.ptn).set(\dur,(m.rrateMassFiltered * 20).reciprocal);
+		Pdef(m.ptn).set(\amp,0.4);
 
 	};
 
