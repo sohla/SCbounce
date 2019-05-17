@@ -1,5 +1,5 @@
 var m = ~model;
-m.midiChannel = 9;
+m.midiChannel = 2;
 
 //------------------------------------------------------------	
 // pattern
@@ -17,7 +17,7 @@ Pdef(m.ptn,
 
 ~init = ~init <> { 
 	Pdef(m.ptn).set(\dur,0.5);
-	Pdef(m.ptn).set(\octave,8);
+	Pdef(m.ptn).set(\octave,4);
 	Pdef(m.ptn).set(\amp,0.8);
 	Pdef(m.ptn).set(\type,\midi);
 	Pdef(m.ptn).set(\midiout,m.midiOut);
@@ -32,13 +32,13 @@ Pdef(m.ptn,
 ~onHit = {|state|
 
 	var ch = 9;
-	var n = [0,2,4,5,7,9,11,12].choose;
+	var n = [0].choose;
 	var vel = 50;
 
 	if(state == true,{
-		m.midiOut.noteOn(m.midiChannel, 60 + n , vel);
+		m.midiOut.noteOn(m.midiChannel, 60 + n + 48, vel);
 	},{
-		m.midiOut.noteOff(m.midiChannel, 60 + n , vel);
+		m.midiOut.noteOff(m.midiChannel, 60 + n + 48, vel);
 	});
 };
 
@@ -55,9 +55,10 @@ Pdef(m.ptn,
 //------------------------------------------------------------	
 ~next = {|d| 
 
-	Pdef(m.ptn).set(\dur,((m.rrateMassFiltered).pow(0.5)* 4).reciprocal);
-	Pdef(m.ptn).set(\amp,0.4);
+	// Pdef(m.ptn).set(\dur,((m.rrateMassFiltered).pow(0.5)* 4).reciprocal);
+	// Pdef(m.ptn).set(\amp,0.4);
 
+	m.midiOut.control(m.midiChannel, 0, 30 );
 };
 
 //------------------------------------------------------------	

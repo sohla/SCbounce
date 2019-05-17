@@ -9,7 +9,6 @@ A parched landscape: Late summer (season of eels or kooyang) is the hottest and 
 Season of honey bees: Autumn (late March to June)
 
 Sunrises, bees and flocking birds: Autumn (the season of native honey bees or gwangal moronn) is when the country starts to cool down after the summer heat.
-Chinnup
 
 [](Chinnup)
 Season of cockatoos: Winter (June to late July)
@@ -33,3 +32,10 @@ Wildlife and wildflowers: In spring (season of wildflowers or petyan), the bush 
 Season of butterflies: Early summer (mid-November to late January)
 
 Warmth, butterflies and wetland plants: With the onset of summer heat, the land dries and the weather stabilises. This is the season of butterflies or ballambar.
+
+
+
+
+
+smooth = ~tween.(d.rrateEvent.sumabs * 0.1 ,smooth,0.5);
+

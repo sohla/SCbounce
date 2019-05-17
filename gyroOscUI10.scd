@@ -18,7 +18,7 @@
 
 
 		var reloadButton;
-		var stackButton;
+		// var stackButton;
 
 		var createPlotterGroup, createGyroCanvas, createAccelCanvas, createTransportView;
 		var createWindowView, addDeviceView;
@@ -212,30 +212,7 @@
 	//------------------------------------------------------------	
 	// 
 	//------------------------------------------------------------	
-	/*
-https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles
-
-
-Quaterniond toQuaternion( double yaw, double pitch, double roll) // yaw (Z), pitch (Y), roll (X)
-{
-    // Abbreviations for the various angular functions
-    double cy = cos(yaw * 0.5);
-    double sy = sin(yaw * 0.5);
-    double cp = cos(pitch * 0.5);
-    double sp = sin(pitch * 0.5);
-    double cr = cos(roll * 0.5);
-    double sr = sin(roll * 0.5);
-
-    Quaterniond q;
-    q.w() = cy * cp * cr + sy * sp * sr;
-    q.x() = cy * cp * sr - sy * sp * cr;
-    q.y() = sy * cp * sr + cy * sp * cr;
-    q.z() = sy * cp * cr - cy * sp * sr;
-    return q;
-}
-
-*/
-
+	//https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles
 	eulerToQuaternion = {|y,p,r|
 
 	    var cy = cos(y * 0.5);
@@ -308,7 +285,6 @@ Quaterniond toQuaternion( double yaw, double pitch, double roll) // yaw (Z), pit
 	//------------------------------------------------------------	
 	
 	startup = {
-
 		names = loadDeviceList.();
 	};
 
@@ -395,9 +371,9 @@ Quaterniond toQuaternion( double yaw, double pitch, double roll) // yaw (Z), pit
 					reloadDevice.(v);
 				});
 			});
-			if(uni==97,{//a
-				stackButton.valueAction_((stackButton.value+1).mod(3));
-			});
+			// if(uni==97,{//a
+			// 	stackButton.valueAction_((stackButton.value+1).mod(3));
+			// });
 			if(uni==100,{
 				//•disconnect
 			});
@@ -469,7 +445,7 @@ Quaterniond toQuaternion( double yaw, double pitch, double roll) // yaw (Z), pit
 			// 	["rrateZ",Color.yellow,{|p| d.rrateEvent.z }]
 			// ],-6,6);
 
-			createPlotterGroup.(va, Rect(450,5,400,240), col, [
+			createPlotterGroup.(va, Rect(250,5,400,240), col, [
 				["a",[Color.yellow,Color.magenta,Color.cyan],{|p| d.env.use{ ~plot.(d)} }]
 			],d.env.use{ ~plotMin.()},d.env.use{ ~plotMax.()});
 		};
@@ -477,8 +453,8 @@ Quaterniond toQuaternion( double yaw, double pitch, double roll) // yaw (Z), pit
 		var removeGraphs = {
 			va.children[2].removeAll;
 			va.children[2].remove;
-			va.children[2].removeAll;
-			va.children[2].remove;
+			// va.children[2].removeAll;
+			// va.children[2].remove;
 			// vb.children[1].removeAll;
 			// vb.children[1].remove;
 			// vc.children[0].removeAll;
@@ -494,7 +470,7 @@ Quaterniond toQuaternion( double yaw, double pitch, double roll) // yaw (Z), pit
 				})
 			}!8;
 		var sliderView = {|v|
-			UserView(v,Rect(250,0,200,250)).layout_( HLayout(
+			UserView(v,Rect(700,0,200,250)).layout_( HLayout(
 				*sliders.collect{|c,i|
 
 					var mc = MIDIFunc.cc({|val, num, chan| 
@@ -517,7 +493,7 @@ Quaterniond toQuaternion( double yaw, double pitch, double roll) // yaw (Z), pit
 
 
 
-		header = View(view).background_(col).layout_( HLayout(
+		header = View(view).background_(col).maxHeight_(50).layout_( HLayout(
 
 			Button()
 				.maxWidth_(40)
@@ -553,16 +529,15 @@ Quaterniond toQuaternion( double yaw, double pitch, double roll) // yaw (Z), pit
 						d.generator.stop();
 					});
 				}),
-			stackButton = Button(view)
-				.maxWidth_(100)
-				.states_([
-					["attitude"],	
-					["accelerometer"],
-					["rotation rate"]
-				])
-				.action_({|b|
-					stackLayout.index = b.value;
-				}),
+			// stackButton = Button(view)
+			// 	.maxWidth_(100)
+			// 	.states_([
+			// 		["attitude"],	
+			// 		//["accelerometer"]
+			// 	])
+			// 	.action_({|b|
+			// 		stackLayout.index = b.value;
+			// 	}),
 			Button(view)
 				.maxWidth_(60)
 				.states_([
@@ -634,21 +609,22 @@ Quaterniond toQuaternion( double yaw, double pitch, double roll) // yaw (Z), pit
 				})
 
 		));
-		view.layout.spacing_(1);
+		//view.layout.spacing_(1);
 		view.layout.add(stackView = View()
 			//.background_(Color.yellow)
 			.minHeight_(250)
+			.maxHeight_(250)
 			.layout_( stackLayout = StackLayout(
-				va = UserView().background_(col),
-				vb = View().background_(col),
-				vc = View().background_(col)
+				va = View().background_(col),
+				//vb = View().background_(col),
+				//vc = View().background_(col)
 				)
 			);
 		);	
 
 		sliderView.(va);
 		createGyroCanvas.(va,d);
-		createAccelCanvas.(vb,d);
+		//createAccelCanvas.(vb,d);
 
 		contentView.layout.add(nil);
 	};
@@ -728,10 +704,11 @@ Quaterniond toQuaternion( double yaw, double pitch, double roll) // yaw (Z), pit
 		var cube, top, rate, loc, ico;
 		var p1,p2,p3;
 		var t = (1.0 + (5.0).sqrt) / 2.0;
+	    var accelX, accelY, accelZ;
 
 		graph1 = Canvas3D(view, Rect(5, 5, 245, 240))
 		    .scale_(200)
-			.background_(Color(0.25,0.25,0.25))
+			.background_(Color.black)
 		    .perspective_(0.5)
 		    .distance_(3.5);
 
@@ -746,33 +723,34 @@ Quaterniond toQuaternion( double yaw, double pitch, double roll) // yaw (Z), pit
 		// graph1.view.drawFunc= graph1.view.drawFunc<>{
 		// 	("[data"+"}-->".scramble).draw
 		// };
-		graph1.add(cube = Canvas3DItem.cube
-		    .color_(Color.red(0.8))
-		    .width_(1)
-		);
 
-		graph1.add(top = Canvas3DItem.grid(4)
-			.color_(Color.green(0.9))
-		    .width_(1)
-		    // need to rotate for grids orientation
-		    .transform(Canvas3D.mRotateY(pi/2))
-		);
+		// graph1.add(cube = Canvas3DItem.cube
+		//     .color_(Color.red(0.8))
+		//     .width_(1)
+		// );
 
-		graph1.add(rate = Canvas3DItem.grid(2)
-			.color_(Color.white(0.9))
-		    .width_(1)
-		);
+		// graph1.add(top = Canvas3DItem.grid(4)
+		// 	.color_(Color.green(0.9))
+		//     .width_(1)
+		//     // need to rotate for grids orientation
+		//     .transform(Canvas3D.mRotateY(pi/2))
+		// );
 
-		graph1.add(loc = Canvas3DItem.regPrism(3)
-			.color_(Color.blue(0.9))
-		    .width_(1)
-		);
+		// graph1.add(rate = Canvas3DItem.grid(2)
+		// 	.color_(Color.white(0.9))
+		//     .width_(1)
+		// );
+
+		// graph1.add(loc = Canvas3DItem.regPrism(3)
+		// 	.color_(Color.blue(0.9))
+		//     .width_(1)
+		// );
 
 
 	     graph1.add(p1 = Canvas3DItem.grid(2)
 	        .color_(Color.green)
 			.fill_(false)
-	        .width_(1)
+	        .width_(0)
 			.transform(Canvas3D.mScale(1,t,1))
 	    );
 	    graph1.add(p2 = Canvas3DItem.grid(2)
@@ -823,35 +801,48 @@ Quaterniond toQuaternion( double yaw, double pitch, double roll) // yaw (Z), pit
 			])
 	    );
 
+		graph1.add(accelX = Canvas3DItem.regPrism()
+			.color_(Color.yellow(0.9))
+		    .width_(1)
+		);
+		graph1.add(accelY = Canvas3DItem.regPrism()
+			.color_(Color.magenta(0.9))
+		    .width_(1)
+		);
+		graph1.add(accelZ = Canvas3DItem.regPrism()
+			.color_(Color.cyan(0.9))
+		    .width_(1)
+		);
+
 		// animate
 		graph1.animate(renderRate) {|t|
 
 			var tr = [data.gyroEvent.roll,data.gyroEvent.yaw,data.gyroEvent.pitch];
 			//data.ip.postln;
 	        
-	        loc.transforms = [
-	        	Canvas3D.mScale(1,0.02,0.02),
-	        	Canvas3D.mTranslate(1.5,0,0),
-		        Canvas3D.mRotateX(tr[0]),
-		        Canvas3D.mRotateY(tr[1]),
-		        Canvas3D.mRotateZ(tr[2]),
-	        ];
+	        // loc.transforms = [
+	        // 	Canvas3D.mScale(1,0.02,0.02),
+	        // 	Canvas3D.mTranslate(1.5,0,0),
+		       //  Canvas3D.mRotateX(tr[0]),
+		       //  Canvas3D.mRotateY(tr[1]),
+		       //  Canvas3D.mRotateZ(tr[2]),
+	        // ];
 
-			cube.transforms = [ 
-				Canvas3D.mScale(0.05,1,0.5),
-				Canvas3D.mTranslate(0,0,0),
-		        Canvas3D.mRotateX(tr[0]),
-		        Canvas3D.mRotateY(tr[1]),
-		        Canvas3D.mRotateZ(tr[2]),
-		    ];
+			// cube.transforms = [ 
+			// 	Canvas3D.mScale(0.05,1,0.5),
+			// 	Canvas3D.mTranslate(0,0,0),
+		 //        Canvas3D.mRotateX(tr[0]),
+		 //        Canvas3D.mRotateY(tr[1]),
+		 //        Canvas3D.mRotateZ(tr[2]),
+		 //    ];
 
-			top.transforms = [ 
-				Canvas3D.mScale(0.05,1,0.5),
-				Canvas3D.mTranslate(1,0,0),
-		        Canvas3D.mRotateX(tr[0]),
-		        Canvas3D.mRotateY(tr[1]),
-		        Canvas3D.mRotateZ(tr[2]),
-		    ];
+			// top.transforms = [ 
+			// 	Canvas3D.mScale(0.05,1,0.5),
+			// 	Canvas3D.mTranslate(1,0,0),
+		 //        Canvas3D.mRotateX(tr[0]),
+		 //        Canvas3D.mRotateY(tr[1]),
+		 //        Canvas3D.mRotateZ(tr[2]),
+		 //    ];
 
 		    ico.transforms = [ 
 				Canvas3D.mScale(0.6,0.6,0.6),
@@ -860,15 +851,34 @@ Quaterniond toQuaternion( double yaw, double pitch, double roll) // yaw (Z), pit
 		        Canvas3D.mRotateZ(tr[2]),
 		    ];
 		    
+			accelY.transforms = [
+				Canvas3D.mScale(0.01,(data.accelEvent.y),0.01),
+		        Canvas3D.mRotateX(data.gyroEvent.roll),
+		        Canvas3D.mRotateY(data.gyroEvent.yaw),
+		        Canvas3D.mRotateZ(data.gyroEvent.pitch),
+		    ];
+
+			accelX.transforms = [ 
+				Canvas3D.mScale((data.accelEvent.z),0.01,0.01),
+		        Canvas3D.mRotateX(data.gyroEvent.roll),
+		        Canvas3D.mRotateY(data.gyroEvent.yaw),
+		        Canvas3D.mRotateZ(data.gyroEvent.pitch),
+		    ];
+			accelZ.transforms = [ 
+				Canvas3D.mScale(0.01,0.01,(data.accelEvent.x)),
+		        Canvas3D.mRotateX(data.gyroEvent.roll),
+		        Canvas3D.mRotateY(data.gyroEvent.yaw),
+		        Canvas3D.mRotateZ(data.gyroEvent.pitch),
+		    ];		    
 		    p1.transforms=ico.transforms;
 			p2.transforms=ico.transforms;
 			p3.transforms=ico.transforms;
 
-			rate.transforms = [ 
-				Canvas3D.mScale(0.01,data.rrateMass.half ,1.0),
-				Canvas3D.mTranslate(-2.1,0,0)
+			// rate.transforms = [ 
+			// 	Canvas3D.mScale(0.01,data.rrateMass.half ,1.0),
+			// 	Canvas3D.mTranslate(-2.1,0,0)
 
-		    ];
+		 //    ];
 
 		};
 
