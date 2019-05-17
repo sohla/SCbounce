@@ -11,7 +11,7 @@
 		//var faces = ["🦆","🦊","🐴","🐯","🍎"];
 
 
-	    var width = Window.screenBounds.width, height = Window.screenBounds.height ;
+	    var width = Window.screenBounds.width * 0.5, height = Window.screenBounds.height ;
 		var startup, shutdown, buildUI;
 
 		var contentView = UserView().background_(Color.grey(0.2));
@@ -388,7 +388,7 @@ Quaterniond toQuaternion( double yaw, double pitch, double roll) // yaw (Z), pit
 		GUI.skin.plot.background = Color.black;
 		GUI.skin.plot.plotColor = Color.white;
 
-		window = Window("m-ball", Rect(0, height, width, height-150), false).front;
+		window = Window("m-ball", Rect(400, 0, width, height-150), false).front;
 		window.view.keyDownAction_({|view,char,mods,uni,code,key|
 			if(uni==114,{//r
 				devices.keysValuesDo({|k,v|
@@ -451,25 +451,23 @@ Quaterniond toQuaternion( double yaw, double pitch, double roll) // yaw (Z), pit
 
 		var createGraphs = {
 
-			createPlotterGroup.(vc, Rect(850,5,400,240), col, [
-				// ["a",[Color.red,Color.green,Color.blue],{|p| [d.gyroEvent.pitch,d.gyroEvent.roll,d.gyroEvent.yaw]}]
+			// createPlotterGroup.(vc, Rect(850,5,400,240), col, [
+			// 	["pitch",Color.red,{|p| d.gyroEvent.pitch }],
+			// 	["roll",Color.green,{|p| d.gyroEvent.roll }],
+			// 	["yaw",Color.blue,{|p| d.gyroEvent.yaw }]
+			// ],-pi,pi);
 
-				["pitch",Color.red,{|p| d.gyroEvent.pitch }],
-				["roll",Color.green,{|p| d.gyroEvent.roll }],
-				["yaw",Color.blue,{|p| d.gyroEvent.yaw }]
-			],-pi,pi);
+			// createPlotterGroup.(vb, Rect(850,5,400,240), col, [
+			// 	["aaccelX",Color.cyan,{|p| d.accelEvent.x }],
+			// 	["accelY",Color.magenta,{|p| d.accelEvent.y }],
+			// 	["accelZ",Color.yellow,{|p| d.accelEvent.z }]
+			// ],-2,2);
 
-			createPlotterGroup.(vb, Rect(850,5,400,240), col, [
-				["aaccelX",Color.cyan,{|p| d.accelEvent.x }],
-				["accelY",Color.magenta,{|p| d.accelEvent.y }],
-				["accelZ",Color.yellow,{|p| d.accelEvent.z }]
-			],-2,2);
-
-			createPlotterGroup.(va, Rect(850,5,400,240), col, [
-				["rrateX",Color.cyan,{|p| d.rrateEvent.x }],
-				["rrateY",Color.magenta,{|p| d.rrateEvent.y }],
-				["rrateZ",Color.yellow,{|p| d.rrateEvent.z }]
-			],-6,6);
+			// createPlotterGroup.(va, Rect(850,5,400,240), col, [
+			// 	["rrateX",Color.cyan,{|p| d.rrateEvent.x }],
+			// 	["rrateY",Color.magenta,{|p| d.rrateEvent.y }],
+			// 	["rrateZ",Color.yellow,{|p| d.rrateEvent.z }]
+			// ],-6,6);
 
 			createPlotterGroup.(va, Rect(450,5,400,240), col, [
 				["a",[Color.yellow,Color.magenta,Color.cyan],{|p| d.env.use{ ~plot.(d)} }]
@@ -481,10 +479,10 @@ Quaterniond toQuaternion( double yaw, double pitch, double roll) // yaw (Z), pit
 			va.children[2].remove;
 			va.children[2].removeAll;
 			va.children[2].remove;
-			vb.children[1].removeAll;
-			vb.children[1].remove;
-			vc.children[0].removeAll;
-			vc.children[0].remove;
+			// vb.children[1].removeAll;
+			// vb.children[1].remove;
+			// vc.children[0].removeAll;
+			// vc.children[0].remove;
 		};
 		var sliders = {|i|
 			Slider()
