@@ -1,13 +1,13 @@
 var m = ~model;
-m.midiChannel = 6;
+m.midiChannel = 9;
 
 //------------------------------------------------------------	
 // pattern
 //------------------------------------------------------------	
 Pdef(m.ptn,
 	Pbind(
-		\note, Pseq([0,5,9,10,2,7],inf),
-		//\root, Pseq([0,5,-2,3].stutter(16),inf),
+		\note, Pseq([0,5,9],inf),
+		\root, Pseq([0,5,-2,3].stutter(16),inf),
 		\args, #[],
 	);
 );
@@ -18,7 +18,7 @@ Pdef(m.ptn,
 
 ~init = ~init <> { 
 	Pdef(m.ptn).set(\dur,0.5);
-	Pdef(m.ptn).set(\octave,4);
+	Pdef(m.ptn).set(\octave,5);
 	Pdef(m.ptn).set(\amp,0.8);
 	Pdef(m.ptn).set(\type,\midi);
 	Pdef(m.ptn).set(\midiout,m.midiOut);
@@ -58,9 +58,9 @@ Pdef(m.ptn,
 
 	var oct = ((0.2 + m.rrateMassFiltered.cubed) * 25).mod(4).floor;
 
-	Pdef(m.ptn).set(\dur,(m.rrateMassFiltered * 7).reciprocal);
+	Pdef(m.ptn).set(\dur,(m.rrateMassFiltered * 14).reciprocal);
 	Pdef(m.ptn).set(\amp, 0.4);
-//	Pdef(m.ptn).set(\octave, 4 + oct);
+	Pdef(m.ptn).set(\octave, 4 + oct);
 
 	m.midiOut.control(m.midiChannel, 0, m.rrateMassFiltered * 127 );
 };

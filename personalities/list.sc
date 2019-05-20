@@ -3,12 +3,12 @@
 		"steph",
 		"adam",
 		"george",
-		"nick",
+		"nick2",
 		"matilda",
 		"eve",
 		"malia",
 		"harvey",
 		"ellis",
-		"gabe"
+		"gabe2"
 	]
 )
