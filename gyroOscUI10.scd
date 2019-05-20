@@ -177,6 +177,17 @@
 					});
 				});			
 			};
+			//------------------------------------------------------------	
+			~play = {
+				Pdef(~model.ptn).play();
+				("play" + ~model.name).postln;
+			};
+
+			~stop = {
+				Pdef(~model.ptn).stop();
+				("stop" + ~model.name).postln;
+				~model.midiOut.allNotesOff(~model.midiChannel);
+			};
 
 			//------------------------------------------------------------	
 			~init = { 
@@ -185,11 +196,11 @@
 			
 			//------------------------------------------------------------	
 			~deinit = {
-				Pdef(~model.ptn).stop();
+				~stop.();
 				("deinit" + ~model.name).postln;
-				~model.midiOut.allNotesOff(~model.midiChannel);
-
 			};
+
+			//------------------------------------------------------------	
 
 			//------------------------------------------------------------	
 			interpret(str);
@@ -501,7 +512,13 @@
 				.valueAction_(1)
 				.action_({|b|
 					d.enabled = b.value.asBoolean;
-					reloadDevice.(d);
+
+					if(d.enabled == true,{
+						reloadDevice.(d);
+//						d.env.use{~play.()};
+					},{
+						d.env.use{~stop.()};
+					});
 				}),				
 			StaticText(view)
 				.stringColor_(Color.white)
