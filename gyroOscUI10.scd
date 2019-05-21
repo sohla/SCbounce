@@ -17,7 +17,7 @@
 		var contentView = UserView().background_(Color.grey(0.2));
 
 
-		var reloadButton;
+		var reloadButton, onOffButton;
 		// var stackButton;
 
 		var createPlotterGroup, createGyroCanvas, createAccelCanvas, createTransportView;
@@ -51,6 +51,41 @@
 		var midiControllers = []; //hold the sliders and values 
 
 		var eulerToQuaternion;
+
+		var com = (
+			\root: 0,
+			\dur: 1,
+			\accelMass: 0,
+			\rrateMass: 0,
+		);
+
+		var comRout = Routine { 
+	    	loop {
+
+				var a = 0, r = 0;
+
+				devices.keysValuesDo({|k,v|
+					v.env.use{
+
+						a = a + ~model.accelMassFiltered;
+						r = r + ~model.rrateMassFiltered;
+
+						//• pre call each device 
+
+						//• call com process functiom
+
+						//• post call each device
+					 };
+				});
+
+				com.accelMass = a;
+				com.rrateMass = r;
+
+				0.03.yield;
+
+		    }
+		}.play;
+
 
 	    // data
 		var deviceProto = (
@@ -111,7 +146,9 @@
 		// after adding personality to an Environment, add useful functions to be used by anyone
 		var env = Environment.make {
 
+
 			~model = (
+				\com: com,
 				\name: name,
 				\ptn: Array.fill(16,{|i|i=90.rrand(65).asAscii}),
 				\midiOut: midiOut,
@@ -122,6 +159,8 @@
 				\accelMassFiltered: 0,
 				\isHit: false,
 				\isMoving: false,
+				\accelMassThreshold: 0.2,
+				\rrateMassThreshold: 0.1,
 			);
 
 			//------------------------------------------------------------	
@@ -146,7 +185,7 @@
 
 				// isHit
 
-				if(~model.accelMassFiltered > 0.2,{
+				if(~model.accelMassFiltered > ~model.accelMassThreshold,{
 					if(~model.isHit == false,{
 						~model.isHit = true;
 						~onHit.(~model.isHit);
@@ -160,20 +199,20 @@
 
 				//isMoving
 
-				if(~model.rrateMassFiltered > 0.1,{
+				if(~model.rrateMassFiltered > ~model.rrateMassThreshold,{
 
 					if(~model.isMoving == false,{
 						~model.isMoving = true;
-						Pdef(~model.ptn).resume();
+						~onMoving.(~model.isMoving);
+						//Pdef(~model.ptn).resume();
 					});
 
 					//midiOut.control(midiChannel, 1, (smooth*127).asInteger );
 				},{
 
 					if(~model.isMoving == true,{
-
 						~model.isMoving = false;
-						Pdef(~model.ptn).pause();
+						~onMoving.(~model.isMoving);
 					});
 				});			
 			};
@@ -274,22 +313,28 @@
 	createRout = {|d|
 
 		Routine { 
-			var i=0;
+//			var i=0;
 
-			if(d.enabled == true,{
-				loop{ 
-					d.env.use{
+			loop{ 
+				d.env.use{
+
+					if(d.enabled == true,{
+		
 						// process data -> personality model 
 						~processDeviceData.(d);
 
+						// model to functions
 						~processTriggers.(d);
 
+						//post process : make changes to patterns etc.
 						~next.(d);
-						(~secs.()).yield;
-						i=i+1;
-					};
-				}
-			});
+
+					});
+
+					(~secs.()).yield;
+//					i=i+1;
+				};
+			}
 		}
 	};
 	//------------------------------------------------------------	
@@ -304,6 +349,7 @@
 	//------------------------------------------------------------	
 	shutdown = {
 
+		comRout.stop();
 		midiControllers.do{|mc|mc.postln;mc.free};
 
 		devices.keysValuesDo({|k,v|
@@ -457,7 +503,7 @@
 			// ],-6,6);
 
 			createPlotterGroup.(va, Rect(250,5,400,240), col, [
-				["a",[Color.yellow,Color.magenta,Color.cyan],{|p| d.env.use{ ~plot.(d)} }]
+				["ymc",[Color.yellow,Color.magenta,Color.cyan],{|p| d.env.use{ ~plot.(d)} }]
 			],d.env.use{ ~plotMin.()},d.env.use{ ~plotMax.()});
 		};
 
@@ -506,9 +552,9 @@
 
 		header = View(view).background_(col).maxHeight_(50).layout_( HLayout(
 
-			Button()
+			onOffButton = Button()
 				.maxWidth_(40)
-				.states_([["off",Color.white,Color.red(0.3)],["on",Color.white,Color.green(0.3)]])
+				.states_([["mute",Color.yellow],["mute"]])
 				.valueAction_(1)
 				.action_({|b|
 					d.enabled = b.value.asBoolean;
@@ -527,7 +573,7 @@
 				.string_(d.ip+":"+d.port),
 			Button()
 				.maxWidth_(40)
-				.states_([["Reset"]])
+				.states_([["reset"]])
 				.action_({|b|
 						d.ip.class.postln;
 						d.port.class.postln;
@@ -537,7 +583,7 @@
 				}),
 			Button()
 				.maxWidth_(80)
-				.states_([["Generator", Color.white],["Generator",Color.green]])
+				.states_([["generator", Color.white],["generator",Color.green]])
 				.action_({|b|
 					b.value.postln;
 					if(b.value == 1,{
@@ -558,17 +604,15 @@
 			Button(view)
 				.maxWidth_(60)
 				.states_([
-					["graphs",Color.white,Color.red(0.3)],	
-					["graphs",Color.white,Color.green(0.3)]
+					["graphs"],	
+					["graphs",Color.green]
 				])
 				.action_({|b|
 					if(b.value == 1,{
-						"ON".postln;
 						createGraphs.();
 
 					},{
 						removeGraphs.();
-						"OFF".postln;
 					});
 				}),
 			dataSizeMenu = PopUpMenu(view)
@@ -586,8 +630,8 @@
 					["reload"],	
 				])
 				.action_({|b|
-					reloadDevice.(d);
-					
+					//reloadDevice.(d);
+					onOffButton.valueAction_(1);
 					// load the list again allows us to make changes
 					names = loadDeviceList.();
 					popup.items = names;
@@ -656,7 +700,7 @@
 		var plotterView = UserView(view,bounds).animate_(true);
 		var size = plotters.size;
 		var pw = bounds.width;
-		var ph = bounds.height / size;
+		var ph = bounds.height;// / size;
 
 		 plotterView.drawFunc_({});
 		 plotters.do{ |specs,i|
@@ -669,16 +713,23 @@
 
 
 			var st = StaticText(plotterView,Rect(0,ph*i,pw*0.1,ph/2))
-				.string_(specs[0])
+				.string_("CH 0")
 				.font_(Font(size:9))
 				.align_(\center)
-				.stringColor_(specs[1]);
+				.stringColor_(specs[1][0]);
 
-			var su = StaticText(plotterView,Rect(0,(ph*i)+(ph/2),pw*0.1,ph/2))
-				.string_(max)
+			var su = StaticText(plotterView,Rect(0,(ph*i)+(ph/3),pw*0.1,ph/2))
+				.string_("CH 1")
 				.font_(Font(size:9))
 				.align_(\center)
-				.stringColor_(specs[1])
+				.stringColor_(specs[1][1])
+				.mouseUpAction_({max = 0});
+
+			var sv = StaticText(plotterView,Rect(0,(ph*i)+(ph/3 * 2),pw*0.1,ph/2))
+				.string_("CH 2")
+				.font_(Font(size:9))
+				.align_(\center)
+				.stringColor_(specs[1][2])
 				.mouseUpAction_({max = 0});
 
 			// StaticText(plotterView,Rect(0,ph*i,pw*0.15,ph/2))

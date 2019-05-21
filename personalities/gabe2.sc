@@ -1,13 +1,16 @@
 var m = ~model;
 m.midiChannel = 9;
+m.accelMassThreshold = 0.5;
+m.rrateMassThreshold = 0.1;
 
 //------------------------------------------------------------	
 // pattern
 //------------------------------------------------------------	
 Pdef(m.ptn,
 	Pbind(
-		\note, Pseq([0,5,9],inf),
-		\root, Pseq([0,5,-2,3].stutter(16),inf),
+		\note, Pseq([-5,0,4],inf),
+		\root, Pseq([0,5,-2,3,-4,1,-5].stutter(16),inf),
+		\func, Pfunc({|e| ~onEvent.(e)}),
 		\args, #[],
 	);
 );
@@ -30,21 +33,30 @@ Pdef(m.ptn,
 //------------------------------------------------------------	
 // triggers
 //------------------------------------------------------------	
+
+~onEvent = {|e|
+	m.com.root = e.root;
+	m.com.dur = e.dur;
+};
+
 ~onHit = {|state|
 
-	var ch = 9;
-	var n = [0].choose;
-	var vel = 50;
+	var vel = 80;
 
-	// if(state == true,{
-	// 	m.midiOut.noteOn(m.midiChannel, 60 + n, vel);
-	// },{
-	// 	m.midiOut.noteOff(m.midiChannel, 60 + n, vel);
-	// });
+	if(state == true,{
+		m.midiOut.noteOn(m.midiChannel, 60 + m.com.root + 24 , vel);
+	},{
+		m.midiOut.noteOff(m.midiChannel, 60 + m.com.root + 24, vel);
+	});
 };
 
 ~onMoving = {|state|
 
+	if(state == true,{
+		Pdef(m.ptn).resume();
+	},{
+		Pdef(m.ptn).pause();
+	});
 };
 
 ~onAmp = {|v|
