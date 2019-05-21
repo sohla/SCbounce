@@ -8,7 +8,7 @@ m.rrateMassThreshold = 0.1;
 Pdef(m.ptn,
 	Pbind(
 		// \note, Pseq([0,5,9,10,2,7],inf),
-		\note, Pseq([-5,0,5,7],inf),
+		\note, Pseq([0],inf),
 		//\root, Pseq([0,5,-2,3].stutter(16),inf),
 		\args, #[],
 	);
@@ -27,6 +27,12 @@ Pdef(m.ptn,
 	Pdef(m.ptn).set(\midiout,m.midiOut);
 	Pdef(m.ptn).set(\chan,m.midiChannel);
 	Pdef(m.ptn).play();
+
+	// change notes
+	Pdef(m.ptn,Pbind( 
+		\note, Pseq([-5,0,5,7],inf)
+	));
+
 };
 
 

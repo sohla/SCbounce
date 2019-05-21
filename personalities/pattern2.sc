@@ -67,6 +67,7 @@ Pdef(\b).stop
     \func, Pfunc{|ev| ev.postln}
 );
 ~a.play
+~a.stop
 (
 TempoClock.default.tempo = 1;
 
