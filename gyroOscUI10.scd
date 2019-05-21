@@ -17,7 +17,7 @@
 		var contentView = UserView().background_(Color.grey(0.2));
 
 
-		var reloadButton, onOffButton;
+		var reloadButton;
 		// var stackButton;
 
 		var createPlotterGroup, createGyroCanvas, createAccelCanvas, createTransportView;
@@ -548,7 +548,7 @@
 
 		};
 
-
+		var onOffButton;
 
 		header = View(view).background_(col).maxHeight_(50).layout_( HLayout(
 
