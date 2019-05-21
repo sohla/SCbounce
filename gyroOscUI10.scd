@@ -232,6 +232,15 @@
 			~init = { 
 				("init" + ~model.name).postln;
 			};
+
+			~buildPattern = {
+				Pdef(~model.ptn).set(\type,\midi);
+				Pdef(~model.ptn).set(\midiout,~model.midiOut);
+				Pdef(~model.ptn).set(\chan,~model.midiChannel);
+				Pdef(~model.ptn).play();
+
+
+			};
 			
 			//------------------------------------------------------------	
 			~deinit = {
@@ -395,7 +404,10 @@
 
 		// start new personality
 		d.env = loadPersonality.(d.name);
-		d.env.use{ ~init.() };
+		d.env.use{ 
+			~init.(); 
+			~buildPattern.();
+		};
 
 
 		d.rout = createRout.(d);

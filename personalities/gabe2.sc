@@ -4,29 +4,23 @@ m.accelMassThreshold = 0.5;
 m.rrateMassThreshold = 0.1;
 
 //------------------------------------------------------------	
-// pattern
-//------------------------------------------------------------	
-Pdef(m.ptn,
-	Pbind(
-		\note, Pseq([-5,0,4],inf),
-		\root, Pseq([0,5,-2,3,-4,1,-5].stutter(16),inf),
-		\func, Pfunc({|e| ~onEvent.(e)}),
-		\args, #[],
-	);
-);
-
-//------------------------------------------------------------	
 // intial state
 //------------------------------------------------------------	
 
 ~init = ~init <> { 
+
+	Pdef(m.ptn,
+		Pbind(
+			\note, Pseq([-5,0,4],inf),
+			\root, Pseq([0,5,-2,3,-4,1,-5].stutter(16),inf),
+			\func, Pfunc({|e| ~onEvent.(e)}),
+			\args, #[],
+		);
+	);
+
 	Pdef(m.ptn).set(\dur,0.5);
 	Pdef(m.ptn).set(\octave,5);
 	Pdef(m.ptn).set(\amp,0.8);
-	Pdef(m.ptn).set(\type,\midi);
-	Pdef(m.ptn).set(\midiout,m.midiOut);
-	Pdef(m.ptn).set(\chan,m.midiChannel);
-	Pdef(m.ptn).play();
 };
 
 
@@ -85,8 +79,7 @@ Pdef(m.ptn,
 ~plotMax = 1;
 
 ~plot = { |d,p|
-	// [(m.rrateMassFiltered * 3).ceil.mod(3)];
-	[m.rrateMassFiltered];
+	[m.rrateMassFiltered, m.accelMassFiltered];
 };
 //------------------------------------------------------------	
 // midi control

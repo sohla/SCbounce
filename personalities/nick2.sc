@@ -2,33 +2,24 @@ var m = ~model;
 m.midiChannel = 1;
 m.accelMassThreshold = 0.5;
 m.rrateMassThreshold = 0.1;
-
-//------------------------------------------------------------	
-// pattern
-//------------------------------------------------------------	
-Pdef(m.ptn,
-	Pbind(
-		\note, Pseq([[-5,0,4]],inf),
-		//\root, Pseq([0,5,-2,3].stutter(16),inf),
-		\strum, 0.12,
-		\args, #[],
-	);
-);
-
 //------------------------------------------------------------	
 // intial state
 //------------------------------------------------------------	
 
 ~init = ~init <> { 
+
+	Pdef(m.ptn,
+		Pbind(
+			\note, Pseq([[-5,0,4]],inf),
+			\strum, 0.12,
+			\args, #[],
+		);
+	);
 	Pdef(m.ptn).set(\dur,0.5);
 	Pdef(m.ptn).set(\octave,5);
 	Pdef(m.ptn).set(\amp,0.2);
-	Pdef(m.ptn).set(\type,\midi);
-	Pdef(m.ptn).set(\midiout,m.midiOut);
-	Pdef(m.ptn).set(\chan,m.midiChannel);
-	Pdef(m.ptn).play();
-};
 
+};
 
 //------------------------------------------------------------	
 // triggers
@@ -73,7 +64,7 @@ Pdef(m.ptn,
 	// Pdef(m.ptn).set(\amp, 0.4);
 	// Pdef(m.ptn).set(\octave, 2 + oct);
 
-	// m.midiOut.control(m.midiChannel, 0, m.rrateMassFiltered * 127 );
+	m.midiOut.control(m.midiChannel, 0, m.rrateMassFiltered * 70 );
 };
 
 //------------------------------------------------------------	
@@ -84,8 +75,7 @@ Pdef(m.ptn,
 ~plotMax = 1;
 
 ~plot = { |d,p|
-	// [(m.rrateMassFiltered * 3).ceil.mod(3)];
-	[m.rrateMassFiltered,m.accelMassFiltered];
+	[m.rrateMassFiltered, m.accelMassFiltered];
 };
 //------------------------------------------------------------	
 // midi control

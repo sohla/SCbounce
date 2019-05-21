@@ -2,17 +2,6 @@ var m = ~model;
 m.midiChannel = 6;
 m.accelMassThreshold = 0.9;
 m.rrateMassThreshold = 0.1;
-//------------------------------------------------------------	
-// pattern
-//------------------------------------------------------------	
-Pdef(m.ptn,
-	Pbind(
-		// \note, Pseq([0,5,9,10,2,7],inf),
-		\note, Pseq([0],inf),
-		//\root, Pseq([0,5,-2,3].stutter(16),inf),
-		\args, #[],
-	);
-);
 
 //------------------------------------------------------------	
 // intial state
@@ -20,13 +9,16 @@ Pdef(m.ptn,
 
 ~init = ~init <> { 
 
+	Pdef(m.ptn,
+		Pbind(
+			\note, Pseq([0],inf),
+			\args, #[],
+		);
+	);
+
 	Pdef(m.ptn).set(\dur,0.5);
 	Pdef(m.ptn).set(\octave,5);
 	Pdef(m.ptn).set(\amp,0.8);
-	Pdef(m.ptn).set(\type,\midi);
-	Pdef(m.ptn).set(\midiout,m.midiOut);
-	Pdef(m.ptn).set(\chan,m.midiChannel);
-	Pdef(m.ptn).play();
 
 	// change notes
 	Pdef(m.ptn,Pbind( 
@@ -34,7 +26,6 @@ Pdef(m.ptn,
 	));
 
 };
-
 
 //------------------------------------------------------------	
 // triggers
@@ -75,8 +66,8 @@ Pdef(m.ptn,
 
 	Pdef(m.ptn).set(\root,m.com.root);
 
-	Pdef(m.ptn).set(\dur,m.com.dur);
-//	Pdef(m.ptn).set(\dur,(m.rrateMassFiltered * 7).reciprocal);
+	// Pdef(m.ptn).set(\dur,m.com.dur);
+	Pdef(m.ptn).set(\dur,(m.rrateMassFiltered * 7).reciprocal);
 	Pdef(m.ptn).set(\amp, 0.4);
 	Pdef(m.ptn).set(\octave, 5 + oct);
 
