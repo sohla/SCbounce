@@ -532,7 +532,7 @@
 
 					var mc = MIDIFunc.cc({|val, num, chan| 
 						//[c,val, num, chan].postln;
-
+						//• TODO 
 						{
 							c.valueAction_(val/127.0);
 
