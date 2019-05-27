@@ -184,7 +184,7 @@
 			~processTriggers = {|d|
 
 				// isHit
-
+				// TODO smarter gate with min/max threasholds and level
 				if(~model.accelMassFiltered > ~model.accelMassThreshold,{
 					if(~model.isHit == false,{
 						~model.isHit = true;
@@ -1199,4 +1199,3 @@
 
 
 )
-
