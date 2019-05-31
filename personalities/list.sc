@@ -1,14 +1,14 @@
 (
 	[
-		"steph",
+		"steph2",
 		"adam",
-		"george",
+		"george2",
 		"nick2",
-		"matilda",
-		"eve",
+		"matilda2",
+		"eve2",
 		"malia",
 		"harvey",
-		"ellis",
+		"ellis2",
 		"gabe2"
 	]
 )

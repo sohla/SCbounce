@@ -11,7 +11,7 @@
 		//var faces = ["🦆","🦊","🐴","🐯","🍎"];
 
 
-	    var width = Window.screenBounds.width * 0.5, height = Window.screenBounds.height ;
+	    var width = Window.screenBounds.width * 0.8, height = Window.screenBounds.height ;
 		var startup, shutdown, buildUI;
 
 		var contentView = UserView().background_(Color.grey(0.2));
@@ -245,6 +245,7 @@
 			//------------------------------------------------------------	
 			~deinit = {
 				~stop.();
+				Pdef(~model.ptn).clear;//or use endless?
 				("deinit" + ~model.name).postln;
 			};
 
@@ -433,7 +434,7 @@
 		GUI.skin.plot.background = Color.black;
 		GUI.skin.plot.plotColor = Color.white;
 
-		window = Window("m-ball", Rect(400, 0, width, height-150), false).front;
+		window = Window("m-ball", Rect(400, 0, width, height), false).front;
 		window.view.keyDownAction_({|view,char,mods,uni,code,key|
 			if(uni==114,{//r
 				devices.keysValuesDo({|k,v|
