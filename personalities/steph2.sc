@@ -1,4 +1,5 @@
 var m = ~model;
+var pb;
 m.midiChannel = 2;
 m.accelMassThreshold = 0.8;
 m.rrateMassThreshold = 0.1;
@@ -9,19 +10,16 @@ m.rrateMassThreshold = 0.1;
 
 ~init = ~init <> { 
 
-	// Pdef(m.ptn,
-	// 	Pbind(
-	//         \degree, Pseq([0,2,5,4].stutter(6), inf),
-	// 		\args, #[],
-	// 	);
-	// );
-	// Pdef(m.ptn).set(\dur,1);
-
-	// Pdef(m.ptn,Pbind( 
-	// 	\dur, Pseq([0.25,0.25,1.0], inf),
-	// 	\octave, 3
-	// ));
-
+	Pdef(m.ptn,
+		pb = Pbind(
+			\dd, Pfunc{(m.rrateMassFiltered * 6).reciprocal},
+	        \degree, Pseq([0,4].stutter((4 - (m.rrateMassFiltered * 4).floor).asInteger), inf),
+	 		\dur, Pseq([1.0,0.5,0.5,0.5], inf) * Pkey(\dd) * 2,
+	 		\octave, Pseq([3,4].stutter((4 - (m.rrateMassFiltered * 4).floor).asInteger), inf),
+			\args, #[],
+		);
+	);
+	
 };
 
 //------------------------------------------------------------	
@@ -46,7 +44,6 @@ m.rrateMassThreshold = 0.1;
 
 	if(state == true,{
 		Pdef(m.ptn).resume();
-
 	},{
 		Pdef(m.ptn).pause();
 	});
@@ -61,13 +58,17 @@ m.rrateMassThreshold = 0.1;
 //------------------------------------------------------------	
 ~next = {|d| 
 
-	Pdef(m.ptn,Pbind( 
-		\degree, Pseq([0,2,4,1].stutter(1), inf),
-		\root, m.com.root,
-		\dur, Pseq([0.5,0.5,1.0] * (m.rrateMassFiltered * 8).reciprocal, inf),
-		\octave, 3
-	));
+	// Pdef(m.ptn,Pbind( 
+	// 	//\degree, Pseq([0,4,1,2].stutter(4), inf),
+	// 	//\root, m.com.root,
+	// 	\dur, Pseq([0.5,0.5,1.0] * (m.rrateMassFiltered * 8).reciprocal, inf),
+	// 	// \octave, 3
+	// ));
 
+
+	//Pdef(m.ptn).set(\dur,Pseq([0.5,0.5,1.0] * (m.rrateMassFiltered * 8).reciprocal, inf));
+	Pdef(m.ptn).set(\root,m.com.root);
+	// Pdef(m.ptn).set(\dur,(m.rrateMassFiltered * 7).reciprocal);
 	m.midiOut.control(m.midiChannel, 0, (63 + (m.rrateMassFiltered * 64)).asInteger );
 
 };
@@ -77,11 +78,11 @@ m.rrateMassThreshold = 0.1;
 //------------------------------------------------------------	
 
 ~plotMin = 0;
-~plotMax = 1;
+~plotMax = 8;
 
 ~plot = { |d,p|
 	// [(m.rrateMassFiltered * 3).ceil.mod(3)];
-	[m.rrateMassFiltered, m.accelMassFiltered, m.com.rrateMass];
+	[8 - (m.rrateMassFiltered * 8).floor, m.accelMassFiltered, m.com.rrateMass];
 };
 //------------------------------------------------------------	
 // midi control
