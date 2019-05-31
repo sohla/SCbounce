@@ -13,13 +13,14 @@ m.rrateMassThreshold = 0.1;
 	Pdef(m.ptn,
 		pb = Pbind(
 			\dd, Pfunc{(m.rrateMassFiltered * 6).reciprocal},
+			\rt, Pfunc{m.com.root},
 	        \degree, Pseq([0,4].stutter((4 - (m.rrateMassFiltered * 4).floor).asInteger), inf),
 	 		\dur, Pseq([1.0,0.5,0.5,0.5], inf) * Pkey(\dd) * 2,
 	 		\octave, Pseq([3,4].stutter((4 - (m.rrateMassFiltered * 4).floor).asInteger), inf),
+	 		\root, Pkey(\rt),
 			\args, #[],
 		);
 	);
-	
 };
 
 //------------------------------------------------------------	
@@ -57,20 +58,7 @@ m.rrateMassThreshold = 0.1;
 // do all the work(logic) taking data in and playing pattern/synth
 //------------------------------------------------------------	
 ~next = {|d| 
-
-	// Pdef(m.ptn,Pbind( 
-	// 	//\degree, Pseq([0,4,1,2].stutter(4), inf),
-	// 	//\root, m.com.root,
-	// 	\dur, Pseq([0.5,0.5,1.0] * (m.rrateMassFiltered * 8).reciprocal, inf),
-	// 	// \octave, 3
-	// ));
-
-
-	//Pdef(m.ptn).set(\dur,Pseq([0.5,0.5,1.0] * (m.rrateMassFiltered * 8).reciprocal, inf));
-	Pdef(m.ptn).set(\root,m.com.root);
-	// Pdef(m.ptn).set(\dur,(m.rrateMassFiltered * 7).reciprocal);
 	m.midiOut.control(m.midiChannel, 0, (63 + (m.rrateMassFiltered * 64)).asInteger );
-
 };
 
 //------------------------------------------------------------	
