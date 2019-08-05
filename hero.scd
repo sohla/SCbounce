@@ -22,11 +22,11 @@ SynthDef(\warp, {arg buffer = 0, envbuf = -1, ws = 0.5, pch = 1.0, len = 1;
 	my = MouseY.kr(0.001,1.0,1.0);//splay
 
 	sp = Splay.arFill(splayCount,
-		{ |i| DelayN.ar(Warp1.ar(1, buffer, mx, pch,my, envbuf, 8, 0.3, 2), 0.3, (i*0.4))  },
+		{ |i| Warp1.ar(2, buffer, mx, pch,my, envbuf, 16, 0.6, 2)  },
 		0.5,
 		1,
 		splayCount.rand.linlin(0,splayCount,-1.0,1.0),
-	) * 0.7 ;
+	) * 0.05 ;
 
 	//sp = HPF.ar(sp,888);
 
@@ -41,13 +41,13 @@ FreqScope.new(1300, 200, 0);
 
 
 
-q = ("~/Music/SCSamples/iAmWatchingYou.wav").standardizePath;
+q = ("~/Music/sounds/odeToHellShort.aif").standardizePath;
 d = Buffer.read(s, q);
-p = ("~/Music/SCSamples/meow2.wav").standardizePath;
+p = ("~/Music/sounds/messyMonsterBreathing.aif").standardizePath;
 c = Buffer.read(s, p);
 
-x = Synth(\warp,[\buffer,c,\ws,0.3,\pch,(57).midicps / 435.0, \len,10]); 
-z = Synth(\warp,[\buffer,d,\ws,0.3,\pch,(60).midicps / 435.0, \len, 2]);
+x = Synth(\warp,[\buffer,c,\ws,0.3,\pch,(69).midicps / 440.0, \len,72]); 
+z = Synth(\warp,[\buffer,d,\ws,0.2,\pch,(69).midicps / 440.0, \len, 36]);	
 z.free
 
 

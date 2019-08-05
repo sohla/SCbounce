@@ -308,7 +308,7 @@ b.sendMsg("/acc", 200,0,0);
 	    }
 	}.play;
 )
-
+ 
 
 
 
@@ -317,3 +317,99 @@ b.sendMsg("/Content/a/params/play");
 b.sendMsg("/Content/a/params/alpha",0);    
 b.sendMsg("/Content/a/params/stop");    
 b.sendMsg("/Content/color/params/color",0,255,255,0);    
+
+
+
+b = NetAddr("192.168.1.3",56121);
+b.disconnect
+
+b.sendMsg("/dfplayer/restartDevice",1);    
+ 
+b.sendMsg("/dfplayer/volume",1.asInteger);    
+b.sendMsg("/dfplayer/volume",5.asInteger);    
+b.sendMsg("/dfplayer/volume",30.asInteger);    
+
+b.sendMsg("/dfplayer/play",6.asInteger);    
+b.sendMsg("/dfplayer/play",3.asInteger);    
+b.sendMsg("/dfplayer/play",4. asInteger);    
+b.sendMsg("/dfplayer/play",8.asInteger);    
+b.sendMsg("/dfplayer/play",9.asInteger);    
+b.sendMsg("/dfplayer/play",7.asInteger);    
+b.sendMsg("/dfplayer/pause");    	
+
+b.sendMsg("/dfplayer/fadeIn",500.asInteger);    
+b.sendMsg("/dfplayer/fadeOut",500.asInteger);    
+
+	
+b.sendMsg("/dfplayer/restartDevice",1);    
+
+
+b.sendMsg("/dfplayer/powerLevel");    
+
+o = OSCFunc({ arg msg, time, addr, recvPort;
+	([msg, time, addr, recvPort]).postln;
+}, '/dfplayer/powerLevel');
+
+o.free;
+
+0
+Pdef(\pat1,
+	Pbind(
+		\func, Pfunc({|e| 
+			b.sendMsg("/dfplayer/play",(5.rand+1).asInteger); 
+			b.sendMsg("/dfplayer/powerLevel");
+			Date.localtime.postln;
+    
+		}),
+        \degree, 1,
+		\amp, 0,
+		\dur, Pseq([2], inf)
+)).play;
+
+
+Pdef(\pat1).set(\sustain,0.01);
+Pdef(\pat1).set(\attack,0.5);
+
+Pdef(\pat1).set(\root,2);
+Pdef(\pat1).map(\dur,Pseq([0.1], inf));
+
+
+
+Pdef(\pat1).stop;
+Pdef(\pat1).clear;
+Pdef(\pat1).play;
+
+o = OSCFunc({ arg msg, time, addr, recvPort;
+	([msg, time, addr, recvPort]).postln;
+}, '/thermos');
+
+o.free;
+
+
+
+
+b = NetAddr("10.0.2.55",8888);
+b.disconnect
+
+b.sendMsg("/fff/default",666);    
+
+
+
+b = NetAddr("127.0.0.1",9999);
+b.sendMsg("/thecabin/play","growl5.mp3", 1.0, true, 0, 0);    
+b.sendMsg("/thecabin/play","laughing10.wav");    
+b.sendMsg("/thecabin/play","beware_chant.wav");    
+b.sendMsg("/thecabin/play","drone3_1.mp3");    
+b.sendMsg("/thecabin/stop");    
+
+b.sendMsg("/thecabin/systemsound",4095.asInteger);    
+
+b = NetAddr("127.0.0.1", 6667);
+b.sendMsg("/inputSettings/group/threshold1", 12);    
+
+	o = OSCFunc({ arg msg, time, addr, recvPort;
+		([msg, time, addr, recvPort]).postln;
+	}, '/inputSettings/group/threshold1', recvPort:6666);
+
+	o.free;
+
