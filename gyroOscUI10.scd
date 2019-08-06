@@ -46,7 +46,8 @@
 		var dataSizes = [100,200,300,400];
 		var dataSize = dataSizes[0];
 
-		var midiOut, midiController;
+		var midiOut;
+		//var midiController;
 
 		var midiControllers = []; //hold the sliders and values 
 
@@ -122,7 +123,7 @@
 	midiOut = MIDIOut.newByName("IAC Driver", "Bus 1", dieIfNotFound: true);
 	midiOut.latency_(0.00);
 
-	midiController = MIDIOut(2).latency_(0.0);
+	//midiController = MIDIOut(2).latency_(0.0);
 	MIDIIn.connectAll;
 	//------------------------------------------------------------	
 	// 
@@ -1169,7 +1170,7 @@
 	// enableOSCListening = {
 	// 	buttonListener.enable;
 	// 	ampListener.enable;
-	// 	gryoListner.enable;
+	// 	gryoListner.enable;skk
 	// 	// altListener.enable;
 	// 	rrateListener.enable;
 	// 	quatListener.enable;
