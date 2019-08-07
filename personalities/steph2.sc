@@ -58,8 +58,11 @@ m.rrateMassThreshold = 0.1;
 // do all the work(logic) taking data in and playing pattern/synth
 //------------------------------------------------------------	
 ~next = {|d| 
-	m.midiOut.control(m.midiChannel, 0, (63 + (m.rrateMassFiltered * 64)).asInteger );
 };
+
+~nextMidiOut = {|d|
+	m.midiOut.control(m.midiChannel, 0, (63 + (m.rrateMassFiltered * 64)).asInteger );
+};			
 
 //------------------------------------------------------------	
 // plot with min and max

@@ -98,7 +98,7 @@ m.rrateMassThreshold = 0.1;
 	// if(num == 4,{ threshold = 0.01 + (val * 0.99)});
 
 	// threshold = threshold * 2;
-	m.midiOut.control(m.midiChannel, 65, val * 127 );
+	//m.midiOut.control(m.midiChannel, 65, val * 127 );
 
 };
 

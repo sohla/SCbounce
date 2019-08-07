@@ -60,6 +60,8 @@ m.rrateMassThreshold = 0.1;
 	Pdef(m.ptn).set(\dur,(m.rrateMassFiltered * 20).reciprocal);
 
 };
+~nextMidiOut = {|d|
+};			
 
 //------------------------------------------------------------	
 // plot with min and max
