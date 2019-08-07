@@ -1,5 +1,5 @@
 	(
-
+		// 
 		var devicesDir = "~/Develop/SuperCollider/SCbounce/personalities/";
 		var dataPath = "~/Develop/SuperCollider/SCbounce/data/";
 		//var image = Image.new("~/Develop/SuperCollider/Projects/SCbounce/m-ball_logo_vector600.png".asAbsolutePath);
@@ -11,7 +11,7 @@
 		//var faces = ["🦆","🦊","🐴","🐯","🍎"];
 
 
-	    var width = Window.screenBounds.width * 0.8, height = Window.screenBounds.height ;
+	    var width = Window.screenBounds.width * 0.6, height = Window.screenBounds.height ;
 		var startup, shutdown, buildUI;
 
 		var contentView = UserView().background_(Color.grey(0.2));
@@ -38,7 +38,8 @@
 
 		var loadPersonality;
 		var reloadDevice;
-		var createRout;
+		var createProcRout;
+		var createMidiRout
 		
 		var createGenerator;
 
@@ -46,8 +47,7 @@
 		var dataSizes = [100,200,300,400];
 		var dataSize = dataSizes[0];
 
-		var midiOut;
-		//var midiController;
+		var midiOut, midiController;
 
 		var midiControllers = []; //hold the sliders and values 
 
@@ -90,7 +90,7 @@
 
 	    // data
 		var deviceProto = (
-			\name: "eve",
+			\name: "eve2",
 			\ip: "127.0.0.1",
 			\port: 57120,
 			\gyroEvent: (\pitch:0,\roll:0,\yaw:0),
@@ -123,7 +123,7 @@
 	midiOut = MIDIOut.newByName("IAC Driver", "Bus 1", dieIfNotFound: true);
 	midiOut.latency_(0.00);
 
-	//midiController = MIDIOut(2).latency_(0.0);
+	midiController = MIDIOut(2).latency_(0.0);
 	MIDIIn.connectAll;
 	//------------------------------------------------------------	
 	// 
@@ -234,6 +234,7 @@
 				("init" + ~model.name).postln;
 			};
 
+			//------------------------------------------------------------	
 			~buildPattern = {
 				Pdef(~model.ptn).set(\type,\midi);
 				Pdef(~model.ptn).set(\midiout,~model.midiOut);
@@ -242,7 +243,10 @@
 
 
 			};
-			
+			//------------------------------------------------------------	
+			~nextMidiOut = {|d|
+				~model.name.postln;
+			};			
 			//------------------------------------------------------------	
 			~deinit = {
 				~stop.();
@@ -321,10 +325,9 @@
 	//------------------------------------------------------------	
 	// 
 	//------------------------------------------------------------	
-	createRout = {|d|
+	createProcRout = {|d|
 
 		Routine { 
-//			var i=0;
 
 			loop{ 
 				d.env.use{
@@ -343,9 +346,8 @@
 					});
 
 					(~secs.()).yield;
-//					i=i+1;
 				};
-			}
+			};
 		}
 	};
 	//------------------------------------------------------------	
@@ -412,7 +414,7 @@
 		};
 
 
-		d.rout = createRout.(d);
+		d.rout = createProcRout.(d);
 		d.rout.reset.play(AppClock);
 
 		d.generator = createGenerator.(d);
@@ -481,8 +483,8 @@
 		scroll.canvas = contentView;
 
 		// example of loading a device (can only make 1 with generator)
-		// d = addDevice.("127.0.0.1",57120);
-		// addDeviceView.(contentView, d);
+		d = addDevice.("127.0.0.1",57120);
+		addDeviceView.(contentView, d);
 		// addOSCDeviceListeners.(d);
 
 	};
@@ -1170,7 +1172,7 @@
 	// enableOSCListening = {
 	// 	buttonListener.enable;
 	// 	ampListener.enable;
-	// 	gryoListner.enable;skk
+	// 	gryoListner.enable;
 	// 	// altListener.enable;
 	// 	rrateListener.enable;
 	// 	quatListener.enable;
