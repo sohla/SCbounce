@@ -71,8 +71,11 @@ m.rrateMassThreshold = 0.1;
 	Pdef(m.ptn).set(\amp, 0.4);
 	Pdef(m.ptn).set(\octave, 5 + oct);
 
-	// m.midiOut.control(m.midiChannel, 0, m.rrateMassFiltered * 127 );
 };
+
+~nextMidiOut = {|d|
+	m.midiOut.control(m.midiChannel, 0, m.rrateMassFiltered * 127 );
+};			
 
 //------------------------------------------------------------	
 // plot with min and max

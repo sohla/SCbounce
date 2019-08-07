@@ -39,7 +39,7 @@
 		var loadPersonality;
 		var reloadDevice;
 		var createProcRout;
-		var createMidiRout
+		var createMidiRout;
 		
 		var createGenerator;
 
@@ -102,7 +102,8 @@
 			\quatEvent: (\w:0,\x:0,\y:0,\z:0),
 			\ampValue: 0,
 			\env: nil,	// Environment for injected code
-			\rout: nil,	// Routine calls ~next every ~fps
+			\procRout: nil,	// Routine calls ~next every ~fps
+			\midiRout: nil,	// Routine calls ~next every ~fps
 			\enabled: true, // are we running
 			\generator: nil, // Routine for generating data
 			);
@@ -244,10 +245,6 @@
 
 			};
 			//------------------------------------------------------------	
-			~nextMidiOut = {|d|
-				~model.name.postln;
-			};			
-			//------------------------------------------------------------	
 			~deinit = {
 				~stop.();
 				Pdef(~model.ptn).clear;//or use endless?
@@ -325,6 +322,28 @@
 	//------------------------------------------------------------	
 	// 
 	//------------------------------------------------------------	
+	createMidiRout = {|d|
+
+		Routine { 
+
+			loop{ 
+				d.env.use{
+
+					if(d.enabled == true,{
+		
+						//midi out has it's own set interval
+						~nextMidiOut.(d);
+
+					});
+
+					(0.1).yield;
+				};
+			};
+		}
+	};
+	//------------------------------------------------------------	
+	// 
+	//------------------------------------------------------------	
 	createProcRout = {|d|
 
 		Routine { 
@@ -366,7 +385,8 @@
 		midiControllers.do{|mc|mc.postln;mc.free};
 
 		devices.keysValuesDo({|k,v|
-			v.rout.stop();
+			v.procRout.stop();
+			v.midiRout.stop();
 			v.generator.stop();
 			v.env.use{ ~deinit.() };
 		});
@@ -402,7 +422,8 @@
 
 		// stop personality
 
-		d.rout.stop;
+		d.procRout.stop;
+		d.midiRout.stop;
 		if(d.env != nil,{ d.env.use{ ~deinit.() }});
 
 
@@ -414,8 +435,12 @@
 		};
 
 
-		d.rout = createProcRout.(d);
-		d.rout.reset.play(AppClock);
+		d.procRout = createProcRout.(d);
+		d.procRout.reset.play(AppClock);
+
+		d.midiRout = createMidiRout.(d);
+		d.midiRout.reset.play(AppClock);
+
 
 		d.generator = createGenerator.(d);
 		//d.generator.reset.play(AppClock);
@@ -483,8 +508,8 @@
 		scroll.canvas = contentView;
 
 		// example of loading a device (can only make 1 with generator)
-		d = addDevice.("127.0.0.1",57120);
-		addDeviceView.(contentView, d);
+		// d = addDevice.("127.0.0.1",57120);
+		// addDeviceView.(contentView, d);
 		// addOSCDeviceListeners.(d);
 
 	};
@@ -676,7 +701,8 @@
 					
 					// stop personality
 					d.env.use{ ~deinit.() };
-					d.rout.stop;
+					d.procRout.stop;
+					d.midiRout.stop;
 
 					// remove midi controller listener
 					midiControllers.do{|mc|mc.postln;mc.free};
