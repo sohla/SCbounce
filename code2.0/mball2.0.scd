@@ -176,7 +176,7 @@
 				~model.accelMass = d.accelEvent.sumabs * 0.33;
 				~model.rrateMass = d.rrateEvent.sumabs * 0.1;
 
-				~model.accelMassFiltered = ~tween.(~model.accelMass, ~model.accelMassFiltered, 0.7);
+				~model.accelMassFiltered = ~tween.(~model.accelMass, ~model.accelMassFiltered, 0.2);
 				~model.rrateMassFiltered = ~tween.(~model.rrateMass, ~model.rrateMassFiltered, 0.5);
 
 			};
@@ -187,6 +187,7 @@
 
 				// isHit
 				// TODO smarter gate with min/max threasholds and level
+				// use improved code in eve2
 				if(~model.accelMassFiltered > ~model.accelMassThreshold,{
 					if(~model.isHit == false,{
 						~model.isHit = true;
