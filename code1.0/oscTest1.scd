@@ -413,3 +413,16 @@ b.sendMsg("/inputSettings/group/threshold1", 12);
 
 	o.free;
 
+b = NetAddr("127.0.0.1",57120);
+b.sendMsg("/gyrosc/rrate", 0.1,0.1,0.1);
+b.sendMsg("/gyrosc/rrate", 0.957318 ,0.957318, 0.957318);
+
+
+
+
+
+o = OSCFunc({ arg msg, time, addr, recvPort;
+	([msg, time, addr, recvPort]).postln;
+}, '/gyrosc/rrate');
+
+o.free;

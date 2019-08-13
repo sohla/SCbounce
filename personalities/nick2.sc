@@ -64,6 +64,7 @@ m.rrateMassThreshold = 0.1;
 ~next = {|d| 
 
 	Pdef(m.ptn).set(\root,m.com.root);
+	Pdef(m.ptn).set(\dur,(m.rrateMassFiltered * 5).reciprocal);
 
 	// var oct = ((0.2 + m.rrateMassFiltered.cubed) * 25).mod(4).floor;
 

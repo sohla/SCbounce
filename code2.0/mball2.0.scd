@@ -160,7 +160,7 @@
 				\rrateMassFiltered: 0,
 				\accelMassFiltered: 0,
 				\isHit: false,
-				\isMoving: false,
+				\isMoving: true,
 				\accelMassThreshold: 0.2,
 				\rrateMassThreshold: 0.1,
 			);
@@ -298,7 +298,7 @@
 	createGenerator = {|d|
 
 		var oscOut = NetAddr(d.ip, d.port);
-		var p,y,r;
+		var p,y,r,t;
 		var i=0;
 		var q;
 		Routine { 
@@ -310,11 +310,13 @@
 
 				q = eulerToQuaternion.(y,p,r);
 				oscOut.sendMsg("/gyrosc/quat", q.coordinates[0],q.coordinates[1],q.coordinates[2],q.coordinates[3]);
+				
+				t = 3.1 + (cos(i * 2pi * 0.1) * 3);
+				[d.ip, d.port,t].postln;
+//				oscOut.sendMsg("/gyrosc/rrate", t,t,t);
 
-				//oscOut.sendMsg("/gyrosc/rrate", p, r, y);
-
-		        i = i + 0.001;
-				0.001.yield;
+		        i = i + 0.03;
+				0.03.yield;
 
 		    }
 		}.stop;
@@ -509,7 +511,7 @@
 		scroll.canvas = contentView;
 
 		// example of loading a device (can only make 1 with generator)
-		// d = addDevice.("127.0.0.1",57120);
+		// d = addDevice.("127.0.0.1",64564);
 		// addDeviceView.(contentView, d);
 		// addOSCDeviceListeners.(d);
 

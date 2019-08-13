@@ -152,7 +152,7 @@ m.rrateMassThreshold = 0.1;
 	// 	changeState.(false);
 	// });
 
-	[m.accelMass, d.ampValue * 10];
+	[m.rrateMassFiltered];
 };
 //------------------------------------------------------------	
 // midi control
