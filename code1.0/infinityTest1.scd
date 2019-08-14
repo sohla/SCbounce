@@ -16,9 +16,7 @@ o.free;
 	var oscOut = NetAddr("127.0.0.1",2345);
 	var oscIn = OSCFunc({ arg msg, time, addr, recvPort;
 		([msg, time, addr, recvPort]).postln;
-		//••• BUG!!
-		
-		//delta = msg[0].asInteger;
+		delta = msg[1].asFloat;
 	}, '/id/rate');
 
 	Routine { 
@@ -31,9 +29,12 @@ o.free;
 
 			i = i - 0.002;
 
+
 			oscOut.sendMsg("/acc", r,g,b);
 			oscOut.sendMsg("/rot", t);
-	        (0.01 * delta).yield;
+
+			if(delta == 0, {delta = 1}); // just in case
+	        (0.005 * delta).yield;
 
 	    }
 	}.play;
@@ -44,7 +45,7 @@ o.free;
 )
  
 b = NetAddr("127.0.0.1",57120);
-b.sendMsg("/id/rate", 10);
+b.sendMsg("/id/rate", 2);
 
 
 
