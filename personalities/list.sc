@@ -7,8 +7,10 @@
 		"matilda2",
 		"eve2",
 		"malia",
-		"harvey",
+		"harvey2",
 		"ellis2",
-		"gabe2"
+		"gabe2",
+		"band1",
+		"band2"
 	]
 )
