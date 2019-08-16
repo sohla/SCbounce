@@ -1,6 +1,6 @@
 var m = ~model;
 var isOn = false;
-
+var count = 0;
 m.midiChannel = 0;
 m.accelMassThreshold = 0.9;
 m.rrateMassThreshold = 0.1;
@@ -55,11 +55,11 @@ m.rrateMassThreshold = 0.1;
 
 ~onMoving = {|state|
 
-	if(state == true,{
-		Pdef(m.ptn).resume();
-	},{
-		Pdef(m.ptn).pause();
-	});
+	// if(state == true,{
+	// 	Pdef(m.ptn).resume();
+	// },{
+	// 	Pdef(m.ptn).pause();
+	// });
 };
 
 ~onAmp = {|v|
@@ -72,8 +72,8 @@ m.rrateMassThreshold = 0.1;
 //------------------------------------------------------------	
 ~next = {|d| 
 
-	// var oct = ((0.2 + m.rrateMassFiltered.cubed) * 15).mod(2).floor + 1;
-	// oct.postln;
+	 //var oct = ((0.2 + m.rrateMassFiltered.cubed) * 15).mod(2).floor + 1;
+
 	//Pdef(m.ptn).set(\root,m.com.root);
 
 	// Pdef(m.ptn).set(\dur,m.com.dur);
@@ -85,7 +85,7 @@ m.rrateMassThreshold = 0.1;
 };
 
 ~nextMidiOut = {|d|
-	m.midiOut.control(m.midiChannel, 1, (m.rrateMassFiltered * 127) + 30 );
+	m.midiOut.control(m.midiChannel, 1, (m.rrateMassFiltered * 127 * 1.3) + 0 );
 };			
 
 //------------------------------------------------------------	
@@ -140,3 +140,7 @@ m.rrateMassThreshold = 0.1;
 	//m.midiOut.control(m.midiChannel, 65, val * 127 );
 
 };
+
+
+Array
+[0,2].stutter(2).add([3777,4].stutter(2)).flat

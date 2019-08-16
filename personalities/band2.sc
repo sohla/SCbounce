@@ -12,7 +12,7 @@ m.rrateMassThreshold = 0.1;
 	Pdef(m.ptn,
 		Pbind(
 			//\note, Pseq([0].stutter(4),inf),
-			 \note, Pseq([0,4,-5,0,-5,-8].stutter(8),inf),
+			 \note, Pseq([0,5].stutter(2),inf),
 			// \root, Pseq([0,3,-4,1].stutter(16),inf),
 			// \func, Pfunc({|e| ~onEvent.(e)}),
 			\args, #[],
@@ -72,14 +72,15 @@ m.rrateMassThreshold = 0.1;
 //------------------------------------------------------------	
 ~next = {|d| 
 
-	var oct = ((0.2 + m.rrateMassFiltered.cubed) * 25).mod(2).floor;
-	// [(oct+2),m.com.dur*(oct+1)*0.5].postln;
-	Pdef(m.ptn).set(\root,m.com.root);
-
-	// Pdef(m.ptn).set(\dur,m.com.dur*(oct+1)*0.5);
-	Pdef(m.ptn).set(\dur,(m.rrateMassFiltered * 16).reciprocal);
+	var oct = ((0.2 + m.rrateMassFiltered.cubed) * 25).mod(4).floor;
+	// Pdef(m.ptn).set(\dur,(m.rrateMassFiltered * 16).reciprocal);
 	Pdef(m.ptn).set(\amp, 0.4);
-	Pdef(m.ptn).set(\octave, [5 + oct]);
+	Pdef(m.ptn).set(\octave, [3 + oct]);
+	Pdef(m.ptn).set(\dur,m.com.dur * ( (oct+1)));
+
+	Pdef(m.ptn,Pbind( 
+		\note, Pseq([0,2,[0,5].choose,4,[7,9].choose].add(m.com.root).stutter(1),inf),
+	));
 
 	//midiOut.noteOn(7, 60 + note, 90);
 };
