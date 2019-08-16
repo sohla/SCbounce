@@ -12,6 +12,10 @@
 		"gabe2",
 		"band1",
 		"band2",
-		"band3"
+		"band3",
+		"voice1",
+		"voice2",
+		"voice3",
+
 	]
 )

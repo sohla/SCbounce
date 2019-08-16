@@ -1,9 +1,11 @@
 var m = ~model;
 var isOn = false;
 
+~rh = 0.25;
+
 m.midiChannel = 0;
 m.accelMassThreshold = 0.9;
-m.rrateMassThreshold = 0.1;
+m.rrateMassThreshold = 0.05;
 
 //------------------------------------------------------------	
 // intial state
@@ -13,14 +15,15 @@ m.rrateMassThreshold = 0.1;
 
 	Pdef(m.ptn,
 		Pbind(
-			\note, Pseq([0,2,7,9,5,4].stutter(8),inf),
+			\note, Pseq([0,2,7,9,5,4], inf),
+			\root, Pseq([0,5].stutter(6), inf),
 			\func, Pfunc({|e| ~onEvent.(e)}),
 			\args, #[],
 		);
 	);
 
-	Pdef(m.ptn).set(\dur,0.125);
-	Pdef(m.ptn).set(\octave,3);
+	Pdef(m.ptn).set(\dur, 1);
+	Pdef(m.ptn).set(\octave,[[2,3].choose,[4,5].choose]);
 	Pdef(m.ptn).set(\amp,0.8);
 		Pdef(m.ptn).resume();
 
@@ -38,7 +41,7 @@ m.rrateMassThreshold = 0.1;
 //------------------------------------------------------------	
 ~onEvent = {|e|
 	//e.postln;
-	m.com.root = e.note;
+	m.com.root = e.root;
 	m.com.dur = e.dur;
 };
 
@@ -55,11 +58,13 @@ m.rrateMassThreshold = 0.1;
 
 ~onMoving = {|state|
 
-	// if(state == true,{
-	// 	Pdef(m.ptn).resume();
-	// },{
-	// 	Pdef(m.ptn).pause();
-	// });
+	if(state == true,{
+		//Pdef(m.ptn).resume();
+		Pdef(m.ptn).set(\amp,0.8);
+	},{
+		//Pdef(m.ptn).pause();
+		Pdef(m.ptn).set(\amp,0.0);
+	});
 };
 
 ~onAmp = {|v|
@@ -73,23 +78,26 @@ m.rrateMassThreshold = 0.1;
 ~next = {|d| 
 
 	 //var oct = ((0.2 + m.rrateMassFiltered.cubed) * 15).mod(2).floor + 1;
+	 var step =  ((0.1 + m.rrateMassFiltered.cubed) * 5).mod(3).floor + 1;
 
-	 // count = count + 1;
-	 // count.postln;
-	//Pdef(m.ptn).set(\root,m.com.root);
+	Pdef(m.ptn).set(\dur, (1/2.pow(step)));
+ 	Pdef(m.ptn).set(\octave,[[2,3].choose,[4,5].choose]);
+ 	// Pdef(m.ptn).set(\octave,4);
 
-	// Pdef(m.ptn).set(\dur,m.com.dur);
-//	Pdef(m.ptn).set(\dur,(m.rrateMassFiltered * 7).reciprocal);
-	Pdef(m.ptn).set(\amp, 0.4);
-	//Pdef(m.ptn).set(\octave, [2 + oct]);
+ // 	Pdef(m.ptn,Pbind( 
+ // 		// \note, Pseq([0,2,7,9,5,4].stutter(1),inf),
+ // 		\note, Pseq(n,inf),
+ // 		// \note, Pseq([10,10,9,7,5,9,7,2,3,5,7,7].stutter(1),inf),
+ // 		\dur, Pfunc(rh, inf),
+	// 	\octave,3,
+	// 	\amp, 0.4
+	// ));
 
-	//midiOut.noteOn(7, 60 + note, 90);
 };
 
 ~nextMidiOut = {|d|
-	m.midiOut.control(m.midiChannel, 1, (m.rrateMassFiltered * 127 * 1.3) + 0 );
+	m.midiOut.control(m.midiChannel, 1, (m.rrateMassFiltered * 127) );
 };			
-
 //------------------------------------------------------------	
 // plot with min and max
 //------------------------------------------------------------	
