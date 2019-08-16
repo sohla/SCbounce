@@ -159,7 +159,7 @@ m.rrateMassThreshold = 0.1;
 //------------------------------------------------------------	
 ~midiControllerValue = {|num,val|
 
-	[num,val].postln;
+	//[num,val].postln;
 
 	// if(num == 4,{ threshold = 0.01 + (val * 0.99)});
 

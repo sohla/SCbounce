@@ -3,7 +3,7 @@ var isOn = false;
 
 m.midiChannel = 2;
 m.accelMassThreshold = 0.9;
-m.rrateMassThreshold = 0.1;
+m.rrateMassThreshold = 0.05;
 //------------------------------------------------------------	
 // intial state
 //------------------------------------------------------------	

@@ -397,7 +397,9 @@
 
 		stopOSCListening.();
 		s.queryAllNodes;
-
+		
+		Pdef.clear;
+		MIDIClient.disposeClient;
 		Server.freeAll;
 
 	};

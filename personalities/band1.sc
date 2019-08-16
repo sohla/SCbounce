@@ -142,7 +142,3 @@ m.rrateMassThreshold = 0.1;
 	//m.midiOut.control(m.midiChannel, 65, val * 127 );
 
 };
-
-
-Array
-[0,2].stutter(2).add([3777,4].stutter(2)).flat

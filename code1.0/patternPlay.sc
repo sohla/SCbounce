@@ -162,17 +162,22 @@ x.next(())
 
 g.release; 
 MIDIClient.disposeClient;
+Pdef.clear
+
 (
 var midiOut;
 var ptn = \asd;
+
 MIDIClient.init;
 MIDIClient.destinations;
 
-midiOut = MIDIOut.newByName("IAC Driver", "Bus 1", dieIfNotFound: true).latency_(0.1);
+midiOut = MIDIOut.newByName("IAC Driver", "Bus 1", dieIfNotFound: true).latency_(0.0);
 
        Pdef(ptn,
                 Pbind(
                         \note, Pseq([0,2,7,9,5,4].stutter(8),inf),
+                        \value, Pwhite(50, 127, inf),
+                        \func, Pfunc({|e| midiOut.control(1, 0, e[\value]) }),
                         \args, #[],
                 );
         );
@@ -180,8 +185,12 @@ midiOut = MIDIOut.newByName("IAC Driver", "Bus 1", dieIfNotFound: true).latency_
         Pdef(ptn).set(\dur,0.125);
         Pdef(ptn).set(\octave,3);
         Pdef(ptn).set(\amp,0.8);
+        
         Pdef(ptn).set(\type,\midi);
         Pdef(ptn).set(\midiout,midiOut);
-
+        Pdef(ptn).set(\chan,1);
+        
+        Pdef(ptn).set(\midicmd, \noteOn);
+        
         Pdef(ptn).play();
 )
