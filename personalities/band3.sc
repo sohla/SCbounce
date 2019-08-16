@@ -1,7 +1,7 @@
 var m = ~model;
 var isOn = false;
 
-m.midiChannel = 1;
+m.midiChannel = 2;
 m.accelMassThreshold = 0.9;
 m.rrateMassThreshold = 0.1;
 //------------------------------------------------------------	
@@ -12,7 +12,7 @@ m.rrateMassThreshold = 0.1;
 	Pdef(m.ptn,
 		Pbind(
 			//\note, Pseq([0].stutter(4),inf),
-			 \note, Pseq([0,4,-5,0,-5,-8].stutter(8),inf),
+			 \note, Pseq([0,1,2,3,4,5,6,7],inf),
 			// \root, Pseq([0,3,-4,1].stutter(16),inf),
 			// \func, Pfunc({|e| ~onEvent.(e)}),
 			\args, #[],
@@ -28,7 +28,7 @@ m.rrateMassThreshold = 0.1;
 	// Pdef(m.ptn,Pbind( 
 	// 	\note, Pseq([[0,2,-3,-5],[-1,4,1,7]].stutter(4),inf),
 		
-
+// Pdef(m.ptn).resume();
 	// ));
 
 };
@@ -56,7 +56,7 @@ m.rrateMassThreshold = 0.1;
 ~onMoving = {|state|
 
 	if(state == true,{
-		Pdef(m.ptn).resume();
+		Pdef(m.ptn).play();
 	},{
 		Pdef(m.ptn).pause();
 	});
@@ -66,26 +66,25 @@ m.rrateMassThreshold = 0.1;
 	// TODO
 //	v.postln;
 };
-
 //------------------------------------------------------------	
 // do all the work(logic) taking data in and playing pattern/synth
 //------------------------------------------------------------	
 ~next = {|d| 
 
 	var oct = ((0.2 + m.rrateMassFiltered.cubed) * 25).mod(2).floor;
-	// [(oct+2),m.com.dur*(oct+1)*0.5].postln;
-	Pdef(m.ptn).set(\root,m.com.root);
 
-	// Pdef(m.ptn).set(\dur,m.com.dur*(oct+1)*0.5);
-	Pdef(m.ptn).set(\dur,(m.rrateMassFiltered * 16).reciprocal);
+
+
+	Pdef(m.ptn).set(\dur,m.com.dur);
+	// Pdef(m.ptn).set(\dur,(m.rrateMassFiltered * 16).reciprocal);
 	Pdef(m.ptn).set(\amp, 0.4);
-	Pdef(m.ptn).set(\octave, [5 + oct]);
+	// Pdef(m.ptn).set(\octave, [5 + oct]);
 
 	//midiOut.noteOn(7, 60 + note, 90);
 };
 
 ~nextMidiOut = {|d|
-	m.midiOut.control(m.midiChannel, 0, m.rrateMassFiltered * 127 );
+	m.midiOut.control(m.midiChannel, 3, m.rrateMassFiltered * 127 );
 };			
 
 //------------------------------------------------------------	

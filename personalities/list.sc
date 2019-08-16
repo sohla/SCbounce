@@ -11,6 +11,7 @@
 		"ellis2",
 		"gabe2",
 		"band1",
-		"band2"
+		"band2",
+		"band3"
 	]
 )
