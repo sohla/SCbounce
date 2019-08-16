@@ -574,16 +574,16 @@
 			UserView(v,Rect(700,0,200,250)).layout_( HLayout(
 				*sliders.collect{|c,i|
 
-					// var mc = MIDIFunc.cc({|val, num, chan| 
-					// 	//[c,val, num, chan].postln;
-					// 	//• TODO 
-					// 	{
-					// 		c.valueAction_(val/127.0);
+					var mc = MIDIFunc.cc({|val, num, chan| 
+						//[c,val, num, chan].postln;
+						//• TODO 
+						{
+							c.valueAction_(val/127.0);
 
-					// 	}.defer(0);
-					// },midiControlOffset+i);
+						}.defer(0);
+					},midiControlOffset+i);
 
-					// midiControllers = midiControllers.add(mc);	
+					midiControllers = midiControllers.add(mc);	
 
 					c
 				};
@@ -729,7 +729,7 @@
 		);	
 
 		sliderView.(va);
-		//createGyroCanvas.(va,d);
+		createGyroCanvas.(va,d);
 		//createAccelCanvas.(vb,d);
 
 		contentView.layout.add(nil);

@@ -161,6 +161,27 @@ x.next(())
 //• OSCrespond to trig and call x.next()
 
 g.release; 
+MIDIClient.disposeClient;
+(
+var midiOut;
+var ptn = \asd;
+MIDIClient.init;
+MIDIClient.destinations;
 
+midiOut = MIDIOut.newByName("IAC Driver", "Bus 1", dieIfNotFound: true).latency_(0.1);
 
+       Pdef(ptn,
+                Pbind(
+                        \note, Pseq([0,2,7,9,5,4].stutter(8),inf),
+                        \args, #[],
+                );
+        );
 
+        Pdef(ptn).set(\dur,0.125);
+        Pdef(ptn).set(\octave,3);
+        Pdef(ptn).set(\amp,0.8);
+        Pdef(ptn).set(\type,\midi);
+        Pdef(ptn).set(\midiout,midiOut);
+
+        Pdef(ptn).play();
+)

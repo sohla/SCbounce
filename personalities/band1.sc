@@ -74,6 +74,8 @@ m.rrateMassThreshold = 0.1;
 
 	 //var oct = ((0.2 + m.rrateMassFiltered.cubed) * 15).mod(2).floor + 1;
 
+	 // count = count + 1;
+	 // count.postln;
 	//Pdef(m.ptn).set(\root,m.com.root);
 
 	// Pdef(m.ptn).set(\dur,m.com.dur);
