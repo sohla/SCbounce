@@ -29,7 +29,7 @@ m.rrateMassThreshold = 0.05;
 	// Pdef(m.ptn,Pbind( 
 	// 	\note, Pseq([[0,2,-3,-5],[-1,4,1,7]].stutter(4),inf),
 		
-// Pdef(m.ptn).resume();
+Pdef(m.ptn).resume();
 	// ));
 
 };
@@ -74,11 +74,10 @@ m.rrateMassThreshold = 0.05;
 //------------------------------------------------------------	
 ~next = {|d| 
 
-	var oct = ((0.2 + m.rrateMassFiltered.cubed) * 25).mod(2).floor + 1;
-
-
-
-	Pdef(m.ptn).set(\dur,0.5 * (1/2.pow(oct)));
+	var oct = ((0.2 + m.rrateMassFiltered.cubed) * 25).mod(3).floor + 1;
+(4-oct).postln;
+	
+	Pdef(m.ptn).set(\dur,0.5 * (1/2.pow((4-oct))));
 	// Pdef(m.ptn).set(\dur,(m.rrateMassFiltered * 16).reciprocal);
 	// Pdef(m.ptn).set(\octave, [5 + oct]);
 
