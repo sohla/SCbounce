@@ -422,7 +422,12 @@ b.sendMsg("/gyrosc/rrate", 0.957318 ,0.957318, 0.957318);
 
 
 o = OSCFunc({ arg msg, time, addr, recvPort;
-	([msg, time, addr, recvPort]).postln;
-}, '/gyrosc/rrate');
+	//([msg, time, addr, recvPort]).postln;
+	switch( msg[1].asInteger,
+		1, { \spinning},
+		2, { \still}
+	).postln;
+}, '/wek/outputs');
 
 o.free;
+NetAddr.localAddr

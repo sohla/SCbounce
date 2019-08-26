@@ -18,8 +18,8 @@ MIDIClient.destinations;
 
 //------------------------------------------------------------
 
-//midiOut = MIDIOut.newByName("IAC Driver", "Bus 1", dieIfNotFound: true);
-midiOut = MIDIOut.newByName("Teensy MIDI", "Teensy MIDI", dieIfNotFound: true);
+midiOut = MIDIOut.newByName("IAC Driver", "Bus 1", dieIfNotFound: true);
+//midiOut = MIDIOut.newByName("Teensy MIDI", "Teensy MIDI", dieIfNotFound: true);
 midiOut.latency_(0.0);
 //------------------------------------------------------------
 //------------------------------------------------------------

@@ -74,10 +74,10 @@ Pdef(m.ptn).resume();
 //------------------------------------------------------------	
 ~next = {|d| 
 
-	var oct = ((0.2 + m.rrateMassFiltered.cubed) * 25).mod(3).floor + 1;
-(4-oct).postln;
+	var oct = ((0.2 + m.rrateMassFiltered.cubed) * 25).mod(2).floor + 1;
+// (4-oct).postln;
 	
-	Pdef(m.ptn).set(\dur,0.5 * (1/2.pow((4-oct))));
+	Pdef(m.ptn).set(\dur,0.5 * (1/2.pow((3-oct))));
 	// Pdef(m.ptn).set(\dur,(m.rrateMassFiltered * 16).reciprocal);
 	// Pdef(m.ptn).set(\octave, [5 + oct]);
 
@@ -85,7 +85,8 @@ Pdef(m.ptn).resume();
 };
 
 ~nextMidiOut = {|d|
-	m.midiOut.control(m.midiChannel, 3, m.rrateMassFiltered * 127 );
+	m.midiOut.control(m.midiChannel, 6, m.rrateMassFiltered * 127 );
+
 };			
 
 //------------------------------------------------------------	
