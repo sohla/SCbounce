@@ -57,7 +57,7 @@ m.rrateMassThreshold = 0.1;
 
 	Pdef(m.ptn).set(\root,m.com.root);
 	Pdef(m.ptn).set(\octave, 4 + (m.rrateMassFiltered * 3).floor);
-	Pdef(m.ptn).set(\dur,(m.rrateMassFiltered * 12).reciprocal);
+	Pdef(m.ptn).set(\dur,(m.rrateMassFiltered * 9).reciprocal);
 
 };
 ~nextMidiOut = {|d|

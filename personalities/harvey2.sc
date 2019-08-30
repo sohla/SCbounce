@@ -66,7 +66,7 @@ m.rrateMassThreshold = 0.1;
 ~next = {|d| 
 
 	Pdef(m.ptn).set(\root,m.com.root);
-	Pdef(m.ptn).set(\dur,(m.accelMass * 8).reciprocal);
+	Pdef(m.ptn).set(\dur,(m.rrateMassFiltered * 4).reciprocal);
 
 };
 

@@ -2,6 +2,8 @@ var m = ~model;
 var isOn = false;
 // var bl = [0,-7,-3,-10,-8,-7,-3,-5].stutter(2);
 var bl = [0,-7,-5].stutter(2);
+var cr = [0,5,-2,3,-4,1,-5];
+
 m.midiChannel = 6;
 m.accelMassThreshold = 0.9;
 m.rrateMassThreshold = 0.1;
@@ -72,8 +74,10 @@ m.rrateMassThreshold = 0.1;
 			isOn = state;
 			if(isOn == true,{
 				"Note ON".postln;
-				m.midiOut.noteOn(m.midiChannel, 60-24 + bl[0] + m.com.root, 60);
-				{m.midiOut.noteOff(m.midiChannel, 60-24 + bl[0] + m.com.root, 0)}.defer(1);
+				m.com.root = cr.[0];
+				cr = cr.rotate(-1);
+				m.midiOut.noteOn(m.midiChannel, 60-24  + m.com.root, 60);
+				{m.midiOut.noteOff(m.midiChannel, 60-24  + m.com.root, 0)}.defer(1);
 				bl = bl.rotate(-1);
 			},{
 				"Note OFF".postln;
@@ -109,6 +113,8 @@ m.rrateMassThreshold = 0.1;
 	},{
 		changeState.(false);
 	});
+
+	
 };
 
 ~nextMidiOut = {|d|

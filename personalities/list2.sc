@@ -1,10 +1,12 @@
 (
 	[
 		"steph2",
+		"adam",
 		"george2",
 		"nick2",
 		"matilda2",
 		"eve2",
+		"malia",
 		"harvey2",
 		"ellis2",
 		"gabe2",

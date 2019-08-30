@@ -1,4 +1,5 @@
 var m = ~model;
+var cr = [0,5,-2,3,-4,1,-5];
 m.midiChannel = 1;
 m.accelMassThreshold = 0.5;
 m.rrateMassThreshold = 0.1;
@@ -11,7 +12,7 @@ m.rrateMassThreshold = 0.1;
 	Pdef(m.ptn,
 		Pbind(
 			\note, Pseq([[-5,0,4]],inf),
-			\strum, 0.22,
+			// \strum, 0.22,
 			\args, #[],
 		);
 	);
@@ -22,7 +23,7 @@ m.rrateMassThreshold = 0.1;
 
 	Pdef(m.ptn,Pbind( 
 		\note, Pseq([[-5,0,4],[-5,0,5],[-5,0,2]],inf),
-		\strum, 0.12,
+		// \strum, 0.12,
 	));
 
 
@@ -39,8 +40,11 @@ m.rrateMassThreshold = 0.1;
 	var vel = 80;
 
 	if(state == true,{
+		m.com.root = cr.[0];
+		cr = cr.rotate(-1);
+
 		m.midiOut.noteOn(m.midiChannel, 60 + m.com.root - 24 , vel);
-		{m.midiOut.noteOff(m.midiChannel, 60 + m.com.root - 24, vel);}.defer(0.2);
+		{m.midiOut.noteOff(m.midiChannel, 60 + m.com.root - 24, vel);}.defer(1);
 	},{
 	});
 };

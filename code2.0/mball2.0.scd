@@ -1,3 +1,25 @@
+/*
+Router
+user: admin
+pw: zxzxzxzx
+
+IP: 192.168.10.x
+SUB: 255.255.255.0
+
+Router 192.168.1.1 (wifi)
+Router 192.168.10.1 (ethernet)
+
+SSID : SOHLA
+pw : zxzxzxzx
+
+
+Router setup with Laptop 
+192.168.10.x
+255.255.255.0
+192.168.10.1
+
+*/
+
 	(
 		// 
 		var devicesDir = "~/Develop/SuperCollider/SCbounce/personalities/";
@@ -81,7 +103,7 @@
 				com.accelMass = a;
 				com.rrateMass = r;
 
-				0.03.yield;
+				0.06.yield;
 
 		    }
 		}.play;
