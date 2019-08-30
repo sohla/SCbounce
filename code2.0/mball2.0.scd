@@ -405,6 +405,7 @@ Router setup with Laptop
 	//------------------------------------------------------------	
 	shutdown = {
 
+
 		comRout.stop();
 		midiControllers.do{|mc|mc.postln;mc.free};
 
@@ -415,12 +416,14 @@ Router setup with Laptop
 			v.env.use{ ~deinit.() };
 		});
 
+		// strange bug, we can not restart if we don't defer
+		{MIDIClient.disposeClient}.defer(1);
+
 
 		stopOSCListening.();
 		s.queryAllNodes;
 		
 		Pdef.clear;
-		MIDIClient.disposeClient;
 		Server.freeAll;
 
 	};
