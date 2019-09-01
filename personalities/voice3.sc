@@ -74,7 +74,7 @@ Pdef(m.ptn).resume();
 //------------------------------------------------------------	
 ~next = {|d| 
 
-	var oct = ((0.2 + m.rrateMassFiltered.cubed) * 25).mod(3).floor + 1;
+	var oct = ((0.2 + m.accelMassFiltered.cubed) * 25).mod(3).floor + 1;
 // (4-oct).postln;
 	
 	Pdef(m.ptn).set(\dur,0.5 * (1/2.pow((3-oct))));
@@ -85,7 +85,7 @@ Pdef(m.ptn).resume();
 };
 
 ~nextMidiOut = {|d|
-	m.midiOut.control(m.midiChannel, 6, m.rrateMassFiltered * 127 );
+	m.midiOut.control(m.midiChannel, 3, m.accelMassFiltered * 127 );
 
 };			
 

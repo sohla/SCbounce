@@ -71,7 +71,7 @@ m.rrateMassThreshold = 0.05;
 //------------------------------------------------------------	
 ~next = {|d| 
 
-	var oct = ((0.2 + m.rrateMassFiltered.cubed) * 25).mod(2).floor;
+	var oct = ((0.2 + m.accelMassFiltered.cubed) * 25).mod(2).floor;
 
 
 

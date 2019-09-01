@@ -20,6 +20,7 @@ m.rrateMassThreshold = 0.1;
 	Pdef(m.ptn,
 		Pbind(
 			\note, Pseq([0],inf),
+			
 			\args, #[],
 		);
 	);
@@ -30,7 +31,8 @@ m.rrateMassThreshold = 0.1;
 
 	// change notes
 	Pdef(m.ptn,Pbind( 
-		\note, Pseq([[-12,0],10,7,2,5,4,-3,-5],inf)
+		\note, Pseq([[-12,0],10,7,2,5,4,-3,-5],inf),
+		\root, Pseq([0,5,-2,3,-4,1,-5].stutter(16),inf),
 		//\root, Pseq([0,3,5,2].stutter(16),inf)
 	));
 
@@ -65,8 +67,8 @@ m.rrateMassThreshold = 0.1;
 //------------------------------------------------------------	
 ~next = {|d| 
 
-	Pdef(m.ptn).set(\root,m.com.root);
-	Pdef(m.ptn).set(\dur,(m.rrateMassFiltered * 4).reciprocal);
+	//Pdef(m.ptn).set(\root,m.com.root);
+	Pdef(m.ptn).set(\dur,(m.accelMassFiltered * 4).reciprocal);
 
 };
 

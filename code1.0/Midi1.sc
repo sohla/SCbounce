@@ -18,3 +18,9 @@ MIDIIn.addFuncTo(\control, ~control);
 MIDIIn.removeFuncFrom(\control, ~control);
 
 MIDIIn.disconnectAll
+
+
+
+MIDIClient.init;
+
+MIDIClient.disposeClient;

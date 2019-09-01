@@ -1,7 +1,11 @@
 var m = ~model;
+var bl = [0,4,-2,2].stutter(8);
+var cr = [0,5,-2,3,-4,1,-5];
+var isOn = false;
+
 m.midiChannel = 7;
-m.accelMassThreshold = 0.3;
-m.rrateMassThreshold = 0.1;
+m.accelMassThreshold = 0.2;
+m.rrateMassThreshold = 0.2;
 
 //------------------------------------------------------------	
 // intial state
@@ -55,9 +59,44 @@ m.rrateMassThreshold = 0.1;
 //------------------------------------------------------------	
 ~next = {|d| 
 
+	var oo = [24,36];
+	var changeState = {|state|
+		if(isOn != state,{
+			isOn = state;
+			if(isOn == true,{
+				"Note ON".postln;
+				m.com.root = bl.[0];
+				cr = cr.rotate(-1);
+				m.midiOut.noteOn(10, 60-oo.choose  + m.com.root, 20);
+				{m.midiOut.noteOff(10, 60-oo.choose  + m.com.root, 0)}.defer(0.5);
+				bl = bl.rotate(-1);
+			},{
+				"Note OFF".postln;
+			});
+		});
+	};
+
+	var ga = 0;
+	var amp = d.ampValue * 10;
+
 	Pdef(m.ptn).set(\root,m.com.root);
-	Pdef(m.ptn).set(\octave, 4 + (m.rrateMassFiltered * 3).floor);
-	Pdef(m.ptn).set(\dur,(m.rrateMassFiltered * 9).reciprocal);
+	Pdef(m.ptn).set(\octave, 5 + (m.rrateMassFiltered * 3).floor);
+	Pdef(m.ptn).set(\dur,(m.accelMassFiltered * 12).reciprocal);
+
+
+	if( m.accelMass > 0.8,{
+		if( d.ampValue > 0.13,{
+			ga = m.accelMass * amp;
+		},{
+		});
+	},{
+	});
+
+	if(ga > 0.6,{
+		changeState.(true);
+	},{
+		changeState.(false);
+	});
 
 };
 ~nextMidiOut = {|d|
