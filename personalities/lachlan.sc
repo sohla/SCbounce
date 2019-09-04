@@ -1,11 +1,10 @@
 var m = ~model;
 var isOn = false;
-// var bl = [0,-7,-3,-10,-8,-7,-3,-5].stutter(2);
 var bl = [0,-2,5].stutter(12);
 var cr = [0,5,-2,3,-4,1,-5];
 
 m.midiChannel = 9;
-m.accelMassThreshold = 0.9;
+m.accelMassAmpThreshold = 0.1;
 m.rrateMassThreshold = 0.1;
 
 //------------------------------------------------------------	
@@ -40,19 +39,22 @@ m.rrateMassThreshold = 0.1;
 
 ~onHit = {|state|
 
-	// var vel = 80;
+	var oo = [36,48];
 
-	// if(state == true,{
-	// 	m.midiOut.noteOn(m.midiChannel, 60 + m.com.root + 24 , vel);
-	// },{
-	// 	m.midiOut.noteOff(m.midiChannel, 60 + m.com.root + 24, vel);
-	// });
+	if(state == true,{
+		m.com.root = bl.[0];
+		cr = cr.rotate(-1);
+		m.midiOut.noteOn(m.midiChannel + 1, 60-oo.choose  + m.com.root, 60);
+		{m.midiOut.noteOff(m.midiChannel + 1, 60-oo.choose  + m.com.root, 0)}.defer(0.5);
+		bl = bl.rotate(-1);
+	},{
+	});
 };
 
 ~onMoving = {|state|
 
 	if(state == true,{
-		Pdef(m.ptn).play();
+		Pdef(m.ptn).resume();
 	},{
 		Pdef(m.ptn).pause();
 	});
@@ -65,51 +67,12 @@ m.rrateMassThreshold = 0.1;
 ~next = {|d| 
 
 	var oct = ((0.2 + m.rrateMassFiltered.cubed) * 25).mod(3).floor;
-	var oo = [24,36,48];
-	var changeState = {|state|
-		if(isOn != state,{
-			isOn = state;
-			if(isOn == true,{
-				"Note ON".postln;
-				m.com.root = bl.[0];
-				cr = cr.rotate(-1);
-				m.midiOut.noteOn(m.midiChannel + 1, 60-oo.choose  + m.com.root, 60);
-				{m.midiOut.noteOff(m.midiChannel + 1, 60-oo.choose  + m.com.root, 0)}.defer(0.5);
-				bl = bl.rotate(-1);
-			},{
-				"Note OFF".postln;
-			});
-		});
-	};
-
-	var ga = 0;
-	var amp = d.ampValue * 10;
-
 
 	Pdef(m.ptn).set(\root,m.com.root);
-
-	// Pdef(m.ptn).set(\dur,m.com.dur);
 	Pdef(m.ptn).set(\dur,(m.accelMassFiltered * 6).reciprocal);
 	Pdef(m.ptn).set(\amp, 0.4);
 	Pdef(m.ptn).set(\octave, 5 + oct);
 
-	//midiOut.noteOn(7, 60 + note, 90);
-
-
-
-	if( m.accelMass > 0.8,{
-		if( d.ampValue > 0.13,{
-			ga = m.accelMass * amp;
-		},{
-		});
-	},{
-	});
-
-	if(ga > 0.6,{
-		changeState.(true);
-	},{
-		changeState.(false);
-	});
 };
 
 ~nextMidiOut = {|d|
@@ -124,34 +87,6 @@ m.rrateMassThreshold = 0.1;
 ~plotMax = 1;
 
 ~plot = { |d,p|
-	// [(m.rrateMassFiltered * 3).ceil.mod(3)];
-	//[m.rrateMassFiltered, m.accelMassFiltered, m.com.rrateMass];
-	// var changeState = {|state|
-	// 	if(isOn != state,{
-	// 		isOn = state;
-	// 		if(isOn == true,{
-	// 			"Note ON".postln;
-	// 		},{
-	// 			"Note OFF".postln;
-	// 		});
-	// 	});
-	// };
-
-	// var ga = 0;
-	// var amp = d.ampValue * 10;
-	// if( m.accelMass > 0.3,{
-	// 	if( d.ampValue > 0.08	,{
-	// 		ga = m.accelMass * amp;
-	// 	},{
-	// 	});
-	// },{
-	// });
-
-	// if(ga > 0.2,{
-	// 	changeState.(true);
-	// },{
-	// 	changeState.(false);
-	// });
 
 	[m.rrateMassFiltered];
 };

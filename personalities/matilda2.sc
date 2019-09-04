@@ -1,6 +1,6 @@
 var m = ~model;
 m.midiChannel = 4;
-m.accelMassThreshold = 0.3;
+m.accelMassAmpThreshold = 0.4;
 m.rrateMassThreshold = 0.1;
 
 //------------------------------------------------------------	
@@ -52,12 +52,13 @@ m.rrateMassThreshold = 0.1;
 //------------------------------------------------------------	
 ~next = {|d| 
 
-	Pdef(m.ptn).set(\root,m.com.root);
+	//Pdef(m.ptn).set(\root,m.com.root);
 	Pdef(m.ptn).set(\dur,(m.rrateMassFiltered * 20).reciprocal);
 
 };
 
 ~nextMidiOut = {|d|
+	m.midiOut.control(m.midiChannel, 0, m.rrateMassFiltered * 127 );
 };			
 
 //------------------------------------------------------------	

@@ -1,12 +1,12 @@
 var m = ~model;
 var isOn = false;
-
+var root;
 var notes = [0,12,10,0,0,12,12,10,10,9,7,7,5,2,5];
 var note = notes[0];
 
 
 m.midiChannel = 8;
-m.accelMassThreshold = 0.9;
+m.accelMassAmpThreshold = 0.4;
 m.rrateMassThreshold = 0.1;
 
 
@@ -19,8 +19,9 @@ m.rrateMassThreshold = 0.1;
 
 	Pdef(m.ptn,
 		Pbind(
-			\note, Pseq([0],inf),
-			
+			\note, Pseq([[-12,0],10,7,2,5,4,-3,-5],inf),
+			\root, Pseq([0,5,-2,3,-4,1,-5].stutter(16),inf),
+			\func, Pfunc({|e| ~onEvent.(e)}),
 			\args, #[],
 		);
 	);
@@ -29,22 +30,24 @@ m.rrateMassThreshold = 0.1;
 	Pdef(m.ptn).set(\octave,4);
 	Pdef(m.ptn).set(\amp,0.8);
 
-	// change notes
-	Pdef(m.ptn,Pbind( 
-		\note, Pseq([[-12,0],10,7,2,5,4,-3,-5],inf),
-		\root, Pseq([0,5,-2,3,-4,1,-5].stutter(16),inf),
-		//\root, Pseq([0,3,5,2].stutter(16),inf)
-	));
-
 };
 
 //------------------------------------------------------------	
 // triggers
 //------------------------------------------------------------	
 ~onEvent = {|e|
+	root = e.root;
 };
 
 ~onHit = {|state|
+
+	if(state == true,{
+		m.midiOut.noteOn(m.midiChannel, 60 + root - 24, 100);
+		{m.midiOut.noteOff(m.midiChannel, 60 + root - 24, 0)}.defer(2);
+
+	},{
+	});
+
 };
 
 ~onMoving = {|state|

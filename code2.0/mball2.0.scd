@@ -183,8 +183,9 @@ Router setup with Laptop
 				\accelMassFiltered: 0,
 				\isHit: false,
 				\isMoving: true,
-				\accelMassThreshold: 0.2,
 				\rrateMassThreshold: 0.1,
+				\accelMassAmp: 0.0,
+				\accelMassAmpThreshold: 0.4,
 			);
 
 			//------------------------------------------------------------	
@@ -210,17 +211,47 @@ Router setup with Laptop
 				// isHit
 				// TODO smarter gate with min/max threasholds and level
 				// use improved code in eve2
-				if(~model.accelMassFiltered > ~model.accelMassThreshold,{
-					if(~model.isHit == false,{
-						~model.isHit = true;
-						~onHit.(~model.isHit);
+				// if(~model.accelMassFiltered > ~model.accelMassThreshold,{
+				// 	if(~model.isHit == false,{
+				// 		~model.isHit = true;
+				// 		~onHit.(~model.isHit);
+				// 	});
+				// },{
+				// 	if(~model.isHit == true,{
+				// 		~model.isHit = false;
+				// 		~onHit.(~model.isHit);
+				// 	});
+				// });
+
+
+				var changeState = {|state|
+					if(~model.isHit != state,{
+						~model.isHit = state;
+						if(~model.isHit == true,{
+							//"Note ON".postln;
+							~onHit.(~model.isHit);
+						},{
+							//"Note OFF".postln;
+							~onHit.(~model.isHit);
+						});
 					});
-				},{
-					if(~model.isHit == true,{
-						~model.isHit = false;
-						~onHit.(~model.isHit);
+				};
+
+				// should we tweak this constants!?
+				if( ~model.accelMass > 0.3,{ 
+					if( d.ampValue > 0.08,{
+						~model.accelMassAmp = ~model.accelMass * d.ampValue;
+					},{
+						~model.accelMassAmp = 0.0;
 					});
 				});
+
+				if(~model.accelMassAmp > ~model.accelMassAmpThreshold,{
+					changeState.(true);
+				},{
+					changeState.(false);
+				});
+
 
 				//isMoving
 

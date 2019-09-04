@@ -1,7 +1,7 @@
 var m = ~model;
 var pb;
 m.midiChannel = 2;
-m.accelMassThreshold = 0.8;
+m.accelMassAmpThreshold = 0.4;
 m.rrateMassThreshold = 0.1;
 
 //------------------------------------------------------------	
