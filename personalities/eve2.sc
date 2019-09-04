@@ -1,7 +1,7 @@
 var m = ~model;
 var isOn = false;
 // var bl = [0,-7,-3,-10,-8,-7,-3,-5].stutter(2);
-var bl = [0,-7,-5].stutter(2);
+var bl = [0,-7,-5].stutter(12);
 var cr = [0,5,-2,3,-4,1,-5];
 
 m.midiChannel = 6;
