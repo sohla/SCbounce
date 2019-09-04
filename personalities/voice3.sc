@@ -65,10 +65,6 @@ Pdef(m.ptn).resume();
 	});
 };
 
-~onAmp = {|v|
-	// TODO
-//	v.postln;
-};
 //------------------------------------------------------------	
 // do all the work(logic) taking data in and playing pattern/synth
 //------------------------------------------------------------	

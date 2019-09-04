@@ -58,10 +58,6 @@ m.rrateMassThreshold = 0.1;
 	});
 };
 
-~onAmp = {|v|
-	// TODO
-};
-
 //------------------------------------------------------------	
 // do all the work(logic) taking data in and playing pattern/synth
 //------------------------------------------------------------	
