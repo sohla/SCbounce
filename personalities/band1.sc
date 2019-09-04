@@ -41,8 +41,6 @@ m.rrateMassThreshold = 0.5;
 ~onMoving = {|state|
 };
 
-~onAmp = {|v|
-};
 
 //------------------------------------------------------------	
 // do all the work(logic) taking data in and playing pattern/synth

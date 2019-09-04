@@ -20,6 +20,7 @@ Router setup with Laptop
 
 */
 
+
 	(
 		// 
 		var devicesDir = "~/Develop/SuperCollider/SCbounce/personalities/";
@@ -1183,7 +1184,6 @@ Router setup with Laptop
 
 				if(devices.at(addr.port) != nil,{
 					devices.at(addr.port).ampValue = msg[1].asFloat;
-					devices.at(addr.port).env.use{ ~onAmp.(msg[1].asFloat) };
 				});
 		}, '/gyrosc/amp', na);
 
