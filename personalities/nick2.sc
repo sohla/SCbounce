@@ -1,5 +1,6 @@
 var m = ~model;
-var cr = [0,5,-2,3,-4,1,-5].stutter(4);
+// var cr = [0,5,-2,3,-4,1,-5].stutter(4);
+var cr = [0,1,2];
 m.midiChannel = 1;
 m.accelMassAmpThreshold = 0.4;
 m.rrateMassThreshold = 0.1;
@@ -72,7 +73,7 @@ m.rrateMassThreshold = 0.1;
 };
 
 ~nextMidiOut = {|d|
-	m.midiOut.control(m.midiChannel, 0, m.accelMassFiltered * 40 );
+	m.midiOut.control(m.midiChannel, 0, m.accelMassFiltered * 120 );
 };			
 
 //------------------------------------------------------------	
@@ -83,7 +84,7 @@ m.rrateMassThreshold = 0.1;
 ~plotMax = 1;
 
 ~plot = { |d,p|
-	[m.rrateMassFiltered, m.accelMassFiltered];
+	[m.accelMassFiltered];
 };
 //------------------------------------------------------------	
 // midi control
