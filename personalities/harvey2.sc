@@ -6,7 +6,7 @@ var note = notes[0];
 
 
 m.midiChannel = 8;
-m.accelMassAmpThreshold = 0.4;
+m.accelMassAmpThreshold = 0.2;
 m.rrateMassThreshold = 0.1;
 
 
@@ -42,8 +42,8 @@ m.rrateMassThreshold = 0.1;
 ~onHit = {|state|
 
 	if(state == true,{
-		m.midiOut.noteOn(m.midiChannel, 60 + root - 24, 100);
-		{m.midiOut.noteOff(m.midiChannel, 60 + root - 24, 0)}.defer(2);
+		m.midiOut.noteOn(m.midiChannel, 60 + root - 0, 100);
+		{m.midiOut.noteOff(m.midiChannel, 60 + root - 0, 0)}.defer(2);
 
 	},{
 	});
@@ -66,12 +66,12 @@ m.rrateMassThreshold = 0.1;
 ~next = {|d| 
 
 	//Pdef(m.ptn).set(\root,m.com.root);
-	Pdef(m.ptn).set(\dur,(m.accelMassFiltered * 4).reciprocal);
+	Pdef(m.ptn).set(\dur,(m.accelMassFiltered * 8).reciprocal);
 
 };
 
 ~nextMidiOut = {|d|
-	m.midiOut.control(m.midiChannel, 0, m.rrateMassFiltered * 127 );
+	m.midiOut.control(m.midiChannel, 5, m.rrateMassFiltered * 127 );
 };			
 
 //------------------------------------------------------------	
