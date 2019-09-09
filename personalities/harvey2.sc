@@ -41,12 +41,12 @@ m.rrateMassThreshold = 0.1;
 
 ~onHit = {|state|
 
-	if(state == true,{
-		m.midiOut.noteOn(m.midiChannel, 60 + root - 0, 100);
-		{m.midiOut.noteOff(m.midiChannel, 60 + root - 0, 0)}.defer(2);
+	// if(state == true,{
+	// 	m.midiOut.noteOn(m.midiChannel, 60 + root , 100);
+	// 	{m.midiOut.noteOff(m.midiChannel, 60 + root, 0)}.defer(2);
 
-	},{
-	});
+	// },{
+	// });
 
 };
 
@@ -90,5 +90,5 @@ m.rrateMassThreshold = 0.1;
 //------------------------------------------------------------	
 ~midiControllerValue = {|num,val|
 
-	[num,val].postln;
+	//[num,val].postln;
 };

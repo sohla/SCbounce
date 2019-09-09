@@ -1,7 +1,7 @@
 var m = ~model;
 var isOn = false;
 var bl = [0,-7,-5].stutter(12);
-var cr = [0,-2,-7,-3,0,-2,-7,-3,-5].stutter(6);
+var cr = [0,-2,-7,-3,0,-2,-7,-3,-5].stutter(5);
 
 m.midiChannel = 6;
 m.accelMassAmpThreshold = 0.2;
@@ -69,13 +69,13 @@ m.rrateMassThreshold = 0.1;
 
 	Pdef(m.ptn).set(\root,m.com.root);
 	Pdef(m.ptn).set(\dur,(m.accelMassFiltered * 7).reciprocal);
-	Pdef(m.ptn).set(\amp, 0.25 + (m.accelMassFiltered * 0.1));
+	Pdef(m.ptn).set(\amp, 0.34 + (m.accelMassFiltered * 0.1));
 	Pdef(m.ptn).set(\octave, 5 + oct);
 	
 };
 
 ~nextMidiOut = {|d|
-	m.midiOut.control(m.midiChannel, 0, m.accelMassFiltered * 110 );
+	m.midiOut.control(m.midiChannel, 0, m.accelMassFiltered * 90 );
 };			
 
 //------------------------------------------------------------	

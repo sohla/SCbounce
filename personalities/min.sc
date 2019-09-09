@@ -46,7 +46,7 @@ m.rrateMassThreshold = 0.1;
 	if(state == true,{
 		m.com.root = bl.[0];
 		cr = cr.rotate(-1);
-		m.midiOut.noteOn(10, 60-oo.choose + m.com.root + cr[0] , 60);
+		m.midiOut.noteOn(10, 60-oo.choose + m.com.root + cr[0] , 30);
 		{m.midiOut.noteOff(10, 60-oo.choose + m.com.root + cr[0], 0)}.defer(0.05);
 		bl = bl.rotate(-1);
 
@@ -78,7 +78,7 @@ m.rrateMassThreshold = 0.1;
 	var aa = m.accelMassFiltered;
 
 	if( aa < 0.5, { aa = 0});
-	Pdef(m.ptn).set(\amp,aa * 0.5);
+	Pdef(m.ptn).set(\amp,aa * 0.3);
 	Pdef(m.ptn).set(\root,cr[0]);
 
 };

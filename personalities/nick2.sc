@@ -1,6 +1,6 @@
 var m = ~model;
 // var cr = [0,5,-2,3,-4,1,-5].stutter(4);
-var cr = [0,1,2];
+var cr = [0,-2,3].stutter(5);
 m.midiChannel = 1;
 m.accelMassAmpThreshold = 0.4;
 m.rrateMassThreshold = 0.1;
@@ -40,13 +40,13 @@ m.rrateMassThreshold = 0.1;
 
 ~onHit = {|state|
 
-	var vel = 80;
+	var vel = 50;
 
 	if(state == true,{
 
 		m.com.root = cr.[0];
-		// m.midiOut.noteOn(2, 60 + m.com.root - 24 , vel);
-		// {m.midiOut.noteOff(2, 60 + m.com.root - 24, vel);}.defer(1);
+		m.midiOut.noteOn(10, 60 + m.com.root - 36 , vel);
+		{m.midiOut.noteOff(10, 60 + m.com.root - 36, vel);}.defer(1);
 		cr = cr.rotate(-1);
 	},{
 	});

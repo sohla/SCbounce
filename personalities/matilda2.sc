@@ -20,6 +20,7 @@ m.rrateMassThreshold = 0.1;
 	);
 
 	Pdef(m.ptn).set(\dur,0.5);
+	Pdef(m.ptn).set(\amp,0.1);
 };
 
 //------------------------------------------------------------	
@@ -31,7 +32,7 @@ m.rrateMassThreshold = 0.1;
 
 ~onHit = {|state|
 
-	var vel = 100;
+	var vel = 90;
 	var note = -48;
 	if(state == true,{
 		m.midiOut.noteOn(4, 60 + m.com.root + note, vel);

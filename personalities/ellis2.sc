@@ -31,7 +31,7 @@ m.rrateMassThreshold = 0.1;
 //------------------------------------------------------------	
 ~onEvent = {|e|
 	root = e.root;
-	root.postln;
+	//root.postln;
 };
 
 ~onHit = {|state|
