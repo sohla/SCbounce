@@ -4,7 +4,7 @@ var notes = [59,60,61];
 var thunder = [57,60,63];
 
 var slow =0;
-m.midiChannel = 0;
+m.midiChannel = 2;
 m.accelMassAmpThreshold = 0.2;
 m.rrateMassThreshold = 0.05;
 
@@ -79,7 +79,7 @@ m.rrateMassThreshold = 0.05;
 };
 
 ~nextMidiOut = {|d|
-	m.midiOut.control(m.midiChannel, 1, slow * 64 );
+	m.midiOut.control(0, 2, slow *127 );
 };			
 
 //------------------------------------------------------------	

@@ -16,6 +16,11 @@
 		"voice3",
 		"lachlan",
 		"min",
+		"rain",
+		"clapping",
+		"beatbox",
+		"scratch",
+
 
 	]
 )
