@@ -1,6 +1,6 @@
 var m = ~model;
 m.midiChannel = 4;
-m.accelMassAmpThreshold = 0.4;
+m.accelMassAmpThreshold = 0.2;
 m.rrateMassThreshold = 0.1;
 
 //------------------------------------------------------------	
@@ -12,8 +12,10 @@ m.rrateMassThreshold = 0.1;
 	Pdef(m.ptn,
 		Pbind(
 	        \degree, Pseq([[0,4,7],[4,7,10],[0,4,7],[4,7,9]], inf),
+			\root, Pseq([0,5,-2,3,-4,1,-5].stutter(16),inf),
+			\func, Pfunc({|e| ~onEvent.(e)}),
 			\args, #[],
-			\octave,Pseq([1,2,3,4,5,4,3,2].stutter(3),inf)
+			\octave,Pseq([1,2,3,4,3,2].stutter(3),inf)
 		);
 	);
 
@@ -24,15 +26,16 @@ m.rrateMassThreshold = 0.1;
 // triggers
 //------------------------------------------------------------	
 ~onEvent = {|e|
+	m.com.root = e.root;
 };
 
 ~onHit = {|state|
 
-	var vel = 50;
-	var note = 0;
+	var vel = 100;
+	var note = -48;
 	if(state == true,{
-		m.midiOut.noteOn(m.midiChannel, 60 + m.com.root + note - 48 - 12 , vel);
-		{m.midiOut.noteOff(m.midiChannel, 60 + m.com.root + note - 48 - 12, vel);}.defer(0.3);
+		m.midiOut.noteOn(4, 60 + m.com.root + note, vel);
+		{m.midiOut.noteOff(4, 60 + m.com.root + note, vel);}.defer(0.3);
 	},{
 
 	});
@@ -53,7 +56,7 @@ m.rrateMassThreshold = 0.1;
 ~next = {|d| 
 
 	//Pdef(m.ptn).set(\root,m.com.root);
-	Pdef(m.ptn).set(\dur,(m.rrateMassFiltered * 20).reciprocal);
+	Pdef(m.ptn).set(\dur,(m.accelMassFiltered * 12).reciprocal);
 
 };
 
