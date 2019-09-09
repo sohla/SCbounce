@@ -1,0 +1,61 @@
+(
+var window, levelView;
+var deviceMenu;
+var filteredValue = 0;
+
+~tween = {|input,history,friction = 0.5|
+				(friction * input + ((1 - friction) * history))
+			};
+
+window = Window("")
+	.bounds_(Rect(
+		0,0,
+		Window.screenBounds.width/2,
+		Window.screenBounds.height/2)
+		.center_(Window.availableBounds.center)
+	)
+	.front;
+
+window.layout = HLayout(
+	levelView = LevelIndicator()
+
+);
+
+
+
+
+
+window.onClose = ({
+
+	MIDIIn.removeFuncFrom(\control, ~control);
+	MIDIIn.disconnectAll;
+
+	Buffer.freeAll;
+	s.freeAll;
+
+});
+CmdPeriod.doOnce({window.close});
+
+
+MIDIClient.init;
+MIDIIn.connectAll;    
+
+~control = { arg src, chan, num, val;    
+	[chan,num,val].postln; 
+	{
+
+		(val - filteredValue).abs.postln;
+		// if(val == 0,{
+		// 	filteredValue = 0;
+		// });
+		filteredValue = ~tween.(val/127, filteredValue, 0.02);
+		levelView.value = filteredValue;
+
+
+	}.defer;
+};
+
+MIDIIn.addFuncTo(\control, ~control);
+
+
+)

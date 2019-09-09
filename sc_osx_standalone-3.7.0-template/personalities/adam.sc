@@ -2,21 +2,22 @@
 // unique name for pattern 
 var ptn = Array.fill(16,{|i|i=90.rrand(65).asAscii});
 
-//------------------------------------------------------------	
-// SYNTH DEF
-//------------------------------------------------------------	
+var smooth = 0;
+var synth;
 
-(
-	SynthDef(\adamSynth, { |out=0, freq=240, gate=1, amp=0.3, pan=0.0, attack=0.01, sustain=0.5, release=1.3|
-	var env = EnvGen.kr(Env.adsr(attack, sustain, sustain, release), gate, doneAction:2);
-	var sig = SinOsc.ar(freq,0,1.0)!2;
-	var verb = FreeVerb2.ar(sig[0],sig[1],0.3 ,500);
-	Out.ar(out, Pan2.ar(verb, pan, env * amp));
-}).add;
-);
+var amp = 0;
+var ampThreshold = 0.1;
 
-// use to hear this synth onces
-//x = Synth(\adamSynth);s.sendBundle(0.5,[\n_set,x.nodeID,\gate,0]);
+var notes = [0,5,8,3];
+var note = notes[0];
+
+var moving = false;
+var midiOut;
+var midiChannel = 0;
+
+var threshold = 0.7;
+var isHit = false;
+
 
 //------------------------------------------------------------	
 // PATTERN DEF
@@ -24,25 +25,16 @@ var ptn = Array.fill(16,{|i|i=90.rrand(65).asAscii});
 
 Pdef(ptn,
 	Pbind(
-//        \degree, Pseq([0,2,4,6,8,7,5,3,1], inf),
-        //\degree, Pseq([0,1,2,0,2,0,2,1,2,3,3,2,1,3,2,3,4,2,4,2,4,3,4,5,5,4,3,5,4,0,1,2,3,4,5,5,1,2,3,4,5,6,6,2,3,4,5,6,7,6,5,5,3,6,4,7,4,3,1], inf),
-		\note, Prand([0,2,5,7,9],inf),
+		\note, Prand([0,2,[4,7]],inf),
 		\args, #[],
 		\amp, Pexprand(0.1,0.4,inf),
 		\pan, Pwhite(-0.8,0.8,inf)
 ));
 
-// use this to test patter/synth with default gui
-// Pdef(ptn).play.gui;
-// Pdef(ptn).set(\instrument,\adamSynth);
-// Pdef(ptn).set(\dur,0.2);
-// Pdef(ptn).set(\octave,4);
 
-// Pdef(ptn).set(\attack,0.001);
-// Pdef(ptn).set(\sustain,0.27);
-// Pdef(ptn).set(\release,0.92);
-
-
+//------------------------------------------------------------	
+//
+//------------------------------------------------------------	
 
 (
 
@@ -59,18 +51,18 @@ Pdef(ptn,
 		"init ADAM".postln;
 
 		Pdef(ptn).set(\instrument,\adamSynth);
-		Pdef(ptn).set(\dur,0.2);
+		Pdef(ptn).set(\dur,0.5);
 		Pdef(ptn).set(\octave,5);
 
-		Pdef(ptn).set(\attack,0.001);
-		Pdef(ptn).set(\sustain,0.27);
-		Pdef(ptn).set(\release,0.92);
 
-		// Pdef(ptn).set(\type,\midi);
-		// Pdef(ptn).set(\midiout,mo);
-		// Pdef(ptn).set(\chan,2);
+		Pdef(ptn).set(\type,\midi);
+		Pdef(ptn).set(\midiout,mo);
+		Pdef(ptn).set(\chan,midiChannel);
 
-		Pdef(ptn).play;
+		midiOut = mo;
+	
+
+
 	};
 
 	//------------------------------------------------------------	
@@ -78,48 +70,70 @@ Pdef(ptn,
 	//------------------------------------------------------------	
 	~next = {|d| 
 		
+		amp = ~tween.((d.ampValue/1024) * 2,amp,0.3);
 
-		//d.accelEvent.mass = ~tween.(d.accelEvent.sumabs.half,d.accelEvent.mass,0.08);
+		d.accelMass = d.accelEvent.sumabs * 0.1;
+		d.rrateMass = (2.pow(d.rrateEvent.sumabs.div(1.0)).reciprocal).max(0.125*0.5);
+		smooth = ~tween.(d.rrateEvent.sumabs * 0.1,smooth,0.5);
 
-		d.rrateMass = ~tween.(d.rrateEvent.sumabs.half / 3.0,d.rrateMass,0.9);
 
-		//• play around some before structuring code
-		
+		if( amp > ampThreshold,{
+		// if(d.accelMass > threshold,{
 
-		if(d.rrateMass < 0.06,{
-			Pdef(ptn).pause;
+			if(isHit == false,{
+				var n = [0.2,7,12,19].choose ;
+				// midiOut.control(midiChannel, 2, 0 );
+				midiOut.noteOn(midiChannel, 60+12+n+note, 10);
+				{midiOut.noteOff(midiChannel, 60+12+n+note, 0)}.defer(0.04);
+
+				isHit = true;
+
+			});
+
 		},{
-			if(Pdef(ptn).isPlaying.not,{Pdef(ptn).resume});
+			isHit = false;
 		});
-			
 
-			//(d.gyroEvent.roll + pi).postln;//• how can we get this to plot? 
+		if(smooth > 0.11,{
 
-	 	// set pattern
-	  	if(Pdef(ptn).isPlaying, {
+			if(moving == false,{
+				moving = true;
 
-			//Pdef(ptn).set(\patch,((d.gyroEvent.pitch + pi).div(pi.twice/4.0)).floor);
-			
-			//Pdef(ptn).set(\gtranspose,9 + [0,12,24].at(((d.gyroEvent.roll + pi).div(pi.twice/3.0)).floor));
+				//midiOut.noteOn(3, 60 + note -24, 100);
+				Pdef(ptn).play();
+			});
 
-			//Pdef(ptn).set(\c3,(10 + ((d.gyroEvent.roll + pi)/(pi.twice) * 500)));
-			
-			// Pdef(ptn).set(\legato,(0.1 + ((d.gyroEvent.yaw + pi)/(pi.twice) * 10)));
-			
-			// Pdef(ptn).set(\position,(0.0 + ((d.gyroEvent.yaw + pi)/(pi.twice) * 1.0)));
+			midiOut.control(midiChannel, 0, (smooth*127).asInteger );
+		},{
 
-		 });
-		// (d.rrateEvent.sumabs.sqrt).postln;
-		
-		// if(Pdef(ptn).isPlaying, {
+			if(moving == true,{
+				moving = false;
+				Pdef(ptn).stop;
+				midiOut.noteOff(3, 60 + note - 24, 90);
+				notes = notes.rotate(-1);
+				note = notes[0];
+				Pdef(ptn).set(\root,note);
+				midiOut.noteOn(3, 60 + note -24, 90);
+			});
 
-		Pdef(ptn).set(\octave,(5+d.rrateMass.half.ceil));
+		});
 
-			Pdef(ptn).set(\attack,(1.0 + d.rrateEvent.sumabs).pow(4).reciprocal);
 
-		 	Pdef(ptn).set(\dur,Array.geom(8, 1, 2).at((d.rrateEvent.sumabs.sqrt.half).floor).twice.reciprocal);
-		// });
+		// if(d.accelMass > 0.2,{
+		// 		midiOut.noteOn(midiChannel, 60 + note - 24, 100);
+		// },{
 
+		// 	});
+
+		Pdef(ptn).set(\octave,5 + (smooth * 3).floor);
+		Pdef(ptn).set(\dur, (0.4- (smooth * 0.22)));
+
+	};
+
+	//------------------------------------------------------------	
+
+	~plot = { |d,p|
+		[ amp ];
 	};
 
 	//------------------------------------------------------------	
@@ -129,6 +143,9 @@ Pdef(ptn,
 
 		"deinit ADAM".postln;
 		Pdef(ptn).stop;
+
+		midiOut.allNotesOff(midiChannel);
+		midiOut.allNotesOff(3);
 	};
 
 	//------------------------------------------------------------	
@@ -138,17 +155,16 @@ Pdef(ptn,
 	~plotMin = 0;
 	~plotMax = 1;
 
-	//------------------------------------------------------------	
-	// utility for output to a plotter : returns a value that
-	// that will be put at the end of plotters data array
-	//------------------------------------------------------------	
-
-	~plot = { |d,p|
-		//[0,12,24].at(((d.gyroEvent.roll + pi).div(pi.twice/3.0)).floor);
-		//(10 + ((d.gyroEvent.roll + pi)/(pi.twice) * 100));
-		//(0.1 + ((d.gyroEvent.yaw + pi)/(pi.twice) * 10));
-		Array.geom(8, 1, 2).at((d.rrateEvent.sumabs.sqrt.half).floor).twice.reciprocal;
-	};
 	
+	//------------------------------------------------------------	
+	// midi control
+	//------------------------------------------------------------	
+	~midiControllerValue = {|num,val|
+
+		if(num == 4,{ threshold = 0.005 + (val * 0.7)});
+
+		//midiOut.control(4, num, val * 127 );
+	};
+
 
 )

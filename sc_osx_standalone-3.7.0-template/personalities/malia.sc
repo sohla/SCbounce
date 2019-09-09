@@ -1,21 +1,10 @@
 
 // unique name for pattern 
 var ptn = Array.fill(16,{|i|i=90.rrand(65).asAscii});
+var midiOut;
+var midiChannel = 0;
 
-//------------------------------------------------------------	
-// SYNTH DEF
-//------------------------------------------------------------	
-
-(
-SynthDef(\harpsichord1, { arg out = 0, freq = 440, amp = 0.1, pan = 0, rls = 0.5, width = 0.5;
-    var env, snd;
-	env = Env.perc(releaseTime:rls,level: amp).kr(doneAction: 2);
-	snd = Pulse.ar(freq, width, 0.75);
-	snd = snd * env;
-	Out.ar(out, Pan2.ar(snd, pan));
-}).add;
-);
-
+var roots = 0!12;
 // use to hear this synth onces
 //x = Synth(\harpsichord1);s.sendBundle(0.5,[\n_set,x.nodeID,\gate,0]);
 
@@ -25,24 +14,14 @@ SynthDef(\harpsichord1, { arg out = 0, freq = 440, amp = 0.1, pan = 0, rls = 0.5
 
 Pdef(ptn,
 	Pbind(
-        \degree, Pseq([[0,4,8],[3,8,11],[2,5,9]], inf),
+        \degree, Pseq([0,4,7,9], inf),
 		\args, #[],
-		//\dur,Pseq(#[1.0,0.5,0.5],inf),
+		\octave,Pseq(([1,2,3,4,3,2]+2).stutter(3),inf),
 		\amp, Pexprand(0.1,0.4,inf),
-		\pan, Pwhite(-0.8,0.8,inf)
-		//\strum, 0.06
+		\pan, Pwhite(-0.8,0.8,inf),
+		\root, Pseq([0,4,7,10,5,8].stutter(30),inf),
+		\strum, 0.1
 ));
-
-//use this to test patter/synth with default gui
-// Pdef(ptn).play.gui;
-// Pdef(ptn).set(\instrument,\harpsichord1);
-// Pdef(ptn).set(\dur,0.25);
-// Pdef(ptn).set(\octave,4);
-
-// Pdef(ptn).set(\attack,0.001);
-// Pdef(ptn).set(\sustain,0.27);
-// Pdef(ptn).set(\release,0.92);
-
 
 
 (
@@ -61,13 +40,13 @@ Pdef(ptn,
 
 		Pdef(ptn).set(\instrument,\harpsichord1);
 		Pdef(ptn).set(\dur,1.0);
-		Pdef(ptn).set(\octave,3);
 
 		Pdef(ptn).set(\type,\midi);
 		Pdef(ptn).set(\midiout,mo);
-		Pdef(ptn).set(\chan,3);
+		Pdef(ptn).set(\chan,midiChannel);
 
-		Pdef(ptn).play;
+		midiOut = mo;
+
 	};
 
 	//------------------------------------------------------------	
@@ -78,28 +57,19 @@ Pdef(ptn,
 		var val = 0;
 
 
-		d.rrateMass = ~tween.(d.rrateEvent.sumabs.half / pi,d.rrateMass,0.9);
+		d.rrateMass = ~tween.(d.rrateEvent.sumabs.half / pi,d.rrateMass,0.3);
 
-		if(d.rrateMass < 0.06,{
+		if(d.rrateMass < 0.07,{
 			Pdef(ptn).pause;
 		},{
-			if(Pdef(ptn).isPlaying.not,{Pdef(ptn).resume});
+			if(Pdef(ptn).isPlaying.not,{Pdef(ptn).play});
+
+			midiOut.control(midiChannel, 0, 127.0-(d.rrateMass*127).asInteger );
 		});
 		
-		val = (3+d.rrateMass.ceil);
-		Pdef(ptn).set(\octave,val);
-		
-		val = Array.geom(8, 1, 2).at((d.rrateEvent.sumabs.sqrt).floor).reciprocal;
-		Pdef(ptn).set(\dur,val);
 
-		val = pi - d.rrateMass;
-		Pdef(ptn).set(\rls,val);
+		Pdef(ptn).set(\dur,(d.rrateMass *20).reciprocal);
 
-		val = d.rrateEvent.sumabs / 3.0 / pi.twice;
-		Pdef(ptn).set(\width,val);
-
-		val = (1.0-(d.rrateEvent.sumabs / 3.0 / pi.twice)) * 0.1;
-		Pdef(ptn).set(\strum,val);
 
 	};
 
@@ -110,6 +80,8 @@ Pdef(ptn,
 
 		"deinit SUSAN".postln;
 		Pdef(ptn).stop;
+
+		midiOut.allNotesOff(midiChannel);
 	};
 
 	//------------------------------------------------------------	
@@ -128,6 +100,15 @@ Pdef(ptn,
 		(1.0-(d.rrateEvent.sumabs / 3.0 / pi.twice)) * 0.1;
 	};
 	
+	//------------------------------------------------------------	
+	// midi control
+	//------------------------------------------------------------	
+	~midiControllerValue = {|num,val|
+		//[num,val].postln;
+
+		//midiOut.control(midiChannel, num, val * 127 );
+
+	};
 
 )
 

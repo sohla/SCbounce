@@ -69,4 +69,38 @@ g.setKVAction(~loaded_presets);
 
 
 g.free;
+OSCMon
 
+
+MKtl.all
+MKtl.find(\midi)
+
+d = MKtl('midi_3_lpd8', "akai-lpd8");
+
+
+d.enable(true)
+d.outputElements
+d.gui
+d.getKeysValues;
+d.postElements
+d.trace(false);
+d.enable(false)
+
+d.closeDevice;
+d.free;
+d.elAt(\kn).action_({ |el|
+    "knob % value: %\n".postf(el.parent.indexOf(el), el.value)
+});
+
+d.elementGroup;
+d.postElements;
+d.elAt(\kn);
+
+d.elAt(\pad,\1)[0];
+
+d.elAt(\pad).action_({ |el|
+    "knob % value: %\n".postf(el,el.parent.indexOf(el), el.value)
+});
+
+d.elAt(\kn).resetAction;
+d.elAt(\pad).resetAction;

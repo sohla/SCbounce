@@ -1,129 +1,106 @@
 
-var ptn =Array.fill(16,{|i|i=90.rrand(65).asAscii});
 
+var smooth = 0;
+var moving = false;
+var midiOut;
+var midiChannel = 7;
+var notes = [0,-12];
+var note = notes[0];
+var isHit = false;
+
+var threshold = 0.7;
 //------------------------------------------------------------	
-// SYNTH DEF
+//
 //------------------------------------------------------------	
 
 (
-SynthDef(\help_dwgplucked, { |out=0, freq=440, amp=0.5, gate=1, c3=20, pan=0, position = 0.5 attack = 0.001|
-    var env = Env.new([0,1, 1, 0],[attack,0.006, 0.005],[5,-5, -8]);
-    var inp = amp * LFClipNoise.ar(2000) * EnvGen.ar(env,gate);
-    var son = DWGPlucked.ar(freq, amp, gate,position,1,c3,inp,0.1);
-	var sig = 0, verb = 0;
-    //Out.ar(out, Pan2.ar(son * 0.1, pan));
-	sig = Pan2.ar(son * 0.1, pan);
-	//verb = FreeVerb2.ar(sig[0],sig[1],0.3,200);
-    //DetectSilence.ar(sig, 0.001, doneAction:2);
 
-	Out.ar(out,sig);	
-}).add;
-);
-
-//x = Synth(\help_dwgplucked);s.sendBundle(0.5,[\n_set,x.nodeID,\gate,0]);
-
-//------------------------------------------------------------	
-// PATTERN DEF
-//------------------------------------------------------------	
-
-Pdef(ptn,
-	Pbind(
-//        \degree, Pseq([7,8,2,4,3,1,2,2], inf),
-        //\degree, Pseq([0,1,2,3,4,5,6,7], inf),
-		\note, Prand([0,2,5,7,9],inf),
-//        \degree, Pseq([0,4,2,7,1,2,3,5], inf),
-		\args, #[],
-		\amp, Pexprand(0.1,0.4,inf),
-		\pan, Pwhite(-0.8,0.8,inf)
-));
-
-//x = Synth(\help_dwgplucked);s.sendBundle(0.5,[\n_set,x.nodeID,\gate,0]);
-
-
-// Pdef(ptn).set(\instrument,\help_dwgplucked);
-// Pdef(ptn).play;
-// Pdef(ptn).set(\attack,0.01);
-// Pdef(ptn).set(\release,4.0);
-
-// Pdef(ptn).set(\octave,7);
-// Pdef(ptn).set(\dur,0.2);
-
-//------------------------------------------------------------	
-// PERSONALITY
-//------------------------------------------------------------	
-(
-
+	//------------------------------------------------------------	
+	// how ofter does ~next() get called from engine
+	//------------------------------------------------------------	
 	~secs = 0.03;
 
+	//------------------------------------------------------------	
+	// intial state
 	//------------------------------------------------------------	
 	~init = { |mo|
 
 		"init GEORGE".postln;
 
-		Pdef(ptn).set(\octave,5);
-		Pdef(ptn).set(\dur,0.5);
-		Pdef(ptn).set(\attack,1.5);
-		Pdef(ptn).set(\c3,50);
-		Pdef(ptn).set(\legato,10);
-		Pdef(ptn).set(\instrument,\help_dwgplucked);
+		midiOut = mo;
 
-		Pdef(ptn).set(\type,\midi);
-		Pdef(ptn).set(\midiout,mo);
-		Pdef(ptn).set(\chan,2);
-
-		Pdef(ptn).play;
 	};
 
 	//------------------------------------------------------------	
+	// do all the work(logic) taking data in and playing pattern/synth
+	//------------------------------------------------------------	
 	~next = {|d| 
 		
+		d.accelMass = d.accelEvent.sumabs * 0.1;
+		d.rrateMass = (2.pow(d.rrateEvent.sumabs.div(2.0)).reciprocal).max(0.125*0.5);
+		smooth = ~tween.(d.rrateEvent.sumabs * 0.1,smooth,0.5);
 
-		// ["running GEORGE...",f%7].postln;
-		// d.postln;
-		//Pdef(ptn).set(\octave,1 + (f%7));
+		if(d.accelMass > threshold,{
 
-			d.accelMass = ~tween.(d.accelEvent.sumabs.half,d.accelMass,0.08);
+			if(isHit == false,{
+				var n = [0,2,5,4,7,7,9,12,11].choose ;
 
-			d.rrateMass = ~tween.(d.rrateEvent.sumabs.half / 3.0,d.rrateMass,0.9);
+				midiOut.control(0, 0, 0 );
+				midiOut.noteOn(0, 60+24+note+n, 4);
+				{midiOut.noteOff(0, 60+24+note+n, 0)}.defer(0.1);
 
-			if(d.rrateMass < 0.09,{
-				Pdef(ptn).pause;
-			},{
-				if(Pdef(ptn).isPlaying.not,{Pdef(ptn).resume});
+				isHit = true;
+
 			});
 
-		 // 	// set pattern
-		  	if(Pdef(ptn).isPlaying, {
+		},{
+			isHit = false;
+		});
 
-				//Pdef(ptn).set(\patch,((gyroEvent.pitch + pi).div(pi.twice/4.0)).floor);
-				
-				// Pdef(ptn).set(\gtranspose,-3 + [0,12,24].at(((d.gyroEvent.roll + pi).div(pi.twice/3.0)).floor));
+		if(smooth > 0.1,{
 
-				Pdef(ptn).set(\c3,(12 + ((d.gyroEvent.roll + pi)/(pi.twice) * 500)));
-				
-				Pdef(ptn).set(\legato,(0.1 + ((d.gyroEvent.yaw + pi)/(pi.twice) * 3)));
-				
-				Pdef(ptn).set(\position,(0.0 + ((d.gyroEvent.yaw + pi)/(pi.twice) * 1.0)));
+			if(moving == false,{
+				moving = true;
 
-			 });
-			
-			 if(Pdef(ptn).isPlaying, {
+				// midiOut.control(midiChannel, 2, 70 );
+				midiOut.noteOn(midiChannel, 60 + note -12, 120);
+			});
 
-				Pdef(ptn).set(\attack,(1.0 + d.rrateEvent.sumabs).pow(4).reciprocal);
+			midiOut.control(midiChannel, 0, (smooth*127).asInteger );
+		},{
 
-			 	Pdef(ptn).set(\dur,Array.geom(8, 1, 2).at((d.rrateEvent.sumabs.sqrt).floor).half.reciprocal);
-			
-			 });
+			if(moving == true,{
+				moving = false;
+				midiOut.noteOff(midiChannel, 60 + note -12, 100);
+				notes = notes.rotate(-1);
+				note = notes[0];
+			});
+
+		});
+
+//			midiOut.control(midiChannel, 0, (smooth*127).asInteger );
 
 	};
 
+	//------------------------------------------------------------	
+
+	~plot = { |d,p|
+
+		[d.rrateMass,smooth];
+
+
+	};
+
+	//------------------------------------------------------------	
+	// cleanup
 	//------------------------------------------------------------	
 	~deinit = {
 
 		"deinit GEORGE".postln;
-		
-		Pdef(ptn).stop;
+		midiOut.allNotesOff(midiChannel);
+
 	};
+
 	//------------------------------------------------------------	
 	// min and max of plotters output
 	//------------------------------------------------------------	
@@ -132,17 +109,15 @@ Pdef(ptn,
 	~plotMax = 1;
 
 	//------------------------------------------------------------	
-	// utility for output to a plotter : returns a value that
-	// that will be put at the end of plotters data array
+	// midi control
 	//------------------------------------------------------------	
+	~midiControllerValue = {|num,val|
+//		[num,val].postln;
 
-	~plot = { |d,p|
-		//[0,12,24].at(((d.gyroEvent.roll + pi).div(pi.twice/3.0)).floor);
-		//(10 + ((d.gyroEvent.roll + pi)/(pi.twice) * 100));
-		//(0.1 + ((d.gyroEvent.yaw + pi)/(pi.twice) * 10));
-		//Array.geom(8, 1, 2).at((d.rrateEvent.sumabs.sqrt.half).floor).twice.reciprocal;
-		//-3 + [0,12,24].at(((d.gyroEvent.roll + pi).div(pi.twice/3.0)).floor);
-		0.2;
+		if(num == 4,{ threshold = 0.005 + (val * 0.7)});
+
+		// midiOut.control(midiChannel, num, val * 127 );
 	};
+	
 
-);
+)
