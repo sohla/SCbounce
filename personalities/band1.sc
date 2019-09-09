@@ -60,7 +60,7 @@ m.rrateMassThreshold = 0.5;
 		});
 	};
 
-	if(m.accelMass > 0.5,{
+	if(m.accelMass > 0.1,{
 		changeState.(true);
 	},{
 		changeState.(false);
