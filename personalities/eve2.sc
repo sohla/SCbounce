@@ -1,11 +1,10 @@
 var m = ~model;
 var isOn = false;
-// var bl = [0,-7,-3,-10,-8,-7,-3,-5].stutter(2);
 var bl = [0,-7,-5].stutter(12);
-var cr = [0,5,-2,3,-4,1,-5];
+var cr = [0,-2,-7,-3,0,-2,-7,-3,-5].stutter(5);
 
 m.midiChannel = 6;
-m.accelMassAmpThreshold = 0.4;
+m.accelMassAmpThreshold = 0.2;
 m.rrateMassThreshold = 0.1;
 
 //------------------------------------------------------------	
@@ -18,7 +17,7 @@ m.rrateMassThreshold = 0.1;
 		Pbind(
 			\note, Pseq([0],inf),
 			\note, Pseq([-5,0,5,7],inf),
-			\func, Pfunc({|e| ~onEvent.(e)}),
+			//\func, Pfunc({|e| ~onEvent.(e)}),
 			\args, #[],
 		);
 	);
@@ -38,9 +37,14 @@ m.rrateMassThreshold = 0.1;
 
 ~onHit = {|state|
 
+	var oc = [12,24];
+
 	if(state == true,{
-		m.midiOut.noteOn(m.midiChannel, 60-24  + m.com.root, 100);
-		{m.midiOut.noteOff(m.midiChannel, 60-24  + m.com.root, 0)}.defer(1);
+		cr = cr.rotate(-1);
+		m.midiOut.noteOn(m.midiChannel + 3, 60  - oc.choose + m.com.root + cr[0], 120);
+		{m.midiOut.noteOff(m.midiChannel + 3, 60 - oc.choose  + m.com.root + cr[0], 0)}.defer(0.8);
+		m.midiOut.noteOn(m.midiChannel + 4, 60  - 36 + m.com.root + cr[0], 50);
+		{m.midiOut.noteOff(m.midiChannel + 4, 60 - 36  + m.com.root + cr[0], 0)}.defer(0.8);
 
 	},{
 	});
@@ -64,14 +68,14 @@ m.rrateMassThreshold = 0.1;
 	var oct = ((0.2 + m.rrateMassFiltered.cubed) * 25).mod(2).floor;
 
 	Pdef(m.ptn).set(\root,m.com.root);
-	Pdef(m.ptn).set(\dur,(m.rrateMassFiltered * 7).reciprocal);
-	Pdef(m.ptn).set(\amp, 0.2);
+	Pdef(m.ptn).set(\dur,(m.accelMassFiltered * 7).reciprocal);
+	Pdef(m.ptn).set(\amp, 0.34 + (m.accelMassFiltered * 0.1));
 	Pdef(m.ptn).set(\octave, 5 + oct);
 	
 };
 
 ~nextMidiOut = {|d|
-	m.midiOut.control(m.midiChannel, 0, m.rrateMassFiltered * 127 );
+	m.midiOut.control(m.midiChannel, 0, m.accelMassFiltered * 90 );
 };			
 
 //------------------------------------------------------------	

@@ -70,7 +70,7 @@ m.rrateMassThreshold = 0.03;
 };
 
 ~nextMidiOut = {|d|
-	m.midiOut.control(m.midiChannel, 3, m.rrateMassFiltered * 127 );
+	m.midiOut.control(m.midiChannel, 3, m.accelMassFiltered * 127 );
 };			
 
 //------------------------------------------------------------	

@@ -13,7 +13,7 @@ m.rrateMassThreshold = 0.5;
 
 	Pdef(m.ptn,
 		Pbind(
-			\note, Pseq([0,2,7,9,5,4].stutter(8),inf),
+			\note, Pseq([0,2,7,9,5,4,-2,2,5,4].stutter(8),inf),
 			\func, Pfunc({|e| ~onEvent.(e)}),
 			\args, #[],
 		);
@@ -21,7 +21,7 @@ m.rrateMassThreshold = 0.5;
 
 	Pdef(m.ptn).set(\dur,0.125);
 	Pdef(m.ptn).set(\octave,3);
-	Pdef(m.ptn).set(\amp,0.4);
+	Pdef(m.ptn).set(\amp,0.0);
 
 };
 
@@ -69,7 +69,7 @@ m.rrateMassThreshold = 0.5;
 
 ~nextMidiOut = {|d|
 
-	m.midiOut.control(m.midiChannel, 1, (m.rrateMassFiltered * 127 * 1.3) + 0 );
+	m.midiOut.control(m.midiChannel, 1, (m.accelMassFiltered * 127 * 0.6) + 0 );
 };			
 
 //------------------------------------------------------------	

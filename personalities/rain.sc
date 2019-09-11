@@ -1,53 +1,53 @@
 var m = ~model;
-// var cr = [0,5,-2,3,-4,1,-5].stutter(4);
-var cr = [0,-2,3].stutter(5);
-m.midiChannel = 1;
-m.accelMassAmpThreshold = 0.4;
-m.rrateMassThreshold = 0.1;
+
+var notes = [59,60,61];
+var thunder = [57,60,63];
+
+var slow =0;
+m.midiChannel = 0;
+m.accelMassAmpThreshold = 0.2;
+m.rrateMassThreshold = 0.05;
+
 //------------------------------------------------------------	
 // intial state
 //------------------------------------------------------------	
 
 ~init = ~init <> { 
 
-	Pdef(m.ptn,
-		Pbind(
-			\note, Pseq([[-5,0,4]],inf),
-			// \strum, 0.22,
-			\args, #[],
-		);
-	);
-	Pdef(m.ptn).set(\dur,0.3);
-	Pdef(m.ptn).set(\octave,5);
-	Pdef(m.ptn).set(\amp,0.2);
+	// Pdef(m.ptn,
+	// 	Pbind(
+	// 		\note, Pseq([0],inf),
+	// 		// \root, Pseq([0,5,-2,3,-4,1,-5].stutter(16),inf),
+	// 		// \func, Pfunc({|e| ~onEvent.(e)}),
+	// 		\args, #[],
+	// 	);
+	// );
 
-
-	Pdef(m.ptn,Pbind( 
-		\note, Pseq([[-5,0,4],[-5,0,5],[-5,0,2]],inf),
-		// \strum, 0.12,
-	));
-
-	Pdef(m.ptn).play();
-
-
+	// Pdef(m.ptn).set(\dur,0.5);
+	// Pdef(m.ptn).set(\octave,5);
+	// Pdef(m.ptn).set(\amp,0.8);
 };
+
 
 //------------------------------------------------------------	
 // triggers
 //------------------------------------------------------------	
+
 ~onEvent = {|e|
+	m.com.root = e.root;
+	m.com.dur = e.dur;
 };
 
 ~onHit = {|state|
 
-	var vel = 50;
+	var vel = 60;
 
 	if(state == true,{
-
-		m.com.root = cr.[0];
-		m.midiOut.noteOn(10, 60 + m.com.root - 36 , vel);
-		{m.midiOut.noteOff(10, 60 + m.com.root - 36, vel);}.defer(1);
-		cr = cr.rotate(-1);
+		m.midiOut.noteOn(m.midiChannel + 1 , thunder[0] , vel);
+		{
+			m.midiOut.noteOff(m.midiChannel + 1, thunder[0] , vel);
+			thunder = thunder.rotate(-1);
+		}.defer(2)
 	},{
 	});
 };
@@ -55,9 +55,12 @@ m.rrateMassThreshold = 0.1;
 ~onMoving = {|state|
 
 	if(state == true,{
-		Pdef(m.ptn).resume();
+		m.midiOut.noteOn(m.midiChannel, notes[0] , 100);
+		// Pdef(m.ptn).resume();
 	},{
-		Pdef(m.ptn).pause();
+		m.midiOut.noteOff(m.midiChannel, notes[0] , 0);
+		notes = notes.rotate(-1);
+		// Pdef(m.ptn).pause();
 	});
 };
 
@@ -66,14 +69,17 @@ m.rrateMassThreshold = 0.1;
 // do all the work(logic) taking data in and playing pattern/synth
 //------------------------------------------------------------	
 ~next = {|d| 
+	slow = ~tween.(m.accelMassFiltered * 0.8, slow, 0.02) ;
+	// var oct = ((0.2 + m.rrateMassFiltered.cubed) * 25).mod(3).floor;
 
-	Pdef(m.ptn).set(\root,m.com.root);
-	Pdef(m.ptn).set(\dur,(m.accelMassFiltered * 14).reciprocal);
+	// Pdef(m.ptn).set(\dur,(m.accelMassFiltered * 8).reciprocal);
+	// Pdef(m.ptn).set(\amp, 0.9);
+	// Pdef(m.ptn).set(\octave, 5 + oct);
 
 };
 
 ~nextMidiOut = {|d|
-	m.midiOut.control(m.midiChannel, 0, m.accelMassFiltered * 120 );
+	m.midiOut.control(m.midiChannel, 1, slow * 64 );
 };			
 
 //------------------------------------------------------------	
@@ -81,10 +87,10 @@ m.rrateMassThreshold = 0.1;
 //------------------------------------------------------------	
 
 ~plotMin = 0;
-~plotMax = 1;
+~plotMax = 2.5;
 
 ~plot = { |d,p|
-	[m.accelMassFiltered];
+	[m.accelMassAmp,m.accelMassFiltered,slow];
 };
 //------------------------------------------------------------	
 // midi control

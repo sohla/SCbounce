@@ -74,13 +74,15 @@ m.rrateMassThreshold = 0.1;
 	Pdef(m.ptn).set(\octave, [3 + oct]);
 	Pdef(m.ptn).set(\dur,m.com.dur * ( (oct+1)));
 
-	Pdef(m.ptn,Pbind( 
-		\note, Pseq([0,2,[0,5].choose,4,[7,9].choose].add(m.com.root).stutter(1),inf),
-	));
+	// Pdef(m.ptn,Pbind( 
+	// 	\note, Pseq([0,2,[0,5].choose,4,[7,9].choose].add(m.com.root).stutter(1),inf),
+	// ));
 
+	Pdef(m.ptn,Pbind( 
+		\note, Pseq([0,2,[0,5].choose,4,[7,9].choose].add(m.com.root),inf),
+	));
 	//midiOut.noteOn(7, 60 + note, 90);
 };
-
 ~nextMidiOut = {|d|
 	m.midiOut.control(m.midiChannel, 0, m.rrateMassFiltered * 127 );
 };			

@@ -21,6 +21,7 @@ m.rrateMassThreshold = 0.2;
 	);
 
 	Pdef(m.ptn).set(\dur,0.5);
+	Pdef(m.ptn).set(\amp,0.3);
 };
 
 //------------------------------------------------------------	
@@ -31,15 +32,15 @@ m.rrateMassThreshold = 0.2;
 
 ~onHit = {|state|
 
-	var vel = 80;
+	var vel = 100;
 	var oo = [24,36];
 
 	if(state == true,{
-		m.com.root = bl.[0];
+		//m.com.root = bl.[0];
 		cr = cr.rotate(-1);
-		m.midiOut.noteOn(10, 60-oo.choose  + m.com.root, vel);
+		m.midiOut.noteOn(9, 60-oo.choose  + m.com.root, vel);
 	},{
-		m.midiOut.noteOff(10, 60-oo.choose  + m.com.root, 0);
+		m.midiOut.noteOff(9, 60-oo.choose  + m.com.root, 0);
 	});
 };
 
@@ -59,12 +60,13 @@ m.rrateMassThreshold = 0.2;
 
 
 	Pdef(m.ptn).set(\root,m.com.root);
-	Pdef(m.ptn).set(\octave, 5 + (m.rrateMassFiltered * 3).floor);
+	Pdef(m.ptn).set(\octave, 4 + (m.rrateMassFiltered * 2).floor);
 	Pdef(m.ptn).set(\dur,(m.accelMassFiltered * 12).reciprocal);
 
 };
 
 ~nextMidiOut = {|d|
+	m.midiOut.control(m.midiChannel, 7, m.accelMassFiltered * 40 );
 };			
 
 //------------------------------------------------------------	
