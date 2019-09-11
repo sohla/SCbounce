@@ -13,7 +13,6 @@ m.rrateMassThreshold = 0.1;
 		Pbind(
 			\note, Pseq([-5,0,4],inf),
 			\root, Pseq([0,5,-2,3,-4,1,-5].stutter(16),inf),
-			\func, Pfunc({|e| ~onEvent.(e)}),
 			\args, #[],
 		);
 	);
