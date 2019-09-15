@@ -32,8 +32,8 @@ m.rrateMassThreshold = 0.2;
 
 ~onHit = {|state|
 
-	var vel = 100;
-	var oo = [24,36];
+	var vel = 60;
+	var oo = [12,24];
 
 	if(state == true,{
 		//m.com.root = bl.[0];

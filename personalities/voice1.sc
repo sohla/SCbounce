@@ -5,7 +5,7 @@ var isOn = false;
 
 m.midiChannel = 0;
 m.accelMassThreshold = 0.9;
-m.rrateMassThreshold = 0.05;
+m.rrateMassThreshold = 0.4;
 
 //------------------------------------------------------------	
 // intial state
@@ -76,8 +76,8 @@ m.rrateMassThreshold = 0.05;
 	 //var oct = ((0.2 + m.rrateMassFiltered.cubed) * 15).mod(2).floor + 1;
 	 var step =  ((0.1 + m.accelMassFiltered.cubed) * 5).mod(3).floor + 1;
 
-	Pdef(m.ptn).set(\dur, 0.9 * (1/2.pow(step)));
- 	Pdef(m.ptn).set(\octave,[[2,3].choose,[4,5].choose]);
+	Pdef(m.ptn).set(\dur, 2.4 * (1/2.pow(step)));
+ 	Pdef(m.ptn).set(\octave,[[3,4].choose,[4,5].choose]);
  	// Pdef(m.ptn).set(\octave,4);
 
  // 	Pdef(m.ptn,Pbind( 

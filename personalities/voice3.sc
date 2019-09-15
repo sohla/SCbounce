@@ -3,7 +3,7 @@ var isOn = false;
 
 m.midiChannel = 2;
 m.accelMassThreshold = 0.9;
-m.rrateMassThreshold = 0.05;
+m.rrateMassThreshold = 0.3;
 
 //------------------------------------------------------------	
 // intial state
@@ -13,7 +13,7 @@ m.rrateMassThreshold = 0.05;
 	Pdef(m.ptn,
 		Pbind(
 			//\note, Pseq([0].stutter(4),inf),
-			 \note, Pseq([0,1,2,3,4,5,6,7,8].mirror,inf),
+			 \note, Pseq([0,2,7,9,5,4].mirror,inf),
 			// \root, Pseq([0,3,-4,1].stutter(16),inf),
 			// \func, Pfunc({|e| ~onEvent.(e)}),
 			\args, #[],
@@ -21,7 +21,7 @@ m.rrateMassThreshold = 0.05;
 	);
 
 	Pdef(m.ptn).set(\dur,0.25);
-	Pdef(m.ptn).set(\octave,3);
+	Pdef(m.ptn).set(\octave,7);
 	Pdef(m.ptn).set(\amp,0.8);
 	Pdef(m.ptn).set(\root,0);
 
@@ -73,7 +73,11 @@ Pdef(m.ptn).resume();
 	var oct = ((0.2 + m.accelMassFiltered.cubed) * 25).mod(3).floor + 1;
 // (4-oct).postln;
 	
-	Pdef(m.ptn).set(\dur,0.5 * (1/2.pow((3-oct))));
+	// Pdef(m.ptn).set(\dur,0.5 * (1/2.pow((3-oct))));
+
+	Pdef(m.ptn).set(\dur, 4.8 * (1/2.pow(oct)));
+ 	Pdef(m.ptn).set(\root, m.com.root);
+
 	// Pdef(m.ptn).set(\dur,(m.rrateMassFiltered * 16).reciprocal);
 	// Pdef(m.ptn).set(\octave, [5 + oct]);
 

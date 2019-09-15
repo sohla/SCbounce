@@ -1,9 +1,10 @@
 var m = ~model;
 var isOn = false;
 var cr = [0,2,4,5,7,9];
+var slow =0;
 
 m.midiChannel = 0;
-m.accelMassAmpThreshold = 0.5;
+m.accelMassAmpThreshold = 0.2;
 m.rrateMassThreshold = 0.01;
 
 //------------------------------------------------------------	
@@ -40,12 +41,6 @@ m.rrateMassThreshold = 0.01;
 
 ~onHit = {|state|
 
-	// if(state == true,{
-	// 	cr = cr.rotate(-1);
-	// 	m.midiOut.noteOn(1, 60  + cr[0], 100);
-	// 	{m.midiOut.noteOff(1, 60  + cr[0], 0)}.defer(0.5);
-	// },{
-	// });
 };
 
 ~onMoving = {|state|
@@ -63,8 +58,15 @@ m.rrateMassThreshold = 0.01;
 //------------------------------------------------------------	
 ~next = {|d| 
 
-	var oct = ((0.2 + m.rrateMassFiltered.cubed) * 25).mod(2).floor;
-	// Pdef(m.ptn).set(\dur,0.18);
+	var val;
+	slow = ~tween.(m.accelMassFiltered * 0.8, slow, 0.1) ;
+
+	val  = ((slow) * 2).floor;
+
+	if(val == 0,{val = 1});
+//2.pow(val).reciprocal.postln;
+	//oct.postln;
+	// Pdef(m.ptn).set(\dur,0.36 * 2.pow(val).reciprocal);
 	// Pdef(m.ptn).set(\root,m.com.root);
 	//Pdef(m.ptn).set(\dur,(m.accelMassFiltered * 6).reciprocal);
 	//Pdef(m.ptn).set(\octave, 3 + oct);
@@ -74,17 +76,15 @@ m.rrateMassThreshold = 0.01;
 ~nextMidiOut = {|d|
 	m.midiOut.control(m.midiChannel, 2	, m.accelMassFiltered * 127 );
 };			
-
 //------------------------------------------------------------	
 // plot with min and max
 //------------------------------------------------------------	
-
 ~plotMin = 0;
-~plotMax = 1;
+~plotMax = 10;
 
 ~plot = { |d,p|
 
-	[m.rrateMassFiltered];
+	[ ((slow) * 4).floor];
 };
 //------------------------------------------------------------	
 // midi control

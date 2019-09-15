@@ -4,7 +4,7 @@ var cr = [0];
 
 m.midiChannel = 3;
 m.accelMassAmpThreshold = 0.5;
-m.rrateMassThreshold = 0.01;
+m.rrateMassThreshold = 0.3;
 
 //------------------------------------------------------------	
 // intial state
@@ -22,7 +22,7 @@ m.rrateMassThreshold = 0.01;
 
 	Pdef(m.ptn).set(\dur,0.18);
 	Pdef(m.ptn).set(\octave,3);
-	Pdef(m.ptn).set(\amp,0.0);
+	Pdef(m.ptn).set(\amp,0.9);
 
 	// change notes
 	Pdef(m.ptn,Pbind( 
