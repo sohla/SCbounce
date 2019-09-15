@@ -63,7 +63,7 @@ m.rrateMassThreshold = 0.01;
 //------------------------------------------------------------	
 ~next = {|d| 
 
-	var oct = 5 - (((0.1 + m.accelMassFiltered.cubed) * 60).mod(5).floor);
+	var oct = 5 - (((0.1 + m.rrateMassFiltered.cubed) * 60).mod(5).floor);
 	var div = [].add(2.pow(oct).reciprocal).stutter(oct.asInteger);
 	//div.postln;
 
@@ -75,7 +75,7 @@ m.rrateMassThreshold = 0.01;
 };
 
 ~nextMidiOut = {|d|
-	m.midiOut.control(m.midiChannel, 2	, m.accelMassFiltered * 127 );
+	m.midiOut.control(m.midiChannel, 2	, m.rrateMassFiltered * 127 );
 };			
 
 //------------------------------------------------------------	
