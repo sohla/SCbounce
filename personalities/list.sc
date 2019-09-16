@@ -23,6 +23,7 @@
 		"voice3",
 		"clapping",
 		"beatbox",
+		"beatbox2",
 
 
 	]
