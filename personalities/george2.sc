@@ -4,8 +4,8 @@ var cr = [0,5,-2,3,-4,1,-5];
 var isOn = false;
 
 m.midiChannel = 7;
-m.accelMassAmpThreshold = 0.4;
-m.rrateMassThreshold = 0.2;
+m.accelMassAmpThreshold = 0.1;
+m.rrateMassThreshold = 0.02;
 
 //------------------------------------------------------------	
 // intial state
@@ -61,7 +61,7 @@ m.rrateMassThreshold = 0.2;
 
 	Pdef(m.ptn).set(\root,m.com.root);
 	Pdef(m.ptn).set(\octave, 4 + (m.rrateMassFiltered * 1).floor);
-	Pdef(m.ptn).set(\dur,(m.accelMassFiltered * 12).reciprocal);
+	Pdef(m.ptn).set(\dur,(m.accelMassFiltered * 28).reciprocal);
 
 };
 

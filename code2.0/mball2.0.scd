@@ -5,7 +5,7 @@ pw: zxzxzxzx
 
 IP: 192.168.10.x
 SUB: 255.255.255.0
-Router 192.168.1.1 (wifi)
+Router 192.168.1.1 (wifi)	
 Router 192.168.10.1 (ethernet)
 
 SSID : SOHLA
