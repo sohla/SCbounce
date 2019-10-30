@@ -1,5 +1,4 @@
-var m = ~model;
-var isOn = false;
+	-var isOn = false;
 var cr = [0,2,4,5,7,9];
 var selector = 1;
 
@@ -107,3 +106,4 @@ m.rrateMassThreshold = 0.4;
 	//m.midiOut.control(m.midiChannel, 65, val * 127 );
 
 };
+

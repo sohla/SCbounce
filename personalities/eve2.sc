@@ -4,7 +4,7 @@ var bl = [0,-7,-5].stutter(12);
 var cr = [0,-2,-7,-3,0,-2,-7,-3,-5].stutter(5);
 
 m.midiChannel = 6;
-m.accelMassAmpThreshold = 0.2;
+m.accelMassAmpThreshold = 0.1;
 m.rrateMassThreshold = 0.1;
 
 //------------------------------------------------------------	

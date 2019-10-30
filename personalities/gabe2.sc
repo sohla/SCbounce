@@ -1,6 +1,6 @@
 var m = ~model;
 m.midiChannel = 9;
-m.accelMassAmpThreshold = 0.4;
+m.accelMassAmpThreshold = 0.1;
 m.rrateMassThreshold = 0.1;
 
 //------------------------------------------------------------	
@@ -38,9 +38,9 @@ m.rrateMassThreshold = 0.1;
 	var vel = 60;
 
 	if(state == true,{
-		m.midiOut.noteOn(m.midiChannel, 60 + m.com.root  , vel);
+		m.midiOut.noteOn(m.midiChannel, 60 + m.com.root -24  , vel);
 	},{
-		m.midiOut.noteOff(m.midiChannel, 60 + m.com.root, vel);
+		m.midiOut.noteOff(m.midiChannel, 60 + m.com.root - 24, vel);
 	});
 };
 
