@@ -17,6 +17,12 @@ Router setup with Laptop
 255.255.255.0
 192.168.10.1
 
+
+Ports
+
+SC Laptop	57120
+Recorder 	57201
+
 */
 
 
