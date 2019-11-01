@@ -5,7 +5,7 @@ var thunder = [57,60,63];
 
 var slow =0;
 m.midiChannel = 12;
-m.accelMassAmpThreshold = 0.2;
+m.accelMassAmpThreshold = 0.1;
 m.rrateMassThreshold = 0.05;
 
 //------------------------------------------------------------	

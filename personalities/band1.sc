@@ -2,8 +2,8 @@ var m = ~model;
 var isOn = false;
 
 m.midiChannel = 0;
-m.accelMassThreshold = 0.5;
-m.rrateMassThreshold = 0.5;
+m.accelMassThreshold = 0.1;
+m.rrateMassThreshold = 0.1;
 
 //------------------------------------------------------------	
 // intial state
@@ -15,12 +15,13 @@ m.rrateMassThreshold = 0.5;
 		Pbind(
 			\note, Pseq([0,2,7,9,5,4,-2,2,5,4].stutter(8),inf),
 			\func, Pfunc({|e| ~onEvent.(e)}),
+			\octave,Prand([3,4,5,6,7],inf),
 			\args, #[],
 		);
 	);
 
 	Pdef(m.ptn).set(\dur,0.125);
-	Pdef(m.ptn).set(\octave,3);
+	//Pdef(m.ptn).set(\octave,Prand([4,5,6,7],inf));
 	Pdef(m.ptn).set(\amp,0.0);
 
 };
@@ -30,12 +31,18 @@ m.rrateMassThreshold = 0.5;
 //------------------------------------------------------------	
 ~onEvent = {|e|
 
-	m.com.root = e.note;
-	m.com.dur = e.dur;
+	// m.com.root = e.note;
+	// m.com.dur = e.dur;
 };
 
 ~onHit = {|state|
+	var vel = 60;
 
+	if(state == true,{
+		m.midiOut.noteOn(5, 60, vel);
+	},{
+		m.midiOut.noteOff(5, 60, vel);
+	});
 };
 
 ~onMoving = {|state|

@@ -5,7 +5,7 @@ var bl = [0,4,-2,7].stutter(2);
 var cr = [0,5,0,5,3].stutter(8);
 
 m.midiChannel = 11;
-m.accelMassAmpThreshold = 0.2;
+m.accelMassAmpThreshold = 0.1;
 m.rrateMassThreshold = 0.1;
 
 //------------------------------------------------------------	
@@ -41,7 +41,7 @@ m.rrateMassThreshold = 0.1;
 
 ~onHit = {|state|
 
-	var oo = [12,24];
+	var oo = [36,48];
 
 	if(state == true,{
 		m.com.root = bl.[0];
@@ -77,7 +77,7 @@ m.rrateMassThreshold = 0.1;
 	
 	var aa = m.accelMassFiltered;
 
-	if( aa < 0.5, { aa = 0});
+	if( aa < 0.1, { aa = 0});
 	Pdef(m.ptn).set(\amp,aa * 0.3);
 	Pdef(m.ptn).set(\root,cr[0]);
 

@@ -212,7 +212,6 @@ Recorder 	57201
 			//------------------------------------------------------------	
 			// process triggers
 			~processTriggers = {|d|
-
 				// isHit
 				// TODO smarter gate with min/max threasholds and level
 				// use improved code in eve2
@@ -243,20 +242,20 @@ Recorder 	57201
 				};
 
 				// should we tweak this constants!?
-				if( ~model.accelMass > 0.3,{ 
-					if( d.ampValue > 0.08,{
-						~model.accelMassAmp = ~model.accelMass * d.ampValue;
+				// Lost lands hitting with helium. only need the microphone to detect hits
+				if( d.ampValue > 0.08,{
+					// if( ~model.accelMass > 0.2,{ 
+						~model.accelMassAmp = d.ampValue;
 					},{
 						~model.accelMassAmp = 0.0;
-					});
 				});
+				// });
 
 				if(~model.accelMassAmp > ~model.accelMassAmpThreshold,{
 					changeState.(true);
 				},{
 					changeState.(false);
 				});
-
 
 				//isMoving
 

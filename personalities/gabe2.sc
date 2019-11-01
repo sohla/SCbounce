@@ -38,9 +38,9 @@ m.rrateMassThreshold = 0.1;
 	var vel = 60;
 
 	if(state == true,{
-		m.midiOut.noteOn(m.midiChannel, 60 + m.com.root -24  , vel);
+		m.midiOut.noteOn(m.midiChannel, 60 + m.com.root -12  , vel);
 	},{
-		m.midiOut.noteOff(m.midiChannel, 60 + m.com.root - 24, vel);
+		m.midiOut.noteOff(m.midiChannel, 60 + m.com.root - 12, vel);
 	});
 };
 
@@ -61,7 +61,7 @@ m.rrateMassThreshold = 0.1;
 
 	var oct = ((0.2 + m.rrateMassFiltered.cubed) * 25).mod(3).floor;
 
-	Pdef(m.ptn).set(\dur,(m.accelMassFiltered * 16).reciprocal);
+	Pdef(m.ptn).set(\dur,(m.accelMassFiltered * 21).reciprocal);
 	Pdef(m.ptn).set(\amp, 0.2);
 	Pdef(m.ptn).set(\octave, 4 + oct);
 
