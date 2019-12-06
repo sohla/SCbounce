@@ -4,8 +4,8 @@ var bl = [0,-7,-5].stutter(12);
 var cr = [0,-2,-7,-3,0,-2,-7,-3,-5].stutter(5);
 
 m.midiChannel = 6;
-m.accelMassAmpThreshold = 0.1;
-m.rrateMassThreshold = 0.1;
+m.accelMassAmpThreshold = 0.05;
+m.rrateMassThreshold = 0.01;
 
 //------------------------------------------------------------	
 // intial state
@@ -134,10 +134,10 @@ m.rrateMassThreshold = 0.1;
 //------------------------------------------------------------	
 
 ~plotMin = 0;
-~plotMax = 0.5;
+~plotMax = 1;
 
 ~plot = { |d,p|
-	[m.accelMassAmp, d.ampValue, ~model.accelMass];
+	[m.accelMassAmp, d.ampValue, m.accelMass];
 };
 //------------------------------------------------------------	
 // midi control

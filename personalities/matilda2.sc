@@ -36,7 +36,7 @@ m.rrateMassThreshold = 0.1;
 	var note = [-48,-36,-24,-12].choose;
 	if(state == true,{
 		m.midiOut.noteOn(4, 60 + m.com.root + note - 36, vel);
-		{m.midiOut.noteOff(4, 60 + m.com.root + note - 36, vel);}.defer(0.1);
+		{m.midiOut.noteOff(4, 60 + m.com.root + note - 36, vel);}.defer(0.1t);
 	},{
 
 	});
