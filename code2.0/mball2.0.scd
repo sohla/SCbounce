@@ -156,7 +156,7 @@ Recorder 	57201
 	//------------------------------------------------------------	
 	// 
 	//------------------------------------------------------------
-	loadDeviceList = {
+	loadDeviceList = {  
 
 		var path = PathName.new(devicesDir++"list.sc");
 		var file = File.new(path.asAbsolutePath,"r");
