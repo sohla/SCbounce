@@ -3,7 +3,7 @@ var isOn = false;
 
 m.midiChannel = 1;
 m.accelMassThreshold = 0.9;
-m.rrateMassThreshold = 0.06;
+m.rrateMassThreshold = 0.3;
 
 //------------------------------------------------------------	
 // intial state
@@ -68,16 +68,16 @@ m.rrateMassThreshold = 0.06;
 // do all the work(logic) taking data in and playing pattern/synth
 //------------------------------------------------------------	
 ~next = {|d| 
-	var step =  ((0.1 + m.rrateMassFiltered.cubed) * 5).mod(3).floor + 1;
+	var step =  ((0.1 + m.accelMassFiltered.cubed) * 5).mod(3).floor + 1;
 	Pdef(m.ptn).set(\dur,m.com.dur * (1/2.pow(step)) * 4);
  	Pdef(m.ptn).set(\root, m.com.root);
- 	Pdef(m.ptn).set(\octave,[3,7]);
+ 	Pdef(m.ptn).set(\octave,[5,6]);
  	Pdef(m.ptn).set(\amp,[0.8,0.01]);
 
 };
 
 ~nextMidiOut = {|d|
-	m.midiOut.control(m.midiChannel, 2, (m.rrateMassFiltered * 127) );
+	m.midiOut.control(m.midiChannel, 2, (m.accelMassFiltered * 127) );
 };			
 //------------------------------------------------------------	
 // plot with min and max

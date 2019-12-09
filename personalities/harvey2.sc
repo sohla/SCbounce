@@ -6,8 +6,8 @@ var note = notes[0];
 
 
 m.midiChannel = 8;
-m.accelMassAmpThreshold = 0.2;
-m.rrateMassThreshold = 0.1;
+m.accelMassAmpThreshold = 0.1;
+m.rrateMassThreshold = 0.01;
 
 
 
@@ -29,7 +29,7 @@ m.rrateMassThreshold = 0.1;
 	Pdef(m.ptn).set(\dur,0.5);
 	Pdef(m.ptn).set(\octave,4);
 	Pdef(m.ptn).set(\amp,0.8);
-
+Pdef(m.ptn).play;
 };
 
 //------------------------------------------------------------	
@@ -41,23 +41,26 @@ m.rrateMassThreshold = 0.1;
 
 ~onHit = {|state|
 
-	// if(state == true,{
-	// 	m.midiOut.noteOn(m.midiChannel, 60 + root , 100);
-	// 	{m.midiOut.noteOff(m.midiChannel, 60 + root, 0)}.defer(2);
+	var oct = [0,12,24,36];
+	var ot = oct.choose;
 
-	// },{
-	// });
+	if(state == true,{
+		m.midiOut.noteOn(2, 60 + root + ot  , 50);
+		{m.midiOut.noteOff(2, 60 + root + ot, 0)}.defer(0.2);
+
+	},{
+	});
 
 };
 
 ~onMoving = {|state|
 
-	if(state == true,{
-		Pdef(m.ptn).resume();
+	// if(state == true,{
+	// 	Pdef(m.ptn).resume();
 
-	},{
-		Pdef(m.ptn).pause();
-	});
+	// },{
+	// 	Pdef(m.ptn).pause();
+	// });
 };
 
 //------------------------------------------------------------	
@@ -66,7 +69,7 @@ m.rrateMassThreshold = 0.1;
 ~next = {|d| 
 
 	//Pdef(m.ptn).set(\root,m.com.root);
-	Pdef(m.ptn).set(\dur,(m.accelMassFiltered * 8).reciprocal);
+	Pdef(m.ptn).set(\dur,(m.accelMassFiltered * 12).reciprocal);
 
 };
 

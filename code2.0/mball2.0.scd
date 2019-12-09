@@ -5,8 +5,7 @@ pw: zxzxzxzx
 
 IP: 192.168.10.x
 SUB: 255.255.255.0
-
-Router 192.168.1.1 (wifi)
+Router 192.168.1.1 (wifi)	
 Router 192.168.10.1 (ethernet)
 
 SSID : SOHLA
@@ -17,6 +16,12 @@ Router setup with Laptop
 192.168.10.x
 255.255.255.0
 192.168.10.1
+
+
+Ports
+
+SC Laptop	57120
+Recorder 	57201
 
 */
 
@@ -151,7 +156,7 @@ Router setup with Laptop
 	//------------------------------------------------------------	
 	// 
 	//------------------------------------------------------------
-	loadDeviceList = {
+	loadDeviceList = {  
 
 		var path = PathName.new(devicesDir++"list.sc");
 		var file = File.new(path.asAbsolutePath,"r");
@@ -207,7 +212,6 @@ Router setup with Laptop
 			//------------------------------------------------------------	
 			// process triggers
 			~processTriggers = {|d|
-
 				// isHit
 				// TODO smarter gate with min/max threasholds and level
 				// use improved code in eve2
@@ -238,12 +242,16 @@ Router setup with Laptop
 				};
 
 				// should we tweak this constants!?
-				if( ~model.accelMass > 0.3,{ 
-					if( d.ampValue > 0.08,{
-						~model.accelMassAmp = ~model.accelMass * d.ampValue;
+				// Lost lands hitting with helium. only need the microphone to detect hits
+				//• need to pass these thrsholds on to model!
+				if( ~model.accelMass > 0.4,{ 
+					if( d.ampValue > 0.05,{
+						~model.accelMassAmp = d.ampValue;
+						~model.accelMass.postln;
 					},{
 						~model.accelMassAmp = 0.0;
 					});
+					//~model.accelMassAmp = 0.0;
 				});
 
 				if(~model.accelMassAmp > ~model.accelMassAmpThreshold,{
@@ -251,7 +259,6 @@ Router setup with Laptop
 				},{
 					changeState.(false);
 				});
-
 
 				//isMoving
 

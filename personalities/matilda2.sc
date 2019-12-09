@@ -32,11 +32,11 @@ m.rrateMassThreshold = 0.1;
 
 ~onHit = {|state|
 
-	var vel = 90;
-	var note = -48;
+	var vel = 40;
+	var note = [-48,-36,-24,-12].choose;
 	if(state == true,{
-		m.midiOut.noteOn(4, 60 + m.com.root + note, vel);
-		{m.midiOut.noteOff(4, 60 + m.com.root + note, vel);}.defer(0.3);
+		m.midiOut.noteOn(4, 60 + m.com.root + note - 36, vel);
+		{m.midiOut.noteOff(4, 60 + m.com.root + note - 36, vel);}.defer(0.1t);
 	},{
 
 	});

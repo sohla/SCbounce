@@ -4,8 +4,8 @@ var bl = [0,-7,-5].stutter(12);
 var cr = [0,-2,-7,-3,0,-2,-7,-3,-5].stutter(5);
 
 m.midiChannel = 6;
-m.accelMassAmpThreshold = 0.2;
-m.rrateMassThreshold = 0.1;
+m.accelMassAmpThreshold = 0.05;
+m.rrateMassThreshold = 0.01;
 
 //------------------------------------------------------------	
 // intial state
@@ -58,7 +58,58 @@ m.rrateMassThreshold = 0.1;
 		Pdef(m.ptn).pause();
 	});
 };
+// ~processTriggers = {|d|
 
+// 	var changeState = {|state|
+// 		if(~model.isHit != state,{
+// 			~model.isHit = state;
+// 			if(~model.isHit == true,{
+// 				//"Note ON".postln;
+// 				~onHit.(~model.isHit);
+// 			},{
+// 				//"Note OFF".postln;
+// 				~onHit.(~model.isHit);
+// 			});
+// 		});
+// 	};
+
+// 	//d.ampValue = d.ampValue  * 10;
+// 	"overload".postln;
+// 	// should we tweak this constants!?
+// 	if( d.ampValue > 0.08,{
+// 		// if( ~model.accelMass > 0.2,{ 
+// 			~model.accelMassAmp = d.ampValue;
+// 		},{
+// 			~model.accelMassAmp = 0.0;
+// 		});
+// 	// });
+
+// 	if(~model.accelMassAmp > ~model.accelMassAmpThreshold,{
+// 		changeState.(true);
+// 	},{
+// 		changeState.(false);
+// 	});
+
+
+// 	//isMoving
+
+// 	if(~model.rrateMassFiltered > ~model.rrateMassThreshold,{
+
+// 		if(~model.isMoving == false,{
+// 			~model.isMoving = true;
+// 			~onMoving.(~model.isMoving);
+// 			//Pdef(~model.ptn).resume();
+// 		});
+
+// 		//midiOut.control(midiChannel, 1, (smooth*127).asInteger );
+// 	},{
+
+// 		if(~model.isMoving == true,{
+// 			~model.isMoving = false;
+// 			~onMoving.(~model.isMoving);
+// 		});
+// 	});			
+// };
 
 //------------------------------------------------------------	
 // do all the work(logic) taking data in and playing pattern/synth
@@ -68,10 +119,10 @@ m.rrateMassThreshold = 0.1;
 	var oct = ((0.2 + m.rrateMassFiltered.cubed) * 25).mod(2).floor;
 
 	Pdef(m.ptn).set(\root,m.com.root);
-	Pdef(m.ptn).set(\dur,(m.accelMassFiltered * 7).reciprocal);
+	Pdef(m.ptn).set(\dur,(m.accelMassFiltered * 27).reciprocal);
 	Pdef(m.ptn).set(\amp, 0.34 + (m.accelMassFiltered * 0.1));
 	Pdef(m.ptn).set(\octave, 5 + oct);
-	
+		
 };
 
 ~nextMidiOut = {|d|
@@ -83,10 +134,10 @@ m.rrateMassThreshold = 0.1;
 //------------------------------------------------------------	
 
 ~plotMin = 0;
-~plotMax = 2;
+~plotMax = 1;
 
 ~plot = { |d,p|
-	[m.accelMassAmp];
+	[m.accelMassAmp, d.ampValue, m.accelMass];
 };
 //------------------------------------------------------------	
 // midi control

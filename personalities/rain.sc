@@ -4,8 +4,8 @@ var notes = [59,60,61];
 var thunder = [57,60,63];
 
 var slow =0;
-m.midiChannel = 0;
-m.accelMassAmpThreshold = 0.2;
+m.midiChannel = 12;
+m.accelMassAmpThreshold = 0.1;
 m.rrateMassThreshold = 0.05;
 
 //------------------------------------------------------------	
@@ -14,6 +14,7 @@ m.rrateMassThreshold = 0.05;
 
 ~init = ~init <> { 
 
+		m.midiOut.noteOn(m.midiChannel, notes[0] , 100);
 	// Pdef(m.ptn,
 	// 	Pbind(
 	// 		\note, Pseq([0],inf),
@@ -55,6 +56,7 @@ m.rrateMassThreshold = 0.05;
 ~onMoving = {|state|
 
 	if(state == true,{
+		m.midiOut.noteOff(m.midiChannel, notes[0] , 0);
 		m.midiOut.noteOn(m.midiChannel, notes[0] , 100);
 		// Pdef(m.ptn).resume();
 	},{
@@ -79,7 +81,7 @@ m.rrateMassThreshold = 0.05;
 };
 
 ~nextMidiOut = {|d|
-	m.midiOut.control(m.midiChannel, 1, slow * 64 );
+	m.midiOut.control(m.midiChannel, 13, slow * 127 );
 };			
 
 //------------------------------------------------------------	

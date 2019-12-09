@@ -1,4 +1,5 @@
-	-var isOn = false;
+var m = ~model;
+var isOn = false;
 var cr = [0,2,4,5,7,9];
 var selector = 1;
 
@@ -19,7 +20,7 @@ m.rrateMassThreshold = 0.4;
 		);
 	);
 
-	Pdef(m.ptn).set(\dur,0.36);
+	Pdef(m.ptn).set(\dur,0.18);
 	Pdef(m.ptn).set(\octave,5);
 	Pdef(m.ptn).set(\amp,0.9);
 
@@ -79,7 +80,7 @@ m.rrateMassThreshold = 0.4;
 };
 
 ~nextMidiOut = {|d|
-	m.midiOut.control(m.midiChannel, 3,64 + (m.com.root * 10));
+	m.midiOut.control(m.midiChannel, 3,64 + (m.com.root * 10) );
 };			
 
 //------------------------------------------------------------	
@@ -106,4 +107,3 @@ m.rrateMassThreshold = 0.4;
 	//m.midiOut.control(m.midiChannel, 65, val * 127 );
 
 };
-
