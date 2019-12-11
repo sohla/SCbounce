@@ -5,7 +5,7 @@ var cr = [0,-2,-7,-3,0,-2,-7,-3,-5].stutter(5);
 
 m.midiChannel = 6;
 m.accelMassAmpThreshold = 0.05;
-m.rrateMassThreshold = 0.01;
+m.rrateMassThreshold = 0.1;
 
 //------------------------------------------------------------	
 // intial state
@@ -116,10 +116,10 @@ m.rrateMassThreshold = 0.01;
 //------------------------------------------------------------	
 ~next = {|d| 
 
-	var oct = ((0.2 + m.rrateMassFiltered.cubed) * 25).mod(2).floor;
+	var oct = ((0.2 + m.rrateMassFiltered.cubed) * 12).mod(2).floor;
 
 	Pdef(m.ptn).set(\root,m.com.root);
-	Pdef(m.ptn).set(\dur,(m.accelMassFiltered * 27).reciprocal);
+	Pdef(m.ptn).set(\dur,(m.accelMassFiltered * 20).reciprocal);
 	Pdef(m.ptn).set(\amp, 0.34 + (m.accelMassFiltered * 0.1));
 	Pdef(m.ptn).set(\octave, 5 + oct);
 		
