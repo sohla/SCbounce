@@ -133,11 +133,11 @@ m.rrateMassThreshold = 0.1;
 // plot with min and max
 //------------------------------------------------------------	
 
-~plotMin = 0;
+~plotMin = -1;
 ~plotMax = 1;
 
 ~plot = { |d,p|
-	[m.accelMassAmp, d.ampValue, m.accelMass];
+	[d.rrateEvent.x, 0, 0];
 };
 //------------------------------------------------------------	
 // midi control
@@ -145,3 +145,4 @@ m.rrateMassThreshold = 0.1;
 ~midiControllerValue = {|num,val|
 
 };
+
