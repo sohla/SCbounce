@@ -39,7 +39,7 @@ m.rrateMassThreshold = 0.1;
 
 ~onHit = {|state|
 
-	var vel = 60;
+	var vel = 75;
 	var oct = [-48,-36];
 	var o = 0;
 
