@@ -244,14 +244,16 @@ Recorder 	57201
 				// should we tweak this constants!?
 				// Lost lands hitting with helium. only need the microphone to detect hits
 				//• need to pass these thrsholds on to model!
-				if( ~model.accelMass > 0.2,{ 
-					if( d.ampValue > 0.08,{
-						~model.accelMassAmp = d.ampValue;
-						//~model.accelMass.postln;
-					},{
-						~model.accelMassAmp = 0.0;
-					});
+				if( ~model.accelMass > 1.4,{ 
+					//if( d.ampValue > 0.00,{
+						~model.accelMassAmp = 0.1;//d.ampValue;
+						~model.accelMass.postln;
+					// },{
+					// 	~model.accelMassAmp = 0.0;
+					// });
 					//~model.accelMassAmp = 0.0;
+				},{
+					~model.accelMassAmp = 0.0;
 				});
 
 				if(~model.accelMassAmp > ~model.accelMassAmpThreshold,{
