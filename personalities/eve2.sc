@@ -137,7 +137,8 @@ m.rrateMassThreshold = 0.1;
 ~plotMax = 1;
 
 ~plot = { |d,p|
-	[d.rrateEvent.x, 0, 0];
+	[d.accelEvent.x, d.accelEvent.y, d.accelEvent.z];
+	//[(d.accelEvent.x + 0.5) * 0.1, (d.accelEvent.y + 0.35) * 0.1, (d.accelEvent.z - 9.8) * 0.1];
 };
 //------------------------------------------------------------	
 // midi control

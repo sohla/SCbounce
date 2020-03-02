@@ -183,13 +183,16 @@ void sendConnectMsg(){
 void setup(void) {
 
   Serial.begin(115200);
-  //Serial.setDebugOutput(true);
+  Serial.setDebugOutput(true);
     
   beginWifi();
 
   beginSensors();
 
   sendConnectMsg();
+
+  Serial.println("standby.....");
+  delay(500);
 }
 
 //--------------------------------------------------------------------------
@@ -203,36 +206,58 @@ void loop(void){
 
   if ((event.type == SENSOR_TYPE_GYROSCOPE) || (event.type == SENSOR_TYPE_ROTATION_VECTOR)) {
   
-    Serial.print(": x= ");
-    Serial.print(event.gyro.x);
-    Serial.print(" | y= ");
-    Serial.print(event.gyro.y);
-    Serial.print(" | z= ");
-    Serial.print(event.gyro.z);
-    Serial.print(" :: ");
+    // Serial.print(": x= ");
+    // Serial.print(event.gyro.x);
+    // Serial.print(" | y= ");
+    // Serial.print(event.gyro.y);
+    // Serial.print(" | z= ");
+    // Serial.print(event.gyro.z);
+    // Serial.print(" :: ");
     ///gyrosc/quat
-
+    
     OSCMessage msg("/gyrosc/rrate");
-    msg.add(event.gyro.x / 360.0 * 3.141);
-    msg.add(event.gyro.y / 360.0 * 3.141);
-    msg.add(event.gyro.z / 360.0 * 3.141);
+    msg.add(event.gyro.x / 60.0);
+    msg.add(event.gyro.y / 60.0);
+    msg.add(event.gyro.z / 60.0);
     Udp.beginPacket(outIp, OUTPORT);
     msg.send(Udp);
     Udp.endPacket();
     msg.empty();
-
   }
-  
+
+  bno.getEvent(&event, Adafruit_BNO055::VECTOR_ACCELEROMETER);
+
+  if (event.type == SENSOR_TYPE_ACCELEROMETER){
+
+    Serial.print(": x= ");
+    Serial.print(event.acceleration.x);
+    Serial.print(" | y= ");
+    Serial.print(event.acceleration.y);
+    Serial.print(" | z= ");
+    Serial.print(event.acceleration.z);
+    Serial.print(" :: ");
+
+    OSCMessage msg("/gyrosc/accel");
+    msg.add( (event.acceleration.x + 0.50) * 0.1);
+    msg.add( (event.acceleration.y + 0.35) * 0.1);
+    msg.add( (event.acceleration.z - 9.81) * 0.1);
+    Udp.beginPacket(outIp, OUTPORT);
+    msg.send(Udp);
+    Udp.endPacket();
+    msg.empty();
+  }
+
   imu::Quaternion quat = bno.getQuat();
-  Serial.print("qW: ");
-  Serial.print(quat.w(), 4);
-  Serial.print(" qX: ");
-  Serial.print(quat.x(), 4);
-  Serial.print(" qY: ");
-  Serial.print(quat.y(), 4);
-  Serial.print(" qZ: ");
-  Serial.print(quat.z(), 4);
-  Serial.println("");
+
+  // Serial.print("qW: ");
+  // Serial.print(quat.w(), 4);
+  // Serial.print(" qX: ");
+  // Serial.print(quat.x(), 4);
+  // Serial.print(" qY: ");
+  // Serial.print(quat.y(), 4);
+  // Serial.print(" qZ: ");
+  // Serial.print(quat.z(), 4);
+  // Serial.println("");
 
   OSCMessage msg("/gyrosc/quat");
   msg.add(quat.w());
