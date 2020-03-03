@@ -42,6 +42,22 @@ IPAddress secondaryDNS(8, 8, 4, 4); //optional
 Adafruit_BNO055 bno = Adafruit_BNO055(55, 0x29);
 WiFiUDP Udp;
 
+//--------------------------------------------------------------------------
+
+unsigned int raw=0;
+float volt=0.0;
+
+
+//--------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------
+void updateVolt() {
+
+  raw = analogRead(A0);
+  volt = raw / 1023.0;
+  volt = volt * 4.2;
+}
+
 
 //--------------------------------------------------------------------------
 //
@@ -100,6 +116,23 @@ void beginWifi() {
 //--------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------
+void onMsg_volt(OSCMessage &msg){
+
+  updateVolt();
+
+  OSCMessage msgv("/gyrosc/volt");
+  Udp.beginPacket(outIp, OUTPORT);
+  msgv.add(volt);
+  msgv.send(Udp);
+  Udp.endPacket();
+  msgv.empty();
+
+  Serial.println(volt);
+
+}
+//--------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------
 void updateUdpPackets(){
 
   OSCMessage msg;
@@ -108,18 +141,15 @@ void updateUdpPackets(){
   int size = Udp.parsePacket();
 
   if (size > 0) {
+
     while (size--) {
       msg.fill(Udp.read());
     }
+
     if (!msg.hasError()) {
-      // msg.dispatch("/tobtt/lx", onMsg_lx);
-      // msg.dispatch("/tobtt/configPins", configPins);
-      // msg.dispatch("/tobtt/restartDevice", restartDevice);
-      // msg.dispatch("/tobtt/supplyVoltage", supplyVoltage);
-
-      // msg.dispatch("/tobtt/lxFade", lxFade);
-
+      msg.dispatch("/togyrosc/volt", onMsg_volt);
     } else {
+
       error = msg.getError();
       Serial.print("error: ");
       Serial.println(error);
@@ -185,6 +215,8 @@ void setup(void) {
   Serial.begin(115200);
   Serial.setDebugOutput(true);
     
+  pinMode(A0, INPUT); // reading volts
+
   beginWifi();
 
   beginSensors();
@@ -228,14 +260,14 @@ void loop(void){
   bno.getEvent(&event, Adafruit_BNO055::VECTOR_ACCELEROMETER);
 
   if (event.type == SENSOR_TYPE_ACCELEROMETER){
-
-    Serial.print(": x= ");
-    Serial.print(event.acceleration.x);
-    Serial.print(" | y= ");
-    Serial.print(event.acceleration.y);
-    Serial.print(" | z= ");
-    Serial.print(event.acceleration.z);
-    Serial.print(" :: ");
+    
+    // Serial.print(": x= ");
+    // Serial.print(event.acceleration.x);
+    // Serial.print(" | y= ");
+    // Serial.print(event.acceleration.y);
+    // Serial.print(" | z= ");
+    // Serial.print(event.acceleration.z);
+    // Serial.print(" :: ");
 
     OSCMessage msg("/gyrosc/accel");
     msg.add( (event.acceleration.x + 0.50) * 0.1);
@@ -272,6 +304,5 @@ void loop(void){
   updateUdpPackets();
 
   delay(BNO055_SAMPLERATE_DELAY_MS);
-
 
 }

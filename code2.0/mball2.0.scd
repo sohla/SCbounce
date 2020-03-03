@@ -45,6 +45,8 @@ Recorder 	57201
 		var contentView = UserView().background_(Color.grey(0.2));
 
 		var reloadButton;
+		var voltButton;
+
 		// var stackButton;
 
 		var createPlotterGroup, createGyroCanvas, createAccelCanvas, createTransportView;
@@ -54,7 +56,7 @@ Recorder 	57201
 		var addDevice, removeDevice;
 
 	    var gryoListner, rotMatListner, rrateListener, accelListener, quatListener, altListener, ampListener;
-	    var buttonListener;
+	    var buttonListener, voltListener;
 
 	    var oscOut = NetAddr.new("127.0.0.1", 9003); 
 
@@ -676,7 +678,17 @@ Recorder 	57201
 					},{
 						d.env.use{~stop.()};
 					});
-				}),				
+				}),	
+
+			voltButton = Button()
+				.maxWidth_(80)
+				.states_([["volt",Color.red]])
+				.action_({|b|
+					n = NetAddr.new(d.ip, d.port.asInt);
+					n.postln;
+					n.sendMsg("/togyrosc/volt", 42.asInt);
+				}),			
+
 			StaticText(view)
 				.stringColor_(Color.white)
 				.font_(Font(size:14))
@@ -685,7 +697,7 @@ Recorder 	57201
 			Button()
 				.maxWidth_(40)
 				.states_([["reset"]])
-				.action_({|b|
+				.action_({
 						d.ip.class.postln;
 						d.port.class.postln;
 					b = NetAddr.new(d.ip, d.port.asInt+1);    // create the NetAddr
@@ -1251,10 +1263,19 @@ Recorder 	57201
 			});
 
 		}, '/gyrosc/button');
+
+		voltListener = OSCFunc({ |msg, time, addr, recvPort|
+			[msg, time, addr, recvPort].postln;
+
+			{voltButton.states = [["volt"+msg[1].round(0.1).asString,Color.red]]}.defer(0);
+
+		}, '/gyrosc/volt');
 	};
+
 
 	stopOSCListening = {
 		buttonListener.free;
+		voltListener.free;
 		ampListener.free;
 		gryoListner.free;
 		// altListener.free;
@@ -1294,7 +1315,6 @@ Recorder 	57201
 	startup.();
 	buildUI.();
 	startOSCListening.();
-
-
+\
 )
 
