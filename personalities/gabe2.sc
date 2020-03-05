@@ -1,6 +1,6 @@
 var m = ~model;
 m.midiChannel = 9;
-m.accelMassAmpThreshold = 0.05;
+m.accelMassAmpThreshold = 1.0;
 m.rrateMassThreshold = 0.01;
 
 //------------------------------------------------------------	
@@ -61,8 +61,8 @@ state.postln;
 
 	var oct = ((0.2 + m.rrateMassFiltered.cubed) * 25).mod(3).floor;
 
-	Pdef(m.ptn).set(\dur,(m.accelMassFiltered * 51).reciprocal);
-	Pdef(m.ptn).set(\amp, 0.2);
+	Pdef(m.ptn).set(\dur,(m.accelMassFiltered * 7).reciprocal);
+	Pdef(m.ptn).set(\amp, 0.4);
 	Pdef(m.ptn).set(\octave, 4 + oct);
 
 };
