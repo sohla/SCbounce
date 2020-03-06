@@ -28,6 +28,8 @@ const char *ssid = "SOHLA2"; //LAN name
 const char *password = "pleaseletmeinagain";  //LAN password
 const IPAddress outIp(10,1,1,4);  //LAN address
 
+
+
 //--------------------------------------------------------------------------
 // Set your Static IP address
 IPAddress local_IP(10,1,1,STATIP);

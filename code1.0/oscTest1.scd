@@ -432,3 +432,27 @@ b.sendMsg("/gyrosc/rrate", 0.957318 ,0.957318, 0.957318);
 
 o.free;
 NetAddr.localAddr
+
+
+///////
+
+
+o = OSCFunc({ arg msg, time, addr, recvPort;
+	[msg, time, addr, recvPort].postln;
+}, '/reply');
+
+o.free;
+
+
+b = NetAddr("127.0.0.1",53000);
+b.sendMsg("/alwaysReply",1);
+b.sendMsg("/cue/1/start","");
+b.sendMsg("/cue/1/doFade",8);
+b.sendMsg("/cue/1/stop","");
+b.sendMsg("/cue/1/effect",2);
+
+
+
+
+OSCFunc.trace(true); // Turn posting on
+OSCFunc.trace(false); // Turn posting off
