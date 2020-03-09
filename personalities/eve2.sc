@@ -4,8 +4,8 @@ var bl = [0,-7,-5].stutter(12);
 var cr = [0,-2,-7,-3,0,-2,-7,-3,-5].stutter(5);
 
 m.midiChannel = 6;
-m.accelMassAmpThreshold = 2.4;
-m.rrateMassThreshold = 0.1;
+// m.accelMassAmpThreshold = 1.4;
+// m.rrateMassThreshold = 0.1;
 
 //------------------------------------------------------------	
 // intial state
@@ -43,8 +43,8 @@ m.rrateMassThreshold = 0.1;
 		cr = cr.rotate(-1);
 		m.midiOut.noteOn(m.midiChannel + 3, 60  - oc.choose + m.com.root + cr[0], 120);
 		{m.midiOut.noteOff(m.midiChannel + 3, 60 - oc.choose  + m.com.root + cr[0], 0)}.defer(0.8);
-		m.midiOut.noteOn(m.midiChannel + 4, 60  - 36 + m.com.root + cr[0], 50);
-		{m.midiOut.noteOff(m.midiChannel + 4, 60 - 36  + m.com.root + cr[0], 0)}.defer(0.8);
+		m.midiOut.noteOn(m.midiChannel + 4, 60  - 48 + m.com.root + cr[0], 70);
+		{m.midiOut.noteOff(m.midiChannel + 4, 60 - 48  + m.com.root + cr[0], 0)}.defer(0.8);
 
 	},{
 	});
