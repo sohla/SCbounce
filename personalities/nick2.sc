@@ -1,8 +1,6 @@
 var m = ~model;
 var cr = [0,-2,3,-4,-5].stutter(5);
 m.midiChannel = 2;
-m.accelMassAmpThreshold = 1.4;
-m.rrateMassThreshold = 0.02;
 //------------------------------------------------------------	
 // intial state
 //------------------------------------------------------------	
@@ -46,7 +44,7 @@ m.rrateMassThreshold = 0.02;
 	if(state == true,{
 
 		cr = cr.rotate(-1);
-		m.com.root = cr.[0];
+		m.com.root = cr[0];
 		o = oct.choose;
 		m.midiOut.noteOn(10, 60 + m.com.root + o  , vel);
 		{m.midiOut.noteOff(10, 60 + m.com.root + o, vel);}.defer(1);
@@ -71,7 +69,7 @@ m.rrateMassThreshold = 0.02;
 
 	Pdef(m.ptn).set(\root,m.com.root);
 	Pdef(m.ptn).set(\amp,0.4);
-	Pdef(m.ptn).set(\dur,(1 + (m.accelMassFiltered * 6)).reciprocal);
+	Pdef(m.ptn).set(\dur,(1 + (m.accelMassFiltered * 6)).reciprocal);//TODO
 	Pdef(m.ptn).set(\strum, 0.3 - (m.rrateMassFiltered * 0.2));
 	Pdef(m.ptn).set(\octave, 5 + (m.rrateMassFiltered * 2).floor);
 };

@@ -188,11 +188,12 @@ Recorder 	57201
 				\rrateMass: 0,
 				\rrateMassFiltered: 0,
 				\rrateMassThreshold: 0.1, //use for isMoving
-				\rrateMassThresholdSpec: ControlSpec(0.01, 1.0, \lin, 0.01, 0.1),
+				\rrateMassThresholdSpec: ControlSpec(0.05, 0.4, \lin, 0.01, 0.22),
 
 				\accelMass: 0,
 				\accelMassFiltered: 0,
 				\accelMassAmpThreshold: 0.4,
+				\accelMassThresholdSpec: ControlSpec(0.4, 3.0, \lin, 0.1, 1.7),
 
 				\isHit: false,
 				\isMoving: true,
@@ -270,8 +271,7 @@ Recorder 	57201
 				});
 
 				//isMoving
-
-				if(~model.rrateMassFiltered > ~model.rrateMassThreshold,{
+				if(~model.rrateMassFiltered > (~model.rrateMassThreshold.half - 0.02),{
 
 					if(~model.isMoving == false,{
 						~model.isMoving = true;
@@ -635,19 +635,17 @@ Recorder 	57201
 			// vc.children[0].removeAll;
 			// vc.children[0].remove;
 		};
-		var sliders = {|i|
+
+		var sliderViews = {|i|
+
+			var label = StaticText().string_(["Movement","Trigger"].at(i));
+			var valueLabel = StaticText()
+				.string_("-");
+
 			VLayout(
+				label,
 				Slider()
-				.valueAction_(
-					d.env.use{
-						switch(i,
-							0, {
-								~model.rrateMassThresholdSpec.unmap(~model.rrateMassThresholdSpec.default)
-							},1, {
-								0 
-							});
-					}
-				)
+				.maxWidth_(40)
 				.action_({|o|
 					d.env.use{
 						//~midiControllerValue.(i,o.value);
@@ -656,18 +654,33 @@ Recorder 	57201
 							0, {
 								// for isMoving
 								~model.rrateMassThreshold = ~model.rrateMassThresholdSpec.map(o.value);
-							},1, {
-								//~model.accelMassAmpThreshold = 
-							});
+								valueLabel.string_(~model.rrateMassThresholdSpec.map(o.value).round(0.01));
+
+								(~model.rrateMassThreshold.reciprocal).postln;
+						},1, {
+								~model.accelMassAmpThreshold = ~model.accelMassThresholdSpec.map(o.value);
+								valueLabel.string_(~model.accelMassThresholdSpec.map(o.value).round(0.01));
+						});
 					};
 
 				})
-			,StaticText()
-				.string_("-")
+				.valueAction_(
+					d.env.use{
+						switch(i,
+							0, {
+								~model.rrateMassThresholdSpec.unmap(~model.rrateMassThresholdSpec.default)
+							},1, {
+								~model.accelMassThresholdSpec.unmap(~model.accelMassThresholdSpec.default)
+							});
+					}
+				)
+
+
+				,valueLabel
 			)}!2;
 		var sliderView = {|v|
 			UserView(v,Rect(700,0,200,250)).layout_( HLayout(
-				*sliders.collect{|c,i|
+				*sliderViews.collect{|c,i|
 
 					var mc = MIDIFunc.cc({|val, num, chan| 
 						//[c,val, num, chan].postln;

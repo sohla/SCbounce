@@ -41,10 +41,11 @@ m.midiChannel = 6;
 
 	if(state == true,{
 		cr = cr.rotate(-1);
-		m.midiOut.noteOn(m.midiChannel + 3, 60  - oc.choose + m.com.root + cr[0], 120);
-		{m.midiOut.noteOff(m.midiChannel + 3, 60 - oc.choose  + m.com.root + cr[0], 0)}.defer(0.8);
-		m.midiOut.noteOn(m.midiChannel + 4, 60  - 48 + m.com.root + cr[0], 70);
-		{m.midiOut.noteOff(m.midiChannel + 4, 60 - 48  + m.com.root + cr[0], 0)}.defer(0.8);
+		o = oc.choose;
+		m.midiOut.noteOn(m.midiChannel + 3, 60  - o + m.com.root + cr[0], 120);
+		{m.midiOut.noteOff(m.midiChannel + 3, 60 - o + m.com.root + cr[0], 0)}.defer(0.8);
+		m.midiOut.noteOn(m.midiChannel + 4, 60  - 24 - o + m.com.root + cr[0], 70);
+		{m.midiOut.noteOff(m.midiChannel + 4, 60 - 24 - o  + m.com.root + cr[0], 0)}.defer(0.8);
 
 	},{
 	});
@@ -119,7 +120,7 @@ m.midiChannel = 6;
 	var oct = ((0.2 + m.rrateMassFiltered.cubed) * 12).mod(2).floor;
 
 	Pdef(m.ptn).set(\root,m.com.root);
-	Pdef(m.ptn).set(\dur,(m.accelMassFiltered * 12).reciprocal);
+	Pdef(m.ptn).set(\dur,(m.accelMassFiltered * 4 * m.rrateMassThreshold.reciprocal).reciprocal);
 	Pdef(m.ptn).set(\amp, 0.34 + (m.accelMassFiltered * 0.03));
 	Pdef(m.ptn).set(\octave, 5 + oct);
 		
@@ -133,8 +134,8 @@ m.midiChannel = 6;
 // plot with min and max
 //------------------------------------------------------------	
 
-~plotMin = -1;
-~plotMax = 1;
+~plotMin = -5;
+~plotMax = 5;
 
 ~plot = { |d,p|
 	[d.accelEvent.x, d.accelEvent.y, d.accelEvent.z];

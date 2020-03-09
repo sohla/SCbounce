@@ -4,8 +4,6 @@ var bl = [0,-2,5].stutter(12);
 var cr = [0,5,-2,3,-4,1,-5];
 
 m.midiChannel = 9;
-m.accelMassAmpThreshold = 1.1;
-m.rrateMassThreshold = 0.1;
 
 //------------------------------------------------------------	
 // intial state
@@ -39,14 +37,14 @@ m.rrateMassThreshold = 0.1;
 
 ~onHit = {|state|
 
-	var oo = [36,48,12,24];
+	var oo = [36,0,12,24];
 
 	if(state == true,{
 		m.com.root = bl.[0];
 		cr = cr.rotate(-1);
 		n = oo.choose;
-		m.midiOut.noteOn(m.midiChannel + 1, 60 - n - 12  + m.com.root, 20 + n);
-		{m.midiOut.noteOff(m.midiChannel + 1, 60 - n - 12  + m.com.root, 0)}.defer(0.5);
+		m.midiOut.noteOn(m.midiChannel - 3 , 60 - n  + m.com.root, 50 - n.half.half);
+		{m.midiOut.noteOff(m.midiChannel - 3, 60 - n   + m.com.root, 0)}.defer(0.07);
 		bl = bl.rotate(-1);
 	},{
 	});
@@ -55,8 +53,10 @@ m.rrateMassThreshold = 0.1;
 ~onMoving = {|state|
 
 	if(state == true,{
+		m.midiOut.allNotesOff(m.midiChannel - 3);
 		Pdef(m.ptn).resume();
 	},{
+		m.midiOut.allNotesOff(m.midiChannel - 3);
 		Pdef(m.ptn).pause();
 	});
 };
@@ -70,8 +70,8 @@ m.rrateMassThreshold = 0.1;
 	var oct = ((0.2 + m.rrateMassFiltered.cubed) * 25).mod(3).floor;
 
 	Pdef(m.ptn).set(\root,m.com.root);
-	Pdef(m.ptn).set(\dur,(1 + (m.accelMassFiltered * 6)).reciprocal);
-	Pdef(m.ptn).set(\amp, 0.2);
+	Pdef(m.ptn).set(\dur,(1 + (m.accelMassFiltered * 1 * m.rrateMassThreshold.reciprocal)).reciprocal);
+	Pdef(m.ptn).set(\amp, 0.5);
 	Pdef(m.ptn).set(\octave, 5 + oct);
 
 };
