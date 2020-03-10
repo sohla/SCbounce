@@ -47,6 +47,7 @@ Recorder 	57201
 		var reloadButton;
 		var voltButton;
 
+		var sliders = [];
 		// var stackButton;
 
 		var createPlotterGroup, createGyroCanvas, createAccelCanvas, createTransportView;
@@ -78,7 +79,7 @@ Recorder 	57201
 
 		var midiOut, midiController;
 
-		var midiControllers = []; //hold the sliders and values 
+		var midiControllers = []; //hold the sliderViews and values 
 
 		var eulerToQuaternion;
 
@@ -641,10 +642,10 @@ Recorder 	57201
 			var label = StaticText().string_(["Movement","Trigger"].at(i));
 			var valueLabel = StaticText()
 				.string_("-");
-
-			VLayout(
+			var slider;
+			var v = VLayout(
 				label,
-				Slider()
+				slider = Slider()
 				.maxWidth_(40)
 				.action_({|o|
 					d.env.use{
@@ -661,6 +662,7 @@ Recorder 	57201
 								~model.accelMassAmpThreshold = ~model.accelMassThresholdSpec.map(o.value);
 								valueLabel.string_(~model.accelMassThresholdSpec.map(o.value).round(0.01));
 						});
+						//[~model.rrateMassThreshold, ~model.accelMassAmpThreshold].postln;
 					};
 
 				})
@@ -677,7 +679,8 @@ Recorder 	57201
 
 
 				,valueLabel
-			)}!2;
+			);
+			sliders = sliders.add(slider);v}!2;
 		var sliderView = {|v|
 			UserView(v,Rect(700,0,200,250)).layout_( HLayout(
 				*sliderViews.collect{|c,i|
@@ -798,6 +801,11 @@ Recorder 	57201
 					names = loadDeviceList.();
 					popup.items = names;
 					popup.valueAction = names.find([d.name]);
+
+					d.env.use{
+						~model.rrateMassThreshold = ~model.rrateMassThresholdSpec.map(sliders[0].value);
+						~model.accelMassAmpThreshold = ~model.accelMassThresholdSpec.map(sliders[1].value);
+					};
 
 				}),
 

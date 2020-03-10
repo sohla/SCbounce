@@ -1,7 +1,5 @@
 var m = ~model;
 m.midiChannel = 4;
-m.accelMassAmpThreshold = 0.2;
-m.rrateMassThreshold = 0.1;
 
 //------------------------------------------------------------	
 // intial state
@@ -20,7 +18,7 @@ m.rrateMassThreshold = 0.1;
 	);
 
 	Pdef(m.ptn).set(\dur,0.5);
-	Pdef(m.ptn).set(\amp,0.1);
+	Pdef(m.ptn).set(\amp,0.2);
 };
 
 //------------------------------------------------------------	
@@ -33,10 +31,12 @@ m.rrateMassThreshold = 0.1;
 ~onHit = {|state|
 
 	var vel = 40;
-	var note = [-48,-36,-24,-12].choose;
+	var oct = [-48,-36,-24,-12].choose;
+	var note = 60 + m.com.root + oct + 24;
+
 	if(state == true,{
-		m.midiOut.noteOn(4, 60 + m.com.root + note - 36, vel);
-		{m.midiOut.noteOff(4, 60 + m.com.root + note - 36, vel);}.defer(0.1t);
+		m.midiOut.noteOn(6, note, vel);
+		{m.midiOut.noteOff(6, note, vel)}.defer(0.1);
 	},{
 
 	});
@@ -57,7 +57,7 @@ m.rrateMassThreshold = 0.1;
 ~next = {|d| 
 
 	//Pdef(m.ptn).set(\root,m.com.root);
-	Pdef(m.ptn).set(\dur,(m.accelMassFiltered * 12).reciprocal);
+	Pdef(m.ptn).set(\dur,(m.accelMassFiltered * 1.2 * m.rrateMassThreshold.reciprocal).reciprocal);
 
 };
 

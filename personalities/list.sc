@@ -7,7 +7,7 @@
 		"nick2",
 		"george2",
 		"harvey2",
-		"min",
+		"min2",
 		"matilda2",
 		"rain",
 

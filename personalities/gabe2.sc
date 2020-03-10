@@ -33,12 +33,13 @@ m.midiChannel = 9;
 
 ~onHit = {|state|
 
-	var vel = 110;
+	var vel = 30;
+	var note = 60 + m.com.root - 24;
 
 	if(state == true,{
-		m.midiOut.noteOn(m.midiChannel, 60 + m.com.root - 12  , vel);
+		m.midiOut.noteOn(m.midiChannel - 3, note  , vel);
+		{m.midiOut.noteOff(m.midiChannel - 3, note, 0)}.defer(0.08);
 	},{
-		m.midiOut.noteOff(m.midiChannel, 60 + m.com.root - 12, vel);
 	});
 };
 
@@ -59,7 +60,7 @@ m.midiChannel = 9;
 
 	var oct = ((0.2 + m.rrateMassFiltered.cubed) * 25).mod(3).floor;
 
-	Pdef(m.ptn).set(\dur,(m.accelMassFiltered * 3 * m.rrateMassThreshold.reciprocal).reciprocal);
+	Pdef(m.ptn).set(\dur,(m.accelMassFiltered * 2 * m.rrateMassThreshold.reciprocal).reciprocal);
 	Pdef(m.ptn).set(\amp, 0.5);
 	Pdef(m.ptn).set(\octave, 4 + oct);
 

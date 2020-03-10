@@ -37,17 +37,19 @@ m.midiChannel = 2;
 
 ~onHit = {|state|
 
-	var vel = 45;
+	var vel = 55;
 	var oct = [-48,-36];
 	var o = 0;
-
+	var note = 60 + m.com.root + o;
 	if(state == true,{
 
 		cr = cr.rotate(-1);
 		m.com.root = cr[0];
 		o = oct.choose;
-		m.midiOut.noteOn(10, 60 + m.com.root + o  , vel);
-		{m.midiOut.noteOff(10, 60 + m.com.root + o, vel);}.defer(1);
+		
+		note = 60 + m.com.root + o;
+		m.midiOut.noteOn(10, note, vel);
+		{m.midiOut.noteOff(10, note, vel);}.defer(1);
 	},{
 	});
 };
@@ -68,8 +70,8 @@ m.midiChannel = 2;
 ~next = {|d| 
 
 	Pdef(m.ptn).set(\root,m.com.root);
-	Pdef(m.ptn).set(\amp,0.4);
-	Pdef(m.ptn).set(\dur,(1 + (m.accelMassFiltered * 6)).reciprocal);//TODO
+	Pdef(m.ptn).set(\amp,0.3);
+	Pdef(m.ptn).set(\dur,(1 + (m.accelMassFiltered * 2.2 * m.rrateMassThreshold.reciprocal)).reciprocal);//TODO
 	Pdef(m.ptn).set(\strum, 0.3 - (m.rrateMassFiltered * 0.2));
 	Pdef(m.ptn).set(\octave, 5 + (m.rrateMassFiltered * 2).floor);
 };
