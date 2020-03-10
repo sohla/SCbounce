@@ -38,16 +38,16 @@ m.rrateMassThresholdSpec.postln;
 ~onHit = {|state|
 
 	var oo = [36,0,12,24];
-	var note = 60 - n  + m.com.root;
+	var note, ooc;
 
 	if(state == true,{
 		
 		m.com.root = bl.[0];
 		cr = cr.rotate(-1);
-		n = oo.choose;
+		ooc = oo.choose;
 
-		note = 60 - n  + m.com.root;
-		m.midiOut.noteOn(m.midiChannel - 3 , note, 50 - n.half.half);
+		note = 60 - ooc  + m.com.root;
+		m.midiOut.noteOn(m.midiChannel - 3 , note, 50 - ooc.half.half);
 		{m.midiOut.noteOff(m.midiChannel - 3, note, 0)}.defer(0.07);
 		bl = bl.rotate(-1);
 	},{

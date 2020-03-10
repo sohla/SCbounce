@@ -48,8 +48,8 @@ m.midiChannel = 11;
 		m.com.root = bl.[0];
 		cr = cr.rotate(-1);
 
-		note = 24 + 60-oo.choose + m.com.root + cr[0];
-		m.midiOut.noteOn(10, note, 40);
+		note = 12 + 60-oo.choose + m.com.root + cr[0];
+		m.midiOut.noteOn(10, note, 60);
 		{m.midiOut.noteOff(10, note, 0)}.defer(0.05);
 		bl = bl.rotate(-1);
 

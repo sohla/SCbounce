@@ -5,8 +5,6 @@ var thunder = [57,60,63];
 
 var slow =0;
 m.midiChannel = 12;
-m.accelMassAmpThreshold = 0.1;
-m.rrateMassThreshold = 0.05;
 
 //------------------------------------------------------------	
 // intial state
@@ -71,7 +69,7 @@ m.rrateMassThreshold = 0.05;
 // do all the work(logic) taking data in and playing pattern/synth
 //------------------------------------------------------------	
 ~next = {|d| 
-	slow = ~tween.(m.accelMassFiltered * 0.8, slow, 0.02) ;
+	slow = ~tween.(m.accelMassFiltered * 0.1 * m.rrateMassThreshold.reciprocal, slow, 0.02) ;
 	// var oct = ((0.2 + m.rrateMassFiltered.cubed) * 25).mod(3).floor;
 
 	// Pdef(m.ptn).set(\dur,(m.accelMassFiltered * 8).reciprocal);

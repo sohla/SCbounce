@@ -38,17 +38,17 @@ m.midiChannel = 6;
 ~onHit = {|state|
 
 	var oc = [12,24];
-	var note = 60  - o + m.com.root + cr[0];
+	var note, occ;
 
 	if(state == true,{
 		cr = cr.rotate(-1);
 		
-		o = oc.choose;
-		note = 60  - o + m.com.root + cr[0];
+		occ = oc.choose;
+		note = 60  - oc.choose + m.com.root + cr[0];
 		m.midiOut.noteOn(m.midiChannel + 3, note, 100);
 		{m.midiOut.noteOff(m.midiChannel + 3, note, 0)}.defer(0.8);
 		
-		note = 60  - 24 - o + m.com.root + cr[0];
+		note = 60  - 24 - occ + m.com.root + cr[0];
 		m.midiOut.noteOn(m.midiChannel + 4, note, 60);
 		{m.midiOut.noteOff(m.midiChannel + 4, note, 0)}.defer(0.8);
 

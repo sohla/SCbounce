@@ -41,7 +41,6 @@ m.midiChannel = 4;
 
 	});
 };
-
 ~onMoving = {|state|
 
 	if(state == true,{

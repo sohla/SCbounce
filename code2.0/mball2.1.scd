@@ -189,12 +189,12 @@ Recorder 	57201
 				\rrateMass: 0,
 				\rrateMassFiltered: 0,
 				\rrateMassThreshold: 0.1, //use for isMoving
-				\rrateMassThresholdSpec: ControlSpec(0.05, 0.4, \lin, 0.01, 0.22),
+				\rrateMassThresholdSpec: ControlSpec(0.07, 0.4, \lin, 0.01, 0.22),
 
 				\accelMass: 0,
 				\accelMassFiltered: 0,
 				\accelMassAmpThreshold: 0.4,
-				\accelMassThresholdSpec: ControlSpec(0.4, 3.0, \lin, 0.1, 1.7),
+				\accelMassThresholdSpec: ControlSpec(0.4, 3.0, \lin, 0.1, 1.5),
 
 				\isHit: false,
 				\isMoving: true,
