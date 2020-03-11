@@ -657,7 +657,7 @@ Recorder 	57201
 								~model.rrateMassThreshold = ~model.rrateMassThresholdSpec.map(o.value);
 								valueLabel.string_(~model.rrateMassThresholdSpec.map(o.value).round(0.01));
 
-								(~model.rrateMassThreshold.reciprocal).postln;
+								// (~model.rrateMassThreshold.reciprocal).postln;
 						},1, {
 								~model.accelMassAmpThreshold = ~model.accelMassThresholdSpec.map(o.value);
 								valueLabel.string_(~model.accelMassThresholdSpec.map(o.value).round(0.01));
@@ -680,7 +680,8 @@ Recorder 	57201
 
 				,valueLabel
 			);
-			sliders = sliders.add(slider);v}!2;
+		sliders = sliders.add(slider);v}!2;
+		
 		var sliderView = {|v|
 			UserView(v,Rect(700,0,200,250)).layout_( HLayout(
 				*sliderViews.collect{|c,i|
@@ -802,10 +803,6 @@ Recorder 	57201
 					popup.items = names;
 					popup.valueAction = names.find([d.name]);
 
-					d.env.use{
-						~model.rrateMassThreshold = ~model.rrateMassThresholdSpec.map(sliders[0].value);
-						~model.accelMassAmpThreshold = ~model.accelMassThresholdSpec.map(sliders[1].value);
-					};
 
 				}),
 
@@ -816,6 +813,12 @@ Recorder 	57201
 					.action_({|b|
 						d.name = names.at(b.value);
 						reloadDevice.(d);
+
+						d.env.use{ 
+							~model.rrateMassThreshold = ~model.rrateMassThresholdSpec.map(sliders[0].value);
+							~model.accelMassAmpThreshold = ~model.accelMassThresholdSpec.map(sliders[1].value);
+						};
+
 					}),
 
 			Button(view)

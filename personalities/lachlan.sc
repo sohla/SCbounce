@@ -81,7 +81,8 @@ m.rrateMassThresholdSpec.postln;
 };
 
 ~nextMidiOut = {|d|
-	m.midiOut.control(m.midiChannel, 0, m.accelMassFiltered * 127 );
+	var val = 1.0.min(m.accelMassFiltered);
+	m.midiOut.control(m.midiChannel, 0, val * 127 );
 };			
 
 //------------------------------------------------------------	
@@ -108,3 +109,4 @@ m.rrateMassThresholdSpec.postln;
 	//m.midiOut.control(m.midiChannel, 65, val * 127 );
 
 };
+

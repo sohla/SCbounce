@@ -40,7 +40,6 @@ m.midiChannel = 7;
 		cr = cr.rotate(-1);
 		bl = bl.rotate(-1);
 		oct = oct.rotate(-1);
-		oct.postln;
 
 		note = 60 - oct.choose + cr[0]  + bl[0];
 		m.midiOut.noteOn(ch, note, vel);

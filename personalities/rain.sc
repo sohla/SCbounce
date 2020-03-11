@@ -1,7 +1,7 @@
 var m = ~model;
 
-var notes = [59,60,61];
-var thunder = [57,60,63];
+var notes = [58,59,60,61,62,63];
+var thunder = [57,60,63,59,62];
 
 var slow =0;
 m.midiChannel = 12;
@@ -42,11 +42,11 @@ m.midiChannel = 12;
 	var vel = 60;
 
 	if(state == true,{
+		thunder = thunder.rotate(-1);
 		m.midiOut.noteOn(m.midiChannel + 1 , thunder[0] , vel);
 		{
 			m.midiOut.noteOff(m.midiChannel + 1, thunder[0] , vel);
-			thunder = thunder.rotate(-1);
-		}.defer(2)
+		}.defer(0.07)
 	},{
 	});
 };
@@ -54,12 +54,13 @@ m.midiChannel = 12;
 ~onMoving = {|state|
 
 	if(state == true,{
+		notes = notes.rotate(-1);
+		notes[0].postln;
 		m.midiOut.noteOff(m.midiChannel, notes[0] , 0);
 		m.midiOut.noteOn(m.midiChannel, notes[0] , 100);
 		// Pdef(m.ptn).resume();
 	},{
 		m.midiOut.noteOff(m.midiChannel, notes[0] , 0);
-		notes = notes.rotate(-1);
 		// Pdef(m.ptn).pause();
 	});
 };
@@ -69,7 +70,7 @@ m.midiChannel = 12;
 // do all the work(logic) taking data in and playing pattern/synth
 //------------------------------------------------------------	
 ~next = {|d| 
-	slow = ~tween.(m.accelMassFiltered * 0.1 * m.rrateMassThreshold.reciprocal, slow, 0.02) ;
+	slow = ~tween.(m.accelMassFiltered * 0.2 * m.rrateMassThreshold.reciprocal, slow, 0.02) ;
 	// var oct = ((0.2 + m.rrateMassFiltered.cubed) * 25).mod(3).floor;
 
 	// Pdef(m.ptn).set(\dur,(m.accelMassFiltered * 8).reciprocal);
