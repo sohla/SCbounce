@@ -456,3 +456,10 @@ b.sendMsg("/cue/1/effect",2);
 
 OSCFunc.trace(true); // Turn posting on
 OSCFunc.trace(false); // Turn posting off
+
+
+
+
+b = NetAddr("127.0.0.1",57000);
+b.sendMsg("/ke/record",1);
+b.sendMsg("/ke/record",0);

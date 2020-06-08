@@ -4,12 +4,12 @@
 
 ServerOptions.devices
 
-ServerOptions.devices.indexOfEqual("QU-24 Audio");
+i = ServerOptions.devices.indexOfEqual("Soundflower (2ch)");
 ServerOptions.devices.indexOfEqual("PreSonus AudioBox iOne");
 
 o = Server.local.options;
-o.inDevice = ServerOptions.devices[2];
-o.outDevice = ServerOptions.devices[2];
+o.inDevice = ServerOptions.devices[i];
+o.outDevice = ServerOptions.devices[i];
 o.numOutputBusChannels = 32;
 o.numInputBusChannels = 32;
 s.reboot	

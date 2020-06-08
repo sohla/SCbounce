@@ -143,7 +143,7 @@ m.midiChannel = 6;
 ~plotMax = 5;
 
 ~plot = { |d,p|
-	[d.accelEvent.x, d.accelEvent.y, d.accelEvent.z];
+	[d.gyroEvent.pitch, d.accelEvent.y, d.accelEvent.z];
 	//[(d.accelEvent.x + 0.5) * 0.1, (d.accelEvent.y + 0.35) * 0.1, (d.accelEvent.z - 9.8) * 0.1];
 };
 //------------------------------------------------------------	

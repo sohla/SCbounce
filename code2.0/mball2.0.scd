@@ -1010,15 +1010,15 @@ Recorder 	57201
 		graph1.animate(renderRate) {|t|
 
 			var tr = [data.gyroEvent.roll,data.gyroEvent.yaw,data.gyroEvent.pitch];
-			//data.ip.postln;
+			// tr.postln;
 	        
-	        // loc.transforms = [
-	        // 	Canvas3D.mScale(1,0.02,0.02),
-	        // 	Canvas3D.mTranslate(1.5,0,0),
-		       //  Canvas3D.mRotateX(tr[0]),
-		       //  Canvas3D.mRotateY(tr[1]),
-		       //  Canvas3D.mRotateZ(tr[2]),
-	        // ];
+	  //       loc.transforms = [
+	  //       	Canvas3D.mScale(1,0.02,0.02),
+	  //       	Canvas3D.mTranslate(1.5,0,0),
+		 //        Canvas3D.mRotateX(tr[0]),
+		 //        Canvas3D.mRotateY(tr[1]),
+		 //        Canvas3D.mRotateZ(tr[2]),
+	  //       ];
 
 			// cube.transforms = [ 
 			// 	Canvas3D.mScale(0.05,1,0.5),
@@ -1163,13 +1163,20 @@ Recorder 	57201
 		var na = NetAddr.new(d.ip, d.port);
 
 		// gryoListner = OSCFunc({ |msg, time, addr, recvPort|
+		// 		// [msg, time, addr, recvPort].postln;
+		// 		devices.at(addr.port).gyroEvent = (
+		// 			\pitch:msg[3].asFloat * 3,
+		// 			\roll:msg[1].asFloat * 3,
+		// 			\yaw:msg[2].asFloat * -3);
 
-		// }, '/gyrosc/gyro', na);
+		// }, '/gyrosc/gyro');
 
 		// rotMatListner = OSCFunc({ |msg, time, addr, recvPort|
 		// 	// gyroEvent.pitch = msg[1].asFloat;
 		// 	// gyroEvent.roll = msg[2].asFloat;
 		// 	// gyroEvent.yaw = msg[3].asFloat;
+
+
 		// 	//rotMatEvent = msg[1..].clumps([4]);
 		// 	//rotMatEvent.postln;
 		// }, '/gyrosc/rotmat');
@@ -1318,3 +1325,4 @@ Recorder 	57201
 
 )
 
+	
