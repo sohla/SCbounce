@@ -432,3 +432,48 @@ b.sendMsg("/gyrosc/rrate", 0.957318 ,0.957318, 0.957318);
 
 o.free;
 NetAddr.localAddr
+
+
+
+
+
+o = OSCFunc({ arg msg, time, addr, recvPort;
+	([msg, time, addr, recvPort]).postln;
+}, '/chairlift');
+o
+o.free;
+o.path
+
+
+
+
+
+o = OSCFunc({ arg msg, time, addr, recvPort;
+	([msg, time, addr, recvPort]).postln;
+}, '/doit');
+
+b = NetAddr("192.168.20.6",57120);
+b = NetAddr("127.0.0.1",57120);
+b.sendMsg("/doit", 0.1,0.1,0.1);
+
+
+o.free;
+b.free;
+
+
+
+b = NetAddr("127.0.0.1",57000);
+b = NetAddr("192.168.20.14",57000);
+b.sendMsg("/inputSettings/blur/blur", 1);
+b.sendMsg("/inputSettings/realtime/realtime", 1);
+b.sendMsg("/inputSettings/pixel_recorder/recording", true);
+b.sendMsg("/inputSettings/pixel_recorder/recording", false);
+b.free;
+NetAddr.langPort;
+NetAddr.localAddr
+
+
+o = OSCFunc({ arg msg, time, addr, recvPort;
+	([msg, time, addr, recvPort]).postln;
+}, '/realtime');
+o.free;
