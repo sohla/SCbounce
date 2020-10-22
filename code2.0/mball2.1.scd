@@ -154,7 +154,7 @@ Recorder 	57201
 	midiOut = MIDIOut.newByName("IAC Driver", "Bus 1", dieIfNotFound: true);
 	midiOut.latency_(0.00);
 
-	midiController = MIDIOut(2).latency_(0.0);
+	// midiController = MIDIOut(2).latency_(0.0);
 	MIDIIn.connectAll;
 	//------------------------------------------------------------	
 	// 

@@ -463,3 +463,13 @@ OSCFunc.trace(false); // Turn posting off
 b = NetAddr("127.0.0.1",57000);
 b.sendMsg("/ke/record",1);
 b.sendMsg("/ke/record",0);
+
+
+
+
+o = OSCFunc({ arg msg, time, addr, recvPort;
+	[msg, time, addr, recvPort].postln;
+}, '/gyrosc/quat');
+
+o.free;
+
