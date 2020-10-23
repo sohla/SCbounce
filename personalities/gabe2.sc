@@ -34,7 +34,7 @@ m.midiChannel = 9;
 ~onHit = {|state|
 
 	var vel = 30;
-	var note = 60 + m.com.root - 24;
+	var note = 60 + m.com.root + 24;
 
 	if(state == true,{
 		m.midiOut.noteOn(m.midiChannel - 3, note  , vel);

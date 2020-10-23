@@ -19,7 +19,7 @@
 		var sliders = [];
 		// var stackButton;
 
-		var createPlotterGroup, createGyroCanvas, createAccelCanvas, createTransportView;
+		var createPlotterGroup, createThreeDeeCanvas, createTransportView;
 		var createWindowView, addDeviceView;
 		var startOSCListening, stopOSCListening, enableOSCListening, disableOSCListening, addOSCDeviceListeners;
 
@@ -44,7 +44,7 @@
 
 
 		var dataSizes = [100,200,300,400];
-		var dataSize = dataSizes[0];
+		var dataSize = dataSizes[1];
 
 		var midiOut, midiController;
 
@@ -494,7 +494,7 @@
 		d.midiRout.reset.play(AppClock);
 
 
-		d.generator = createGenerator.(d);
+		 	d.generator = createGenerator.(d);
 		//d.generator.reset.play(AppClock);
 
 	};
@@ -544,27 +544,6 @@
 
 	};
 
-	createWindowView = {|view|
-
-		var scroll = ScrollView(view,Rect(0,30,width,height - 150 ));
-		var d;
-
-		StaticText(view)
-				.stringColor_(Color.yellow)
-				.font_(Font(size:14))
-				.minHeight_(30)
-				.minWidth_(200)
-				.string_(" :: m-ball");
-
-		contentView.layout_(VLayout());
-		scroll.canvas = contentView;
-
-		// example of loading a device (can only make 1 with generator)
-		// d = addDevice.("127.0.0.1",64564);
-		// addDeviceView.(contentView, d);
-		// addOSCDeviceListeners.(d);
-
-	};
 
 	addDeviceView = { |view, d|
 
@@ -577,38 +556,18 @@
 
 		var createGraphs = {
 
-			// createPlotterGroup.(vc, Rect(850,5,400,240), col, [
-			// 	["pitch",Color.red,{|p| d.gyroEvent.pitch }],
-			// 	["roll",Color.green,{|p| d.gyroEvent.roll }],
-			// 	["yaw",Color.blue,{|p| d.gyroEvent.yaw }]
-			// ],-pi,pi);
-
-			// createPlotterGroup.(vb, Rect(850,5,400,240), col, [
-			// 	["aaccelX",Color.cyan,{|p| d.accelEvent.x }],
-			// 	["accelY",Color.magenta,{|p| d.accelEvent.y }],
-			// 	["accelZ",Color.yellow,{|p| d.accelEvent.z }]
-			// ],-2,2);
-
-			// createPlotterGroup.(va, Rect(850,5,400,240), col, [
-			// 	["rrateX",Color.cyan,{|p| d.rrateEvent.x }],
-			// 	["rrateY",Color.magenta,{|p| d.rrateEvent.y }],
-			// 	["rrateZ",Color.yellow,{|p| d.rrateEvent.z }]
-			// ],-6,6);
-
-			createPlotterGroup.(va, Rect(250,5,400,240), col, [
-				["ymc",[Color.yellow,Color.magenta,Color.cyan],{|p| d.env.use{ ~plot.(d)} }]
-			],d.env.use{ ~plotMin.()},d.env.use{ ~plotMax.()});
+			createPlotterGroup.(va, Rect(250,5,400,240), col, 
+				[
+					"ymc",
+					[Color.yellow,Color.magenta,Color.cyan,Color.red,Color.green,Color.blue],
+					{|p| d.env.use{ ~plot.(d)} }
+				]
+			,d.env.use{ ~plotMin.()},d.env.use{ ~plotMax.()});
 		};
 
 		var removeGraphs = {
 			va.children[2].removeAll;
 			va.children[2].remove;
-			// va.children[2].removeAll;
-			// va.children[2].remove;
-			// vb.children[1].removeAll;
-			// vb.children[1].remove;
-			// vc.children[0].removeAll;
-			// vc.children[0].remove;
 		};
 
 		var sliderViews = {|i|
@@ -725,22 +684,13 @@
 				.maxWidth_(80)
 				.states_([["generator", Color.white],["generator",Color.green]])
 				.action_({|b|
-					b.value.postln;
+					//b.value.postln;
 					if(b.value == 1,{
 						d.generator.reset.play(AppClock);
 					},{
 						d.generator.stop();
 					});
 				}),
-			// stackButton = Button(view)
-			// 	.maxWidth_(100)
-			// 	.states_([
-			// 		["attitude"],	
-			// 		//["accelerometer"]
-			// 	])
-			// 	.action_({|b|
-			// 		stackLayout.index = b.value;
-			// 	}),
 			Button(view)
 				.maxWidth_(60)
 				.states_([
@@ -761,7 +711,8 @@
 					.valueAction_(0)
 					.action_({|b|
 						dataSize = dataSizes.at(b.value);
-					}),
+					})
+					.valueAction_(1),
 
 
 			reloadButton = Button(view)
@@ -820,20 +771,16 @@
 		));
 		//view.layout.spacing_(1);
 		view.layout.add(stackView = View()
-			//.background_(Color.yellow)
 			.minHeight_(250)
 			.maxHeight_(250)
 			.layout_( stackLayout = StackLayout(
 				va = View().background_(col),
-				//vb = View().background_(col),
-				//vc = View().background_(col)
 				)
 			);
 		);	
 
 		sliderView.(va);
-		createGyroCanvas.(va,d);
-		//createAccelCanvas.(vb,d);
+		createThreeDeeCanvas.(va,d);
 
 		contentView.layout.add(nil);
 	};
@@ -842,80 +789,58 @@
 	// Plotters
 	//------------------------------------------------------------	
 
-	createPlotterGroup = {|view, bounds, col, plotters, pmin=(-pi), pmax=pi|
+	createPlotterGroup = {|view, bounds, col, specs, pmin=(-pi), pmax=pi|
 
 
-		var plotterView = UserView(view,bounds).animate_(true);
-		var size = plotters.size;
 		var pw = bounds.width;
-		var ph = bounds.height;// / size;
+		var ph = bounds.height;
+		var plotterView = UserView(view,bounds).animate_(true);
+		
+		var plotter = Plotter(specs[0], Rect(pw*0.1,0,pw*0.9,ph),plotterView)
+			.value_((0..dataSize).dup(1)) //need to init arrays with data
+			.refresh;
+
+		specs[2].().size.do({|i|
+
+			StaticText(plotterView,Rect(0, (ph/6 * i) - 40, pw * 0.1, ph / 2))
+				.string_("CH"+i)
+				.font_(Font(size:9))
+				.align_(\center)
+				.stringColor_(specs[1][i]);
+			});
 
 		 plotterView.drawFunc_({});
-		 plotters.do{ |specs,i|
 
+		plotter.setProperties(\backgroundColor, Color.gray(0.25));
 
-			var max = 0;
-			var plotter = Plotter(specs[0], Rect(pw*0.1,ph*i,pw*0.9,ph),plotterView)
-				.value_((0..dataSize).dup(plotters.size)) //need to init arrays with data
-				.refresh;
+		plotterView.drawFunc = plotterView.drawFunc <> {
+			{
+				
+				plotter.superpose = true;
+				plotter.value = plotter.value.flop;
+				plotter.value = plotter.value.insert(0,specs[2].(plotter));
+				plotter.value = plotter.value.keep(dataSize);
+				plotter.value = plotter.value.flop;
 
+				// old way of parsing single values
+				// p.value = p.value.shift(1).putFirst(d.env.use{ ~plot.(d)});
+				
+				plotter.minval_(pmin);
+				plotter.maxval_(pmax);
 
-			var st = StaticText(plotterView,Rect(0,ph*i,pw*0.1,ph/2))
-				.string_("CH 0")
-				.font_(Font(size:9))
-				.align_(\center)
-				.stringColor_(specs[1][0]);
+				plotter.setProperties(\plotColor, specs[1]).refresh;
 
-			var su = StaticText(plotterView,Rect(0,(ph*i)+(ph/3),pw*0.1,ph/2))
-				.string_("CH 1")
-				.font_(Font(size:9))
-				.align_(\center)
-				.stringColor_(specs[1][1])
-				.mouseUpAction_({max = 0});
-
-			var sv = StaticText(plotterView,Rect(0,(ph*i)+(ph/3 * 2),pw*0.1,ph/2))
-				.string_("CH 2")
-				.font_(Font(size:9))
-				.align_(\center)
-				.stringColor_(specs[1][2])
-				.mouseUpAction_({max = 0});
-
-			// StaticText(plotterView,Rect(0,ph*i,pw*0.15,ph/2))
-			// 	.string_(specs[0])
-			// 	.align_(\center)
-			// 	.stringColor_(specs[1])
-			// 	.background_(Color.black);
-			plotter.setProperties(\backgroundColor, Color.gray(0.25));
-
-			plotterView.drawFunc = plotterView.drawFunc <> {
-				{
-					
-					plotter.superpose = true;
-					plotter.value = plotter.value.flop;
-					plotter.value = plotter.value.insert(0,specs[2].(plotter));
-					plotter.value = plotter.value.keep(dataSize);
-					plotter.value = plotter.value.flop;
-
-					// old way of parsing single values
-					// p.value = p.value.shift(1).putFirst(d.env.use{ ~plot.(d)});
-					
-					plotter.minval_(pmin);
-					plotter.maxval_(pmax);
-
-					plotter.setProperties(\plotColor, specs[1]).refresh;
-
-				}.defer(0.1);// need to delay to allow for construction 
-			}
-		 };
-
+			}.defer(0.1);// need to delay to allow for construction 
+		}
 
 	};
 
 	//------------------------------------------------------------	
-	// Gyro Canvas
+	// Three Dee Canvas
 	//------------------------------------------------------------	
+	// special view for special data
 
-	createGyroCanvas = { |view, data|
+	createThreeDeeCanvas = { |view, data|
 		var graph1;
 		var cube, top, rate, loc, ico;
 		var p1,p2,p3;
@@ -927,41 +852,6 @@
 			.background_(Color.black)
 		    .perspective_(0.5)
 		    .distance_(3.5);
-
-		graph1.preDrawFunc = {
-			// var scale = 0.22;
-			// Pen.scale(scale,scale);
-			// Pen.drawImage( Point(0,0), image, operation: 'sourceOver', opacity:0.05);
-			// Pen.scale(scale.reciprocal,scale.reciprocal);
-
-		};
-
-		// graph1.view.drawFunc= graph1.view.drawFunc<>{
-		// 	("[data"+"}-->".scramble).draw
-		// };
-
-		// graph1.add(cube = Canvas3DItem.cube
-		//     .color_(Color.red(0.8))
-		//     .width_(1)
-		// );
-
-		// graph1.add(top = Canvas3DItem.grid(4)
-		// 	.color_(Color.green(0.9))
-		//     .width_(1)
-		//     // need to rotate for grids orientation
-		//     .transform(Canvas3D.mRotateY(pi/2))
-		// );
-
-		// graph1.add(rate = Canvas3DItem.grid(2)
-		// 	.color_(Color.white(0.9))
-		//     .width_(1)
-		// );
-
-		// graph1.add(loc = Canvas3DItem.regPrism(3)
-		// 	.color_(Color.blue(0.9))
-		//     .width_(1)
-		// );
-
 
 	     graph1.add(p1 = Canvas3DItem.grid(2)
 	        .color_(Color.green)
@@ -1070,94 +960,10 @@
 			p2.transforms=ico.transforms;
 			p3.transforms=ico.transforms;
 
-			// rate.transforms = [ 
-			// 	Canvas3D.mScale(0.01,data.rrateMass.half ,1.0),
-			// 	Canvas3D.mTranslate(-2.1,0,0)
-
-		 //    ];
-
 		};
 
 	};
 
-
-	//------------------------------------------------------------	
-	// Accel Canvas
-	//------------------------------------------------------------	
-	createAccelCanvas = { |view, data|
-		
-	    var graph2, spot, accelRate, accelX, accelY, accelZ;
-
-		graph2 = Canvas3D(view, Rect(0, 0, 250, 250))
-		    .scale_(200)
-			.background_(Color.black)
-		    .perspective_(0.5)
-		    .distance_(2);
-
-		graph2.add(spot = Canvas3DItem.cube
-		    .color_(Color.red(0.8))
-		    .width_(1)
-
-		);
-
-		graph2.add(accelRate = Canvas3DItem.grid(2)
-			.color_(Color.white(0.9))
-		    .width_(1)
-		);
-
-		graph2.add(accelX = Canvas3DItem.regPrism()
-			.color_(Color.yellow(0.9))
-		    .width_(1)
-		);
-		graph2.add(accelY = Canvas3DItem.regPrism()
-			.color_(Color.magenta(0.9))
-		    .width_(1)
-		);
-		graph2.add(accelZ = Canvas3DItem.regPrism()
-			.color_(Color.cyan(0.9))
-		    .width_(1)
-		);
-		graph2.animate(renderRate) {|t|
-			
-
-			spot.transforms = [ 
-				Canvas3D.mScale(0.8,0.8,0.8),
-				Canvas3D.mScale(0.05,1,0.5),
-			    Canvas3D.mRotateX(data.gyroEvent.roll),
-		        Canvas3D.mRotateY(data.gyroEvent.yaw),
-		        Canvas3D.mRotateZ(data.gyroEvent.pitch),
-				 Canvas3D.mTranslate(data.accelEvent.y.neg.half,data.accelEvent.z.half,data.accelEvent.x.half)
-		    ];
-
-			accelRate.transforms = [ 
-				Canvas3D.mScale(0.01,data.accelMass ,1.0),
-				Canvas3D.mTranslate(-1.0,0,0)
-		    ];
-
-			accelY.transforms = [
-				Canvas3D.mScale(0.01,(data.accelEvent.y),0.01),
-		        Canvas3D.mRotateX(data.gyroEvent.roll),
-		        Canvas3D.mRotateY(data.gyroEvent.yaw),
-		        Canvas3D.mRotateZ(data.gyroEvent.pitch),
-		    ];
-
-			accelX.transforms = [ 
-				Canvas3D.mScale((data.accelEvent.z),0.01,0.01),
-		        Canvas3D.mRotateX(data.gyroEvent.roll),
-		        Canvas3D.mRotateY(data.gyroEvent.yaw),
-		        Canvas3D.mRotateZ(data.gyroEvent.pitch),
-		    ];
-			accelZ.transforms = [ 
-				Canvas3D.mScale(0.01,0.01,(data.accelEvent.x)),
-		        Canvas3D.mRotateX(data.gyroEvent.roll),
-		        Canvas3D.mRotateY(data.gyroEvent.yaw),
-		        Canvas3D.mRotateZ(data.gyroEvent.pitch),
-		    ];
-
-
-		};
-
-	};
 
 	//------------------------------------------------------------	
 	// osc listneners
@@ -1289,27 +1095,32 @@
 		quatListener.free;
 	};
 
-	// enableOSCListening = {
-	// 	buttonListener.enable;
-	// 	ampListener.enable;
-	// 	gryoListner.enable;
-	// 	// altListener.enable;
-	// 	rrateListener.enable;
-	// 	quatListener.enable;
-	// 	//rotMatListner.enable;
-	// 	//accelListener.enable;
-	// };
+	//------------------------------------------------------------	
+	// 
+	//------------------------------------------------------------	
 
-	// disableOSCListening = {
-	// 	buttonListener.disable;
-	// 	ampListener.disable;
-	// 	gryoListner.disable;
-	// 	//altListener.disable;
-	// 	rrateListener.disable;
-	// 	//rotMatListner.disable;
-	// 	accelListener.disable;
-	// 	quatListener.disable;
-	// };
+
+	createWindowView = {|view|
+
+		var scroll = ScrollView(view,Rect(0,30,width,height - 150 ));
+		var d;
+
+		StaticText(view)
+				.stringColor_(Color.yellow)
+				.font_(Font(size:14))
+				.minHeight_(30)
+				.minWidth_(200)
+				.string_(" :: m-ball");
+
+		contentView.layout_(VLayout());
+		scroll.canvas = contentView;
+
+		// example of loading a device (can only make 1 with generator)
+		// d = addDevice.("127.0.0.1",64564);
+		// addDeviceView.(contentView, d);
+		// addOSCDeviceListeners.(d);
+
+	};
 
 	//------------------------------------------------------------	
 	// 
