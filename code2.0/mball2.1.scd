@@ -39,7 +39,7 @@ Recorder 	57201
 		//var faces = ["🦆","🦊","🐴","🐯","🍎"];
 
 
-	    var width = Window.screenBounds.width * 0.9, height = Window.screenBounds.height * 0.7;
+	    var width = Window.screenBounds.width * 0.5, height = Window.screenBounds.height * 0.7;
 		var startup, shutdown, buildUI;
 
 		var contentView = UserView().background_(Color.grey(0.2));
