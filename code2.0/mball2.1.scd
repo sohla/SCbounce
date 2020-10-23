@@ -1,42 +1,11 @@
-/*
-Router
-user: admin
-pw: zxzxzxzx
-
-IP: 192.168.10.x
-SUB: 255.255.255.0
-Router 192.168.1.1 (wifi)	
-Router 192.168.10.1 (ethernet)
-
-SSID : SOHLA
-pw : zxzxzxzx
-
-
-Router setup with Laptop 
-192.168.10.x
-255.255.255.0
-192.168.10.1
-
-
-Ports
-
-SC Laptop	57120
-Recorder 	57201
-
-*/
-
-
 	(
 		// 
 		var devicesDir = "~/Develop/SuperCollider/SCbounce/personalities/";
-		var dataPath = "~/Develop/SuperCollider/SCbounce/data/";
-		//var image = Image.new("~/Develop/SuperCollider/Projects/SCbounce/m-ball_logo_vector600.png".asAbsolutePath);
 
 		var midiControlOffset = 1;
 		var loadDeviceList;
 
-		var names;// = ["adam","george","harry","susan","eve"];
-		//var faces = ["🦆","🦊","🐴","🐯","🍎"];
+		var names;
 
 
 	    var width = Window.screenBounds.width * 0.5, height = Window.screenBounds.height * 0.7;
@@ -117,6 +86,11 @@ Recorder 	57201
 		    }
 		}.play;
 
+		//• can we use this Event proto as a way of decalritive building an application
+		//• 
+		var twoCh = (\x: 0, \y:0);
+		var threeCh = (\x: 0, \y:0, \z:0);
+		var fourCh = (\w: 0, \x: 0, \y:0, \z:0);
 
 	    // data
 		var deviceProto = (
@@ -125,11 +99,11 @@ Recorder 	57201
 			\port: 57120,
 			\gyroEvent: (\pitch:0,\roll:0,\yaw:0),
 			//\gyroMass: 0,
-			\rrateEvent: (\x:0,\y:0,\z:0),
+			\rrateEvent: threeCh,//(\x:0,\y:0,\z:0),
 			\rrateMass: 0,
-			\accelEvent: (\x:0,\y:0,\z:0),
+			\accelEvent: threeCh,//(\x:0,\y:0,\z:0),
 			\accelMass: 1,
-			\quatEvent: (\w:0,\x:0,\y:0,\z:0),
+			\quatEvent: fourCh,//(\w:0,\x:0,\y:0,\z:0),
 			\ampValue: 0,
 			\env: nil,	// Environment for injected code
 			\procRout: nil,	// Routine calls ~next every ~fps
@@ -1059,32 +1033,12 @@ Recorder 	57201
 		// animate
 		graph1.animate(renderRate) {|t|
 
-			var tr = [data.gyroEvent.roll,data.gyroEvent.yaw,data.gyroEvent.pitch];
-			//data.ip.postln;
-	        
-	        // loc.transforms = [
-	        // 	Canvas3D.mScale(1,0.02,0.02),
-	        // 	Canvas3D.mTranslate(1.5,0,0),
-		       //  Canvas3D.mRotateX(tr[0]),
-		       //  Canvas3D.mRotateY(tr[1]),
-		       //  Canvas3D.mRotateZ(tr[2]),
-	        // ];
-
-			// cube.transforms = [ 
-			// 	Canvas3D.mScale(0.05,1,0.5),
-			// 	Canvas3D.mTranslate(0,0,0),
-		 //        Canvas3D.mRotateX(tr[0]),
-		 //        Canvas3D.mRotateY(tr[1]),
-		 //        Canvas3D.mRotateZ(tr[2]),
-		 //    ];
-
-			// top.transforms = [ 
-			// 	Canvas3D.mScale(0.05,1,0.5),
-			// 	Canvas3D.mTranslate(1,0,0),
-		 //        Canvas3D.mRotateX(tr[0]),
-		 //        Canvas3D.mRotateY(tr[1]),
-		 //        Canvas3D.mRotateZ(tr[2]),
-		 //    ];
+			// gyroEvent data is calculated by quatListener from quaternion values
+			var tr = [
+				data.gyroEvent.roll,//0
+				data.gyroEvent.yaw,//1
+				data.gyroEvent.pitch//2
+			];
 
 		    ico.transforms = [ 
 				Canvas3D.mScale(0.6,0.6,0.6),
@@ -1095,22 +1049,22 @@ Recorder 	57201
 		    
 			accelY.transforms = [
 				Canvas3D.mScale(0.01,(data.accelEvent.y),0.01),
-		        Canvas3D.mRotateX(data.gyroEvent.roll),
-		        Canvas3D.mRotateY(data.gyroEvent.yaw),
-		        Canvas3D.mRotateZ(data.gyroEvent.pitch),
+		        Canvas3D.mRotateX(tr[0]),
+		        Canvas3D.mRotateY(tr[1]),
+		        Canvas3D.mRotateZ(tr[2]),
 		    ];
 
 			accelX.transforms = [ 
 				Canvas3D.mScale((data.accelEvent.z),0.01,0.01),
-		        Canvas3D.mRotateX(data.gyroEvent.roll),
-		        Canvas3D.mRotateY(data.gyroEvent.yaw),
-		        Canvas3D.mRotateZ(data.gyroEvent.pitch),
+		        Canvas3D.mRotateX(tr[0]),
+		        Canvas3D.mRotateY(tr[1]),
+		        Canvas3D.mRotateZ(tr[2]),
 		    ];
 			accelZ.transforms = [ 
 				Canvas3D.mScale(0.01,0.01,(data.accelEvent.x)),
-		        Canvas3D.mRotateX(data.gyroEvent.roll),
-		        Canvas3D.mRotateY(data.gyroEvent.yaw),
-		        Canvas3D.mRotateZ(data.gyroEvent.pitch),
+		        Canvas3D.mRotateX(tr[0]),
+		        Canvas3D.mRotateY(tr[1]),
+		        Canvas3D.mRotateZ(tr[2]),
 		    ];		    
 		    p1.transforms=ico.transforms;
 			p2.transforms=ico.transforms;
