@@ -10,10 +10,10 @@ m.midiChannel = 4;
 	Pdef(m.ptn,
 		Pbind(
 	        \degree, Pseq([[0,4,7],[4,7,10],[0,4,7],[4,7,9]], inf),
-			\root, Pseq([0,5,-2,3,-4,1,-5].stutter(16),inf),
+			\root, Pseq([0,5,-2,3,-4,1,-5].stutter(24),inf),
 			\func, Pfunc({|e| ~onEvent.(e)}),
 			\args, #[],
-			\octave,Pseq([1,2,3,4,3,2].stutter(3),inf)
+			\octave,Pseq([3,4,5,6,5,4].stutter(3),inf)
 		);
 	);
 
@@ -34,9 +34,7 @@ m.midiChannel = 4;
 	var oct = [-48,-36,-24,-12].choose;
 	var note = 60 + m.com.root + oct + 24;
 
-	if(state == true,{
-		m.midiOut.noteOn(6, note, vel);
-		{m.midiOut.noteOff(6, note, vel)}.defer(0.1);
+	if(state == tru}.defer(0.1);
 	},{
 
 	});
@@ -61,19 +59,20 @@ m.midiChannel = 4;
 };
 
 ~nextMidiOut = {|d|
-	m.midiOut.control(m.midiChannel, 0, m.rrateMassFiltered * 127 );
+	// m.midiOut.control(m.midiChannel, 0, m.rrateMassFiltered * 127 );
 };			
 
 //------------------------------------------------------------	
 // plot with min and max
 //------------------------------------------------------------	
 
-~plotMin = 0;
-~plotMax = 1;
+~plotMin = -5;
+~plotMax = 5;
 
 ~plot = { |d,p|
 	// [(m.rrateMassFiltered * 3).ceil.mod(3)];
-	[m.rrateMassFiltered.pow(3)*2, m.accelMassFiltered, m.com.rrateMass];
+	//[m.rrateMassFiltered.pow(3)*2, m.accelMassFiltered, m.com.rrateMass];
+	[d.accelEvent.x, d.accelEvent.y, d.accelEvent.z, d.gyroEvent.pitch, d.gyroEvent.roll, d.gyroEvent.yaw];
 };
 //------------------------------------------------------------	
 // midi control

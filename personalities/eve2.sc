@@ -132,7 +132,7 @@ m.midiChannel = 6;
 };
 
 ~nextMidiOut = {|d|
-	m.midiOut.control(m.midiChannel, 0, m.accelMassFiltered * 90 );
+	m.midiOut.control(m.midiChannel, 0, m.accelMassFiltered.linlin(0,1,50,0) );
 };			
 
 //------------------------------------------------------------	
@@ -144,7 +144,8 @@ m.midiChannel = 6;
 
 ~plot = { |d,p|
 	// [d.accelEvent.x, d.accelEvent.y, d.accelEvent.z, d.gyroEvent.pitch, d.gyroEvent.roll, d.gyroEvent.yaw];
-	[d.accelEvent.x, d.accelEvent.y, d.accelEvent.z];
+	// [d.accelEvent.x, d.accelEvent.y, d.accelEvent.z];
+	[ m.accelMassFiltered];
 	//[(d.accelEvent.x + 0.5) * 0.1, (d.accelEvent.y + 0.35) * 0.1, (d.accelEvent.z - 9.8) * 0.1];
 };
 //------------------------------------------------------------	
@@ -153,4 +154,3 @@ m.midiChannel = 6;
 ~midiControllerValue = {|num,val|
 
 };
-
