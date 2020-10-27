@@ -8,7 +8,7 @@
 		var names;
 
 
-	    var width = Window.screenBounds.width * 0.5, height = Window.screenBounds.height * 0.7;
+	    var width = Window.screenBounds.width * 0.32, height = Window.screenBounds.height * 0.7;
 		var startup, shutdown, buildUI;
 
 		var contentView = UserView().background_(Color.grey(0.2));
@@ -17,7 +17,7 @@
 		var voltButton;
 
 		var sliders = [];
-		// var stackButton;
+		// vavar stackButton;
 
 		var createPlotterGroup, createThreeDeeCanvas, createTransportView;
 		var createWindowView, addDeviceView;
@@ -97,13 +97,13 @@
 			\name: "eve2",
 			\ip: "127.0.0.1",
 			\port: 57120,
-			\gyroEvent: (\pitch:0,\roll:0,\yaw:0),
-			//\gyroMass: 0,
-			\rrateEvent: threeCh,//(\x:0,\y:0,\z:0),
+			\gyroEvent: threeCh,
+			\gyroMass: 0,
+			\rrateEvent: threeCh,
 			\rrateMass: 0,
-			\accelEvent: threeCh,//(\x:0,\y:0,\z:0),
+			\accelEvent: threeCh,
 			\accelMass: 1,
-			\quatEvent: fourCh,//(\w:0,\x:0,\y:0,\z:0),
+			\quatEvent: fourCh,
 			\ampValue: 0,
 			\env: nil,	// Environment for injected code
 			\procRout: nil,	// Routine calls ~next every ~fps
@@ -579,7 +579,7 @@
 			var v = VLayout(
 				label,
 				slider = Slider()
-				.maxWidth_(40)
+				.maxWidth_(30)
 				.action_({|o|
 					d.env.use{
 						//~midiControllerValue.(i,o.value);
@@ -616,7 +616,7 @@
 		sliders = sliders.add(slider);v}!2;
 		
 		var sliderView = {|v|
-			UserView(v,Rect(700,0,200,250)).layout_( HLayout(
+			UserView(v,Rect(5,5,100,250)).layout_( HLayout(
 				*sliderViews.collect{|c,i|
 
 					var mc = MIDIFunc.cc({|val, num, chan| 
@@ -639,7 +639,7 @@
 
 		var onOffButton;
 
-		header = View(view).background_(col).maxHeight_(50).layout_( HLayout(
+		header = View(view).background_(col).maxHeight_(100).layout_( GridLayout.rows( [
 
 			onOffButton = Button()
 				.maxWidth_(40)
@@ -667,11 +667,11 @@
 
 			StaticText(view)
 				.stringColor_(Color.white)
-				.font_(Font(size:14))
-				.maxWidth_(200)
+				.font_(Font(size:12))
+				.minWidth_(100)
 				.string_(d.ip+":"+d.port),
 			Button()
-				.maxWidth_(40)
+				.minWidth_(40)
 				.states_([["reset"]])
 				.action_({
 						d.ip.class.postln;
@@ -680,73 +680,7 @@
 					b.sendMsg("/bounce", "motionReset");    // send the application the messa
 
 				}),
-			Button()
-				.maxWidth_(80)
-				.states_([["generator", Color.white],["generator",Color.green]])
-				.action_({|b|
-					//b.value.postln;
-					if(b.value == 1,{
-						d.generator.reset.play(AppClock);
-					},{
-						d.generator.stop();
-					});
-				}),
-			Button(view)
-				.maxWidth_(60)
-				.states_([
-					["graphs"],	
-					["graphs",Color.green]
-				])
-				.action_({|b|
-					if(b.value == 1,{
-						createGraphs.();
-
-					},{
-						removeGraphs.();
-					});
-				}),
-			dataSizeMenu = PopUpMenu(view)
-					.maxWidth_(60)
-					.items_(dataSizes)
-					.valueAction_(0)
-					.action_({|b|
-						dataSize = dataSizes.at(b.value);
-					})
-					.valueAction_(1),
-
-
-			reloadButton = Button(view)
-				.maxWidth_(80)
-				.states_([
-					["reload"],	
-				])
-				.action_({|b|
-					//reloadDevice.(d);
-					onOffButton.valueAction_(1);
-					// load the list again allows us to make changes
-					names = loadDeviceList.();
-					popup.items = names;
-					popup.valueAction = names.find([d.name]);
-
-
-				}),
-
-			popup = PopUpMenu(view)
-					.minWidth_(160)
-					.items_(names)
-					.valueAction_(names.find([d.name]))
-					.action_({|b|
-						d.name = names.at(b.value);
-						reloadDevice.(d);
-
-						d.env.use{ 
-							~model.rrateMassThreshold = ~model.rrateMassThresholdSpec.map(sliders[0].value);
-							~model.accelMassAmpThreshold = ~model.accelMassThresholdSpec.map(sliders[1].value);
-						};
-
-					}),
-
-			Button(view)
+				Button(view)
 				.maxWidth_(40)
 				.states_([
 					["x",Color.red(0.5)],	
@@ -768,19 +702,94 @@
 
 				})
 
-		));
+			],[
+			Button(view)
+				.maxWidth_(60)
+				.states_([
+					["plotter"],
+					["3d"],	
+				])
+				.action_({|b|
+						stackLayout.index = b.value;
+				}),
+			dataSizeMenu = PopUpMenu(view)
+					.maxWidth_(60)
+					.items_(dataSizes)
+					.valueAction_(0)
+					.action_({|b|
+						dataSize = dataSizes.at(b.value);
+					})
+					.valueAction_(1),
+
+
+			popup = PopUpMenu(view)
+					.minWidth_(120)
+					.items_(names)
+					.valueAction_(names.find([d.name]))
+					.action_({|b|
+						d.name = names.at(b.value);
+						reloadDevice.(d);
+
+						d.env.use{ 
+							~model.rrateMassThreshold = ~model.rrateMassThresholdSpec.map(sliders[0].value);
+							~model.accelMassAmpThreshold = ~model.accelMassThresholdSpec.map(sliders[1].value);
+						};
+
+					}),
+			reloadButton = Button(view)
+				.minWidth_(80)
+				.states_([
+					["reload"],	
+				])
+				.action_({|b|
+					//reloadDevice.(d);
+					onOffButton.valueAction_(1);
+					// load the list again allows us to make changes
+					names = loadDeviceList.();
+					popup.items = names;
+					popup.valueAction = names.find([d.name]);
+
+
+				}),
+
+			Button()
+				.maxWidth_(40)
+				.states_([["gen", Color.white],["gen",Color.green]])
+				.action_({|b|
+					//b.value.postln;
+					if(b.value == 1,{
+						d.generator.reset.play(AppClock);
+					},{
+						d.generator.stop();
+					});
+				}),
+
+
+
+		]));
 		//view.layout.spacing_(1);
 		view.layout.add(stackView = View()
-			.minHeight_(250)
-			.maxHeight_(250)
-			.layout_( stackLayout = StackLayout(
-				va = View().background_(col),
-				)
-			);
+			// .minHeight_(270)
+			// .maxHeight_(270)
+			.background_(col)
+			.layout_( HLayout(
+				stackLayout = StackLayout(
+					va = View().background_(col),
+					vb = View().background_(col),
+					),
+				sliderView.(stackView).maxWidth_(80)
+				))
 		);	
 
-		sliderView.(va);
-		createThreeDeeCanvas.(va,d);
+		
+		createPlotterGroup.(va, Rect(5,5,400,240), col, 
+			[
+				"ymc",
+				[Color.yellow,Color.magenta,Color.cyan,Color.red,Color.green,Color.blue],
+				{|p| d.env.use{ ~plot.(d)} }
+			]
+		,d.env.use{ ~plotMin.()},d.env.use{ ~plotMax.()});
+		createThreeDeeCanvas.(vb,d);
 
 		contentView.layout.add(nil);
 	};
@@ -796,7 +805,7 @@
 		var ph = bounds.height;
 		var plotterView = UserView(view,bounds).animate_(true);
 		
-		var plotter = Plotter(specs[0], Rect(pw*0.1,0,pw*0.9,ph),plotterView)
+		var plotter = Plotter(specs[0], Rect(0,0,pw,ph),plotterView)
 			.value_((0..dataSize).dup(1)) //need to init arrays with data
 			.refresh;
 
@@ -847,9 +856,9 @@
 		var t = (1.0 + (5.0).sqrt) / 2.0;
 	    var accelX, accelY, accelZ;
 
-		graph1 = Canvas3D(view, Rect(5, 5, 245, 240))
+		graph1 = Canvas3D(view, Rect(5, 5, 400, 240))
 		    .scale_(200)
-			.background_(Color.black)
+			.background_(Color.gray(0.25))
 		    .perspective_(0.5)
 		    .distance_(3.5);
 
@@ -925,9 +934,9 @@
 
 			// gyroEvent data is calculated by quatListener from quaternion values
 			var tr = [
-				data.gyroEvent.roll,//0
-				data.gyroEvent.yaw,//1
-				data.gyroEvent.pitch//2
+				data.gyroEvent.y,//0
+				data.gyroEvent.z,//1
+				data.gyroEvent.x//2
 			];
 
 		    ico.transforms = [ 
@@ -1032,9 +1041,9 @@
 
 				// save converted data as Event
 				devices.at(addr.port).gyroEvent = (
-					\pitch:tr[2].asFloat,
-					\roll:tr[0].asFloat,
-					\yaw:tr[1].asFloat);
+					\x:tr[2].asFloat,
+					\y:tr[0].asFloat,
+					\z:tr[1].asFloat);
 			});
 
 
@@ -1102,7 +1111,7 @@
 
 	createWindowView = {|view|
 
-		var scroll = ScrollView(view,Rect(0,30,width,height - 150 ));
+		var scroll = ScrollView(view,Rect(0,30,width ,height - 150 ));
 		var d;
 
 		StaticText(view)

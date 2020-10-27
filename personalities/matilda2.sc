@@ -72,7 +72,7 @@ m.midiChannel = 4;
 ~plot = { |d,p|
 	// [(m.rrateMassFiltered * 3).ceil.mod(3)];
 	//[m.rrateMassFiltered.pow(3)*2, m.accelMassFiltered, m.com.rrateMass];
-	[d.accelEvent.x, d.accelEvent.y, d.accelEvent.z, d.gyroEvent.pitch, d.gyroEvent.roll, d.gyroEvent.yaw];
+	[d.accelEvent.x, d.accelEvent.y, d.accelEvent.z, d.gyroEvent.x, d.gyroEvent.y, d.gyroEvent.z];
 };
 //------------------------------------------------------------	
 // midi control
