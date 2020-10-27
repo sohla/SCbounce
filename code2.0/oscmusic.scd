@@ -44,9 +44,8 @@
 
 
 		var dataSizes = [100,200,300,400];
-		var dataSize = dataSizes[1];
-
-		var midiOut, midiController;
+		
+		var midiOut;//, midiController;
 
 		var midiControllers = []; //hold the sliderViews and values 
 
@@ -96,6 +95,7 @@
 		var deviceProto = (
 			\name: "eve2",
 			\ip: "127.0.0.1",
+			\dataSize: dataSizes[1],
 			\port: 57120,
 			\gyroEvent: threeCh,
 			\gyroMass: 0,
@@ -514,7 +514,7 @@
 		GUI.skin.plot.background = Color.black;
 		GUI.skin.plot.plotColor = Color.white;
 
-		window = Window("m-ball", Rect(400, 200, width, height), false).front;
+		window = Window("osc music", Rect(400, 200, width, height), false).front;
 		window.view.keyDownAction_({|view,char,mods,uni,code,key|
 			if(uni==114,{//r
 				devices.keysValuesDo({|k,v|
@@ -628,7 +628,7 @@
 						}.defer(0);
 					},midiControlOffset+i);
 
-					midiControllers = midiControllers.add(mc);	
+					//midiControllers = midiControllers.add(mc);	
 
 					c
 				};
@@ -696,7 +696,7 @@
 					d.midiRout.stop;
 
 					// remove midi controller listener
-					midiControllers.do{|mc|mc.postln;mc.free};
+					// midiControllers.do{|mc|mc.postln;mc.free};
 
 					devices.removeAt(d.port);
 
@@ -717,7 +717,7 @@
 					.items_(dataSizes)
 					.valueAction_(0)
 					.action_({|b|
-						dataSize = dataSizes.at(b.value);
+						d.dataSize = dataSizes.at(b.value);
 					})
 					.valueAction_(1),
 
@@ -767,6 +767,9 @@
 
 
 		]));
+
+
+		//------------------------------------------------------------
 		//view.layout.spacing_(1);
 		view.layout.add(stackView = View()
 			// .minHeight_(270)
@@ -782,13 +785,7 @@
 		);	
 
 		
-		createPlotterGroup.(va, Rect(5,5,400,240), col, 
-			[
-				"ymc",
-				[Color.yellow,Color.magenta,Color.cyan,Color.red,Color.green,Color.blue],
-				{|p| d.env.use{ ~plot.(d)} }
-			]
-		,d.env.use{ ~plotMin.()},d.env.use{ ~plotMax.()});
+		createPlotterGroup.(va,d);
 		createThreeDeeCanvas.(vb,d);
 
 		contentView.layout.add(nil);
@@ -798,25 +795,29 @@
 	// Plotters
 	//------------------------------------------------------------	
 
-	createPlotterGroup = {|view, bounds, col, specs, pmin=(-pi), pmax=pi|
+	createPlotterGroup = {|view, data|
 
-
+		var col = [Color.yellow,Color.magenta,Color.cyan,Color.red,Color.green,Color.blue];
+		var bounds = Rect(5,5,400,240);
 		var pw = bounds.width;
 		var ph = bounds.height;
 		var plotterView = UserView(view,bounds).animate_(true);
+		var pmin = data.env.use{ ~plotMin.()};
+		var pmax = data.env.use{ ~plotMax.()};
+		var plotData = { data.env.use{ ~plot.(data)} };
 		
-		var plotter = Plotter(specs[0], Rect(0,0,pw,ph),plotterView)
-			.value_((0..dataSize).dup(1)) //need to init arrays with data
+		var plotter = Plotter("plotter", Rect(0,0,pw,ph),plotterView)
+			.value_((0..data.dataSize).dup(1)) //need to init arrays with data
 			.refresh;
 
-		specs[2].().size.do({|i|
+		plotData.().size.do({|i|
 
 			StaticText(plotterView,Rect(0, (ph/6 * i) - 40, pw * 0.1, ph / 2))
 				.string_("CH"+i)
 				.font_(Font(size:9))
 				.align_(\center)
-				.stringColor_(specs[1][i]);
-			});
+				.stringColor_(col[i]);
+		});
 
 		 plotterView.drawFunc_({});
 
@@ -827,8 +828,8 @@
 				
 				plotter.superpose = true;
 				plotter.value = plotter.value.flop;
-				plotter.value = plotter.value.insert(0,specs[2].(plotter));
-				plotter.value = plotter.value.keep(dataSize);
+				plotter.value = plotter.value.insert(0, plotData.());
+				plotter.value = plotter.value.keep(data.dataSize);
 				plotter.value = plotter.value.flop;
 
 				// old way of parsing single values
@@ -837,7 +838,7 @@
 				plotter.minval_(pmin);
 				plotter.maxval_(pmax);
 
-				plotter.setProperties(\plotColor, specs[1]).refresh;
+				plotter.setProperties(\plotColor, col).refresh;
 
 			}.defer(0.1);// need to delay to allow for construction 
 		}
@@ -1119,7 +1120,7 @@
 				.font_(Font(size:14))
 				.minHeight_(30)
 				.minWidth_(200)
-				.string_(" :: m-ball");
+				.string_(" :: osc music");
 
 		contentView.layout_(VLayout());
 		scroll.canvas = contentView;
