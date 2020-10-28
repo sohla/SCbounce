@@ -8,7 +8,7 @@
 		var names;
 
 
-	    var width = Window.screenBounds.width * 0.32, height = Window.screenBounds.height * 0.7;
+	    var width = Window.screenBounds.width * 0.32, height = Window.screenBounds.height * 0.9;
 		var startup, shutdown, buildUI;
 
 		var contentView = UserView().background_(Color.grey(0.2));
@@ -19,14 +19,15 @@
 		var sliders = [];
 		// vavar stackButton;
 
-		var createPlotterGroup, createThreeDeeCanvas, createTransportView;
+		var createPlotterGroup, createThreeDeeCanvas, createTransportView, createTwoDeeCanvas;
+
 		var createWindowView, addDeviceView;
 		var startOSCListening, stopOSCListening, enableOSCListening, disableOSCListening, addOSCDeviceListeners;
 
 		var addDevice, removeDevice;
 
 	    var gryoListner, rotMatListner, rrateListener, accelListener, quatListener, altListener, ampListener;
-	    var buttonListener, voltListener;
+	    var buttonListener, voltListener, lineListener;
 
 	    var oscOut = NetAddr.new("127.0.0.1", 9003); 
 
@@ -91,6 +92,23 @@
 		var threeCh = (\x: 0, \y:0, \z:0);
 		var fourCh = (\w: 0, \x: 0, \y:0, \z:0);
 
+
+		var blobProto = (
+					\index: 0,
+					\dataSize: 3,
+					\area: 0,
+					\perimeter: 0,	
+					\center: Point(0,0),
+					\rect: Rect(0,0,20,20),
+
+					// \pWidth: Event.new(proto:paramModel),
+
+					\label: 0,
+
+					\data: [[0,0]],
+
+		);
+
 	    // data
 		var deviceProto = (
 			\name: "eve2",
@@ -110,6 +128,8 @@
 			\midiRout: nil,	// Routine calls ~next every ~fps
 			\enabled: true, // are we running
 			\generator: nil, // Routine for generating data
+
+			\blob:  Event.new(proto:blobProto),
 			);
 
 
@@ -706,6 +726,7 @@
 			Button(view)
 				.maxWidth_(60)
 				.states_([
+					["2d"],	
 					["plotter"],
 					["3d"],	
 				])
@@ -779,20 +800,85 @@
 				stackLayout = StackLayout(
 					va = View().background_(col),
 					vb = View().background_(col),
+					vc = View().background_(col),
 					),
 				sliderView.(stackView).maxWidth_(80)
 				))
 		);	
 
 		
-		createPlotterGroup.(va,d);
+		createPlotterGroup.(vc,d);
 		createThreeDeeCanvas.(vb,d);
+		createTwoDeeCanvas.(va,d);
 
 		contentView.layout.add(nil);
 	};
 
 	//------------------------------------------------------------	
-	// Plotters
+	// createTwoDeeCanvas
+	//------------------------------------------------------------	
+
+	createTwoDeeCanvas = {|view, data|
+
+		var cols = [Color.yellow,Color.magenta,Color.cyan,Color.red,Color.green,Color.blue];
+		var bounds = Rect(5,5,400,240);
+		var prev = [];
+		var ax, ay, bx, by, mx, my;
+		var scale = 0.4;
+
+		var updateGraphView = {|v|
+
+
+			var blob = data.blob;
+
+			Pen.fillColor = Color.gray(0.25);
+			Pen.fillRect(bounds);
+			Pen.smoothing_(true);
+			Pen.width = 1;
+			
+			if( blob.area > 1, {
+
+				Pen.fillColor = cols.at(blob.index);
+				Pen.strokeColor = cols.at(blob.index);
+
+				Pen.fillOval(Rect(blob.center.x, blob.center.y,12,12));
+				Pen.fillRect(Rect(0 + (blob.index * 22), 550, 10, blob.rect.width * -1));
+				// Pen.fillRect(Rect(12 + (blob.index * 22), 550, 10, blob.pWidth.rateFiltered * -1));
+
+				Pen.strokeRect(blob.rect);
+				Pen.stringAtPoint(	blob.index + ":" + blob.name, blob.center.x + 20@blob.center.y);
+
+				prev = blob.data.reshape(1,2)[0];
+				blob.data.reshape(blob.data.size,2).do({|o,j|
+
+					ax = prev[0] * scale;
+					ay = prev[1] * scale;
+					bx = o[0] * scale;
+					by = o[1] * scale;
+
+				    Pen.moveTo(Point(ax, ay));
+				    Pen.lineTo(Point(bx, by));
+					Pen.stroke;
+					prev = o;
+				});
+
+			},{
+				// no blob
+			});
+		};
+
+		var plotterView = UserView(view, bounds)
+			.drawFunc_(updateGraphView)
+			.animate_(true)
+			.clearOnRefresh_(true);
+
+
+
+	};
+
+
+	//------------------------------------------------------------	
+	// createPlotterGroup
 	//------------------------------------------------------------	
 
 	createPlotterGroup = {|view, data|
@@ -1059,8 +1145,71 @@
 				});
 		}, '/gyrosc/amp', na);
 
+		//• NEED TO TEST THIS!!
+		voltListener = OSCFunc({ |msg, time, addr, recvPort|
+			[msg, time, addr, recvPort].postln;
+
+			{voltButton.states = [["volt"+msg[1].round(0.1).asString,Color.red]]}.defer(0);
+
+		}, '/gyrosc/volt');//•••••
+
+		lineListener = OSCFunc({ |msg, time, addr, recvPort|
+
+			var scale = 400;
+
+			if(devices.at(addr.port) != nil,{
+
+				devices.at(addr.port).blob = (
+					//msg[0] is the path
+					\index: msg[1].asInt,
+					\area: msg[2].asFloat * 100,
+					\perimeter: msg[3].asFloat * 100,	
+					\center: Point(
+						msg[4].asFloat * scale, 
+						msg[5].asFloat * scale),
+					\rect: Rect(
+						msg[6].asFloat * scale, 
+						msg[7].asFloat * scale, 
+						msg[8].asFloat * scale, 
+						msg[9].asFloat * scale),
+
+					// \pWidth: Event.new(proto:paramModel),
+
+					\label: msg[10].asInt,
+
+					\dataSize: msg[11].asInt,
+					\data: msg.copyRange(12,256)
+
+
+				);
+				// devices.at(addr.port).blob.postln;
+
+			});
+
+		}, '/gyrosc/line', na);///•••••••
+
+
 	};
-	
+
+/*
+		var blobProto = (
+					\dataSize: 3,
+					\area: 0,
+					\perimeter: 0,	
+					\center: Point(0,0),
+					\rect: Rect(0,0,20,20),
+
+					// \pWidth: Event.new(proto:paramModel),
+
+					\label: 0,
+
+					\data: [[0,0]],
+					\isNoteOn: false,
+					\channel: 0,
+					\root: 60,
+					\env:  nil
+
+*/	
 	startOSCListening = {
 
 		buttonListener = OSCFunc({ |msg, time, addr, recvPort|
@@ -1075,6 +1224,7 @@
 						addDeviceView.(contentView, d);
 
 						addOSCDeviceListeners.(d);
+						devices.keys.postln;
 
 					}.defer;
 				},{
@@ -1084,18 +1234,13 @@
 
 		}, '/gyrosc/button');
 
-		voltListener = OSCFunc({ |msg, time, addr, recvPort|
-			[msg, time, addr, recvPort].postln;
-
-			{voltButton.states = [["volt"+msg[1].round(0.1).asString,Color.red]]}.defer(0);
-
-		}, '/gyrosc/volt');
 	};
 
 
 	stopOSCListening = {
 		buttonListener.free;
 		voltListener.free;
+		lineListener.free;
 		ampListener.free;
 		gryoListner.free;
 		// altListener.free;
@@ -1112,7 +1257,7 @@
 
 	createWindowView = {|view|
 
-		var scroll = ScrollView(view,Rect(0,30,width ,height - 150 ));
+		var scroll = ScrollView(view,Rect(0,30,width ,height - 50 ));
 		var d;
 
 		StaticText(view)
@@ -1126,8 +1271,8 @@
 		scroll.canvas = contentView;
 
 		// example of loading a device (can only make 1 with generator)
-		// d = addDevice.("127.0.0.1",64564);
-		// addDeviceView.(contentView, d);
+			// d = addDevice.("127.0.0.1",64564);
+			// addDeviceView.(contentView, d);
 		// addOSCDeviceListeners.(d);
 
 	};

@@ -465,11 +465,15 @@ b.sendMsg("/ke/record",1);
 b.sendMsg("/ke/record",0);
 
 
+b = OSCFunc({ arg msg, time, addr, recvPort;
+	[time, addr, recvPort].postln;
+}, '/gyrosc/button');
 
 
 o = OSCFunc({ arg msg, time, addr, recvPort;
-	[msg, time, addr, recvPort].postln;
-}, '/gyrosc/quat');
+	[time, addr, recvPort].postln;
+}, '/gyrosc/line');
 
+b.free;
 o.free;
 
