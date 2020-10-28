@@ -94,22 +94,16 @@
 
 
 		var blobProto = (
-					\index: 0,
-					\dataSize: 3,
-					\area: 0,
-					\perimeter: 0,	
-					\center: Point(0,0),
-					\rect: Rect(0,0,20,20),
-
-					// \pWidth: Event.new(proto:paramModel),
-
-					\label: 0,
-
-					\data: [[0,0]],
-
+			\index: 0,
+			\dataSize: 3,
+			\area: 0,
+			\perimeter: 0,	
+			\center: Point(0,0),
+			\rect: Rect(0,0,20,20),
+			\label: 0,
+			\data: [[0,0]],
 		);
 
-	    // data
 		var deviceProto = (
 			\name: "eve2",
 			\ip: "127.0.0.1",
@@ -131,7 +125,43 @@
 
 			\blob:  Event.new(proto:blobProto),
 			);
+		/*
 
+		device :
+			name
+			ip
+			port
+
+			dataSize 
+			enabled
+
+			env
+			procRout
+			midiRout
+
+			generator
+
+			sensors
+				gyro
+				rrate
+				accel
+				quat
+				amp
+				temp
+
+			blob
+				index
+				area
+				perim
+				center
+				rect
+				label
+				dataSize
+				data
+
+
+
+		*/
 
 		// var path = PathName.new("~/Develop/SuperCollider/Projects/SCbounce/helloWorld.scd");
 		// var file = File.new(path.asAbsolutePath,"r");
@@ -824,7 +854,7 @@
 		var bounds = Rect(5,5,400,240);
 		var prev = [];
 		var ax, ay, bx, by, mx, my;
-		var scale = 0.4;
+		var scale = 0.45;
 
 		var updateGraphView = {|v|
 
@@ -1155,7 +1185,7 @@
 
 		lineListener = OSCFunc({ |msg, time, addr, recvPort|
 
-			var scale = 400;
+			var scale = 450;
 
 			if(devices.at(addr.port) != nil,{
 
@@ -1211,6 +1241,8 @@
 
 */	
 	startOSCListening = {
+
+		4.do{|i| thisProcess.openUDPPort(57120 + i)};
 
 		buttonListener = OSCFunc({ |msg, time, addr, recvPort|
 			[msg, time, addr, recvPort].postln;
@@ -1288,3 +1320,7 @@
 
 )
 
+
+
+// thisProcess.openUDPPort(57122); // attempt to open 1121
+// thisProcess.openPorts; // 
