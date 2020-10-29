@@ -23,7 +23,7 @@
 		var createWindowView, addDeviceView;
 		var startOSCListening, stopOSCListening, enableOSCListening, disableOSCListening, addOSCDeviceListeners;
 
-		var addDevice, removeDevice;
+		var addDevice, removeDevice, removeDeviceButton;
 	    var buttonListener;
 
 	    var oscOut = NetAddr.new("127.0.0.1", 9003); 
@@ -463,6 +463,7 @@
 	//------------------------------------------------------------	
 	shutdown = {
 
+		stopOSCListening.();
 
 		comRout.stop();
 		midiControllers.do{|mc|mc.postln;mc.free};
@@ -730,28 +731,18 @@
 					b.sendMsg("/bounce", "motionReset");    // send the application the messa
 
 				}),
-				Button(view)
+			removeDeviceButton = Button(view)
 				.maxWidth_(40)
 				.states_([
 					["x",Color.red(0.5)],	
-
 				])
-
-
-
-
 				.action_({|b|
 					header.remove();
 					stackView.remove();
-					
 					removeDevice.(d);
-
 					// remove midi controller listener
 					// midiControllers.do{|mc|mc.postln;mc.free};
-
 					devices.removeAt(d.port);
-
-
 				})
 
 			],[
@@ -1209,10 +1200,12 @@
 					{
 						var d = addDevice.(addr.ip, addr.port);
 					}.defer;
-				},{
-					//• TODO
-					//devices.removeAt(addr.port);
 				});
+			},{
+				// {
+				// 	//• TODO UI is not repsonsive outside its scope
+				// 	// removeDeviceButton.valueAction_(0);
+				// }.defer;
 			});
 
 		}, '/gyrosc/button');
