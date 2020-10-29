@@ -17,7 +17,6 @@
 		var voltButton;
 
 		var sliders = [];
-		// vavar stackButton;
 
 		var createPlotterGroup, createThreeDeeCanvas, createTransportView, createTwoDeeCanvas;
 
@@ -25,9 +24,7 @@
 		var startOSCListening, stopOSCListening, enableOSCListening, disableOSCListening, addOSCDeviceListeners;
 
 		var addDevice, removeDevice;
-
-	    var gryoListner, rotMatListner, rrateListener, accelListener, quatListener, altListener, ampListener;
-	    var buttonListener, voltListener, lineListener;
+	    var buttonListener;
 
 	    var oscOut = NetAddr.new("127.0.0.1", 9003); 
 
@@ -37,7 +34,7 @@
 		var renderRate = 20;
 
 		var loadPersonality;
-		var reloadDevice;
+		var reloadPersonality;
 		var createProcRout;
 		var createMidiRout;
 		
@@ -86,12 +83,42 @@
 		    }
 		}.play;
 
+		//------------------------------------------------------------	
+		// models
+		//------------------------------------------------------------	
 		//• can we use this Event proto as a way of decalritive building an application
-		//• 
+
 		var twoCh = (\x: 0, \y:0);
 		var threeCh = (\x: 0, \y:0, \z:0);
 		var fourCh = (\w: 0, \x: 0, \y:0, \z:0);
 
+		var listenersProto = (
+		
+	    	\gryoListner: nil,
+	    	\rotMatListner: nil, 
+	    	\rrateListener: nil, 
+	    	\accelListener: nil, 
+	    	\quatListener: nil, 
+	    	\altListener: nil, 
+	    	\ampListener: nil, 
+	    	\voltListener: nil, 
+	    	\lineListener: nil;
+
+		);
+
+		var sensorsProto = (
+
+			\gyroEvent: threeCh,
+			\gyroMass: 0,
+			\rrateEvent: threeCh,
+			\rrateMass: 0,
+			\accelEvent: threeCh,
+			\accelMass: 1,
+			\quatEvent: fourCh,
+			\ampValue: 0,
+
+
+		);
 
 		var blobProto = (
 			\index: 0,
@@ -107,68 +134,24 @@
 		var deviceProto = (
 			\name: "eve2",
 			\ip: "127.0.0.1",
-			\dataSize: dataSizes[1],
 			\port: 57120,
-			\gyroEvent: threeCh,
-			\gyroMass: 0,
-			\rrateEvent: threeCh,
-			\rrateMass: 0,
-			\accelEvent: threeCh,
-			\accelMass: 1,
-			\quatEvent: fourCh,
-			\ampValue: 0,
+
+			\enabled: true, // are we running
+			\dataSize: dataSizes[1],
+
+			\listeners: Event.new(proto:listenersProto),
+
 			\env: nil,	// Environment for injected code
 			\procRout: nil,	// Routine calls ~next every ~fps
 			\midiRout: nil,	// Routine calls ~next every ~fps
-			\enabled: true, // are we running
+
 			\generator: nil, // Routine for generating data
+
+			\sensors: Event.new(proto:sensorsProto),
 
 			\blob:  Event.new(proto:blobProto),
 			);
-		/*
 
-		device :
-			name
-			ip
-			port
-
-			dataSize 
-			enabled
-
-			env
-			procRout
-			midiRout
-
-			generator
-
-			sensors
-				gyro
-				rrate
-				accel
-				quat
-				amp
-				temp
-
-			blob
-				index
-				area
-				perim
-				center
-				rect
-				label
-				dataSize
-				data
-
-
-
-		*/
-
-		// var path = PathName.new("~/Develop/SuperCollider/Projects/SCbounce/helloWorld.scd");
-		// var file = File.new(path.asAbsolutePath,"r");
-		// var str = file.readAllString;
-		// interpret(str);
-		// as a loader
-		//import.("helloWorld.scd");
 	//------------------------------------------------------------	
 	// midi
 	//------------------------------------------------------------	
@@ -180,9 +163,11 @@
 
 	// midiController = MIDIOut(2).latency_(0.0);
 	MIDIIn.connectAll;
+
 	//------------------------------------------------------------	
 	// 
 	//------------------------------------------------------------
+
 	loadDeviceList = {  
 
 		var path = PathName.new(devicesDir++"list.sc");
@@ -234,8 +219,8 @@
 			// process data->model
 			~processDeviceData = {|d|
 
-				~model.accelMass = d.accelEvent.sumabs * 0.33;
-				~model.rrateMass = d.rrateEvent.sumabs * 0.1;
+				~model.accelMass = d.sensors.accelEvent.sumabs * 0.33;
+				~model.rrateMass = d.sensors.rrateEvent.sumabs * 0.1;
 
 				~model.accelMassFiltered = ~tween.(~model.accelMass, ~model.accelMassFiltered, 0.2);
 				~model.rrateMassFiltered = ~tween.(~model.rrateMass, ~model.rrateMassFiltered, 0.5);
@@ -482,18 +467,14 @@
 		comRout.stop();
 		midiControllers.do{|mc|mc.postln;mc.free};
 
-		devices.keysValuesDo({|k,v|
-			v.procRout.stop();
-			v.midiRout.stop();
-			v.generator.stop();
-			v.env.use{ ~deinit.() };
+		devices.keysValuesDo({|k,d|
+			removeDevice.(d);
 		});
 
 		// strange bug, we can not restart if we don't defer
 		{MIDIClient.disposeClient}.defer(1);
 
 
-		stopOSCListening.();
 		s.queryAllNodes;
 		
 		Pdef.clear;
@@ -503,6 +484,21 @@
 	//------------------------------------------------------------	
 	// 
 	//------------------------------------------------------------	
+	removeDevice = {|d|
+
+			d.procRout.stop();
+			d.midiRout.stop();
+			d.generator.stop();
+			d.env.use{ ~deinit.() };
+
+			d.listeners.voltListener.free;
+			d.listeners.lineListener.free;
+			d.listeners.ampListener.free;
+			d.listeners.gryoListner.free;
+			d.listeners.rrateListener.free;
+			d.listeners.accelListener.free;
+			d.listeners.quatListener.free;
+	};
 
 	addDevice = { |ip,port|
 
@@ -514,12 +510,16 @@
 		devices.put(port,d);
 		
 		// load the data
-		reloadDevice.(d);
+		reloadPersonality.(d);
+
+		addDeviceView.(contentView, d);
+
+		addOSCDeviceListeners.(d);
 
 		d // return the device (data)
 	};
 
-	reloadDevice = { |d|
+	reloadPersonality = { |d|
 
 
 		// stop personality
@@ -568,7 +568,7 @@
 		window.view.keyDownAction_({|view,char,mods,uni,code,key|
 			if(uni==114,{//r
 				devices.keysValuesDo({|k,v|
-					reloadDevice.(v);
+					reloadPersonality.(v);
 				});
 			});
 			// if(uni==97,{//a
@@ -699,7 +699,7 @@
 					d.enabled = b.value.asBoolean;
 
 					if(d.enabled == true,{
-						reloadDevice.(d);
+						reloadPersonality.(d);
 //						d.env.use{~play.()};
 					},{
 						d.env.use{~stop.()};
@@ -736,19 +736,21 @@
 					["x",Color.red(0.5)],	
 
 				])
+
+
+
+
 				.action_({|b|
 					header.remove();
 					stackView.remove();
 					
-					// stop personality
-					d.env.use{ ~deinit.() };
-					d.procRout.stop;
-					d.midiRout.stop;
+					removeDevice.(d);
 
 					// remove midi controller listener
 					// midiControllers.do{|mc|mc.postln;mc.free};
 
 					devices.removeAt(d.port);
+
 
 				})
 
@@ -779,7 +781,7 @@
 					.valueAction_(names.find([d.name]))
 					.action_({|b|
 						d.name = names.at(b.value);
-						reloadDevice.(d);
+						reloadPersonality.(d);
 
 						d.env.use{ 
 							~model.rrateMassThreshold = ~model.rrateMassThresholdSpec.map(sliders[0].value);
@@ -793,7 +795,7 @@
 					["reload"],	
 				])
 				.action_({|b|
-					//reloadDevice.(d);
+					//reloadPersonality.(d);
 					onOffButton.valueAction_(1);
 					// load the list again allows us to make changes
 					names = loadDeviceList.();
@@ -1051,9 +1053,9 @@
 
 			// gyroEvent data is calculated by quatListener from quaternion values
 			var tr = [
-				data.gyroEvent.y,//0
-				data.gyroEvent.z,//1
-				data.gyroEvent.x//2
+				data.sensors.gyroEvent.y,//0
+				data.sensors.gyroEvent.z,//1
+				data.sensors.gyroEvent.x//2
 			];
 
 		    ico.transforms = [ 
@@ -1064,20 +1066,20 @@
 		    ];
 		    
 			accelY.transforms = [
-				Canvas3D.mScale(0.01,(data.accelEvent.y),0.01),
+				Canvas3D.mScale(0.01,(data.sensors.accelEvent.y),0.01),
 		        Canvas3D.mRotateX(tr[0]),
 		        Canvas3D.mRotateY(tr[1]),
 		        Canvas3D.mRotateZ(tr[2]),
 		    ];
 
 			accelX.transforms = [ 
-				Canvas3D.mScale((data.accelEvent.z),0.01,0.01),
+				Canvas3D.mScale((data.sensors.accelEvent.z),0.01,0.01),
 		        Canvas3D.mRotateX(tr[0]),
 		        Canvas3D.mRotateY(tr[1]),
 		        Canvas3D.mRotateZ(tr[2]),
 		    ];
 			accelZ.transforms = [ 
-				Canvas3D.mScale(0.01,0.01,(data.accelEvent.x)),
+				Canvas3D.mScale(0.01,0.01,(data.sensors.accelEvent.x)),
 		        Canvas3D.mRotateX(tr[0]),
 		        Canvas3D.mRotateY(tr[1]),
 		        Canvas3D.mRotateZ(tr[2]),
@@ -1098,20 +1100,7 @@
 
 		var na = NetAddr.new(d.ip, d.port);
 
-		// gryoListner = OSCFunc({ |msg, time, addr, recvPort|
-
-		// }, '/gyrosc/gyro', na);
-
-		// rotMatListner = OSCFunc({ |msg, time, addr, recvPort|
-		// 	// gyroEvent.pitch = msg[1].asFloat;
-		// 	// gyroEvent.roll = msg[2].asFloat;
-		// 	// gyroEvent.yaw = msg[3].asFloat;
-		// 	//rotMatEvent = msg[1..].clumps([4]);
-		// 	//rotMatEvent.postln;
-		// }, '/gyrosc/rotmat');
-
-
-		rrateListener = OSCFunc({ |msg, time, addr, recvPort|
+		d.listeners.rrateListener = OSCFunc({ |msg, time, addr, recvPort|
 			//[msg, time, addr, recvPort].postln;
 
 			if(devices.at(addr.port) != nil,{
@@ -1123,10 +1112,10 @@
 
 		}, '/gyrosc/rrate', na);
 
-		accelListener = OSCFunc({ |msg, time, addr, recvPort|
+		d.listeners.accelListener = OSCFunc({ |msg, time, addr, recvPort|
 
 			if(devices.at(addr.port) != nil,{
-				devices.at(addr.port).accelEvent = (
+				devices.at(addr.port).sensors.accelEvent = (
 					\x:msg[1].asFloat,
 					\y:msg[2].asFloat,
 					\z:msg[3].asFloat);
@@ -1134,56 +1123,48 @@
 		}, '/gyrosc/accel', na);
 
 
-		quatListener = OSCFunc({ |msg, time, addr, recvPort|
+		d.listeners.quatListener = OSCFunc({ |msg, time, addr, recvPort|
 
 			var sx,sy,sz,qe,q,ss,r;
 			var tr;
 
 			if(devices.at(addr.port) != nil,{
-				devices.at(addr.port).quatEvent = (
+				devices.at(addr.port).sensors.quatEvent = (
 					\w:msg[1].asFloat,
 					\x:msg[2].asFloat,
 					\y:msg[3].asFloat,
 					\z:msg[4].asFloat);
 
 				// take quaternion and convert to ueler angles 
-				qe = devices.at(addr.port).quatEvent;
+				qe = devices.at(addr.port).sensors.quatEvent;
 				q = Quaternion.new(qe.w,qe.x,qe.y,qe.z);
-				// ss = Quaternion.new(0.2,0.1,0.4,-0.3) + q;
 				r = q.asEuler;
 				tr = [r[0],r[1],r[2] + pi.half];
 
-				//send something out to play with
-				//oscOut.sendMsg("/bounce/quat",r[0],r[1],r[2]);
-
-				// save converted data as Event
-				devices.at(addr.port).gyroEvent = (
+				devices.at(addr.port).sensors.gyroEvent = (
 					\x:tr[2].asFloat,
 					\y:tr[0].asFloat,
 					\z:tr[1].asFloat);
 			});
 
-
-
-
 		}, '/gyrosc/quat', na);
 			
-		ampListener = OSCFunc({ |msg, time, addr, recvPort|
+		d.listeners.ampListener = OSCFunc({ |msg, time, addr, recvPort|
 
 				if(devices.at(addr.port) != nil,{
-					devices.at(addr.port).ampValue = msg[1].asFloat;
+					devices.at(addr.port).sensors.ampValue = msg[1].asFloat;
 				});
 		}, '/gyrosc/amp', na);
 
 		//• NEED TO TEST THIS!!
-		voltListener = OSCFunc({ |msg, time, addr, recvPort|
+		d.listeners.voltListener = OSCFunc({ |msg, time, addr, recvPort|
 			[msg, time, addr, recvPort].postln;
 
 			{voltButton.states = [["volt"+msg[1].round(0.1).asString,Color.red]]}.defer(0);
 
 		}, '/gyrosc/volt');//•••••
 
-		lineListener = OSCFunc({ |msg, time, addr, recvPort|
+		d.listeners.lineListener = OSCFunc({ |msg, time, addr, recvPort|
 
 			var scale = 450;
 
@@ -1203,8 +1184,6 @@
 						msg[8].asFloat * scale, 
 						msg[9].asFloat * scale),
 
-					// \pWidth: Event.new(proto:paramModel),
-
 					\label: msg[10].asInt,
 
 					\dataSize: msg[11].asInt,
@@ -1212,34 +1191,12 @@
 
 
 				);
-				// devices.at(addr.port).blob.postln;
-
 			});
-
 		}, '/gyrosc/line', na);///•••••••
 
 
 	};
 
-/*
-		var blobProto = (
-					\dataSize: 3,
-					\area: 0,
-					\perimeter: 0,	
-					\center: Point(0,0),
-					\rect: Rect(0,0,20,20),
-
-					// \pWidth: Event.new(proto:paramModel),
-
-					\label: 0,
-
-					\data: [[0,0]],
-					\isNoteOn: false,
-					\channel: 0,
-					\root: 60,
-					\env:  nil
-
-*/	
 	startOSCListening = {
 
 		// handy way to listen to multiple ports
@@ -1250,37 +1207,20 @@
 			if(msg[1].asFloat == 1.0, {
 				if(devices.at(addr.port) == nil,{
 					{
-
 						var d = addDevice.(addr.ip, addr.port);
-
-						// [d.port,recvPort].postln;
-						addDeviceView.(contentView, d);
-
-						addOSCDeviceListeners.(d);
-						// devices.keys.postln;
-
 					}.defer;
 				},{
+					//• TODO
 					//devices.removeAt(addr.port);
 				});
 			});
 
 		}, '/gyrosc/button');
-
 	};
 
 
 	stopOSCListening = {
 		buttonListener.free;
-		voltListener.free;
-		lineListener.free;
-		ampListener.free;
-		gryoListner.free;
-		// altListener.free;
-		rrateListener.free;
-		//rotMatListner.free;
-		accelListener.free;
-		quatListener.free;
 	};
 
 	//------------------------------------------------------------	
@@ -1320,8 +1260,3 @@
 	startOSCListening.();
 
 )
-
-
-
-// thisProcess.openUDPPort(57122); // attempt to open 1121
-// thisProcess.openPorts; // 

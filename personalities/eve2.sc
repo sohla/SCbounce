@@ -143,7 +143,7 @@ m.midiChannel = 6;
 ~plotMax = 5;
 
 ~plot = { |d,p|
-	[d.accelEvent.x, d.accelEvent.y, d.accelEvent.z, d.gyroEvent.x, d.gyroEvent.y, d.gyroEvent.z];
+	[d.sensors.accelEvent.x, d.sensors.accelEvent.y, d.sensors.accelEvent.z, d.sensors.gyroEvent.x, d.sensors.gyroEvent.y, d.sensors.gyroEvent.z];
 	// [d.accelEvent.x, d.accelEvent.y, d.accelEvent.z];
 	// [ m.accelMassFiltered];
 	//[(d.accelEvent.x + 0.5) * 0.1, (d.accelEvent.y + 0.35) * 0.1, (d.accelEvent.z - 9.8) * 0.1];
