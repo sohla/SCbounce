@@ -1,7 +1,7 @@
 (
 	[
-		"dm1",
-		"eve2",
+		"beat3",
+		"eve3",
 		"lachlan",
 		"gabe2",
 		"nick2",

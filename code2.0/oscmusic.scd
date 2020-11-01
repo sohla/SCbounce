@@ -132,7 +132,7 @@
 		);
 
 		var deviceProto = (
-			\name: "eve2",
+			\name: "beat3",
 			\ip: "127.0.0.1",
 			\port: 57120,
 
@@ -143,7 +143,7 @@
 
 			\env: nil,	// Environment for injected code
 			\procRout: nil,	// Routine calls ~next every ~fps
-			\midiRout: nil,	// Routine calls ~next every ~fps
+			\midiRout: nil,	// Routine calls ~nextMidiOut 
 
 			\generator: nil, // Routine for generating data
 
@@ -178,9 +178,9 @@
 	};
 
 	//------------------------------------------------------------	
-	loadPersonality = {|name|
+	loadPersonality = {|d|
 
-		var path = PathName.new(devicesDir++name++".sc");
+		var path = PathName.new(devicesDir++d.name++".sc");
 		var file = File.new(path.asAbsolutePath,"r");
 		var str = file.readAllString;
 
@@ -190,7 +190,7 @@
 
 			~model = (
 				\com: com,
-				\name: name,
+				\name: d.name,
 				\ptn: Array.fill(16,{|i|i=90.rrand(65).asAscii}),
 				\midiOut: midiOut,
 				\midiChannel: 1,
@@ -210,7 +210,7 @@
 				\accelMassAmp: 0.0,
 
 			);
-
+			~device = d;
 			//------------------------------------------------------------	
 			// frame rate of rout
 			~secs = 0.03;
@@ -250,10 +250,10 @@
 					if(~model.isHit != state,{
 						~model.isHit = state;
 						if(~model.isHit == true,{
-							//"Note ON".postln;
+							// "Note ON".postln;
 							~onHit.(~model.isHit);
 						},{
-							//"Note OFF".postln;
+							// "Note OFF".postln;
 							~onHit.(~model.isHit);
 						});
 					});
@@ -262,17 +262,28 @@
 				// should we tweak this constants!?
 				// Lost lands hitting with helium. only need the microphone to detect hits
 				//• need to pass these thrsholds on to model!
-				if( ~model.accelMass > ~model.accelMassAmpThreshold,{ 
-					//if( d.ampValue > 0.00,{
-						~model.accelMassAmp = 0.1;//d.ampValue;
-						//~model.accelMass.postln;
-					// },{
-					// 	~model.accelMassAmp = 0.0;
-					// });
-					//~model.accelMassAmp = 0.0;
-				},{
-					~model.accelMassAmp = 0.0;
-				});
+				// if( ~model.accelMass > ~model.accelMassAmpThreshold,{ 
+				// 	//if( d.ampValue > 0.00,{
+				// 		~model.accelMassAmp = 0.1;//d.ampValue;
+				// 		//~model.accelMass.postln;
+				// 	// },{
+				// 	// 	~model.accelMassAmp = 0.0;
+				// 	// });
+				// 	//~model.accelMassAmp = 0.0;
+				// },{
+				// 	~model.accelMassAmp = 0.0;
+				// });
+
+/*
+				
+				2 types of signals
+
+					momentary : logic & state
+					continuous : filter & mapping
+Number
+				
+
+*/
 
 				if(~model.accelMassAmp > 0.0,{
 					changeState.(true);
@@ -301,6 +312,8 @@
 			//------------------------------------------------------------	
 			~play = {
 				Pdef(~model.ptn).play();
+
+
 				("play" + ~model.name).postln;
 			};
 
@@ -466,7 +479,8 @@
 		stopOSCListening.();
 
 		comRout.stop();
-		midiControllers.do{|mc|mc.postln;mc.free};
+
+		//midiControllers.do{|mc|mc.postln;mc.free};
 
 		devices.keysValuesDo({|k,d|
 			removeDevice.(d);
@@ -489,6 +503,10 @@
 
 			d.procRout.stop();
 			d.midiRout.stop();
+
+			d.procRout.free;
+			d.midiRout.free;
+
 			d.generator.stop();
 			d.env.use{ ~deinit.() };
 
@@ -527,11 +545,15 @@
 
 		d.procRout.stop;
 		d.midiRout.stop;
+
+		d.procRout.free;
+		d.midiRout.free;
+
 		if(d.env != nil,{ d.env.use{ ~deinit.() }});
 
 
 		// start new personality
-		d.env = loadPersonality.(d.name);
+		d.env = loadPersonality.(d);
 		d.env.use{ 
 			~init.(); 
 			~buildPattern.();
@@ -670,14 +692,14 @@
 			UserView(v,Rect(5,5,100,250)).layout_( HLayout(
 				*sliderViews.collect{|c,i|
 
-					var mc = MIDIFunc.cc({|val, num, chan| 
-						//[c,val, num, chan].postln;
-						//• TODO 
-						{
-							c.valueAction_(val/127.0);
+					// var mc = MIDIFunc.cc({|val, num, chan| 
+					// 	//[c,val, num, chan].postln;
+					// 	//• TODO 
+					// 	{
+					// 		c.valueAction_(val/127.0);
 
-						}.defer(0);
-					},midiControlOffset+i);
+					// 	}.defer(0);
+					// },midiControlOffset+i);
 
 					//midiControllers = midiControllers.add(mc);	
 
@@ -700,8 +722,8 @@
 					d.enabled = b.value.asBoolean;
 
 					if(d.enabled == true,{
-						reloadPersonality.(d);
-//						d.env.use{~play.()};
+						// reloadPersonality.(d);
+						d.env.use{~play.()};
 					},{
 						d.env.use{~stop.()};
 					});
@@ -1238,7 +1260,6 @@
 
 		// example of loading a device (can only make 1 with generator)
 			// d = addDevice.("127.0.0.1",64564);
-			// addDeviceView.(contentView, d);
 		// addOSCDeviceListeners.(d);
 
 	};
@@ -1253,3 +1274,6 @@
 	startOSCListening.();
 
 )
+
+
+
