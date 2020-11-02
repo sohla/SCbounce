@@ -132,7 +132,7 @@
 		);
 
 		var deviceProto = (
-			\name: "beat3",
+			\name: "energy",
 			\ip: "127.0.0.1",
 			\port: 57120,
 
@@ -880,18 +880,18 @@ Number
 			Pen.fillRect(bounds);
 			Pen.smoothing_(true);
 			Pen.width = 1;
-			
-			if( blob.area > 1, {
+
+			if( blob.area > 0.001, {
 
 				Pen.fillColor = cols.at(blob.index);
 				Pen.strokeColor = cols.at(blob.index);
 
-				Pen.fillOval(Rect(blob.center.x, blob.center.y,12,12));
-				Pen.fillRect(Rect(0 + (blob.index * 22), 550, 10, blob.rect.width * -1));
+				Pen.fillOval(Rect(blob.center.x * 450, blob.center.y * 450,6,6));
+				//Pen.fillRect(Rect(0 + (blob.index * 22), 550, 10, blob.rect.width * -1));
 				// Pen.fillRect(Rect(12 + (blob.index * 22), 550, 10, blob.pWidth.rateFiltered * -1));
 
 				Pen.strokeRect(blob.rect);
-				Pen.stringAtPoint(	blob.index + ":" + blob.name, blob.center.x + 20@blob.center.y);
+				Pen.stringAtPoint(	blob.index + ":" + blob.label, blob.center.x * 450 + 10@(blob.center.y * 450));
 
 				prev = blob.data.reshape(1,2)[0];
 				blob.data.reshape(blob.data.size,2).do({|o,j|
@@ -941,9 +941,12 @@ Number
 			.value_((0..data.dataSize).dup(1)) //need to init arrays with data
 			.refresh;
 
+		var st = Array.fill(4,"""");
+
+
 		plotData.().size.do({|i|
 
-			StaticText(plotterView,Rect(0, (ph/6 * i) - 40, pw * 0.1, ph / 2))
+			st[i] = StaticText(view,Rect(0, (ph/6 * i) - 40, pw * 0.1, ph / 2))
 				.string_("CH"+i)
 				.font_(Font(size:9))
 				.align_(\center)
@@ -970,6 +973,11 @@ Number
 				plotter.maxval_(pmax);
 
 				plotter.setProperties(\plotColor, col).refresh;
+
+				plotData.().do({|o,i|
+					st[i].string = o.round(0.01).asString;
+				});
+
 
 			}.defer(0.1);// need to delay to allow for construction 
 		}
@@ -1179,15 +1187,15 @@ Number
 
 		d.listeners.lineListener = OSCFunc({ |msg, time, addr, recvPort|
 
-			var scale = 450;
+			var scale = 1;
 
 			if(devices.at(addr.port) != nil,{
 
 				devices.at(addr.port).blob = (
 					//msg[0] is the path
 					\index: msg[1].asInt,
-					\area: msg[2].asFloat * 100,
-					\perimeter: msg[3].asFloat * 100,	
+					\area: msg[2].asFloat,
+					\perimeter: msg[3].asFloat,	
 					\center: Point(
 						msg[4].asFloat * scale, 
 						msg[5].asFloat * scale),

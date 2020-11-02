@@ -1,5 +1,6 @@
 (
 	[
+		"energy",
 		"beat3",
 		"eve3",
 		"lachlan",
