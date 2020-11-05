@@ -90,6 +90,23 @@ Pdef(m.ptn).set(\amp,rateFiltered.linlin(0,1.0,0.1,1.0));
 ~next = {|d| 
 
 
+
+
+	// data[0].postln;
+
+	// var data = d.blob.data.reshape(d.blob.data.size,2);
+	// var nd;
+	// data = data.sort({|a,b| a[1] > b[1]});
+
+
+	// nd = data.copyRange(0, (d.blob.data.size/4).asInteger);
+
+	// nd.postln;
+
+
+
+
+	//center.x * 1.6 : 1.6 = 640 (pixels from cam) / 400 (pixels of view)
 	m.accelMassAmp = d.blob.rect.width + (d.blob.center.x * 1.66) + d.blob.perimeter;
 	// if(m.isHit,{
 
@@ -106,6 +123,7 @@ Pdef(m.ptn).set(\amp,rateFiltered.linlin(0,1.0,0.1,1.0));
 		rateFiltered = ~tween.(rate, rateFiltered, 0.05) ;
 
 		oldVar = m.accelMassAmp;
+
 
 
 
@@ -167,5 +185,8 @@ Pdef(m.ptn).set(\amp,rateFiltered.linlin(0,1.0,0.1,1.0));
 	//m.midiOut.control(m.midiChannel, 65, val * 127 );
 
 };
+
+
+
 
 
