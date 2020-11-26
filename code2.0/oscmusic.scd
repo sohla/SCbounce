@@ -1134,6 +1134,17 @@
 
 			}, '/gyrosc/rrate', na);
 
+
+			d.listeners.gryoListner = OSCFunc({ |msg, time, addr, recvPort|
+
+				if(devices.at(addr.port) != nil,{
+					devices.at(addr.port).sensors.gyroEvent = (
+						\x:msg[1].asFloat,
+						\y:msg[2].asFloat,
+						\z:msg[3].asFloat);
+				});
+			}, '/gyrosc/gyro', na);
+
 			d.listeners.accelListener = OSCFunc({ |msg, time, addr, recvPort|
 
 				if(devices.at(addr.port) != nil,{
