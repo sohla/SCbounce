@@ -5,8 +5,10 @@ var isOn = false;
 var bl = [0,-7,-5].stutter(12);
 var cr = [0,-2,-7,-3,0,-2,-7,-3,-5].stutter(5);
 
+var rateValue = 0;
+
 var note = 60;
-m.midiChannel = 6;
+m.midiChannel = 0;
 // m.accelMassAmpThreshold = 1.4;
 // m.rrateMassThreshold = 0.1;
 
@@ -16,19 +18,19 @@ m.midiChannel = 6;
 
 ~init = ~init <> { 
 
-	// Pdef(m.ptn,
-	// 	Pbind(
-	// 		\note, Pseq([0],inf),
-	// 		\note, Pseq([-5,0,5,7],inf),
-	// 		//\func, Pfunc({|e| ~onEvent.(e)}),
-	// 		\args, #[],
-	// 	);
-	// );
+	Pdef(m.ptn,
+		Pbind(
+			// \note, Pseq([0],inf),
+			\note, Pseq([0,1,2,3,4,5,6,7],inf),
+			//\func, Pfunc({|e| ~onEvent.(e)}),
+			\args, #[],
+		);
+	);
 
-	// Pdef(m.ptn).set(\dur,0.5);
-	// Pdef(m.ptn).set(\octave,5);
-	// Pdef(m.ptn).set(\amp,0.8);
-
+	Pdef(m.ptn).set(\dur,0.5);
+	Pdef(m.ptn).set(\octave,3);
+	Pdef(m.ptn).set(\amp,0.2);
+	Pdef(m.ptn).play();
 
 };
 
@@ -142,7 +144,21 @@ m.midiChannel = 6;
 	// Pdef(m.ptn).set(\dur,(m.accelMassFiltered * 2 * m.rrateMassThreshold.reciprocal).reciprocal);
 	// Pdef(m.ptn).set(\amp, 0.34 + (m.accelMassFiltered * 0.03));
 	// Pdef(m.ptn).set(\octave, 5 + oct);
-		
+
+	// d.sensors.rrateMass.postln;	
+
+	rateValue = 0.8 + ((m.rrateMassFiltered.log10) * 0.25);
+
+
+	Pdef(m.ptn).set(\dur, (0.95 - rateValue));
+
+	if(rateValue > 0.55, {
+		Pdef(m.ptn).resume();
+	},{
+		Pdef(m.ptn).pause();
+	});
+
+
 };
 
 ~nextMidiOut = {|d|
@@ -163,8 +179,11 @@ m.midiChannel = 6;
 ~plotMax = 1;
 
 ~plot = { |d,p|
+	//[d.sensors.gyroEvent.x,d.sensors.gyroEvent.y,d.sensors.gyroEvent.z];
+
+	[ (rateValue) , m.accelMassFiltered - 5];
 	 // [ m.accelMassFiltered];
-	[m.accelMassAmp, d.blob.center.x / 450.0, d.blob.center.y / 450.0];
+	//[m.accelMassAmp, d.blob.center.x / 450.0, d.blob.center.y / 450.0];
 	// [d.blob.area / 450.0, d.blob.perimeter / 450.0, d.blob.center.x / 450.0, d.blob.center.y / 450.0];
 };
 //------------------------------------------------------------	
@@ -173,3 +192,5 @@ m.midiChannel = 6;
 ~midiControllerValue = {|num,val|
 
 };
+
+

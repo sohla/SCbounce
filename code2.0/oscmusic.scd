@@ -31,7 +31,7 @@
 			var devices = Dictionary();
 
 			var dataRate = 1; 
-			var renderRate = 20;
+			var renderRate = 30;
 
 			var loadPersonality;
 			var reloadPersonality;
@@ -223,7 +223,7 @@
 					~model.rrateMass = d.sensors.rrateEvent.sumabs * 0.1;
 
 					~model.accelMassFiltered = ~tween.(~model.accelMass, ~model.accelMassFiltered, 0.2);
-					~model.rrateMassFiltered = ~tween.(~model.rrateMass, ~model.rrateMassFiltered, 0.5);
+					~model.rrateMassFiltered = ~tween.(~model.rrateMass, ~model.rrateMassFiltered, 0.35);
 
 				};
 
@@ -1123,10 +1123,10 @@
 			var na = NetAddr.new(d.ip, d.port);
 
 			d.listeners.rrateListener = OSCFunc({ |msg, time, addr, recvPort|
-				//[msg, time, addr, recvPort].postln;
+				// [msg, time, addr, recvPort].postln;
 
 				if(devices.at(addr.port) != nil,{
-					devices.at(addr.port).rrateEvent = (
+					devices.at(addr.port).sensors.rrateEvent = (
 						\x:msg[1].asFloat,
 						\y:msg[2].asFloat,
 						\z:msg[3].asFloat);
