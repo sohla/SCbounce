@@ -22,13 +22,14 @@ m.midiChannel = 0;
 		Pbind(
 			// \note, Pseq([0],inf),
 			\note, Pseq([0,1,2,3,4,5,6,7],inf),
+			\octave,Pseq(([1,2,3,2]+2).stutter(3),inf),
 			//\func, Pfunc({|e| ~onEvent.(e)}),
 			\args, #[],
 		);
 	);
 
 	Pdef(m.ptn).set(\dur,0.5);
-	Pdef(m.ptn).set(\octave,3);
+	// Pdef(m.ptn).set(\octave,);
 	Pdef(m.ptn).set(\amp,0.2);
 	Pdef(m.ptn).play();
 
@@ -147,15 +148,17 @@ m.midiChannel = 0;
 
 	// d.sensors.rrateMass.postln;	
 
-	rateValue = 0.8 + ((m.rrateMassFiltered.log10) * 0.25);
+	rateValue = (1.0 + (m.rrateMassFiltered * 8)).reciprocal;
 
 
-	Pdef(m.ptn).set(\dur, (0.95 - rateValue));
+	Pdef(m.ptn).set(\dur, rateValue);
 
-	if(rateValue > 0.55, {
-		Pdef(m.ptn).resume();
+	if(rateValue < 0.8, {
+		// Pdef(m.ptn).resume();
+		Pdef(m.ptn).set(\amp,0.2);
 	},{
-		Pdef(m.ptn).pause();
+		// Pdef(m.ptn).pause();
+		Pdef(m.ptn).set(\amp,0.0);
 	});
 
 
@@ -181,7 +184,7 @@ m.midiChannel = 0;
 ~plot = { |d,p|
 	//[d.sensors.gyroEvent.x,d.sensors.gyroEvent.y,d.sensors.gyroEvent.z];
 
-	[ (rateValue) , m.accelMassFiltered - 5];
+	[ (rateValue) , m.rrateMassFiltered];
 	 // [ m.accelMassFiltered];
 	//[m.accelMassAmp, d.blob.center.x / 450.0, d.blob.center.y / 450.0];
 	// [d.blob.area / 450.0, d.blob.perimeter / 450.0, d.blob.center.x / 450.0, d.blob.center.y / 450.0];
