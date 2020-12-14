@@ -8,7 +8,7 @@
 			var names;
 
 
-		    var width = Window.screenBounds.width * 0.32, height = Window.screenBounds.height * 0.9;
+		    var width = Window.screenBounds.width * 0.5, height = Window.screenBounds.height * 0.9;
 			var startup, shutdown, buildUI;
 
 			var contentView = UserView().background_(Color.grey(0.2));
@@ -132,7 +132,7 @@
 			);
 
 			var deviceProto = (
-				\name: "bee4",
+				\name: "eve3",
 				\ip: "127.0.0.1",
 				\port: 57120,
 
