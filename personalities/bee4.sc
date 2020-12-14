@@ -5,10 +5,10 @@ var isOn = false;
 var bl = [0,-7,-5].stutter(12);
 var cr = [0,-2,-7,-3,0,-2,-7,-3,-5].stutter(5);
 
-var rateValue = 0;
+var rateValue = 0, av = 0;
 
 var note = 60;
-m.midiChannel = 1;
+m.midiChannel = 3;
 
 //------------------------------------------------------------	
 // intial state
@@ -18,7 +18,7 @@ m.midiChannel = 1;
 
 	Pdef(m.ptn,
 		Pbind(
-			\note, Pseq([0,3,4,8,0,9,5,14],inf),
+			\note, Pseq([0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15],inf),
 			\octave,Pseq(([0]+3),inf),
 			\root, Pseq([0].stutter(4),inf),
 			\args, #[],
@@ -26,7 +26,7 @@ m.midiChannel = 1;
 	);
 
 
-	Pdef(m.ptn).set(\dur,0.25);
+	Pdef(m.ptn).set(\dur,0.20);
 	Pdef(m.ptn).set(\amp,0.7);
 	Pdef(m.ptn).play();
 
@@ -37,11 +37,6 @@ m.midiChannel = 1;
 //------------------------------------------------------------	
 ~onEvent = {|e|
 
-	if( 10.rand > 4,{
-		//m.midiOut.noteOn(m.midiChannel, 60 + m.com.root + 24 , vel);
-
-		e.postln;
-	});
 };
 
 ~onHit = {|state|
@@ -59,10 +54,12 @@ m.midiChannel = 1;
 	// m.accelMassAmp = (d.blob.center.x / 450.0) + (d.blob.center.y / 450.0);
 
 	// rateValue = (1.0 + (m.rrateMassFiltered * 4)).reciprocal * 0.5;
-	rateValue = (1 + 2.pow((m.rrateMassFiltered * 3).round)-1).reciprocal ;
+	// av = (m.accelMassFiltered - 3.48) / 12.0;
+	// av = av.clip(0.0, 1.0);
+	rateValue = (1 + 2.pow((m.rrateMassFiltered * 4).round)-1).reciprocal ;
 
 
-	Pdef(m.ptn).set(\dur, rateValue);
+	// Pdef(m.ptn).set(\dur, rateValue * 1);
 
 	if(m.rrateMassFiltered > 0.1	, {
 		Pdef(m.ptn).set(\amp,0.7);
@@ -74,6 +71,13 @@ m.midiChannel = 1;
 };
 
 ~nextMidiOut = {|d|
+	m.midiOut.control(m.midiChannel, 0, m.rrateMassFiltered * 127 );
+	if( (m.rrateMassFiltered * 9).round > 5,{
+		m.midiOut.control(m.midiChannel, 1, 127 );
+	},{
+		m.midiOut.control(m.midiChannel, 1, 0 );
+	});
+
 
 };			
 
@@ -86,7 +90,7 @@ m.midiChannel = 1;
 
 ~plot = { |d,p|
 
-	[ (rateValue) , m.rrateMassFiltered];
+	[ (rateValue) ,m.rrateMassFiltered];
 };
 //------------------------------------------------------------	
 // midi control
@@ -94,5 +98,4 @@ m.midiChannel = 1;
 ~midiControllerValue = {|num,val|
 
 };
-
 

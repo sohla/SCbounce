@@ -132,7 +132,7 @@
 			);
 
 			var deviceProto = (
-				\name: "bee2",
+				\name: "bee4",
 				\ip: "127.0.0.1",
 				\port: 57120,
 

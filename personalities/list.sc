@@ -2,6 +2,8 @@
 	[
 		"bee1",
 		"bee2",
+		"bee3",
+		"bee4",
 		"energy",
 		"beat3",
 		"eve3",
