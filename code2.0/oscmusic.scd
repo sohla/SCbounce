@@ -1,4 +1,4 @@
-		(
+			(
 			// 
 			var devicesDir = "~/Develop/SuperCollider/SCbounce/personalities/";
 
@@ -8,7 +8,7 @@
 			var names;
 
 
-		    var width = Window.screenBounds.width * 0.5, height = Window.screenBounds.height * 0.9;
+		    var width = Window.screenBounds.width * 0.3, height = Window.screenBounds.height * 0.5;
 			var startup, shutdown, buildUI;
 
 			var contentView = UserView().background_(Color.grey(0.2));
@@ -70,7 +70,7 @@
 							//• pre call each device 
 
 							//• call com process functiom
-
+							//~onCom.(com,v);
 							//• post call each device
 						 };
 					});
@@ -132,7 +132,7 @@
 			);
 
 			var deviceProto = (
-				\name: "bee3",
+				\name: "blob1",
 				\ip: "127.0.0.1",
 				\port: 57120,
 
@@ -311,16 +311,17 @@
 				};
 				//------------------------------------------------------------	
 				~play = {
-					Pdef(~model.ptn).play();
+					//• shouldnt really be controlling pattner here. assuming to much!
+					// Pdef(~model.ptn).play();
 
 
-					("play" + ~model.name).postln;
+					// ("play" + ~model.name).postln;
 				};
 
 				~stop = {
-					Pdef(~model.ptn).stop();
-					("stop" + ~model.name).postln;
-					~model.midiOut.allNotesOff(~model.midiChannel);
+					// Pdef(~model.ptn).stop();
+					// ("stop" + ~model.name).postln;
+					// ~model.midiOut.allNotesOff(~model.midiChannel);
 				};
 
 				//------------------------------------------------------------	
@@ -333,7 +334,7 @@
 					Pdef(~model.ptn).set(\type,\midi);
 					Pdef(~model.ptn).set(\midiout,~model.midiOut);
 					Pdef(~model.ptn).set(\chan,~model.midiChannel);
-					Pdef(~model.ptn).play();
+					// Pdef(~model.ptn).play();
 
 
 				};
@@ -808,12 +809,18 @@
 						["reload"],	
 					])
 					.action_({|b|
-						//reloadPersonality.(d);
+
 						onOffButton.valueAction_(1);
+						{						
+							reloadPersonality.(d);
+							onOffButton.valueAction_(1);
+						}.defer(0.1);
 						// load the list again allows us to make changes
-						names = loadDeviceList.();
-						popup.items = names;
-						popup.valueAction = names.find([d.name]);
+						// names = loadDeviceList.();
+						// popup.items = names;
+						// //• i think this might be broken...eventually calls reload
+						// //• but not everything works well again??
+						// popup.valueAction = names.find([d.name]);
 
 
 					}),
@@ -876,40 +883,43 @@
 
 				var blob = data.blob;
 
-				Pen.fillColor = Color.gray(0.25);
-				Pen.fillRect(bounds);
-				Pen.smoothing_(true);
-				Pen.width = 1;
+				if(blob.isEmpty.not,{
+
+					Pen.fillColor = Color.gray(0.25);
+					Pen.fillRect(bounds);
+					Pen.smoothing_(true);
+					Pen.width = 1;
 
 
-				if( blob.area > 0.001, {
+					if( blob.area > 0.001, {
 
-					Pen.fillColor = cols.at(blob.index);
-					Pen.strokeColor = cols.at(blob.index);
+						Pen.fillColor = cols.at(blob.index);
+						Pen.strokeColor = cols.at(blob.index);
 
-					Pen.fillOval(Rect(blob.center.x * 450, blob.center.y * 450,6,6));
-					//Pen.fillRect(Rect(0 + (blob.index * 22), 550, 10, blob.rect.width * -1));
-					// Pen.fillRect(Rect(12 + (blob.index * 22), 550, 10, blob.pWidth.rateFiltered * -1));
+						Pen.fillOval(Rect(blob.center.x * 450, blob.center.y * 450,6,6));
+						//Pen.fillRect(Rect(0 + (blob.index * 22), 550, 10, blob.rect.width * -1));
+						// Pen.fillRect(Rect(12 + (blob.index * 22), 550, 10, blob.pWidth.rateFiltered * -1));
 
-					Pen.strokeRect(blob.rect);
-					Pen.stringAtPoint(	blob.index + ":" + blob.label, blob.center.x * 450 + 10@(blob.center.y * 450));
+						Pen.strokeRect(blob.rect);
+						Pen.stringAtPoint(	blob.index + ":" + blob.label, blob.center.x * 450 + 10@(blob.center.y * 450));
 
-					prev = blob.data.reshape(1,2)[0];
-					blob.data.reshape(blob.data.size,2).do({|o,j|
+						prev = blob.data.reshape(1,2)[0];
+						blob.data.reshape(blob.data.size,2).do({|o,j|
 
-						ax = prev[0] * scale;
-						ay = prev[1] * scale;
-						bx = o[0] * scale;
-						by = o[1] * scale;
+							ax = prev[0] * scale;
+							ay = prev[1] * scale;
+							bx = o[0] * scale;
+							by = o[1] * scale;
 
-					    Pen.moveTo(Point(ax, ay));
-					    Pen.lineTo(Point(bx, by));
-						Pen.stroke;
-						prev = o;
+						    Pen.moveTo(Point(ax, ay));
+						    Pen.lineTo(Point(bx, by));
+							Pen.stroke;
+							prev = o;
+						});
+
+					},{
+						// no blob
 					});
-
-				},{
-					// no blob
 				});
 			};
 
@@ -1203,27 +1213,32 @@
 
 				if(devices.at(addr.port) != nil,{
 
-					devices.at(addr.port).blob = (
-						//msg[0] is the path
-						\index: msg[1].asInt,
-						\area: msg[2].asFloat,
-						\perimeter: msg[3].asFloat,	
-						\center: Point(
-							msg[4].asFloat * scale, 
-							msg[5].asFloat * scale),
-						\rect: Rect(
-							msg[6].asFloat * scale, 
-							msg[7].asFloat * scale, 
-							msg[8].asFloat * scale, 
-							msg[9].asFloat * scale),
+					if( msg[11].asInt > 1, {
+						devices.at(addr.port).blob = (
+							//msg[0] is the path
+							\index: msg[1].asInt,
+							\area: msg[2].asFloat,
+							\perimeter: msg[3].asFloat,	
+							\center: Point(
+								msg[4].asFloat * scale, 
+								msg[5].asFloat * scale),
+							\rect: Rect(
+								msg[6].asFloat * scale, 
+								msg[7].asFloat * scale, 
+								msg[8].asFloat * scale, 
+								msg[9].asFloat * scale),
 
-						\label: msg[10].asInt,
+							\label: msg[10].asInt,
 
-						\dataSize: msg[11].asInt,
-						\data: msg.copyRange(12,256)
+							\dataSize: msg[11].asInt,
+							\data: msg.copyRange(12,256)
 
 
-					);
+						)
+					},{
+						devices.at(addr.port).blob = ();
+					});
+
 				});
 			}, '/gyrosc/line', na);///•••••••
 
