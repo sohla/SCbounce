@@ -8,7 +8,7 @@
 			var names;
 
 
-		    var width = Window.screenBounds.width * 0.3, height = Window.screenBounds.height * 0.5;
+		    var width = Window.screenBounds.width * 0.3, height = Window.screenBounds.height * 0.6;
 			var startup, shutdown, buildUI;
 
 			var contentView = UserView().background_(Color.grey(0.2));
@@ -940,7 +940,7 @@
 		createPlotterGroup = {|view, data|
 
 			var col = [Color.yellow,Color.magenta,Color.cyan,Color.red,Color.green,Color.blue];
-			var bounds = Rect(5,5,400,240);
+			var bounds = Rect(5,5,400,260);
 			var pw = bounds.width;
 			var ph = bounds.height;
 			var plotterView = UserView(view,bounds).animate_(true);
@@ -985,9 +985,10 @@
 
 					plotter.setProperties(\plotColor, col).refresh;
 
-					plotData.().do({|o,i|
-						st[i].string = o.round(0.01).asString;
-					});
+					//• this breaks
+					// plotData.().do({|o,i|
+					// 	st[i].string = o.round(0.01).asString;
+					// });
 
 
 				}.defer(0.1);// need to delay to allow for construction 
@@ -1213,7 +1214,7 @@
 
 				if(devices.at(addr.port) != nil,{
 
-					if( msg[11].asInt > 1, {
+					// if( msg[11].asInt > 1, {
 						devices.at(addr.port).blob = (
 							//msg[0] is the path
 							\index: msg[1].asInt,
@@ -1234,10 +1235,10 @@
 							\data: msg.copyRange(12,256)
 
 
-						)
-					},{
-						devices.at(addr.port).blob = ();
-					});
+						);
+					// },{
+					// 	//devices.at(addr.port).blob = ();
+					// });
 
 				});
 			}, '/gyrosc/line', na);///•••••••
