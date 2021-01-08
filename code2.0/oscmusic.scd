@@ -128,6 +128,7 @@
 				\center: Point(0,0),
 				\rect: Rect(0,0,20,20),
 				\label: 0,
+				\velocity: Point(0,0),
 				\data: [[0,0]],
 			);
 
@@ -896,12 +897,12 @@
 						Pen.fillColor = cols.at(blob.index);
 						Pen.strokeColor = cols.at(blob.index);
 
-						Pen.fillOval(Rect(blob.center.x * 450, blob.center.y * 450,6,6));
+						Pen.fillOval(Rect(blob.center.x * 270, blob.center.y * 270,6,6));
 						//Pen.fillRect(Rect(0 + (blob.index * 22), 550, 10, blob.rect.width * -1));
 						// Pen.fillRect(Rect(12 + (blob.index * 22), 550, 10, blob.pWidth.rateFiltered * -1));
 
 						Pen.strokeRect(blob.rect);
-						Pen.stringAtPoint(	blob.index + ":" + blob.label, blob.center.x * 450 + 10@(blob.center.y * 450));
+						Pen.stringAtPoint(	blob.index + ":" + blob.label, blob.center.x * 270 + 10@(blob.center.y * 270));
 
 						prev = blob.data.reshape(1,2)[0];
 						blob.data.reshape(blob.data.size,2).do({|o,j|
@@ -940,7 +941,7 @@
 		createPlotterGroup = {|view, data|
 
 			var col = [Color.yellow,Color.magenta,Color.cyan,Color.red,Color.green,Color.blue];
-			var bounds = Rect(5,5,400,260);
+			var bounds = Rect(5,5,400,240);
 			var pw = bounds.width;
 			var ph = bounds.height;
 			var plotterView = UserView(view,bounds).animate_(true);
@@ -1230,9 +1231,9 @@
 								msg[9].asFloat * scale),
 
 							\label: msg[10].asInt,
-
-							\dataSize: msg[11].asInt,
-							\data: msg.copyRange(12,256)
+							\velocity: Point(msg[11],msg[12]),	
+							\dataSize: msg[13].asInt,
+							\data: msg.copyRange(14,256)
 
 
 						);
