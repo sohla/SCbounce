@@ -79,7 +79,7 @@ m.midiChannel = 0;
 
 			isOn = true;
 			// [d.blob.index, "on"].postln;
-			m.midiOut.noteOn(m.midiChannel, note + root, 40);
+			// m.midiOut.noteOn(m.midiChannel, note + root, 40);
 
 			Pdef(m.ptn).set(\root, note);
 			Pdef(m.ptn).set(\amp, 0.8);
@@ -94,7 +94,7 @@ m.midiChannel = 0;
 			fvy = 0;
 			isOn = false;
 			// [d.blob.index, "off"].postln;
-			m.midiOut.noteOff(m.midiChannel, note + root, 0);
+			// m.midiOut.noteOff(m.midiChannel, note + root, 0);
 			notes = notes.rotate(-1);
 			note = notes[0];
 			Pdef(m.ptn).set(\amp,0.0);
