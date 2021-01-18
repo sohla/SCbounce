@@ -8,7 +8,7 @@
 			var names;
 
 
-		    var width = Window.screenBounds.width * 0.3, height = Window.screenBounds.height * 0.6;
+		    var width = Window.screenBounds.width * 0.6, height = Window.screenBounds.height * 0.8;
 			var startup, shutdown, buildUI;
 
 			var contentView = UserView().background_(Color.grey(0.2));

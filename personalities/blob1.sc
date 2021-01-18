@@ -68,10 +68,11 @@ m.midiChannel = 0;
 
 	Pdef(m.ptn).set(\dur, beat);
 
-			Pdef(m.ptn).set(\amp, fvx + fvy);
+	// Pdef(m.ptn).set(\amp, velocity);
+	if( velocity > 0.15, {
 
-	if( d.blob.data.size > 2, {
-
+	// if( d.blob.data.size > 2, {
+	
 		if( isOn == false, {
 
 			fvx = 0;
