@@ -2,9 +2,9 @@ var m = ~model;
 var d = ~device;
 var isOn = false;
 var esp;
-var notes = [0,4,7,4,7,12,16,7,12];
+var notes = [0,2,6,4,10,8];
 var note = notes[0];
-var root = 60 - 24;
+var root = 60 - 12;
 var filter = {|input,history,friction = 0.5|
 					(friction * input + ((1 - friction) * history))
 };
@@ -21,7 +21,8 @@ m.midiChannel = 0;
 
 	Pdef(m.ptn,
 		Pbind(
-			\note, Pseq([0,4,7,4,7,12,16,7,12].stutter(1),inf),
+			// \note, Pseq([0,4,7,4,7,12,16,7,12].stutter(1),inf),
+			\note, Pseq([0,3,8,10,9,2,6,1].stutter(3),inf),
 			\args, #[],
 		);
 	);
@@ -68,10 +69,11 @@ m.midiChannel = 0;
 
 	Pdef(m.ptn).set(\dur, beat);
 
-			Pdef(m.ptn).set(\amp, fvx + fvy);
+	// Pdef(m.ptn).set(\amp, velocity);
+	if( velocity > 0.65, {
 
-	if( d.blob.data.size > 2, {
-
+	// if( d.blob.data.size > 2, {
+	
 		if( isOn == false, {
 
 			fvx = 0;
@@ -79,10 +81,10 @@ m.midiChannel = 0;
 
 			isOn = true;
 			// [d.blob.index, "on"].postln;
-			// m.midiOut.noteOn(m.midiChannel, note + root, 40);
+			m.midiOut.noteOn(m.midiChannel, note + root, 40);
 
-			Pdef(m.ptn).set(\root, note);
-			Pdef(m.ptn).set(\amp, 0.8);
+			// Pdef(m.ptn).set(\root, note);
+			// Pdef(m.ptn).set(\amp, 0.8);
 		});
 
 	},{
@@ -94,10 +96,10 @@ m.midiChannel = 0;
 			fvy = 0;
 			isOn = false;
 			// [d.blob.index, "off"].postln;
-			// m.midiOut.noteOff(m.midiChannel, note + root, 0);
+			m.midiOut.noteOff(m.midiChannel, note + root, 0);
 			notes = notes.rotate(-1);
 			note = notes[0];
-			Pdef(m.ptn).set(\amp,0.0);
+			// Pdef(m.ptn).set(\amp,0.0);
 		});
 	});
 };
