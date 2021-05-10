@@ -154,8 +154,8 @@ x = f.(p, g)
 )
 
 // do several times 
-x.next(()) 
-
+x.next(())
+x.play();
 
 //• create synth SendTrig( LinkTrig(1))
 //• OSCrespond to trig and call x.next()
@@ -194,3 +194,17 @@ midiOut = MIDIOut.newByName("IAC Driver", "Bus 1", dieIfNotFound: true).latency_
         
         Pdef(ptn).play();
 )
+
+
+(
+p = Pbind(
+    \degree, Pseq([0,1,2], inf),
+    \dur, 0.25,
+        // \degree is EARLIER in the Pbind
+    \root, Pkey(\degree) * 12,
+    \legato, Pkey(\degree).linexp(-7, 7, 2.0, 0.05)
+).play;
+)
+Pseries(-7, 1, 14).asStream.all;  
+
+Pseries(7, -1, 14).asStream.all

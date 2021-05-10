@@ -1,7 +1,7 @@
 (
 
 	SynthDef(\lag, { |out, inValue, lagTime = 0.0001| 
-			SendReply.kr(Changed.kr(inValue.value), '/onChanged', [inValue.value, changed]);
+			SendReply.kr(Changed.kr(inValue.value), '/onChanged', [inValue.value]);
 	        Out.kr(out, Lag.kr(inValue, lagTime)); 
 	}).send; 
 
