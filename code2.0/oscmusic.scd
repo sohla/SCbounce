@@ -198,13 +198,13 @@
 
 					\rrateMass: 0,
 					\rrateMassFiltered: 0,
-					\rrateMassThreshold: 0.1, //use for isMoving
-					\rrateMassThresholdSpec: ControlSpec(0.07, 0.4, \lin, 0.01, 0.22),
+					\rrateMassThreshold: 0.21, //use for isMoving
+					\rrateMassThresholdSpec: ControlSpec(0.07, 0.4, \lin, 0.01, 0.21),
 
 					\accelMass: 0,
 					\accelMassFiltered: 0,
-					\accelMassAmpThreshold: 0.4,
-					\accelMassThresholdSpec: ControlSpec(0.4, 3.0, \lin, 0.1, 1.5),
+					\accelMassAmpThreshold: 1.6,
+					\accelMassThresholdSpec: ControlSpec(0.4, 3.0, \lin, 0.1, 1.6),
 
 					\isHit: false,
 					\isMoving: true,
@@ -224,107 +224,56 @@
 					~model.rrateMass = d.sensors.rrateEvent.sumabs * 0.1;
 
 					~model.accelMassFiltered = ~tween.(~model.accelMass, ~model.accelMassFiltered, 0.2);
-					~model.rrateMassFiltered = ~tween.(~model.rrateMass, ~model.rrateMassFiltered, 0.35);
+					~model.rrateMassFiltered = ~tween.(~model.rrateMass, ~model.rrateMassFiltered, 0.2);
 
 				};
 
 				//------------------------------------------------------------	
 				// process triggers
 				~processTriggers = {|d|
-					// isHit
-					// TODO smarter gate with min/max threasholds and level
-					// use improved code in eve2
-					// if(~model.accelMassFiltered > ~model.accelMassThreshold,{
-					// 	if(~model.isHit == false,{
-					// 		~model.isHit = true;
-					// 		~onHit.(~model.isHit);
-					// 	});
-					// },{
-					// 	if(~model.isHit == true,{
-					// 		~model.isHit = false;
-					// 		~onHit.(~model.isHit);
-					// 	});
-					// });
 
 
+					// isHit imp.
+					//
 					var changeState = {|state|
 						if(~model.isHit != state,{
 							~model.isHit = state;
-							if(~model.isHit == true,{
-								// "Note ON".postln;
-								~onHit.(~model.isHit);
-							},{
-								// "Note OFF".postln;
-								~onHit.(~model.isHit);
-							});
+							if(~model.isHit == true,{~onHit.(~model.isHit)},{~onHit.(~model.isHit)});
 						});
 					};
 
-					// should we tweak this constants!?
-					// Lost lands hitting with helium. only need the microphone to detect hits
-					//• need to pass these thrsholds on to model!
-					// if( ~model.accelMass > ~model.accelMassAmpThreshold,{ 
-					// 	//if( d.ampValue > 0.00,{
-					// 		~model.accelMassAmp = 0.1;//d.ampValue;
-					// 		//~model.accelMass.postln;
-					// 	// },{
-					// 	// 	~model.accelMassAmp = 0.0;
-					// 	// });
-					// 	//~model.accelMassAmp = 0.0;
-					// },{
-					// 	~model.accelMassAmp = 0.0;
-					// });
-
-	/*
-					
-					2 types of signals
-
-						momentary : logic & state
-						continuous : filter & mapping
-	Number
-					
-
-	*/
-
-					if(~model.accelMassAmp > 0.0,{
+					if( ~model.accelMass > ~model.accelMassAmpThreshold,{ 
 						changeState.(true);
 					},{
 						changeState.(false);
 					});
 
-					//isMoving
-					if(~model.rrateMassFiltered > (~model.rrateMassThreshold.half - 0.02),{
 
+
+
+					// isMoving imp.
+					//
+					if(~model.rrateMassFiltered > ~model.rrateMassThreshold, {
 						if(~model.isMoving == false,{
 							~model.isMoving = true;
-							// ~onMoving.(~model.isMoving);
-							Pdef(~model.ptn).play();
+							Pdef(~model.ptn).resume();
 						});
-
-						//midiOut.control(midiChannel, 1, (smooth*127).asInteger );
 					},{
-
 						if(~model.isMoving == true,{
 							~model.isMoving = false;
-							// ~onMoving.(~model.isMoving);
-							Pdef(~model.ptn).stop();
-
+							Pdef(~model.ptn).pause();
 						});
 					});			
 				};
+
+
 				//------------------------------------------------------------	
 				~play = {
-					//• shouldnt really be controlling pattner here. assuming to much!
 					Pdef(~model.ptn).play();
-
-
-					// ("play" + ~model.name).postln;
 				};
 
 				~stop = {
 					Pdef(~model.ptn).stop();
-					// ("stop" + ~model.name).postln;
-					// ~model.midiOut.allNotesOff(~model.midiChannel);
 				};
 
 				//------------------------------------------------------------	

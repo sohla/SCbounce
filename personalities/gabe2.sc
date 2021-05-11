@@ -19,7 +19,7 @@ m.midiChannel = 9;
 	Pdef(m.ptn).set(\dur,0.5);
 	Pdef(m.ptn).set(\octave,5);
 	Pdef(m.ptn).set(\amp,0.8);
-	// Pdef(m.ptn).play();
+	Pdef(m.ptn).play();
 };
 
 
@@ -27,32 +27,27 @@ m.midiChannel = 9;
 // triggers
 //------------------------------------------------------------	
 
+// example feeding the community
 ~onEvent = {|e|
 	m.com.root = e.root;
 	m.com.dur = e.dur;
 };
 
+
+
 ~onHit = {|state|
 
-	var vel = 30;
-	var note = 60 + m.com.root + 24	;
+	var vel = 100;
+	var note = 60 + m.com.root - 24	;
 
 	if(state == true,{
-		"HIT".postln;
+		"HIT on".postln;
 		m.midiOut.noteOn(m.midiChannel, note  , vel);
-		{m.midiOut.noteOff(m.midiChannel, note, 0)}.defer(0.08);
 	},{
+		"HIT off".postln;
+		m.midiOut.noteOff(m.midiChannel, note, 0);
 	});
 };
-
-// ~onMoving = {|state|
-
-// 	if(state == true,{
-// 		Pdef(m.ptn).resume();
-// 	},{
-// 		Pdef(m.ptn).pause();
-// 	});
-// };
 
 
 //------------------------------------------------------------	
@@ -62,8 +57,8 @@ m.midiChannel = 9;
 
 	var oct = ((0.2 + m.rrateMassFiltered.cubed) * 25).mod(3).floor;
 
-	Pdef(m.ptn).set(\dur,(m.accelMassFiltered * 1 * m.rrateMassThreshold.reciprocal).reciprocal);
-	Pdef(m.ptn).set(\amp, 0.5);
+	Pdef(m.ptn).set(\dur,(m.accelMassFiltered * 1.0 * m.rrateMassThreshold.reciprocal).reciprocal);
+	Pdef(m.ptn).set(\amp, 0.3);
 	Pdef(m.ptn).set(\octave, 4 + oct);
 
 };
@@ -77,10 +72,11 @@ m.midiChannel = 9;
 //------------------------------------------------------------	
 
 ~plotMin = 0;
-~plotMax = 1;
+~plotMax = 3;
 
 ~plot = { |d,p|
-	[d.sensors.ampValue];
+	[m.accelMass, m.accelMassAmpThreshold];
+	// [m.rrateMassFiltered, m.rrateMassThreshold, m.accelMassAmp];
 };
 //------------------------------------------------------------	
 // midi control
