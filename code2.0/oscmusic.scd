@@ -133,7 +133,7 @@
 			);
 
 			var deviceProto = (
-				\name: "blob1",
+				\name: "gabe2",
 				\ip: "127.0.0.1",
 				\port: 57120,
 
@@ -297,8 +297,8 @@
 
 						if(~model.isMoving == false,{
 							~model.isMoving = true;
-							~onMoving.(~model.isMoving);
-							//Pdef(~model.ptn).resume();
+							// ~onMoving.(~model.isMoving);
+							Pdef(~model.ptn).play();
 						});
 
 						//midiOut.control(midiChannel, 1, (smooth*127).asInteger );
@@ -306,21 +306,23 @@
 
 						if(~model.isMoving == true,{
 							~model.isMoving = false;
-							~onMoving.(~model.isMoving);
+							// ~onMoving.(~model.isMoving);
+							Pdef(~model.ptn).stop();
+
 						});
 					});			
 				};
 				//------------------------------------------------------------	
 				~play = {
 					//• shouldnt really be controlling pattner here. assuming to much!
-					// Pdef(~model.ptn).play();
+					Pdef(~model.ptn).play();
 
 
 					// ("play" + ~model.name).postln;
 				};
 
 				~stop = {
-					// Pdef(~model.ptn).stop();
+					Pdef(~model.ptn).stop();
 					// ("stop" + ~model.name).postln;
 					// ~model.midiOut.allNotesOff(~model.midiChannel);
 				};

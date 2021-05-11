@@ -19,6 +19,7 @@ m.midiChannel = 9;
 	Pdef(m.ptn).set(\dur,0.5);
 	Pdef(m.ptn).set(\octave,5);
 	Pdef(m.ptn).set(\amp,0.8);
+	// Pdef(m.ptn).play();
 };
 
 
@@ -37,20 +38,21 @@ m.midiChannel = 9;
 	var note = 60 + m.com.root + 24	;
 
 	if(state == true,{
-		m.midiOut.noteOn(m.midiChannel - 3, note  , vel);
-		{m.midiOut.noteOff(m.midiChannel - 3, note, 0)}.defer(0.08);
+		"HIT".postln;
+		m.midiOut.noteOn(m.midiChannel, note  , vel);
+		{m.midiOut.noteOff(m.midiChannel, note, 0)}.defer(0.08);
 	},{
 	});
 };
 
-~onMoving = {|state|
+// ~onMoving = {|state|
 
-	if(state == true,{
-		Pdef(m.ptn).resume();
-	},{
-		Pdef(m.ptn).pause();
-	});
-};
+// 	if(state == true,{
+// 		Pdef(m.ptn).resume();
+// 	},{
+// 		Pdef(m.ptn).pause();
+// 	});
+// };
 
 
 //------------------------------------------------------------	
@@ -60,14 +62,14 @@ m.midiChannel = 9;
 
 	var oct = ((0.2 + m.rrateMassFiltered.cubed) * 25).mod(3).floor;
 
-	Pdef(m.ptn).set(\dur,(m.accelMassFiltered * 2 * m.rrateMassThreshold.reciprocal).reciprocal);
+	Pdef(m.ptn).set(\dur,(m.accelMassFiltered * 1 * m.rrateMassThreshold.reciprocal).reciprocal);
 	Pdef(m.ptn).set(\amp, 0.5);
 	Pdef(m.ptn).set(\octave, 4 + oct);
 
 };
 
 ~nextMidiOut = {|d|
-	m.midiOut.control(m.midiChannel, 4, m.accelMassFiltered * 64 );
+	m.midiOut.control(m.midiChannel, 1, m.accelMassFiltered * 64 );
 };			
 
 //------------------------------------------------------------	
@@ -78,7 +80,7 @@ m.midiChannel = 9;
 ~plotMax = 1;
 
 ~plot = { |d,p|
-	[m.rrateMassFiltered, m.accelMassFiltered];
+	[d.sensors.ampValue];
 };
 //------------------------------------------------------------	
 // midi control

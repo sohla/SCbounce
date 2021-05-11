@@ -71,7 +71,7 @@ m.midiChannel = 2;
 
 	Pdef(m.ptn).set(\root,m.com.root);
 	Pdef(m.ptn).set(\amp,0.3);
-	Pdef(m.ptn).set(\dur,(1 + (m.accelMassFiltered * 2.2 * m.rrateMassThreshold.reciprocal)).reciprocal);//TODO
+	Pdef(m.ptn).set(\dur,(1 + (m.accelMassFiltered * 1 * m.rrateMassThreshold.reciprocal)).reciprocal);//TODO
 	Pdef(m.ptn).set(\strum, 0.4 - (m.rrateMassFiltered * 0.3));
 	Pdef(m.ptn).set(\octave, 5 + (m.rrateMassFiltered * 2).floor);
 };

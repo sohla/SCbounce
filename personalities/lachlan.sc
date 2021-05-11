@@ -26,7 +26,7 @@ m.rrateMassThresholdSpec.postln;
 	Pdef(m.ptn,Pbind( 
 		\note, Pseq([-5,0,5,7,4,9,2,-2],inf)
 	));
-
+Pdef(m.ptn).play();
 };
 
 //------------------------------------------------------------	
@@ -74,7 +74,7 @@ m.rrateMassThresholdSpec.postln;
 	var oct = ((0.2 + m.rrateMassFiltered.cubed) * 25).mod(3).floor;
 
 	Pdef(m.ptn).set(\root,m.com.root);
-	Pdef(m.ptn).set(\dur,(1 + (m.accelMassFiltered * 1.5 * m.rrateMassThreshold.reciprocal)).reciprocal);
+	Pdef(m.ptn).set(\dur,(1 + (m.accelMassFiltered * 1.1 * m.rrateMassThreshold.reciprocal)).reciprocal);
 	Pdef(m.ptn).set(\amp, 0.5);
 	Pdef(m.ptn).set(\octave, 5 + oct);
 
