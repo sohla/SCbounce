@@ -203,8 +203,8 @@
 
 					\accelMass: 0,
 					\accelMassFiltered: 0,
-					\accelMassAmpThreshold: 1.6,
-					\accelMassThresholdSpec: ControlSpec(0.4, 3.0, \lin, 0.1, 1.6),
+					\accelMassAmpThreshold: 2.0,
+					\accelMassThresholdSpec: ControlSpec(0.4, 3.0, \lin, 0.1, 2.0),
 
 					\isHit: false,
 					\isMoving: true,
@@ -242,17 +242,16 @@
 						});
 					};
 
+					// use raw accelMass to get the quickest response
 					if( ~model.accelMass > ~model.accelMassAmpThreshold,{ 
 						changeState.(true);
 					},{
 						changeState.(false);
 					});
 
-
-
-
 					// isMoving imp.
 					//
+
 					if(~model.rrateMassFiltered > ~model.rrateMassThreshold, {
 						if(~model.isMoving == false,{
 							~model.isMoving = true;
@@ -608,8 +607,6 @@
 					.maxWidth_(30)
 					.action_({|o|
 						d.env.use{
-							//~midiControllerValue.(i,o.value);
-
 							switch(i,
 								0, {
 									// for isMoving

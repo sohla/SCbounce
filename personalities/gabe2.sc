@@ -41,10 +41,8 @@ m.midiChannel = 9;
 	var note = 60 + m.com.root - 24	;
 
 	if(state == true,{
-		"HIT on".postln;
 		m.midiOut.noteOn(m.midiChannel, note  , vel);
 	},{
-		"HIT off".postln;
 		m.midiOut.noteOff(m.midiChannel, note, 0);
 	});
 };
@@ -57,7 +55,7 @@ m.midiChannel = 9;
 
 	var oct = ((0.2 + m.rrateMassFiltered.cubed) * 25).mod(3).floor;
 
-	Pdef(m.ptn).set(\dur,(m.accelMassFiltered * 1.0 * m.rrateMassThreshold.reciprocal).reciprocal);
+	Pdef(m.ptn).set(\dur,(m.accelMassFiltered * 2.0 * m.rrateMassThreshold.reciprocal).reciprocal);
 	Pdef(m.ptn).set(\amp, 0.3);
 	Pdef(m.ptn).set(\octave, 4 + oct);
 
@@ -70,26 +68,13 @@ m.midiChannel = 9;
 //------------------------------------------------------------	
 // plot with min and max
 //------------------------------------------------------------	
-
 ~plotMin = 0;
 ~plotMax = 3;
 
 ~plot = { |d,p|
-	[m.accelMass, m.accelMassAmpThreshold];
+	// [m.accelMass, m.accelMassFiltered,m.accelMassAmpThreshold];
+	[m.accelMass + m.rrateMassFiltered, m.accelMassFiltered,m.rrateMassThreshold];
 	// [m.rrateMassFiltered, m.rrateMassThreshold, m.accelMassAmp];
-};
-//------------------------------------------------------------	
-// midi control
-//------------------------------------------------------------	
-~midiControllerValue = {|num,val|
-
-	//[num,val].postln;
-
-	// if(num == 4,{ threshold = 0.01 + (val * 0.99)});
-
-	// threshold = threshold * 2;
-	// midiOut.control(m.midiChannel, num, val * 127 );
-
 };
 
 
