@@ -1,4 +1,4 @@
-#include "M5Atom.h"
+#include <M5StickC.h>
 
 #include <WiFi.h>
 #include <WiFiUdp.h>
@@ -48,11 +48,6 @@ IPAddress secondaryDNS(8, 8, 4, 4); //optional
 //
 //--------------------------------------------------------------------------
 
-void setColor(CRGB col){
-    for(int i = 0; i < 25; i++){
-        M5.dis.drawpix(i, col);
-    }
-}
 
 //--------------------------------------------------------------------------
 //
@@ -69,17 +64,14 @@ void beginWifi() {
   // Configures static IP address
     if (!WiFi.config(local_IP, gateway, subnet, primaryDNS, secondaryDNS)) {
       Serial.println("STA Failed to configure");
-      setColor(RED);
     }
   
   //delay(100);
   
   WiFi.begin(ssid, password);
   while (WiFi.status() != WL_CONNECTED) {
-    setColor(RED);
     delay(250);
     Serial.print(F("."));
-    setColor(BLACK);
     delay(250);
   }
   
@@ -106,9 +98,7 @@ void beginWifi() {
   Serial.println(Udp.localPort());
 #endif
 
-    setColor(GREEN);
     delay(500);
-    setColor(BLACK);
 
 }
 //--------------------------------------------------------------------------
@@ -140,9 +130,8 @@ void sendConnectMsg(){
 //--------------------------------------------------------------------------
 void setup()
 {
-    M5.begin(true, false, true);
+    M5.begin();
     delay(50);
-    M5.dis.drawpix(0, 0x000000);
 
     beginWifi();
 
