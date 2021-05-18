@@ -54,14 +54,14 @@ m.midiChannel = 2;
 	});
 };
 
-~onMoving = {|state|
+// ~onMoving = {|state|
 
-	if(state == true,{
-		Pdef(m.ptn).resume();
-	},{
-		Pdef(m.ptn).pause();
-	});
-};
+// 	if(state == true,{
+// 		Pdef(m.ptn).resume();
+// 	},{
+// 		Pdef(m.ptn).pause();
+// 	});
+// };
 
 
 //------------------------------------------------------------	
@@ -90,21 +90,5 @@ m.midiChannel = 2;
 ~plot = { |d,p|
 	[m.accelMassFiltered];
 };
-//------------------------------------------------------------	
-// midi control
-//------------------------------------------------------------	
-~midiControllerValue = {|num,val|
-
-	//[num,val].postln;
-
-	// if(num == 4,{ threshold = 0.01 + (val * 0.99)});
-
-	// threshold = threshold * 2;
-	// midiOut.control(m.midiChannel, num, val * 127 );
-
-};
-
-
-
 
 

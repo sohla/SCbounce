@@ -1095,6 +1095,7 @@
 			}, '/gyrosc/rrate', na);
 
 
+			//•• currently not being used : gets set in /gyrosc/quat
 			d.listeners.gryoListner = OSCFunc({ |msg, time, addr, recvPort|
 
 				if(devices.at(addr.port) != nil,{
