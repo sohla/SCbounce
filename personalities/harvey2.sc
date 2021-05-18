@@ -51,15 +51,6 @@ m.midiChannel = 8;
 
 };
 
-~onMoving = {|state|
-
-	if(state == true,{
-		Pdef(m.ptn).resume();
-
-	},{
-		Pdef(m.ptn).pause();
-	});
-};
 
 //------------------------------------------------------------	
 // do all the work(logic) taking data in and playing pattern/synth
@@ -85,11 +76,4 @@ m.midiChannel = 8;
 ~plot = { |d,p|
 
 	[m.rrateMassFiltered];
-};
-//------------------------------------------------------------	
-// midi control
-//------------------------------------------------------------	
-~midiControllerValue = {|num,val|
-
-	//[num,val].postln;
 };

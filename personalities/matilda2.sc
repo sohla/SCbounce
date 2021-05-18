@@ -12,41 +12,40 @@ m.midiChannel = 4;
 	        \degree, Pseq([[0,4,7],[4,7,10],[0,4,7],[4,7,9]], inf),
 			\root, Pseq([0,5,-2,3,-4,1,-5].stutter(24),inf),
 			\func, Pfunc({|e| ~onEvent.(e)}),
+			\octave,Pseq([3,4,5,6,5,4].stutter(3),inf),
 			\args, #[],
-			\octave,Pseq([3,4,5,6,5,4].stutter(3),inf)
 		);
 	);
 
 	Pdef(m.ptn).set(\dur,0.5);
 	Pdef(m.ptn).set(\amp,0.2);
+	Pdef(m.ptn).play();
 };
 
 //------------------------------------------------------------	
 // triggers
 //------------------------------------------------------------	
 ~onEvent = {|e|
+	// e.postln;
 	m.com.root = e.root;
 };
 
 ~onHit = {|state|
 
-	var vel = 40;
+	var vel = 60;
 	var oct = [-48,-36,-24,-12].choose;
-	var note = 60 + m.com.root + oct + 24;
-
-	if(state == tru}.defer(0.1);
-	},{
-
-	});
-};
-~onMoving = {|state|
-
+	var note = 60 + m.com.root + oct;
+	var ch = 4;
 	if(state == true,{
-		Pdef(m.ptn).resume();
+		m.midiOut.noteOn(ch, note, 50);
+		{m.midiOut.noteOff(ch, note, 0)}.defer(0.2);
+
 	},{
-		Pdef(m.ptn).pause();
 	});
+
+
 };
+
 
 //------------------------------------------------------------	
 // do all the work(logic) taking data in and playing pattern/synth
@@ -72,20 +71,8 @@ m.midiChannel = 4;
 ~plot = { |d,p|
 	// [(m.rrateMassFiltered * 3).ceil.mod(3)];
 	//[m.rrateMassFiltered.pow(3)*2, m.accelMassFiltered, m.com.rrateMass];
-	[d.accelEvent.x, d.accelEvent.y, d.accelEvent.z, d.gyroEvent.x, d.gyroEvent.y, d.gyroEvent.z];
-};
-//------------------------------------------------------------	
-// midi control
-//------------------------------------------------------------	
-~midiControllerValue = {|num,val|
+	// [d.accelEvent.x, d.accelEvent.y, d.accelEvent.z, d.gyroEvent.x, d.gyroEvent.y, d.gyroEvent.z];
 
-	//[num,val].postln;
-
-	// if(num == 4,{ threshold = 0.01 + (val * 0.99)});
-
-	// threshold = threshold * 2;
-	//m.midiOut.control(m.midiChannel, 65, val * 127 );
+	[m.rrateMassFiltered, m.rrateMassThreshold];
 
 };
-
-

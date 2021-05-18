@@ -2,7 +2,7 @@ var m = ~model;
 var isOn = false;
 // var bl = [0,-7,-3,-10,-8,-7,-3,-5].stutter(2);
 var bl = [0,4,-2,7].stutter(2);
-var cr = [0,5,0,5,3].stutter(8);
+var cr = [0,5,0,5].stutter(8);
 
 m.midiChannel = 11;
 
@@ -30,6 +30,7 @@ m.midiChannel = 11;
 		\note, Pseq([12,12,12,12,10,10,10,5,5,5,5,5,3,3,3,7,7,7].mirror,inf),
 		// \root, Pseq([0,5].stutter(18*8),inf)
 	));
+	Pdef(m.ptn).play();
 
 };
 //------------------------------------------------------------	
@@ -58,16 +59,6 @@ m.midiChannel = 11;
 	});
 };
 
-~onMoving = {|state|
-
-	// if(state == true,{
-	// 	//Pdef(m.ptn).resume();
-	// 	Pdef(m.ptn).set(\amp,0.8);
-	// },{
-	// 	//Pdef(m.ptn).pause();
-	// 	Pdef(m.ptn).set(\amp,0.0);
-	// });
-};
 
 
 //------------------------------------------------------------	
@@ -126,20 +117,5 @@ m.midiChannel = 11;
 	// },{
 	// 	changeState.(false);
 	// });
-
-	[m.rrateMassFiltered];
+	[m.rrateMassFiltered, m.rrateMassThreshold];
 };
-//------------------------------------------------------------	
-// midi control
-//------------------------------------------------------------	
-~midiControllerValue = {|num,val|
-
-	//[num,val].postln;
-
-	// if(num == 4,{ threshold = 0.01 + (val * 0.99)});
-
-	// threshold = threshold * 2;
-	//m.midiOut.control(m.midiChannel, 65, val * 127 );
-
-};
-

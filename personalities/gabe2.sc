@@ -62,7 +62,7 @@ m.midiChannel = 9;
 };
 
 ~nextMidiOut = {|d|
-	m.midiOut.control(m.midiChannel, 1, m.accelMassFiltered * 64 );
+	m.midiOut.control(m.midiChannel, 0, m.accelMassFiltered * 64 );
 };			
 
 //------------------------------------------------------------	
@@ -73,8 +73,8 @@ m.midiChannel = 9;
 
 ~plot = { |d,p|
 	// [m.accelMass, m.accelMassFiltered,m.accelMassAmpThreshold];
-	[m.accelMass + m.rrateMassFiltered, m.accelMassFiltered,m.rrateMassThreshold];
-	// [m.rrateMassFiltered, m.rrateMassThreshold, m.accelMassAmp];
+	// [m.accelMass + m.rrateMassFiltered, m.accelMassFiltered,m.rrateMassThreshold];
+	[m.rrateMassFiltered, m.rrateMassThreshold, m.accelMassAmp];
 };
 
 

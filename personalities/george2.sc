@@ -1,5 +1,5 @@
 var m = ~model;
-var bl = [0,5,-2,3,7].stutter(22);
+var bl = [0,5,-2,3,7].stutter(24);
 var cr = [0,0,0,2,2,2,-3,-3,-5,-5,-5,-5];
 var isOn = false;
 
@@ -20,6 +20,7 @@ m.midiChannel = 7;
 
 	Pdef(m.ptn).set(\dur,0.5);
 	Pdef(m.ptn).set(\amp,0.2);
+	Pdef(m.ptn).play();
 };
 
 //------------------------------------------------------------	
@@ -30,7 +31,7 @@ m.midiChannel = 7;
 ~onHit = {|state|
 	
 	var vel = (40..60).choose;
-	var oct = [12,24,17,36,48];
+	var oct = [36,48,60];
 	var ch = 4;
 	var note = 60 - oct[0] + cr[0]  + bl[0];
 
@@ -49,14 +50,14 @@ m.midiChannel = 7;
 	});
 };
 
-~onMoving = {|state|
+// ~onMoving = {|state|
 
-	if(state == true,{
-		Pdef(m.ptn).resume();
-	},{
-		Pdef(m.ptn).pause();
-	});
-};
+// 	if(state == true,{
+// 		Pdef(m.ptn).resume();
+// 	},{
+// 		Pdef(m.ptn).pause();
+// 	});
+// };
 
 //------------------------------------------------------------	
 // do all the work(logic) taking data in and playing pattern/synth
@@ -84,12 +85,6 @@ m.midiChannel = 7;
 ~plot = { |d,p|
 
 	[m.rrateMassFiltered.pow(3)*2, m.accelMassFiltered, m.com.rrateMass];
-};
-//------------------------------------------------------------	
-// midi control
-//------------------------------------------------------------	
-~midiControllerValue = {|num,val|
-
 };
 
 
