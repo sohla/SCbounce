@@ -72,7 +72,7 @@ m.midiChannel = 9;
 ~plotMax = 3;
 
 ~plot = { |d,p|
-	d.sensors.accelEvent.z.postln;
+	// d.sensors.accelEvent.z.postln;
 	// [m.accelMass, m.accelMassFiltered,m.accelMassAmpThreshold];
 	// [m.accelMass + m.rrateMassFiltered, m.accelMassFiltered,m.rrateMassThreshold];
 	//[m.rrateMassFiltered, m.rrateMassThreshold, m.accelMassAmp];
@@ -80,10 +80,5 @@ m.midiChannel = 9;
 	// [d.sensors.rrateEvent.x, d.sensors.rrateEvent.y, d.sensors.rrateEvent.z];
 	[d.sensors.accelEvent.x, d.sensors.accelEvent.y, d.sensors.accelEvent.z];
 
-	
+
 };
-
-
-
-
-

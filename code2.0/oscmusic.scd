@@ -475,6 +475,11 @@
 
 			var d = Event.new(proto:deviceProto);
 			
+
+			d.listeners = Event.new(proto:listenersProto);
+			d.sensors =  Event.new(proto:sensorsProto);
+			d.blob = Event.new(proto:blobProto);
+
 			d.ip = ip;
 			d.port = port;
 
