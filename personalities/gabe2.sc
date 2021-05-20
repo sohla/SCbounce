@@ -68,13 +68,19 @@ m.midiChannel = 9;
 //------------------------------------------------------------	
 // plot with min and max
 //------------------------------------------------------------	
-~plotMin = 0;
+~plotMin = -3;
 ~plotMax = 3;
 
 ~plot = { |d,p|
+	d.sensors.accelEvent.z.postln;
 	// [m.accelMass, m.accelMassFiltered,m.accelMassAmpThreshold];
 	// [m.accelMass + m.rrateMassFiltered, m.accelMassFiltered,m.rrateMassThreshold];
-	[m.rrateMassFiltered, m.rrateMassThreshold, m.accelMassAmp];
+	//[m.rrateMassFiltered, m.rrateMassThreshold, m.accelMassAmp];
+	//[d.sensors.gyroEvent.x, d.sensors.gyroEvent.y, d.sensors.gyroEvent.z];
+	// [d.sensors.rrateEvent.x, d.sensors.rrateEvent.y, d.sensors.rrateEvent.z];
+	[d.sensors.accelEvent.x, d.sensors.accelEvent.y, d.sensors.accelEvent.z];
+
+	
 };
 
 

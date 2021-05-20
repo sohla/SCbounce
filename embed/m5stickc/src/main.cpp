@@ -9,17 +9,23 @@
 //--------------------------------------------------------------------------
 
 #define OUTPORT 57120 //port for outgoing osc (to supercollider)
-#define BLACK 0x000000
-#define GREEN 0xFF0000
-#define RED 0x00FF00
-#define BLUE 0x0000FF
+// #define BLACK 0x000000
+// #define GREEN 0xFF0000
+// #define RED 0x00FF00
+// #define BLUE 0x0000FF
 
 //--------------------------------------------------------------------------
 
 const char *ssid = "SOHLA3"; //LAN name
 const char *password = "sohla3letmein";  //LAN password
 const IPAddress outIp(192,168,20,11);  //LAN address
+//--------------------------------------------------------------------------
 
+const int button = 39;//37,39
+
+//--------------------------------------------------------------------------
+int lastValue = 0;
+int curValue = 0;
 //--------------------------------------------------------------------------
 
 WiFiUDP Udp;
@@ -106,10 +112,12 @@ void beginWifi() {
 //--------------------------------------------------------------------------
 void beginSensors(){
 
-    if (M5.IMU.Init() != 0)
-        IMU6886Flag = false;
-    else
-        IMU6886Flag = true;
+  if (M5.IMU.Init() != 0)
+      IMU6886Flag = false;
+  else
+      IMU6886Flag = true;
+
+  pinMode(button, INPUT);
 }
 
 //--------------------------------------------------------------------------
@@ -139,8 +147,6 @@ void setup()
 
     sendConnectMsg();
 
-
-
     Serial.println("standby.....");
   
 }
@@ -148,67 +154,67 @@ void setup()
 //--------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------
-void loop()
-{
+void loop(){
 
-    if (IMU6886Flag == true)
-    {
-        M5.IMU.getGyroData(&gyroX, &gyroY, &gyroZ);
-        M5.IMU.getAccelData(&accX, &accY, &accZ);
+  if (IMU6886Flag == true){
 
-        OSCMessage msgA("/gyrosc/rrate");
-        msgA.add(gyroX / 60.0);
-        msgA.add(gyroY / 60.0);
-        msgA.add(gyroZ / 60.0);
-        Udp.beginPacket(outIp, OUTPORT);
-        msgA.send(Udp);
-        Udp.endPacket();
-        msgA.empty();
+      M5.IMU.getGyroData(&gyroX, &gyroY, &gyroZ);
+      M5.IMU.getAccelData(&accX, &accY, &accZ);
+      M5.IMU.getAhrsData(&pitch, &roll, &yaw);
 
-        OSCMessage msgB("/gyrosc/accel");
-        msgB.add( (accX + 0.50) * 0.1);
-        msgB.add( (accY + 0.35) * 0.1);
-        msgB.add( (accZ - 9.81) * 0.1);
-        Udp.beginPacket(outIp, OUTPORT);
-        msgB.send(Udp);
-        Udp.endPacket();
-        msgB.empty();
+      OSCMessage msgA("/gyrosc/rrate");
+      msgA.add(gyroX / 60.0);
+      msgA.add(gyroY / 60.0);
+      msgA.add(gyroZ / 60.0);
+      Udp.beginPacket(outIp, OUTPORT);
+      msgA.send(Udp);
+      Udp.endPacket();
+      msgA.empty();
 
-        w = cos((gyroX + gyroY + gyroZ) * 0.5);
-        x = sin(gyroZ * 0.5);
-        y = sin(gyroX * 0.5);
-        z = sin(gyroY * 0.5);
+      OSCMessage msgB("/gyrosc/accel");
+      msgB.add((accX * 1));
+      msgB.add((accY * 1));
+      msgB.add((accZ * 1) - 1.047119140625);
+      Udp.beginPacket(outIp, OUTPORT);
+      msgB.send(Udp);
+      Udp.endPacket();
+      msgB.empty();
 
-        OSCMessage msgC("/gyrosc/quat");
-        msgC.add(w);
-        msgC.add(x);
-        msgC.add(y);
-        msgC.add(z);
-        Udp.beginPacket(outIp, OUTPORT);
-        msgC.send(Udp);
-        Udp.endPacket();
-        msgC.empty();
+      OSCMessage msgC("/gyrosc/gyro");
+      msgC.add(pitch / 60.0);
+      msgC.add(roll / 60.0);
+      msgC.add(yaw / 60.0);
+      Udp.beginPacket(outIp, OUTPORT);
+      msgC.send(Udp);
+      Udp.endPacket();
+      msgC.empty();
 
 
-        // M5.IMU.getTempData(&temp);
-        // M5.IMU.getAhrsData(&pitch, &roll, &yaw);
-        // Serial.printf("%.2f,%.2f,%.2f,%.2f  \r\n", w,x,y,z);
-        // Serial.printf("%.2f,%.2f,%.2f  \r\n", pitch, roll, yaw);
-        // Serial.printf("%.2f,%.2f,%.2f o/s \r\n", gyroX, gyroY, gyroZ);
-        //Serial.printf("%.2f,%.2f,%.2f mg\r\n", accX * 1000, accY * 1000, accZ * 1000);
-        //Serial.printf("Temperature : %.2f C \r\n", temp);
-    }
-    delay(50);
-    M5.update();
+      // w = cos((pitch + roll + yaw) * 0.5);
+      // x = sin(yaw * 0.5);
+      // y = sin(pitch * 0.5);
+      // z = sin(roll * 0.5);
+
+      // OSCMessage msgC("/gyrosc/quat");
+      // msgC.add(w);
+      // msgC.add(x);
+      // msgC.add(y);
+      // msgC.add(z);
+      // Udp.beginPacket(outIp, OUTPORT);
+      // msgC.send(Udp);
+      // Udp.endPacket();
+      // msgC.empty();
+
+
+  }
+  delay(50);
+
+  curValue = digitalRead(button);
+  
+  if(curValue != lastValue){
+    sendConnectMsg();
+    lastValue = curValue;
+  }
+
+  M5.update();
 }
-
-/*
-
-
-t_quaternion qg;
-    qg.w = cos((gyro->x + gyro->y + gyro->z) * 0.5);
-    qg.x = sin(gyro->z * 0.5);
-    qg.y = sin(gyro->x * 0.5);
-    qg.z = sin(gyro->y * 0.5);
-
-*/
