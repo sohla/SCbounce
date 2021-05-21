@@ -22,6 +22,14 @@ const IPAddress outIp(192,168,20,11);  //LAN address
 
 //--------------------------------------------------------------------------
 
+const int button = 39;//37,39
+
+//--------------------------------------------------------------------------
+int lastValue = 0;
+int curValue = 0;
+
+//--------------------------------------------------------------------------
+
 WiFiUDP Udp;
 
 float accX = 0, accY = 0, accZ = 0;
@@ -144,6 +152,8 @@ void setup()
     delay(50);
     M5.dis.drawpix(0, 0x000000);
 
+    pinMode(button, INPUT);
+
     beginWifi();
 
     beginSensors();
@@ -196,8 +206,16 @@ void loop()
       msgC.empty();
 
     }
+    
+    if(curValue != lastValue){
+      Serial.println("button");
+      sendConnectMsg();
+      lastValue = curValue;
+    }
+
     delay(50);
     M5.update();
+
 }
 
 /*
