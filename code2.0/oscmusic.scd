@@ -1,5 +1,13 @@
 			(
-			// 
+			/*
+
+			ubiquity loco m2
+			user : admin
+			pw: zxzxzxzx
+
+
+				
+			*/
 			var devicesDir = "~/Develop/SuperCollider/SCbounce/personalities/";
 
 			var midiControlOffset = 1;
