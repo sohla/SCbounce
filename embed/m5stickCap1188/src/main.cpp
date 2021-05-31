@@ -31,8 +31,10 @@
 
 #define _i2caddr  CAP1188_I2CADDR
 
-
 TwoWire *_wire = &Wire1;
+
+
+
 
 void i2cwrite(uint8_t x) {
   _wire->write((uint8_t)x); 
@@ -72,14 +74,6 @@ void loop()
   int nDevices;
 
   Serial.println("Scanning...");
-
-Serial.print("Product ID: 0x");
-  Serial.println(readRegister(CAP1188_PRODID), HEX);
-  Serial.print("Manuf. ID: 0x");
-  Serial.println(readRegister(CAP1188_MANUID), HEX);
-  Serial.print("Revision: 0x");
-  Serial.println(readRegister(CAP1188_REV), HEX);
-
 
   nDevices = 0;
   for(address = 1; address < 127; address++ ) 
