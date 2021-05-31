@@ -27,14 +27,42 @@
 //
 
 #include <Wire.h>
+#include <Adafruit_CAP1188.h>
 
+#define _i2caddr  CAP1188_I2CADDR
+
+
+TwoWire *_wire = &Wire1;
+
+void i2cwrite(uint8_t x) {
+  _wire->write((uint8_t)x); 
+}
+
+int readRegister(uint8_t reg) {
+  _wire->beginTransmission(_i2caddr);
+  i2cwrite(reg);
+  _wire->endTransmission();
+  _wire->requestFrom(_i2caddr, 1);
+  return (_wire->read());
+}
 
 void setup()
 {
-  // Wire.begin();
-  Wire1.begin(21, 22, 10000);
+  _wire->begin(21, 22, 10000);
   Serial.begin(115200);
-  Serial.println("\nI2C Scanner");
+  // Serial.println("\nI2C Scanner");
+
+    readRegister(CAP1188_PRODID);
+
+  // Useful debugging info
+
+  Serial.print("Product ID: 0x");
+  Serial.println(readRegister(CAP1188_PRODID), HEX);
+  Serial.print("Manuf. ID: 0x");
+  Serial.println(readRegister(CAP1188_MANUID), HEX);
+  Serial.print("Revision: 0x");
+  Serial.println(readRegister(CAP1188_REV), HEX);
+
 }
 
 
@@ -45,14 +73,22 @@ void loop()
 
   Serial.println("Scanning...");
 
+Serial.print("Product ID: 0x");
+  Serial.println(readRegister(CAP1188_PRODID), HEX);
+  Serial.print("Manuf. ID: 0x");
+  Serial.println(readRegister(CAP1188_MANUID), HEX);
+  Serial.print("Revision: 0x");
+  Serial.println(readRegister(CAP1188_REV), HEX);
+
+
   nDevices = 0;
   for(address = 1; address < 127; address++ ) 
   {
     // The i2c_scanner uses the return value of
     // the Write.endTransmisstion to see if
     // a device did acknowledge to the address.
-    Wire1.beginTransmission(address);
-    error = Wire1.endTransmission();
+    _wire->beginTransmission(address);
+    error = _wire->endTransmission();
 
     if (error == 0)
     {
