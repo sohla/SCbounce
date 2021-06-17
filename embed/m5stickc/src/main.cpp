@@ -9,10 +9,6 @@
 //--------------------------------------------------------------------------
 
 #define OUTPORT 57120 //port for outgoing osc (to supercollider)
-// #define BLACK 0x000000
-// #define GREEN 0xFF0000
-// #define RED 0x00FF00
-// #define BLUE 0x0000FF
 
 //--------------------------------------------------------------------------
 
@@ -20,17 +16,20 @@
 // const char *password = "sohla3letmein";  //LAN password
 // const IPAddress outIp(192,168,20,11);  //LAN address
 
-const char *ssid = "nukuNet"; //LAN name
-const char *password = "zxzxzxzx";  //LAN password
-const IPAddress outIp(10,1,1,8);  //LAN address
+const char *ssid = "SOHLA3"; //LAN name
+const char *password = "sohla3letmein";  //LAN password
+const IPAddress outIp(192,168,20,10);  //LAN address
 
 //--------------------------------------------------------------------------
 
-const int button = 39;//37,39
+const int buttonA = 37;
+const int buttonB = 39;
 
 //--------------------------------------------------------------------------
-int lastValue = 0;
-int curValue = 0;
+int lastAValue = 0;
+int curAValue = 0;
+int lastBValue = 0;
+int curBValue = 0;
 //--------------------------------------------------------------------------
 
 WiFiUDP Udp;
@@ -45,14 +44,14 @@ bool IMU6886Flag = false;
 
 //--------------------------------------------------------------------------
 // // Set your Static IP address
-// IPAddress local_IP(192,168,20,STATIP);
+IPAddress local_IP(192,168,20,STATIP);
 // // Set your Gateway IP address
-// IPAddress gateway(192,168,20,254);
+IPAddress gateway(192,168,20,254);
 
 // // Set your Static IP address
-IPAddress local_IP(10,1,1,STATIP);
+// IPAddress local_IP(10,1,1,STATIP);
 // Set your Gateway IP address
-IPAddress gateway(10,1,1,254);
+// IPAddress gateway(10,1,1,254);
 
 
 IPAddress subnet(255, 255, 255, 0);
@@ -128,7 +127,8 @@ void beginSensors(){
   else
       IMU6886Flag = true;
 
-  pinMode(button, INPUT);
+  pinMode(buttonA, INPUT);
+  pinMode(buttonB, INPUT);
 }
 
 //--------------------------------------------------------------------------
@@ -157,6 +157,11 @@ void setup()
     beginSensors();
 
     sendConnectMsg();
+    
+    M5.Lcd.setRotation(3);
+    M5.Lcd.setTextColor(WHITE, BLACK);
+    M5.Lcd.setTextSize(2);
+    M5.Lcd.println("m-ball");
 
     Serial.println("standby.....");
   
@@ -220,11 +225,19 @@ void loop(){
   }
   delay(50);
 
-  curValue = digitalRead(button);
+  uint16_t vbatData = M5.Axp.GetVbatData();
+  double vbat = vbatData * 1.1 / 1000;
+  double pbat = 100.0 * ((vbat - 3.0) / (4.07 - 3.0));
+
+  M5.Lcd.setCursor(0, 20);
+  M5.Lcd.printf("%3.f",pbat);
+
+
+  curBValue = digitalRead(buttonB);
   
-  if(curValue != lastValue){
+  if(curBValue != lastBValue){
     sendConnectMsg();
-    lastValue = curValue;
+    lastBValue = curBValue;
   }
 
   M5.update();
