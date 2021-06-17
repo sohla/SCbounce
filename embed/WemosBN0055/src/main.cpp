@@ -26,7 +26,7 @@ extern "C" {
 
 const char *ssid = "SOHLA3"; //LAN name
 const char *password = "sohla3letmein";  //LAN password
-const IPAddress outIp(192,168,20,11);  //LAN address
+const IPAddress outIp(192,168,20,10);  //LAN address
 
 
 
