@@ -16,9 +16,13 @@
 // const char *password = "sohla3letmein";  //LAN password
 // const IPAddress outIp(192,168,20,11);  //LAN address
 
-const char *ssid = "SOHLA3"; //LAN name
-const char *password = "sohla3letmein";  //LAN password
-const IPAddress outIp(192,168,20,10);  //LAN address
+// const char *ssid = "SOHLA3"; //LAN name
+// const char *password = "sohla3letmein";  //LAN password
+// const IPAddress outIp(192,168,20,10);  //LAN address
+
+const char *ssid = "SOHLA5"; //LAN name
+const char *password = "sohla5letmein";  //LAN password
+const IPAddress outIp(192,168,10,30);  //LAN address
 
 //--------------------------------------------------------------------------
 
