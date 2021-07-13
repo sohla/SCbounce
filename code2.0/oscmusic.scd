@@ -148,7 +148,7 @@
 	);
 
 	var deviceProto = (
-		\name: "gabe2",
+		\name: "control1",
 		\ip: "127.0.0.1",
 		\port: 57120,
 
@@ -1219,7 +1219,7 @@
 	startOSCListening = {
 
 		// handy way to listen to multiple ports
-		4.do{|i| thisProcess.openUDPPort(57120 + i)};
+		// 4.do{|i| thisProcess.openUDPPort(57120 + i)};
 
 		buttonListener = OSCFunc({ |msg, time, addr, recvPort|
 			[msg, time, addr, recvPort].postln;
