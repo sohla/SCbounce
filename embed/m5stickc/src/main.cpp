@@ -48,9 +48,9 @@ bool IMU6886Flag = false;
 
 //--------------------------------------------------------------------------
 // // Set your Static IP address
-IPAddress local_IP(192,168,20,STATIP);
+IPAddress local_IP(192,168,10,STATIP);
 // // Set your Gateway IP address
-IPAddress gateway(192,168,20,254);
+IPAddress gateway(192,168,10,254);
 
 // // Set your Static IP address
 // IPAddress local_IP(10,1,1,STATIP);
