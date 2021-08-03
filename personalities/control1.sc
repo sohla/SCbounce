@@ -47,6 +47,7 @@ m.midiChannel = 0;
 		"par7", 0,//e.param2.linlin(1,6,0.1,1), // wobble
 		"par8", 0,//e.octave.linlin(3,6,28,10),
 		"par9", (e.note + (e.octave * 12)).linlin(0,127,6,1),
+		"par10", (e.note + (e.octave * 12)).linlin(72,108,0,360),
 	);
 
 
@@ -59,9 +60,9 @@ m.midiChannel = 0;
 	var note = 60 + m.com.root - 24	;
 
 	if(state == true,{
-		m.midiOut.noteOn(m.midiChannel, note  , vel);
+		m.midiOut.noteOn(2, note  , vel);
 	},{
-		m.midiOut.noteOff(m.midiChannel, note, 0);
+		m.midiOut.noteOff(2, note, 0);
 	});
 };
 
