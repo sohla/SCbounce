@@ -1,5 +1,5 @@
 var m = ~model;
-m.midiChannel = 9;
+m.midiChannel = 5;
 
 //------------------------------------------------------------	
 // intial state
@@ -9,8 +9,8 @@ m.midiChannel = 9;
 
 	Pdef(m.ptn,
 		Pbind(
-			\note, Pseq([-5,0,4],inf),
-			\root, Pseq([0,5,-2,3,-4,1,-5].stutter(16),inf),
+			\note, Prand([0,2,7,9],inf),
+			\root, Pseq([3,8,-1,1].stutter(24),inf),
 			\func, Pfunc({|e| ~onEvent.(e)}),
 			\args, #[],
 		);
@@ -18,7 +18,7 @@ m.midiChannel = 9;
 
 	Pdef(m.ptn).set(\dur,0.5);
 	Pdef(m.ptn).set(\octave,5);
-	Pdef(m.ptn).set(\amp,0.8);
+	Pdef(m.ptn).set(\amp,0.5);
 	Pdef(m.ptn).play();
 };
 
@@ -38,13 +38,13 @@ m.midiChannel = 9;
 ~onHit = {|state|
 
 	var vel = 100;
-	var note = 60 + m.com.root - 24	;
+	var note = 60 + m.com.root - 12	;
 
-	if(state == true,{
-		m.midiOut.noteOn(m.midiChannel, note  , vel);
-	},{
-		m.midiOut.noteOff(m.midiChannel, note, 0);
-	});
+	// if(state == true,{
+	// 	m.midiOut.noteOn(m.midiChannel, note  , vel);
+	// },{
+	// 	m.midiOut.noteOff(m.midiChannel, note, 0);
+	// });
 };
 
 
@@ -55,7 +55,7 @@ m.midiChannel = 9;
 
 	var oct = ((0.2 + m.rrateMassFiltered.cubed) * 25).mod(3).floor;
 
-	Pdef(m.ptn).set(\dur,(m.accelMassFiltered * 2.0 * m.rrateMassThreshold.reciprocal).reciprocal);
+	Pdef(m.ptn).set(\dur,(m.accelMassFiltered * 1.9 * m.rrateMassThreshold.reciprocal).reciprocal);
 	Pdef(m.ptn).set(\amp, 0.3);
 	Pdef(m.ptn).set(\octave, 4 + oct);
 

@@ -41,7 +41,8 @@
 	var addDevice, removeDevice, removeDeviceButton;
     var buttonListener;
 
-    var oscOut = NetAddr.new("127.0.0.1", 9003); 
+    var oscOut = NetAddr.new("127.0.0.1", 9003); // for generator
+	var oscVisualOut = NetAddr.new("127.0.0.1", 10001); // for visuals
 
 	var devices = Dictionary();
 
@@ -148,7 +149,7 @@
 	);
 
 	var deviceProto = (
-		\name: "gabe2",
+		\name: "control7",
 		\ip: "127.0.0.1",
 		\port: 57120,
 
@@ -203,6 +204,7 @@
 		// after adding personality to an Environment, add useful functions to be used by anyone
 		var env = Environment.make {
 
+			~oscVisualOut = oscVisualOut;
 
 			~model = (
 				\com: com,
@@ -213,8 +215,8 @@
 
 				\rrateMass: 0,
 				\rrateMassFiltered: 0,
-				\rrateMassThreshold: 0.21, //use for isMoving
-				\rrateMassThresholdSpec: ControlSpec(0.07, 0.4, \lin, 0.01, 0.21),
+				\rrateMassThreshold: 0.17, //use for isMoving
+				\rrateMassThresholdSpec: ControlSpec(0.07, 0.4, \lin, 0.01, 0.17),
 
 				\accelMass: 0,
 				\accelMassFiltered: 0,
@@ -1259,7 +1261,7 @@
 				.font_(Font(size:14))
 				.minHeight_(30)
 				.minWidth_(200)
-				.string_(" :: osc music");
+				.string_(" :: osc music visual :: ");
 
 		contentView.layout_(VLayout());
 		scroll.canvas = contentView;

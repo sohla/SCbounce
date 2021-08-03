@@ -1,5 +1,5 @@
 var m = ~model;
-m.midiChannel = 0;
+m.midiChannel = 6;
 
 //------------------------------------------------------------	
 // intial state
@@ -9,9 +9,8 @@ m.midiChannel = 0;
 
 	Pdef(m.ptn,
 		Pbind(
-			\note, Prand([0,2,4,6,8],inf),
-			\root, Pseq([0,1].stutter(64),inf),
-			\yy, Pwhite(-2.0,2.0,inf),
+			\note, Prand([0,1,-1],inf),
+			\root, Pseq([0,6].stutter(24),inf),
 			\func, Pfunc({|e| ~onEvent.(e)}),
 			\args, #[],
 		);
@@ -19,7 +18,7 @@ m.midiChannel = 0;
 
 	Pdef(m.ptn).set(\dur,0.5);
 	Pdef(m.ptn).set(\octave,5);
-	Pdef(m.ptn).set(\amp,1);
+	Pdef(m.ptn).set(\amp,0.5);
 	Pdef(m.ptn).play();
 };
 
@@ -30,25 +29,8 @@ m.midiChannel = 0;
 
 // example feeding the community
 ~onEvent = {|e|
-
-(e.note + (e.octave * 12)).postln;
-	~oscVisualOut.sendMsg("/shadow", 
-		"shape", 0,
-		"duration", e.dur,
-		"attack", 0.006,
-		"release", 0.04,
-		"par1", (e.note + (e.octave * 12)).linlin(72,108,0,0.99),//e.param1,//colour
-		"par2", 0.5,//(e.note + (oct * 12)).linexp(0,127,2,0.2),//scale
-		"par3", (e.note + (e.octave * 12)).linlin(72,108,-2.5,2.5),//sx
-		"par4", 0,//sy
-		"par5", (e.note + (e.octave * 12)).linlin(72,108,-2.5,2.5),//ex
-		"par6", 0,//ey
-		"par7", 0,//e.param2.linlin(1,6,0.1,1), // wobble
-		"par8", 0,//e.octave.linlin(3,6,28,10),
-		"par9", (e.note + (e.octave * 12)).linlin(0,127,6,1),
-	);
-
-
+	m.com.root = e.root;
+	m.com.dur = e.dur;
 };
 
 
@@ -56,13 +38,13 @@ m.midiChannel = 0;
 ~onHit = {|state|
 
 	var vel = 100;
-	var note = 60 + m.com.root - 24	;
+	var note = 60 + m.com.root - 12	;
 
-	if(state == true,{
-		m.midiOut.noteOn(m.midiChannel, note  , vel);
-	},{
-		m.midiOut.noteOff(m.midiChannel, note, 0);
-	});
+	// if(state == true,{
+	// 	m.midiOut.noteOn(m.midiChannel, note  , vel);
+	// },{
+	// 	m.midiOut.noteOff(m.midiChannel, note, 0);
+	// });
 };
 
 
@@ -71,12 +53,12 @@ m.midiChannel = 0;
 //------------------------------------------------------------	
 ~next = {|d| 
 
-	var oct = ((0.2 + m.rrateMassFiltered.cubed) * 25).mod(3).floor;
-
-	Pdef(m.ptn).set(\dur,(m.accelMassFiltered * 2.4 * m.rrateMassThreshold.reciprocal).reciprocal);
-	Pdef(m.ptn).set(\amp, 0.7);
-	Pdef(m.ptn).set(\octave, 6 + oct);
-
+	// var oct = ((0.2 + m.accelMassFiltered.cubed) * 25).mod(5).floor;
+	var oct = (m.accelMassFiltered * m.rrateMassThreshold).linlin(0,1,1,9).floor;
+	Pdef(m.ptn).set(\dur,(m.accelMassFiltered * 2 * m.rrateMassThreshold.reciprocal).reciprocal);
+	Pdef(m.ptn).set(\amp, 0.3);
+	Pdef(m.ptn).set(\octave, oct);
+	oct.postln;
 };
 
 ~nextMidiOut = {|d|
