@@ -58,7 +58,6 @@ m.midiChannel = 6;
 	Pdef(m.ptn).set(\dur,(m.accelMassFiltered * 2 * m.rrateMassThreshold.reciprocal).reciprocal);
 	Pdef(m.ptn).set(\amp, 0.3);
 	Pdef(m.ptn).set(\octave, oct);
-	oct.postln;
 };
 
 ~nextMidiOut = {|d|

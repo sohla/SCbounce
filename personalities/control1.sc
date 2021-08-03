@@ -11,7 +11,8 @@ m.midiChannel = 0;
 		Pbind(
 			\note, Prand([0,2,4,6,8],inf),
 			\root, Pseq([0,1].stutter(64),inf),
-			\yy, Pwhite(-2.0,2.0,inf),
+			\col, Pwrap(Pseries(0.0,0.01,inf),0.0,1.0), 
+			\xx, Pwrap(Pseries(-2.0,0.1,inf),-2.0,2.0),
 			\func, Pfunc({|e| ~onEvent.(e)}),
 			\args, #[],
 		);
@@ -35,14 +36,14 @@ m.midiChannel = 0;
 	~oscVisualOut.sendMsg("/shadow", 
 		"shape", 0,
 		"duration", e.dur,
-		"attack", 0.006,
-		"release", 0.04,
-		"par1", (e.note + (e.octave * 12)).linlin(72,108,0,0.99),//e.param1,//colour
-		"par2", 0.5,//(e.note + (oct * 12)).linexp(0,127,2,0.2),//scale
-		"par3", (e.note + (e.octave * 12)).linlin(72,108,-2.5,2.5),//sx
-		"par4", 0,//sy
-		"par5", (e.note + (e.octave * 12)).linlin(72,108,-2.5,2.5),//ex
-		"par6", 0,//ey
+		"attack", 0.01,
+		"release", 0.8,
+		"par1", e.col,//(e.note + (e.octave * 12)).linlin(72,108,0,0.99),//e.param1,//colour
+		"par2", 0.2,//(e.note + (oct * 12)).linexp(0,127,2,0.2),//scale
+		"par3", e.xx.mod(0.3),//(e.note + (e.octave * 12)).linlin(72,108,-2.5,2.5),//sx
+		"par4", (e.xx / 0.3).floor * 0.1,//sy
+		"par5", e.xx.mod(0.3),//(e.note + (e.octave * 12)).linlin(72,108,-2.5,2.5),//ex
+		"par6", (e.xx / 0.3).floor * 0.1,//ey
 		"par7", 0,//e.param2.linlin(1,6,0.1,1), // wobble
 		"par8", 0,//e.octave.linlin(3,6,28,10),
 		"par9", (e.note + (e.octave * 12)).linlin(0,127,6,1),
@@ -50,7 +51,6 @@ m.midiChannel = 0;
 
 
 };
-
 
 
 ~onHit = {|state|
