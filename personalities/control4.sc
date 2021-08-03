@@ -9,8 +9,8 @@ m.midiChannel = 3;
 
 	Pdef(m.ptn,
 		Pbind(
-			\note, Prand([0,4,7],inf),
-			\root, Pseq([0,2,4,-2].stutter(24),inf),
+			\note, Prand([0,2,7,9],inf),
+			\root, Pseq([3,8,-1,1].stutter(24),inf),
 			\func, Pfunc({|e| ~onEvent.(e)}),
 			\args, #[],
 		);
@@ -55,7 +55,7 @@ m.midiChannel = 3;
 
 	var oct = ((0.2 + m.rrateMassFiltered.cubed) * 25).mod(3).floor;
 
-	Pdef(m.ptn).set(\dur,(m.accelMassFiltered * 2.9 * m.rrateMassThreshold.reciprocal).reciprocal);
+	Pdef(m.ptn).set(\dur,(m.accelMassFiltered * 1.9 * m.rrateMassThreshold.reciprocal).reciprocal);
 	Pdef(m.ptn).set(\amp, 0.3);
 	Pdef(m.ptn).set(\octave, 4 + oct);
 
