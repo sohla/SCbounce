@@ -1219,7 +1219,7 @@
 	startOSCListening = {
 
 		// handy way to listen to multiple ports
-		4.do{|i| thisProcess.openUDPPort(57120 + i)};
+		// 4.do{|i| thisProcess.openUDPPort(57120 + i)};
 
 		buttonListener = OSCFunc({ |msg, time, addr, recvPort|
 			[msg, time, addr, recvPort].postln;
@@ -1268,7 +1268,7 @@
 			// d = addDevice.("127.0.0.1",64564);
 		// addOSCDeviceListeners.(d);
 
-	};
+	};	
 
 	//------------------------------------------------------------	
 	// 
