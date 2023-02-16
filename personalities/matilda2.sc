@@ -33,11 +33,11 @@ m.midiChannel = 4;
 ~onHit = {|state|
 
 	var vel = 60;
-	var oct = [-48,-36,-24,-12].choose;
+	var oct = [-48,-36].choose;
 	var note = 60 + m.com.root + oct;
 	var ch = 4;
 	if(state == true,{
-		m.midiOut.noteOn(ch, note, 50);
+		m.midiOut.noteOn(ch, note, 110);
 		{m.midiOut.noteOff(ch, note, 0)}.defer(0.2);
 
 	},{

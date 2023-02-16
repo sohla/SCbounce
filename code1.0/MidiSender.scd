@@ -34,12 +34,12 @@ keyViews = {|i|
 		.mouseUpAction_({
 			onKey.(keys[i],false);
 		})
-		.mouseMoveAction_({|v,x,y|
-			var val = x.half.round.abs;
-			val = 127.clip2(val);
-			(val/127).postln;
-			controlSlider.valueAction_(val/127);
-		});
+		// .mouseMoveAction_({|v,x,y|
+		// 	var val = x.half.round.abs;
+		// 	val = 127.clip2(val);
+		// 	(val/127).postln;
+		// 	controlSlider.valueAction_(val/127);
+		// });
 }!num;
 //------------------------------------------------------------
 keyboardView = {

@@ -62,7 +62,7 @@ m.midiChannel = 9;
 };
 
 ~nextMidiOut = {|d|
-	m.midiOut.control(m.midiChannel, 0, m.accelMassFiltered * 64 );
+	// m.midiOut.control(m.midiChannel, 0, m.accelMassFiltered * 64 );
 };			
 
 //------------------------------------------------------------	
@@ -76,9 +76,9 @@ m.midiChannel = 9;
 	// [m.accelMass, m.accelMassFiltered,m.accelMassAmpThreshold];
 	// [m.accelMass + m.rrateMassFiltered, m.accelMassFiltered,m.rrateMassThreshold];
 	//[m.rrateMassFiltered, m.rrateMassThreshold, m.accelMassAmp];
-	//[d.sensors.gyroEvent.x, d.sensors.gyroEvent.y, d.sensors.gyroEvent.z];
+	[d.sensors.gyroEvent.x, d.sensors.gyroEvent.y, d.sensors.gyroEvent.z];
 	// [d.sensors.rrateEvent.x, d.sensors.rrateEvent.y, d.sensors.rrateEvent.z];
-	[d.sensors.accelEvent.x, d.sensors.accelEvent.y, d.sensors.accelEvent.z];
+	// [d.sensors.accelEvent.x, d.sensors.accelEvent.y, d.sensors.accelEvent.z];
 
 
 };

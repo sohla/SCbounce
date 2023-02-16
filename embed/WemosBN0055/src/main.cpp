@@ -1,3 +1,4 @@
+#include <SPI.h>
 #include <Wire.h>
 #include <Adafruit_Sensor.h>
 #include <Adafruit_BNO055.h>
@@ -26,15 +27,15 @@ extern "C" {
 
 const char *ssid = "SOHLA3"; //LAN name
 const char *password = "sohla3letmein";  //LAN password
-const IPAddress outIp(192,168,20,10);  //LAN address
+const IPAddress outIp(192,168,1,147);  //LAN address
 
 
 
 //--------------------------------------------------------------------------
 // Set your Static IP address
-IPAddress local_IP(192,168,20,STATIP);
+IPAddress local_IP(192,168,1,STATIP);
 // Set your Gateway IP address
-IPAddress gateway(192,168,20,10);
+IPAddress gateway(192,168,1,1);
 
 IPAddress subnet(255, 255, 255, 0);
 IPAddress primaryDNS(8, 8, 8, 8); //optional

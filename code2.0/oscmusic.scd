@@ -842,7 +842,7 @@
 	createTwoDeeCanvas = {|view, data|
 
 		var cols = [Color.yellow,Color.magenta,Color.cyan,Color.red,Color.green,Color.blue];
-		var bounds = Rect(5,5,400,240);
+		var bounds = Rect(5,5,600,440);
 		var prev = [];
 		var ax, ay, bx, by, mx, my;
 		var scale = 0.45;
@@ -977,7 +977,7 @@
 		var t = (1.0 + (5.0).sqrt) / 2.0;
 	    var accelX, accelY, accelZ;
 
-		graph1 = Canvas3D(view, Rect(5, 5, 400, 240))
+		graph1 = Canvas3D(view, Rect(5, 5, 600, 440))
 		    .scale_(200)
 			.background_(Color.gray(0.25))
 		    .perspective_(0.5)
@@ -1124,7 +1124,7 @@
 					\y:msg[2].asFloat,
 					\z:msg[3].asFloat);
 			});
-		}, '/gyrosc/gyro', na);
+		}, '/gyrosc/gyroSS', na);
 
 		d.listeners.accelListener = OSCFunc({ |msg, time, addr, recvPort|
 
@@ -1141,6 +1141,7 @@
 
 			var sx,sy,sz,qe,q,ss,r;
 			var tr;
+			// [msg, time, addr, recvPort].postln;
 
 			if(devices.at(addr.port) != nil,{
 				devices.at(addr.port).sensors.quatEvent = (
@@ -1154,7 +1155,6 @@
 				q = Quaternion.new(qe.w,qe.x,qe.y,qe.z);
 				r = q.asEuler;
 				tr = [r[0],r[1],r[2] + pi.half];
-
 				devices.at(addr.port).sensors.gyroEvent = (
 					\x:tr[2].asFloat,
 					\y:tr[0].asFloat,
