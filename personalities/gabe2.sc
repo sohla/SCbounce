@@ -56,8 +56,8 @@ m.midiChannel = 9;
 	var oct = ((0.2 + m.rrateMassFiltered.cubed) * 25).mod(3).floor;
 
 	Pdef(m.ptn).set(\dur,(m.accelMassFiltered * 2.0 * m.rrateMassThreshold.reciprocal).reciprocal);
-	// Pdef(m.ptn).set(\amp, 0.3);
-	// Pdef(m.ptn).set(\octave, 4 + oct);
+	Pdef(m.ptn).set(\amp, 0.3);
+	Pdef(m.ptn).set(\octave, 4 + oct);
 
 	// ((m.accelMassFiltered * 2.0 * m.rrateMassThreshold.reciprocal).reciprocal).postln;
 };

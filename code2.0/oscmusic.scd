@@ -206,7 +206,7 @@
 
 			~model = (
 				\com: com,
-				// \name: d.name,
+				\name: d.name,
 				\ptn: Array.fill(16,{|i|i=90.rrand(65).asAscii}),
 				\midiOut: midiOut,
 				\midiChannel: 1,
@@ -214,7 +214,7 @@
 				\rrateMass: 0,
 				\rrateMassFiltered: 0,
 				\rrateMassThreshold: 0.21, //use for isMoving
-				\rrateMassThresholdSpec: ControlSpec(0.01, 0.4, \lin, 0.01, 0.21),
+				\rrateMassThresholdSpec: ControlSpec(0.07, 0.4, \lin, 0.01, 0.21),
 
 				\accelMass: 0,
 				\accelMassFiltered: 0,
@@ -1109,7 +1109,7 @@
 					\x:msg[1].asFloat,
 					\y:msg[2].asFloat,
 					\z:msg[3].asFloat);
-				devices.at(addr.port).sensors.rrateEvent.sumabs.postln;
+				// devices.at(addr.port).sensors.rrateEvent.sumabs.postln;
 			});
 
 		}, '/gyrosc/rrate', na);
@@ -1170,6 +1170,14 @@
 
 	quat being used for WemosBNO055 but range is wrong!
 
+	each device needs to have it's own INPORT address:
+	eg:
+		-DINPORT=56145
+		-DSTATIP=45
+
+	
+
+
 */
 
 		d.listeners.ampListener = OSCFunc({ |msg, time, addr, recvPort|
@@ -1179,13 +1187,13 @@
 				});
 		}, '/gyrosc/amp', na);
 
-		//• NEED TO TEST THIS!!
+		//• NEED TO TEST THIS!! working for Wemos only
 		d.listeners.voltListener = OSCFunc({ |msg, time, addr, recvPort|
 			var v = "volt"+msg[1].round(0.1).asString;
 			v.postln;
 			{voltButton.states = [[v,Color.red]]}.defer(0);
 
-		}, '/gyrosc/volt');//•••••
+		}, '/gyrosc/volt');
 
 		d.listeners.lineListener = OSCFunc({ |msg, time, addr, recvPort|
 
