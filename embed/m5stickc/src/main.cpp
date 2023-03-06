@@ -41,7 +41,7 @@ float pitch, roll, yaw = 0;
 float w,x,y,z = 0;
 float temp = 0;
 
-bool IMU6886Flag = false;
+bool IMU6886Flag = false; 
 
 //--------------------------------------------------------------------------
 
