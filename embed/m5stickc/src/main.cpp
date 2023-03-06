@@ -20,9 +20,14 @@
 // const char *password = "sohla3letmein";  //LAN password
 // const IPAddress outIp(192,168,20,10);  //LAN address
 
-const char *ssid = "SOHLA5"; //LAN name
-const char *password = "sohla5letmein";  //LAN password
-const IPAddress outIp(192,168,10,30);  //LAN address
+// const char *ssid = "SOHLA5"; //LAN name
+// const char *password = "sohla5letmein";  //LAN password
+// const IPAddress outIp(192,168,10,30);  //LAN address
+
+const char *ssid = "SOHLA3"; //LAN name
+const char *password = "sohla3letmein";  //LAN password
+const IPAddress outIp(192,168,1,147);  //LAN address
+
 
 //--------------------------------------------------------------------------
 
@@ -48,9 +53,9 @@ bool IMU6886Flag = false;
 
 //--------------------------------------------------------------------------
 // // Set your Static IP address
-IPAddress local_IP(192,168,10,STATIP);
-// // Set your Gateway IP address
-IPAddress gateway(192,168,10,254);
+// IPAddress local_IP(192,168,10,STATIP);
+// // // Set your Gateway IP address
+// IPAddress gateway(192,168,10,254);
 
 // // Set your Static IP address
 // IPAddress local_IP(10,1,1,STATIP);
@@ -58,11 +63,19 @@ IPAddress gateway(192,168,10,254);
 // IPAddress gateway(10,1,1,254);
 
 
+// IPAddress subnet(255, 255, 255, 0);
+// IPAddress primaryDNS(8, 8, 8, 8); //optional
+// IPAddress secondaryDNS(8, 8, 4, 4); //optional
+
+
+// Set your Static IP address
+IPAddress local_IP(192,168,1,STATIP);
+// Set your Gateway IP address
+IPAddress gateway(192,168,1,1);
+
 IPAddress subnet(255, 255, 255, 0);
 IPAddress primaryDNS(8, 8, 8, 8); //optional
 IPAddress secondaryDNS(8, 8, 4, 4); //optional
-
-
 
 //--------------------------------------------------------------------------
 //
@@ -166,7 +179,9 @@ void setup()
     M5.Lcd.setTextColor(WHITE, BLACK);
     M5.Lcd.setTextSize(2);
     M5.Lcd.println("m-ball");
+    M5.Lcd.setCursor(0, 20);
 
+    M5.Lcd.printf("ip: %d", STATIP);
     Serial.println("standby.....");
   
 }
@@ -233,8 +248,8 @@ void loop(){
   double vbat = vbatData * 1.1 / 1000;
   double pbat = 100.0 * ((vbat - 3.0) / (4.07 - 3.0));
 
-  M5.Lcd.setCursor(0, 20);
-  M5.Lcd.printf("%3.f",pbat);
+  M5.Lcd.setCursor(0, 40);
+  M5.Lcd.printf("v: %3.f",pbat);
 
 
   curBValue = digitalRead(buttonB);

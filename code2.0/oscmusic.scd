@@ -206,7 +206,7 @@
 
 			~model = (
 				\com: com,
-				\name: d.name,
+				// \name: d.name,
 				\ptn: Array.fill(16,{|i|i=90.rrand(65).asAscii}),
 				\midiOut: midiOut,
 				\midiChannel: 1,
