@@ -1109,6 +1109,7 @@
 					\x:msg[1].asFloat,
 					\y:msg[2].asFloat,
 					\z:msg[3].asFloat);
+				devices.at(addr.port).sensors.rrateEvent.sumabs.postln;
 			});
 
 		}, '/gyrosc/rrate', na);
@@ -1123,7 +1124,7 @@
 					\y:msg[2].asFloat,
 					\z:msg[3].asFloat);
 			});
-		}, '/gyrosc/gyroSS', na);
+		}, '/gyrosc/gyroSS', na); // see notes below
 
 		d.listeners.accelListener = OSCFunc({ |msg, time, addr, recvPort|
 
@@ -1162,6 +1163,15 @@
 
 		}, '/gyrosc/quat', na);
 			
+/*
+	quat being used for bounceOSC 
+
+	gyro being used for M5StickC
+
+	quat being used for WemosBNO055 but range is wrong!
+
+*/
+
 		d.listeners.ampListener = OSCFunc({ |msg, time, addr, recvPort|
 
 				if(devices.at(addr.port) != nil,{

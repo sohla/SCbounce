@@ -251,9 +251,9 @@ void loop(void){
     ///gyrosc/quat
     
     OSCMessage msg("/gyrosc/rrate");
-    msg.add(event.gyro.x / 60.0);
-    msg.add(event.gyro.y / 60.0);
-    msg.add(event.gyro.z / 60.0);
+    msg.add(event.gyro.x);
+    msg.add(event.gyro.y);
+    msg.add(event.gyro.z);
     Udp.beginPacket(outIp, OUTPORT);
     msg.send(Udp);
     Udp.endPacket();
