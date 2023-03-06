@@ -976,66 +976,65 @@
 		var p1,p2,p3;
 		var t = (1.0 + (5.0).sqrt) / 2.0;
 	    var accelX, accelY, accelZ;
-
 		graph1 = Canvas3D(view, Rect(5, 5, 600, 440))
 		    .scale_(200)
 			.background_(Color.gray(0.25))
 		    .perspective_(0.5)
 		    .distance_(3.5);
 
-	     graph1.add(p1 = Canvas3DItem.grid(2)
-	        .color_(Color.green)
+		graph1.add(p1 = Canvas3DItem.grid(2)
+			.color_(Color.green)
 			.fill_(false)
-	        .width_(0)
+			.width_(0)
 			.transform(Canvas3D.mScale(1,t,1))
-	    );
-	    graph1.add(p2 = Canvas3DItem.grid(2)
-	        .color_(Color.red)
-	        .width_(1)
+		);
+		graph1.add(p2 = Canvas3DItem.grid(2)
+			.color_(Color.red)
+			.width_(1)
 			.fill_(false)
 			.transform(Canvas3D.mScale(t,1,1))
 			.transform(Canvas3D.mRotateY(pi/2))
-	    );
-	    graph1.add(p3 = Canvas3DItem.grid(2)
-	        .color_(Color.blue)
-	        .width_(1)
+		);
+		graph1.add(p3 = Canvas3DItem.grid(2)
+			.color_(Color.blue)
+			.width_(1)
 			.fill_(false)
 			.transform(Canvas3D.mScale(t,1,t))
 			.transform(Canvas3D.mRotateX(pi/2))
-	    );
+		);
 
-		 graph1.add(ico = Canvas3DItem()
-	        .color_(Color.white.alpha_(0.1))
-    	    .width_(1)
+		graph1.add(ico = Canvas3DItem()
+			.color_(Color.white.alpha_(0.1))
+			.width_(1)
 			.fill_(true)
 			.paths_([
 				[p1.paths[0][0],p1.paths[0][1],p2.paths[0][1]],
 	 			[p2.paths[0][1],p3.paths[0][0],p1.paths[0][0]],
-			    [p1.paths[0][1],p3.paths[0][1],p2.paths[0][1]],
-			   	[p1.paths[0][0],p2.paths[0][0],p1.paths[0][1]],
-		    	[p1.paths[0][1],p3.paths[1][1],p2.paths[0][0]],
-	    		[p1.paths[0][0],p3.paths[1][0],p2.paths[0][0]],
+				[p1.paths[0][1],p3.paths[0][1],p2.paths[0][1]],
+				[p1.paths[0][0],p2.paths[0][0],p1.paths[0][1]],
+				[p1.paths[0][1],p3.paths[1][1],p2.paths[0][0]],
+				[p1.paths[0][0],p3.paths[1][0],p2.paths[0][0]],
 
-			   	[p1.paths[1][0],p2.paths[1][0],p1.paths[1][1]],
-	    		[p1.paths[1][1],p3.paths[1][1],p2.paths[1][0]],
-			    [p1.paths[1][0],p3.paths[1][0],p2.paths[1][0]],
-			    [p1.paths[1][0],p2.paths[1][1],p1.paths[1][1]],
-		    	[p1.paths[1][1],p3.paths[0][1],p2.paths[1][1]],
-		    	[p1.paths[1][0],p3.paths[0][0],p2.paths[1][1]],
+				[p1.paths[1][0],p2.paths[1][0],p1.paths[1][1]],
+				[p1.paths[1][1],p3.paths[1][1],p2.paths[1][0]],
+				[p1.paths[1][0],p3.paths[1][0],p2.paths[1][0]],
+				[p1.paths[1][0],p2.paths[1][1],p1.paths[1][1]],
+				[p1.paths[1][1],p3.paths[0][1],p2.paths[1][1]],
+				[p1.paths[1][0],p3.paths[0][0],p2.paths[1][1]],
 
-			    [p2.paths[0][1],p3.paths[0][0],p2.paths[1][1]],
-			    [p2.paths[0][1],p3.paths[0][1],p2.paths[1][1]],
+				[p2.paths[0][1],p3.paths[0][0],p2.paths[1][1]],
+				[p2.paths[0][1],p3.paths[0][1],p2.paths[1][1]],
 
-			    [p2.paths[0][0],p3.paths[1][1],p2.paths[1][0]],
-			    [p2.paths[0][0],p3.paths[1][0],p2.paths[1][0]],
+				[p2.paths[0][0],p3.paths[1][1],p2.paths[1][0]],
+				[p2.paths[0][0],p3.paths[1][0],p2.paths[1][0]],
 
-			    [p3.paths[0][0],p1.paths[1][0],p3.paths[1][0]],
-			    [p3.paths[0][0],p1.paths[0][0],p3.paths[1][0]],
+				[p3.paths[0][0],p1.paths[1][0],p3.paths[1][0]],
+				[p3.paths[0][0],p1.paths[0][0],p3.paths[1][0]],
 
-			    [p3.paths[0][1],p1.paths[1][1],p3.paths[1][1]],
-			    [p3.paths[0][1],p1.paths[0][1],p3.paths[1][1]],
+				[p3.paths[0][1],p1.paths[1][1],p3.paths[1][1]],
+				[p3.paths[0][1],p1.paths[0][1],p3.paths[1][1]],
 			])
-	    );
+	);
 
 		graph1.add(accelX = Canvas3DItem.regPrism()
 			.color_(Color.yellow(0.9))
