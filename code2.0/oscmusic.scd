@@ -1171,9 +1171,9 @@
 
 		//• NEED TO TEST THIS!!
 		d.listeners.voltListener = OSCFunc({ |msg, time, addr, recvPort|
-			[msg, time, addr, recvPort].postln;
-
-			{voltButton.states = [["volt"+msg[1].round(0.1).asString,Color.red]]}.defer(0);
+			var v = "volt"+msg[1].round(0.1).asString;
+			v.postln;
+			{voltButton.states = [[v,Color.red]]}.defer(0);
 
 		}, '/gyrosc/volt');//•••••
 
