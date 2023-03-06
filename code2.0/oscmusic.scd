@@ -12,10 +12,22 @@
 	pw : sohla3letmein
 	192.168.20.1 router
 	192.168.20.10 laptop
-		
+
+
+	nukuNet - (netgear)
+	admin : admin
+	pw : admin66899
+	ssid : nukuNet
+	pw: zxzxzxzx
+	10.1.1.1 router
+	10.1.1.40 laptop
+
+	wemos+BNO055 42
+	m5sticks 43,44,45
+
 
 	*/
-	var devicesDir = "~/Develop/SuperCollider/SCbounce/personalities/";
+	var devicesDir = "~/Develop/SuperCollider/Projects/scbounce/personalities/";
 
 	var midiControlOffset = 1;
 	var loadDeviceList;
@@ -1284,7 +1296,6 @@
 		// example of 	loading a device (can only make 1 with generator)
 			// d = addDevice.("127.0.0.1",64564);
 		// addOSCDeviceListeners.(d);
-
 	};	
 
 	//------------------------------------------------------------	
