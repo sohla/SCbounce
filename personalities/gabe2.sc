@@ -56,9 +56,10 @@ m.midiChannel = 9;
 	var oct = ((0.2 + m.rrateMassFiltered.cubed) * 25).mod(3).floor;
 
 	Pdef(m.ptn).set(\dur,(m.accelMassFiltered * 2.0 * m.rrateMassThreshold.reciprocal).reciprocal);
-	Pdef(m.ptn).set(\amp, 0.3);
-	Pdef(m.ptn).set(\octave, 4 + oct);
+	// Pdef(m.ptn).set(\amp, 0.3);
+	// Pdef(m.ptn).set(\octave, 4 + oct);
 
+	// ((m.accelMassFiltered * 2.0 * m.rrateMassThreshold.reciprocal).reciprocal).postln;
 };
 
 ~nextMidiOut = {|d|
@@ -68,15 +69,15 @@ m.midiChannel = 9;
 //------------------------------------------------------------	
 // plot with min and max
 //------------------------------------------------------------	
-~plotMin = -3;
-~plotMax = 3;
+~plotMin = -1;
+~plotMax = 1;
 
 ~plot = { |d,p|
-	// d.sensors.accelEvent.z.postln;
+	[d.sensors.rrateEvent.sumabs * 0.1, m.rrateMass * 10, m.accelMassFiltered];
 	// [m.accelMass, m.accelMassFiltered,m.accelMassAmpThreshold];
 	// [m.accelMass + m.rrateMassFiltered, m.accelMassFiltered,m.rrateMassThreshold];
-	//[m.rrateMassFiltered, m.rrateMassThreshold, m.accelMassAmp];
-	[d.sensors.gyroEvent.x, d.sensors.gyroEvent.y, d.sensors.gyroEvent.z];
+	// [m.rrateMassFiltered, m.rrateMassThreshold, m.accelMassAmp];
+	// [d.sensors.gyroEvent.x, d.sensors.gyroEvent.y, d.sensors.gyroEvent.z];
 	// [d.sensors.rrateEvent.x, d.sensors.rrateEvent.y, d.sensors.rrateEvent.z];
 	// [d.sensors.accelEvent.x, d.sensors.accelEvent.y, d.sensors.accelEvent.z];
 

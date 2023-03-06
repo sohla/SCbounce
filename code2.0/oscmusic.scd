@@ -72,7 +72,7 @@
 	);
 
 	var comRout = Routine { 
-    	loop {
+		loop {
 
 			var a = 0, r = 0;
 
@@ -95,7 +95,7 @@
 
 			0.06.yield;
 
-	    }
+		}
 	}.play;
 
 	//------------------------------------------------------------	
@@ -214,7 +214,7 @@
 				\rrateMass: 0,
 				\rrateMassFiltered: 0,
 				\rrateMassThreshold: 0.21, //use for isMoving
-				\rrateMassThresholdSpec: ControlSpec(0.07, 0.4, \lin, 0.01, 0.21),
+				\rrateMassThresholdSpec: ControlSpec(0.01, 0.4, \lin, 0.01, 0.21),
 
 				\accelMass: 0,
 				\accelMassFiltered: 0,
