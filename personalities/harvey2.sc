@@ -63,7 +63,7 @@ m.midiChannel = 8;
 };
 
 ~nextMidiOut = {|d|
-	m.midiOut.control(m.midiChannel, 5, m.rrateMassFiltered * 127 );
+	m.midiOut.control(m.midiChannel, 5, m.rrateMassFiltered * 50 );
 };			
 
 //------------------------------------------------------------	

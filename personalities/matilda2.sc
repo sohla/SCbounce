@@ -9,10 +9,10 @@ m.midiChannel = 4;
 
 	Pdef(m.ptn,
 		Pbind(
-	        \degree, Pseq([[0,4,7],[4,7,10],[0,4,7],[4,7,9]], inf),
+			\degree, Pseq([[0,4,7],[4,7,10],[0,4,7],[4,7,9]], inf),
 			\root, Pseq([0,5,-2,3,-4,1,-5].stutter(24),inf),
 			\func, Pfunc({|e| ~onEvent.(e)}),
-			\octave,Pseq([3,4,5,6,5,4].stutter(3),inf),
+			\octave,Pseq([3,4,5,6,5,4].stutter(3) - 1,inf),
 			\args, #[],
 		);
 	);
@@ -33,9 +33,9 @@ m.midiChannel = 4;
 ~onHit = {|state|
 
 	var vel = 60;
-	var oct = [-48,-36].choose;
+	var oct = [-48,-36].choose + 36;
 	var note = 60 + m.com.root + oct;
-	var ch = 4;
+	var ch = 9;
 	if(state == true,{
 		m.midiOut.noteOn(ch, note, 110);
 		{m.midiOut.noteOff(ch, note, 0)}.defer(0.2);

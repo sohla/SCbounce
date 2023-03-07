@@ -13,7 +13,7 @@ m.midiChannel = 7;
 
 	Pdef(m.ptn,
 		Pbind(
-	        \degree, Pseq([0,2,5,4,7,7,9,12,11], inf),
+			\degree, Pseq([0,2,5,4,7,7,9,12,11], inf),
 			\args, #[],
 		);
 	);
@@ -31,8 +31,8 @@ m.midiChannel = 7;
 ~onHit = {|state|
 	
 	var vel = (90..110).choose;
-	var oct = [36,48,60];
-	var ch = 4;
+	var oct = [48,60];
+	var ch = 9;
 	var note = 60 - oct[0] + cr[0]  + bl[0];
 
 	if(state == true,{
@@ -42,7 +42,7 @@ m.midiChannel = 7;
 		bl = bl.rotate(-1);
 		oct = oct.rotate(-1);
 
-		note = oct.choose + cr[0]  + bl[0] - 12;
+		note = oct.choose + cr[0]  + bl[0];
 		m.midiOut.noteOn(ch, note, vel);
 		{m.midiOut.noteOff(ch, note, 0)}.defer(0.08);
 
@@ -72,7 +72,7 @@ m.midiChannel = 7;
 };
 
 ~nextMidiOut = {|d|
-	m.midiOut.control(m.midiChannel, 7, m.accelMassFiltered * 40 );
+	m.midiOut.control(m.midiChannel, 1, m.accelMassFiltered * 40 );
 };			
 
 //------------------------------------------------------------	
