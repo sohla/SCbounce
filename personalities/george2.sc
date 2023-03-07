@@ -30,7 +30,7 @@ m.midiChannel = 7;
 };
 ~onHit = {|state|
 	
-	var vel = (40..60).choose;
+	var vel = (90..110).choose;
 	var oct = [36,48,60];
 	var ch = 4;
 	var note = 60 - oct[0] + cr[0]  + bl[0];
@@ -42,7 +42,7 @@ m.midiChannel = 7;
 		bl = bl.rotate(-1);
 		oct = oct.rotate(-1);
 
-		note = 60 - oct.choose + cr[0]  + bl[0];
+		note = oct.choose + cr[0]  + bl[0] - 12;
 		m.midiOut.noteOn(ch, note, vel);
 		{m.midiOut.noteOff(ch, note, 0)}.defer(0.08);
 

@@ -58,7 +58,7 @@ m.midiChannel = 8;
 ~next = {|d| 
 
 	//Pdef(m.ptn).set(\root,m.com.root);
-	Pdef(m.ptn).set(\dur,(m.accelMassFiltered * 2 * m.rrateMassThreshold.reciprocal).reciprocal);
+	Pdef(m.ptn).set(\dur,(0.1 + m.accelMassFiltered * 1.3 * m.rrateMassThreshold.reciprocal).reciprocal);
 
 };
 
