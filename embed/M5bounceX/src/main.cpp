@@ -16,9 +16,14 @@
 
 //--------------------------------------------------------------------------
 
-const char *ssid = "SOHLA3"; //LAN name
-const char *password = "sohla3letmein";  //LAN password
-const IPAddress outIp(192,168,20,10);  //LAN address
+// const char *ssid = "SOHLA3"; //LAN name
+// const char *password = "sohla3letmein";  //LAN password
+// const IPAddress outIp(192,168,20,10);  //LAN address
+
+
+const char *ssid = "SOHLA2"; //LAN name
+const char *password = "pleaseletmeinagain";  //LAN password
+const IPAddress outIp(10,1,1,4);  //LAN address
 
 // const char *ssid = "nukuNet"; //LAN name
 // const char *password = "zxzxzxzx";  //LAN password
@@ -54,7 +59,7 @@ bool IMU6886Flag = false;
 // Set your Static IP address
 IPAddress local_IP(10,1,1,STATIP);
 // Set your Gateway IP address
-IPAddress gateway(192,168,20,10);
+IPAddress gateway(10,1,1,1);
 
 
 IPAddress subnet(255, 255, 255, 0);

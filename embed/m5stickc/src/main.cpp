@@ -17,10 +17,17 @@
 // const char *password = "sohla3letmein";  //LAN password
 // const IPAddress outIp(192,168,1,147);  //LAN address
 
-const char *ssid = "nukuNet"; //LAN name
-const char *password = "zxzxzxzx";  //LAN password
-const IPAddress outIp(10,1,1,40);  //LAN address
+// const char *ssid = "nukuNet"; //LAN name
+// const char *password = "zxzxzxzx";  //LAN password
+// const IPAddress outIp(10,1,1,40);  //LAN address
 
+const char *ssid = "SOHLA2"; //LAN name
+const char *password = "pleaseletmeinagain";  //LAN password
+const IPAddress outIp(10,1,1,4);  //LAN address
+
+// const char *ssid = "MGMS6"; //LAN name
+// const char *password = "pleaseletmein";  //LAN password
+// const IPAddress outIp(192,168,1,144);  //LAN address
 //--------------------------------------------------------------------------
 
 const int buttonA = 37;
@@ -81,11 +88,11 @@ void beginWifi() {
   WiFi.hostname("esposc");
 
   // Configures static IP address
-    if (!WiFi.config(local_IP, gateway, subnet, primaryDNS, secondaryDNS)) {
-      Serial.println("STA Failed to configure");
-    }
+    // if (!WiFi.config(local_IP, gateway, subnet, primaryDNS, secondaryDNS)) {
+    //   Serial.println("STA Failed to configure");
+    // }
   
-  //delay(100);
+  // delay(100);
   
   WiFi.begin(ssid, password);
   while (WiFi.status() != WL_CONNECTED) {

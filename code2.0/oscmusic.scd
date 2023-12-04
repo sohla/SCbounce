@@ -59,7 +59,6 @@
 
 	var dataRate = 1; 
 	var renderRate = 30;
-
 	var loadPersonality;
 	var reloadPersonality;
 	var createProcRout;
