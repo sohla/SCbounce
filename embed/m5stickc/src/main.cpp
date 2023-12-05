@@ -88,9 +88,9 @@ void beginWifi() {
   WiFi.hostname("esposc");
 
   // Configures static IP address
-    // if (!WiFi.config(local_IP, gateway, subnet, primaryDNS, secondaryDNS)) {
-    //   Serial.println("STA Failed to configure");
-    // }
+    if (!WiFi.config(local_IP, gateway, subnet, primaryDNS, secondaryDNS)) {
+      Serial.println("STA Failed to configure");
+    }
   
   // delay(100);
   

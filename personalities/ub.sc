@@ -1,5 +1,5 @@
 var m = ~model;
-m.midiChannel = 1;
+m.midiChannel = 2;
 
 //------------------------------------------------------------	
 // intial state
@@ -9,8 +9,8 @@ m.midiChannel = 1;
 
 	Pdef(m.ptn,
 		Pbind(
-			\note, Pseq([-5,0,4],inf),
-			\root, Pseq([0,5,-2,3,-4,1,-5].stutter(16*4),inf),
+			\note, Pseq([0,16,4,19].stutter(3) - 5,inf),
+			// \root, Pseq([0,5,-2,3,-4,1,-5].stutter(16*4),inf),
 			\func, Pfunc({|e| ~onEvent.(e)}),
 			\args, #[],
 		);
@@ -31,6 +31,7 @@ m.midiChannel = 1;
 ~onEvent = {|e|
 	m.com.root = e.root;
 	m.com.dur = e.dur;
+
 };
 
 
@@ -53,17 +54,18 @@ m.midiChannel = 1;
 //------------------------------------------------------------	
 ~next = {|d| 
 
-	var oct = ((0.2 + m.rrateMassFiltered.cubed) * 25).mod(3).floor;
+	var oct = ((0.2 + m.rrateMassFiltered.cubed) * 25).mod(2).floor;
 
-	Pdef(m.ptn).set(\dur,(m.accelMassFiltered * 1.5 * m.rrateMassThreshold.reciprocal).reciprocal);
+	Pdef(m.ptn).set(\dur,(m.accelMassFiltered * 1 * m.rrateMassThreshold.reciprocal).reciprocal);
 	Pdef(m.ptn).set(\amp, 0.3);
-	Pdef(m.ptn).set(\octave, 4 + oct);
+	Pdef(m.ptn).set(\octave, 2 + oct);
+	Pdef(m.ptn).set(\root, m.com.root);
 
 	// ((m.accelMassFiltered * 2.0 * m.rrateMassThreshold.reciprocal).reciprocal).postln;
 };
 
 ~nextMidiOut = {|d|
-	// m.midiOut.control(m.midiChannel, 0, m.accelMassFiltered * 64 );
+	m.midiOut.control(m.midiChannel, 1, m.accelMassFiltered * 64 );
 };			
 
 //------------------------------------------------------------	

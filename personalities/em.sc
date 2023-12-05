@@ -31,6 +31,7 @@ m.midiChannel = 1;
 ~onEvent = {|e|
 	m.com.root = e.root;
 	m.com.dur = e.dur;
+
 };
 
 
