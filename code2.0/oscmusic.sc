@@ -15,7 +15,7 @@
 		
 
 	*/
-	var devicesDir = "~/Develop/SuperCollider/SCbounce/personalities/";
+	var devicesDir = "~/Develop/SuperCollider/Projects/SCbounce/personalities/";
 
 	var midiControlOffset = 1;
 	var loadDeviceList;
@@ -371,8 +371,9 @@
 				oscOut.sendMsg("/gyrosc/quat", q.coordinates[0],q.coordinates[1],q.coordinates[2],q.coordinates[3]);
 				
 				t = 3.1 + (cos(i * 2pi * 0.1) * 3);
-				[d.ip, d.port,t].postln;
-//				oscOut.sendMsg("/gyrosc/rrate", t,t,t);
+				// [d.ip, d.port,t].postln;
+				oscOut.sendMsg("/gyrosc/rrate", t,t,t);
+				t.postln;
 
 		        i = i + 0.03;
 				0.03.yield;
@@ -539,8 +540,8 @@
 		d.midiRout.reset.play(AppClock);
 
 
-		 	d.generator = createGenerator.(d);
-		//d.generator.reset.play(AppClock);
+		d.generator = createGenerator.(d);
+		// d.generator.reset.play(AppClock);
 
 	};
 
@@ -553,11 +554,11 @@
 
 		QtGUI.palette = QPalette.dark; 
 
-		GUI.skin.plot.gridLinePattern = FloatArray[1, 0];
-		GUI.skin.plot.gridColorX = Color.yellow(0.5);
-		GUI.skin.plot.gridColorY = Color.yellow(0.5);
-		GUI.skin.plot.background = Color.black;
-		GUI.skin.plot.plotColor = Color.white;
+		// GUI.skin.plot.gridLinePattern = FloatArray[1, 0];
+		// GUI.skin.plot.gridColorX = Color.yellow(0.5);
+		// GUI.skin.plot.gridColorY = Color.yellow(0.5);
+		// GUI.skin.plot.background = Color.black;
+		// GUI.skin.plot.plotColor = Color.white;
 
 		window = Window("osc music", Rect(400, 200, width, height), false).front;
 		window.view.keyDownAction_({|view,char,mods,uni,code,key|
@@ -1141,7 +1142,7 @@
 
 			var sx,sy,sz,qe,q,ss,r;
 			var tr;
-			// [msg, time, addr, recvPort].postln;
+			[msg, time, addr, recvPort].postln;
 
 			if(devices.at(addr.port) != nil,{
 				devices.at(addr.port).sensors.quatEvent = (
@@ -1282,8 +1283,8 @@
 		scroll.canvas = contentView;
 
 		// example of 	loading a device (can only make 1 with generator)
-			// d = addDevice.("127.0.0.1",64564);
-		// addOSCDeviceListeners.(d);
+		d = addDevice.("127.0.0.1",60001);
+		addOSCDeviceListeners.(d);
 
 	};	
 
@@ -1297,3 +1298,8 @@
 	startOSCListening.();
 
 )
+
+
+
+
+
