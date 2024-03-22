@@ -23,7 +23,7 @@
 	var names;
 
 
-    var width = Window.screenBounds.width * 0.6, height = Window.screenBounds.height * 0.8;
+    var width = Window.screenBounds.width * 0.4, height = Window.screenBounds.height * 0.8;
 	var startup, shutdown, buildUI;
 
 	var contentView = UserView().background_(Color.grey(0.2));
@@ -148,7 +148,7 @@
 	);
 
 	var deviceProto = (
-		\name: "gabe2",
+		\name: "gen1",
 		\ip: "127.0.0.1",
 		\port: 57120,
 
@@ -373,7 +373,7 @@
 				t = 3.1 + (cos(i * 2pi * 0.1) * 3);
 				// [d.ip, d.port,t].postln;
 				oscOut.sendMsg("/gyrosc/rrate", t,t,t);
-				t.postln;
+				// t.postln;
 
 		        i = i + 0.03;
 				0.03.yield;
@@ -475,7 +475,7 @@
 			d.procRout.free;
 			d.midiRout.free;
 
-			d.generator.stop();
+			// d.generator.stop();
 			d.env.use{ ~deinit.() };
 
 			d.listeners.voltListener.free;
@@ -540,7 +540,7 @@
 		d.midiRout.reset.play(AppClock);
 
 
-		d.generator = createGenerator.(d);
+		// d.generator = createGenerator.(d);
 		// d.generator.reset.play(AppClock);
 
 	};
@@ -598,11 +598,11 @@
 		var stackView, stackLayout;
 		var dataSizeMenu;
 		var popup;
-		var col = Color.rand(0.1,0.9).alpha_(0.8);
+		var col = Color.rand(0.1,0.9).alpha_(0.2);
 
 		var createGraphs = {
 
-			createPlotterGroup.(va, Rect(250,5,400,240), col, 
+			createPlotterGroup.(va, Rect(250,5,600,200), col, 
 				[
 					"ymc",
 					[Color.yellow,Color.magenta,Color.cyan,Color.red,Color.green,Color.blue],
@@ -660,7 +660,7 @@
 		sliders = sliders.add(slider);v}!2;
 		
 		var sliderView = {|v|
-			UserView(v,Rect(5,5,100,250)).layout_( HLayout(
+			UserView(v,Rect(5,5,100,200)).layout_( HLayout(
 				*sliderViews.collect{|c,i|
 
 					// var mc = MIDIFunc.cc({|val, num, chan| 
@@ -743,8 +743,8 @@
 				.maxWidth_(60)
 				.states_([
 					["2d"],	
-					["plotter"],
-					["3d"],	
+					["3d"],
+					["plotter"],	
 				])
 				.action_({|b|
 						stackLayout.index = b.value;
@@ -801,9 +801,9 @@
 				.action_({|b|
 					//b.value.postln;
 					if(b.value == 1,{
-						d.generator.reset.play(AppClock);
+						// d.generator.reset.play(AppClock);
 					},{
-						d.generator.stop();
+						// d.generator.stop();
 					});
 				}),
 
@@ -815,8 +815,8 @@
 		//------------------------------------------------------------
 		//view.layout.spacing_(1);
 		view.layout.add(stackView = View()
-			// .minHeight_(270)
-			// .maxHeight_(270)
+			.minHeight_(200)
+			.maxHeight_(200)
 			.background_(col)
 			.layout_( HLayout(
 				stackLayout = StackLayout(
@@ -829,9 +829,9 @@
 		);	
 
 		
-		createPlotterGroup.(vc,d);
+		createPlotterGroup.(va,d);
 		createThreeDeeCanvas.(vb,d);
-		createTwoDeeCanvas.(va,d);
+		createTwoDeeCanvas.(vc,d);
 
 		contentView.layout.add(nil);
 	};
@@ -881,8 +881,8 @@
 						bx = o[0] * scale;
 						by = o[1] * scale;
 
-					    Pen.moveTo(Point(ax, ay));
-					    Pen.lineTo(Point(bx, by));
+						Pen.moveTo(Point(ax, ay));
+						Pen.lineTo(Point(bx, by));
 						Pen.stroke;
 						prev = o;
 					});
@@ -902,7 +902,6 @@
 
 	};
 
-
 	//------------------------------------------------------------	
 	// createPlotterGroup
 	//------------------------------------------------------------	
@@ -910,7 +909,7 @@
 	createPlotterGroup = {|view, data|
 
 		var col = [Color.yellow,Color.magenta,Color.cyan,Color.red,Color.green,Color.blue];
-		var bounds = Rect(5,5,400,240);
+		var bounds = Rect(5,5,600,200);
 		var pw = bounds.width;
 		var ph = bounds.height;
 		var plotterView = UserView(view,bounds).animate_(true);
@@ -920,13 +919,13 @@
 		
 		var plotter = Plotter("plotter", Rect(0,0,pw,ph),plotterView)
 			.value_((0..data.dataSize).dup(1)) //need to init arrays with data
+			.plotMode_(\points)
 			.refresh;
 
 		var st = Array.fill(4,"""");
 
 
 		plotData.().size.do({|i|
-
 			st[i] = StaticText(view,Rect(0, (ph/6 * i) - 40, pw * 0.1, ph / 2))
 				.string_("CH"+i)
 				.font_(Font(size:9))
@@ -936,7 +935,10 @@
 
 		 plotterView.drawFunc_({});
 
-		plotter.setProperties(\backgroundColor, Color.gray(0.25));
+		plotter.setProperties(\backgroundColor, Color.gray(0.2));
+		plotter.setProperties(\gridColorX, Color.gray(0.1));
+		plotter.setProperties(\gridColorY, Color.gray(0.1));
+		plotter.setProperties(\gridLineSmoothing, true);
 
 		plotterView.drawFunc = plotterView.drawFunc <> {
 			{
@@ -977,9 +979,9 @@
 		var p1,p2,p3;
 		var t = (1.0 + (5.0).sqrt) / 2.0;
 	    var accelX, accelY, accelZ;
-		graph1 = Canvas3D(view, Rect(5, 5, 600, 440))
+		graph1 = Canvas3D(view, Rect(5, 5, 600, 200))
 		    .scale_(200)
-			.background_(Color.gray(0.25))
+			.background_(Color.gray(0.2))
 		    .perspective_(0.5)
 		    .distance_(3.5);
 
@@ -1116,15 +1118,26 @@
 		}, '/gyrosc/rrate', na);
 
 
-		//•• currently not being used : gets set in /gyrosc/quat
 		d.listeners.gryoListner = OSCFunc({ |msg, time, addr, recvPort|
-
+			var quat;
 			if(devices.at(addr.port) != nil,{
 				devices.at(addr.port).sensors.gyroEvent = (
 					\x:msg[1].asFloat,
 					\y:msg[2].asFloat,
 					\z:msg[3].asFloat);
 			});
+
+			// if we are getting gyro values, we can convert to quats
+			// and use them for quatEvent values
+			quat = eulerToQuaternion.(msg[1].asFloat,msg[2].asFloat,msg[3].asFloat);
+			devices.at(addr.port).sensors.quatEvent = (
+				\w:quat.coordinates[0],
+				\x:quat.coordinates[1],
+				\y:quat.coordinates[2],
+				\z:quat.coordinates[3];
+			);
+
+
 		}, '/gyrosc/gyroSS', na); // see notes below
 
 		d.listeners.accelListener = OSCFunc({ |msg, time, addr, recvPort|
@@ -1142,7 +1155,7 @@
 
 			var sx,sy,sz,qe,q,ss,r;
 			var tr;
-			[msg, time, addr, recvPort].postln;
+			// [msg, time, addr, recvPort].postln;
 
 			if(devices.at(addr.port) != nil,{
 				devices.at(addr.port).sensors.quatEvent = (
@@ -1151,7 +1164,8 @@
 					\y:msg[3].asFloat,
 					\z:msg[4].asFloat);
 
-				// take quaternion and convert to ueler angles 
+				// if we are getting quat values, we can convert to euler angles
+				// and use them for gyroEvents values
 				qe = devices.at(addr.port).sensors.quatEvent;
 				q = Quaternion.new(qe.w,qe.x,qe.y,qe.z);
 				r = q.asEuler;
@@ -1283,7 +1297,8 @@
 		scroll.canvas = contentView;
 
 		// example of 	loading a device (can only make 1 with generator)
-		d = addDevice.("127.0.0.1",60001);
+		// d = addDevice.("127.0.0.1",60001);.
+		d = addDevice.("127.0.0.1",57120);
 		addOSCDeviceListeners.(d);
 
 	};	
@@ -1298,8 +1313,6 @@
 	startOSCListening.();
 
 )
-
-
 
 
 
