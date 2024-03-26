@@ -56,7 +56,7 @@
 	var createGenerator;
 
 
-	var dataSizes = [100,200,300,400];
+	var dataSizes = [100,200,300,400,800];
 	
 	var midiOut;//, midiController;
 
@@ -602,7 +602,7 @@
 
 		var createGraphs = {
 
-			createPlotterGroup.(va, Rect(250,5,600,200), col, 
+			createPlotterGroup.(va, Rect(250,5,500,200), col, 
 				[
 					"ymc",
 					[Color.yellow,Color.magenta,Color.cyan,Color.red,Color.green,Color.blue],
@@ -625,7 +625,7 @@
 			var v = VLayout(
 				label,
 				slider = Slider()
-				.maxWidth_(30)
+				.maxWidth_(60)
 				.action_({|o|
 					d.env.use{
 						switch(i,
@@ -660,7 +660,7 @@
 		sliders = sliders.add(slider);v}!2;
 		
 		var sliderView = {|v|
-			UserView(v,Rect(5,5,100,200)).layout_( HLayout(
+			UserView(v,Rect(5,5,100,200)).minWidth_(200).layout_( HLayout(
 				*sliderViews.collect{|c,i|
 
 					// var mc = MIDIFunc.cc({|val, num, chan| 
@@ -683,7 +683,7 @@
 
 		var onOffButton;
 
-		header = View(view).background_(col).maxHeight_(100).layout_( GridLayout.rows( [
+		header = View(view).background_(col).maxHeight_(110).layout_( GridLayout.rows( [
 
 			onOffButton = Button()
 				.maxWidth_(40)
@@ -843,7 +843,7 @@
 	createTwoDeeCanvas = {|view, data|
 
 		var cols = [Color.yellow,Color.magenta,Color.cyan,Color.red,Color.green,Color.blue];
-		var bounds = Rect(5,5,600,440);
+		var bounds = Rect(5,5,500,440);
 		var prev = [];
 		var ax, ay, bx, by, mx, my;
 		var scale = 0.45;
@@ -909,7 +909,7 @@
 	createPlotterGroup = {|view, data|
 
 		var col = [Color.yellow,Color.magenta,Color.cyan,Color.red,Color.green,Color.blue];
-		var bounds = Rect(5,5,600,200);
+		var bounds = Rect(5,5,500,200);
 		var pw = bounds.width;
 		var ph = bounds.height;
 		var plotterView = UserView(view,bounds).animate_(true);
@@ -919,11 +919,11 @@
 		
 		var plotter = Plotter("plotter", Rect(0,0,pw,ph),plotterView)
 			.value_((0..data.dataSize).dup(1)) //need to init arrays with data
-			.plotMode_(\points)
+			.plotMode_(\linear)
 			.refresh;
 
 		var st = Array.fill(4,"""");
-
+		var arr = [Array.fill(data.dataSize,0.8),Array.fill(data.dataSize,0.2),Array.fill(data.dataSize,0.3)];
 
 		plotData.().size.do({|i|
 			st[i] = StaticText(view,Rect(0, (ph/6 * i) - 40, pw * 0.1, ph / 2))
@@ -938,19 +938,23 @@
 		plotter.setProperties(\backgroundColor, Color.gray(0.2));
 		plotter.setProperties(\gridColorX, Color.gray(0.1));
 		plotter.setProperties(\gridColorY, Color.gray(0.1));
-		plotter.setProperties(\gridLineSmoothing, true);
+		// plotter.setProperties(\gridLineSmoothing, true);
 
-		plotterView.drawFunc = plotterView.drawFunc <> {
-			{
+		plotterView.drawFunc =  {
+		//	{
+
+				3.do{|i|
+					arr[i] = arr[i].add(plotData.()[i]);
+					arr[i].removeAt(0);
+				};
+				plotter.setValue(arr, refresh: true);
+				
+				// plotter.value = plotter.value.flop;
+				// plotter.value = plotter.value.insert(0, plotData.());
+				// plotter.value = plotter.value.keep(data.dataSize);
+				// plotter.value = plotter.value.flop;
 				
 				plotter.superpose = true;
-				plotter.value = plotter.value.flop;
-				plotter.value = plotter.value.insert(0, plotData.());
-				plotter.value = plotter.value.keep(data.dataSize);
-				plotter.value = plotter.value.flop;
-
-				// old way of parsing single values
-				// p.value = p.value.shift(1).putFirst(d.env.use{ ~plot.(d)});
 				
 				plotter.minval_(pmin);
 				plotter.maxval_(pmax);
@@ -963,7 +967,7 @@
 				// });
 
 
-			}.defer(0.1);// need to delay to allow for construction 
+			//}.defer(0.1);// speeds rendering up but takes up CPU time!
 		}
 
 	};
@@ -979,7 +983,7 @@
 		var p1,p2,p3;
 		var t = (1.0 + (5.0).sqrt) / 2.0;
 	    var accelX, accelY, accelZ;
-		graph1 = Canvas3D(view, Rect(5, 5, 600, 200))
+		graph1 = Canvas3D(view, Rect(5, 5, 500, 200))
 		    .scale_(200)
 			.background_(Color.gray(0.2))
 		    .perspective_(0.5)
