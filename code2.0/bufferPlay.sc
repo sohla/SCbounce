@@ -11,11 +11,12 @@ v.xZoom = 4
 
 SynthDef(\test, {|bus=0,freq=111, amp=0.1|
     var sig = LFTri.kr(freq * MouseX.kr(1,100), amp);
-    Out.kr(0, sig);
+    Out.kr(bus, sig);
+    
 }).add;
 
 
-a = Synth(\test, [\bus, v.bus, \freq, 1, \amp, 0.1]);
+a = Synth(\test, [\bus, 1, \freq, 1, \amp, 0.1]);
 
 a.free
 
