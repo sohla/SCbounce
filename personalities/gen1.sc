@@ -91,6 +91,6 @@ var eulerToQuaternion = {|y,p,r|
 ~plotMax = pi.half;
 
 ~plot = { |d,p|
-	// [m.rrateMassFiltered * 0.5, ~device.sensors.quatEvent.z, ~device.sensors.quatEvent.x];
+	// [m.rrateMass , 0,0];
 	[ ~device.sensors.quatEvent.x, ~device.sensors.quatEvent.y, ~device.sensors.quatEvent.z];
 };
