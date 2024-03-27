@@ -66,10 +66,10 @@ var eulerToQuaternion = {|y,p,r|
 //------------------------------------------------------------	
 ~next = {|d| 
 
-    var x = cos(i * 2pi * 0.002) * 90;
-    var z = sin(i * 2pi * 0.01) * 90;
-    var y = sin(i * 2pi * 0.006) * 90;
-    var t = 3.1 + (cos(i * 2pi * 0.1) * 3);
+    var x = cos(i * 2pi * 0.005) * 90;
+    var z = sin(i * 2pi * 0.003) * 90;
+    var y = sin(i * 2pi * 0.002) * 90;
+    var t = 1;//3.1 + (cos(i * 2pi * 0.1) * 3);
     var q = eulerToQuaternion.(y,x,z);
 
     // oscOut.sendMsg("/gyrosc/quat", q.coordinates[0],q.coordinates[1],q.coordinates[2],q.coordinates[3]);

@@ -166,7 +166,31 @@
 		\sensors: Event.new(proto:sensorsProto),
 
 		\blob:  Event.new(proto:blobProto),
-		);
+	);
+
+	var modelProto = (
+		\com: com,
+		\name: "x",
+		\ptn: Array.fill(16,{|i|i=90.rrand(65).asAscii}),
+		\midiOut: 0,
+		\midiChannel: 1,
+
+		\rrateMass: 0,
+		\rrateMassFiltered: 0,
+		\rrateMassThreshold: 0.21, //use for isMoving
+		\rrateMassThresholdSpec: ControlSpec(0.07, 0.4, \lin, 0.01, 0.21),
+
+		\accelMass: 0,
+		\accelMassFiltered: 0,
+		\accelMassAmpThreshold: 2.0,
+		\accelMassThresholdSpec: ControlSpec(0.4, 3.0, \lin, 0.1, 2.0),
+
+		\isHit: false,
+		\isMoving: true,
+		\accelMassAmp: 0.0,
+
+	);
+
 
 	//------------------------------------------------------------	
 	// midi
@@ -203,29 +227,9 @@
 		// after adding personality to an Environment, add useful functions to be used by anyone
 		var env = Environment.make {
 
-
-			~model = (
-				\com: com,
-				\name: d.name,
-				\ptn: Array.fill(16,{|i|i=90.rrand(65).asAscii}),
-				\midiOut: midiOut,
-				\midiChannel: 1,
-
-				\rrateMass: 0,
-				\rrateMassFiltered: 0,
-				\rrateMassThreshold: 0.21, //use for isMoving
-				\rrateMassThresholdSpec: ControlSpec(0.07, 0.4, \lin, 0.01, 0.21),
-
-				\accelMass: 0,
-				\accelMassFiltered: 0,
-				\accelMassAmpThreshold: 2.0,
-				\accelMassThresholdSpec: ControlSpec(0.4, 3.0, \lin, 0.1, 2.0),
-
-				\isHit: false,
-				\isMoving: true,
-				\accelMassAmp: 0.0,
-
-			);
+			~model = Event.new(proto:modelProto);
+			~model.name = d.name;
+			~model.midiOut = midiOut;
 			~device = d;
 			//------------------------------------------------------------	
 			// frame rate of rout
