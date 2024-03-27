@@ -124,6 +124,7 @@
 	var sensorsProto = (
 
 		\gyroEvent: threeCh,
+		\gyroBus: Bus.control(s, 3),
 		\gyroMass: 0,
 		\rrateEvent: threeCh,
 		\rrateMass: 0,
@@ -495,7 +496,6 @@
 
 		var d = Event.new(proto:deviceProto);
 		
-
 		d.listeners = Event.new(proto:listenersProto);
 		d.sensors =  Event.new(proto:sensorsProto);
 		d.blob = Event.new(proto:blobProto);
@@ -687,6 +687,7 @@
 
 		var onOffButton;
 
+		// d.sensors.gyroBus.scope;
 		header = View(view).background_(col).maxHeight_(110).layout_( GridLayout.rows( [
 
 			onOffButton = Button()
@@ -1144,6 +1145,11 @@
 				\y:quat.coordinates[2],
 				\z:quat.coordinates[3];
 			);
+			// devices.at(addr.port).sensors.gyroBus.set(
+			// 	quat.coordinates[1],
+			// 	quat.coordinates[2],
+			// 	quat.coordinates[3]);
+
 
 
 		}, '/gyrosc/gyroSS', na); // see notes below

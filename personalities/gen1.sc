@@ -75,7 +75,6 @@ var eulerToQuaternion = {|y,p,r|
     // oscOut.sendMsg("/gyrosc/quat", q.coordinates[0],q.coordinates[1],q.coordinates[2],q.coordinates[3]);
     oscOut.sendMsg("/gyrosc/gyroSS", x,y,z);
     oscOut.sendMsg("/gyrosc/rrate", t,t,t);
-
     // [d.ip, d.port,t].postln;
 
     i = i + 0.03;

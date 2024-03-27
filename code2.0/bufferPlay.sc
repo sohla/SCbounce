@@ -26,3 +26,7 @@ b = Buffer.read(s, Platform.resourceDir +/+ "sounds/a11wlk01.wav");
 b.getToFloatArray(wait:0.01,action:{arg array; a = array; { a.plot }.defer; "done".postln });
 b.free;
 
+
+
+
+
