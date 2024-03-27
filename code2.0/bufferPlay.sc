@@ -1,43 +1,28 @@
-w = Window.new.front;
-
-v = Stethoscope(s,2, view:w.view);
-v.view.bounds = Rect(0,0,600,300);
-v.rate = \control;
-v.bus.value = 0.2
-v.cycle = 4096 * 8
-v.xZoom = 4
+Buffer.freeAll;
+b = Buffer.alloc(s, s.sampleRate * 2); //two second buffer
 
 
 
-SynthDef(\test, {|bus=0,freq=111, amp=0.1|
-    var sig = LFTri.kr(freq * MouseX.kr(1,100), amp);
-    Out.kr(bus, sig);
+
+(
+    //record into buffer, overwriting old contents, and also play the buffer
+    x = {
+        var sig;
+        sig = SinOsc.ar(LFNoise2.ar(4).range(50,100), 0, 0.1);
+        RecordBuf.ar(sig, b, \offset.kr(0), \reclev.kr(1), \prelev.kr(0), \run.kr(1), \loop.kr(1));
+        PlayBuf.ar(1!2, b, loop:1);
+    }.play;
+)
     
-}).add;
+y = {PlayBuf.ar(1!2, b, loop:1)}.play;
+y.free
+b.plot
+b.getToFloatArray(wait:0.01, action:{|a| "done".postln; });
+b.free
 
+s.boot;
+b = Buffer.read(s, Platform.resourceDir +/+ "sounds/a11wlk01.wav");
+// like Buffer.plot
+b.getToFloatArray(wait:0.01,action:{arg array; a = array; { a.plot }.defer; "done".postln });
+b.free;
 
-a = Synth(\test, [\bus, 1, \freq, 1, \amp, 0.1]);
-
-a.free
-
-
-s.freeAll
-
-
-
-y = [ 1, 2, 3 ];
-
-y.reshape(3,1)
-y
-y = y.add(4)
-y.removeAt(0)
-y
-
-
-
-Array.with([Array.newClear(3),Array.newClear(3),Array.newClear(3)])
-
-
-Array.fill(10,[0.1,0.2,0.4]);
-a = [Array.fill(10,0.8),Array.fill(10,0.2),Array.fill(10,0.3)];
-a[0].add(0.1)
