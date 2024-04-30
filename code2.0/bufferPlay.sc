@@ -30,3 +30,10 @@ b.free;
 
 
 
+"/myapp/instrument/cntl",1,3,64
+"/myapp/instrument/cntl",1,3,0
+ 
+// design supercollider sythn with lfo amp modulation
+// design supercollider synth with lfo freq modulation
+
+

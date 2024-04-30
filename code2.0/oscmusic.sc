@@ -1309,7 +1309,7 @@
 
 		contentView.layout_(VLayout());
 		scroll.canvas = contentView;
-
+		
 		// example of 	loading a device (can only make 1 with generator)
 		// d = addDevice.("127.0.0.1",57120);
 		// addOSCDeviceListeners.(d);

@@ -73,8 +73,8 @@ var eulerToQuaternion = {|y,p,r|
     var q = eulerToQuaternion.(y,x,z);
 
     // oscOut.sendMsg("/gyrosc/quat", q.coordinates[0],q.coordinates[1],q.coordinates[2],q.coordinates[3]);
-    oscOut.sendMsg("/gyrosc/gyroSS", x,y,z);
-    oscOut.sendMsg("/gyrosc/rrate", t,t,t);
+    // oscOut.sendMsg("/gyrosc/gyroSS", x,y,z);
+    // oscOut.sendMsg("/gyrosc/rrate", t,t,t);
     // [d.ip, d.port,t].postln;
 
     i = i + 0.03;
@@ -92,5 +92,6 @@ var eulerToQuaternion = {|y,p,r|
 
 ~plot = { |d,p|
 	// [m.rrateMass , 0,0];
-	[ ~device.sensors.quatEvent.x, ~device.sensors.quatEvent.y, ~device.sensors.quatEvent.z];
+	[ ~device.sensors.quatEvent.x, ~device.sensors.quatEvent.w, ~device.sensors.quatEvent.z];
+
 };
