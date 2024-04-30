@@ -4,11 +4,11 @@ o = [
 ];
 p = [
 	// Array
-	0, [ -1,  1,  0,  100,  
+	0, [ 0.0,  0.0,  0,  100,  
 		true,  false,  true,  o[1],  
 		true,  false ],  
 	// Rect
-	1, [ left: 760.0,  top: 387.0,  
+	1, [ left: 495.0,  top: 560.0,  
 		width: 400.0,  height: 400.0 ]
 ];
 prUnarchive(o,p);
