@@ -991,6 +991,7 @@
 		    .scale_(200)
 			.background_(Color.gray(0.25))
 		    .perspective_(0.5)
+			.transforms_([Canvas3D.mTranslate(0,-2,0)])
 		    .distance_(3.5);
 
 		graph1.add(p1 = Canvas3DItem.grid(2)
