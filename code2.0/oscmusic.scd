@@ -53,25 +53,25 @@
 	var addDevice, removeDevice, removeDeviceButton;
     var buttonListener;
 
-    var oscOut = NetAddr.new("127.0.0.1", 9003); 
+    var oscOut = NetAddr.new("127.0.0.1", 9003);
 
 	var devices = Dictionary();
 
-	var dataRate = 1; 
+	var dataRate = 1;
 	var renderRate = 30;
 	var loadPersonality;
 	var reloadPersonality;
 	var createProcRout;
 	var createMidiRout;
-	
+
 	var createGenerator;
 
 
 	var dataSizes = [100,200,300,400];
-	
+
 	var midiOut;//, midiController;
 
-	var midiControllers = []; //hold the sliderViews and values 
+	var midiControllers = []; //hold the sliderViews and values
 
 	var eulerToQuaternion;
 
@@ -82,7 +82,7 @@
 		\rrateMass: 0,
 	);
 
-	var comRout = Routine { 
+	var comRout = Routine {
 		loop {
 
 			var a = 0, r = 0;
@@ -93,7 +93,7 @@
 					a = a + ~model.accelMassFiltered;
 					r = r + ~model.rrateMassFiltered;
 
-					//• pre call each device 
+					//• pre call each device
 
 					//• call com process functiom
 					//~onCom.(com,v);
@@ -109,9 +109,9 @@
 		}
 	}.play;
 
-	//------------------------------------------------------------	
+	//------------------------------------------------------------
 	// models
-	//------------------------------------------------------------	
+	//------------------------------------------------------------
 	//• can we use this Event proto as a way of decalritive building an application
 
 	var twoCh = (\x: 0, \y:0);
@@ -119,15 +119,15 @@
 	var fourCh = (\w: 0, \x: 0, \y:0, \z:0);
 
 	var listenersProto = (
-	
+
     	\gryoListner: nil,
-    	\rotMatListner: nil, 
-    	\rrateListener: nil, 
-    	\accelListener: nil, 
-    	\quatListener: nil, 
-    	\altListener: nil, 
-    	\ampListener: nil, 
-    	\voltListener: nil, 
+    	\rotMatListner: nil,
+    	\rrateListener: nil,
+    	\accelListener: nil,
+    	\quatListener: nil,
+    	\altListener: nil,
+    	\ampListener: nil,
+    	\voltListener: nil,
     	\lineListener: nil;
 
 	);
@@ -150,7 +150,7 @@
 		\index: 0,
 		\dataSize: 3,
 		\area: 0,
-		\perimeter: 0,	
+		\perimeter: 0,
 		\center: Point(0,0),
 		\rect: Rect(0,0,20,20),
 		\label: 0,
@@ -170,7 +170,7 @@
 
 		\env: nil,	// Environment for injected code
 		\procRout: nil,	// Routine calls ~next every ~fps
-		\midiRout: nil,	// Routine calls ~nextMidiOut 
+		\midiRout: nil,	// Routine calls ~nextMidiOut
 
 		\generator: nil, // Routine for generating data
 
@@ -179,9 +179,9 @@
 		\blob:  Event.new(proto:blobProto),
 		);
 
-	//------------------------------------------------------------	
+	//------------------------------------------------------------
 	// midi
-	//------------------------------------------------------------	
+	//------------------------------------------------------------
 	MIDIClient.init;
 	MIDIClient.destinations;
 
@@ -191,11 +191,11 @@
 	// midiController = MIDIOut(2).latency_(0.0);
 	MIDIIn.connectAll;
 
-	//------------------------------------------------------------	
-	// 
+	//------------------------------------------------------------
+	//
 	//------------------------------------------------------------
 
-	loadDeviceList = {  
+	loadDeviceList = {
 
 		var path = PathName.new(devicesDir++"list.sc");
 		var file = File.new(path.asAbsolutePath,"r");
@@ -204,7 +204,7 @@
 		interpret(str)
 	};
 
-	//------------------------------------------------------------	
+	//------------------------------------------------------------
 	loadPersonality = {|d|
 
 		var path = PathName.new(devicesDir++d.name++".sc");
@@ -238,11 +238,11 @@
 
 			);
 			~device = d;
-			//------------------------------------------------------------	
+			//------------------------------------------------------------
 			// frame rate of rout
 			~secs = 0.03;
 
-			//------------------------------------------------------------	
+			//------------------------------------------------------------
 			// process data->model
 			~processDeviceData = {|d|
 
@@ -254,7 +254,7 @@
 
 			};
 
-			//------------------------------------------------------------	
+			//------------------------------------------------------------
 			// process triggers
 			~processTriggers = {|d|
 
@@ -269,7 +269,7 @@
 				};
 
 				// use raw accelMass to get the quickest response
-				if( ~model.accelMass > ~model.accelMassAmpThreshold,{ 
+				if( ~model.accelMass > ~model.accelMassAmpThreshold,{
 					changeState.(true);
 				},{
 					changeState.(false);
@@ -288,11 +288,11 @@
 						~model.isMoving = false;
 						Pdef(~model.ptn).pause();
 					});
-				});			
+				});
 			};
 
 
-			//------------------------------------------------------------	
+			//------------------------------------------------------------
 			~play = {
 				Pdef(~model.ptn).play();
 			};
@@ -301,12 +301,12 @@
 				Pdef(~model.ptn).stop();
 			};
 
-			//------------------------------------------------------------	
-			~init = { 
+			//------------------------------------------------------------
+			~init = {
 				("init" + ~model.name).postln;
 			};
 
-			//------------------------------------------------------------	
+			//------------------------------------------------------------
 			~buildPattern = {
 				Pdef(~model.ptn).set(\type,\midi);
 				Pdef(~model.ptn).set(\midiout,~model.midiOut);
@@ -315,18 +315,18 @@
 
 
 			};
-			//------------------------------------------------------------	
+			//------------------------------------------------------------
 			~deinit = {
 				~stop.();
 				Pdef(~model.ptn).clear;//or use endless?
 				("deinit" + ~model.name).postln;
 			};
 
-			//------------------------------------------------------------	
+			//------------------------------------------------------------
 
-			//------------------------------------------------------------	
+			//------------------------------------------------------------
 			interpret(str);
-			//------------------------------------------------------------	
+			//------------------------------------------------------------
 
 
 			~tween = {|input,history,friction = 0.5|
@@ -336,15 +336,15 @@
 			~slope = {|input,history|
 				history - input
 			};
-		};	
+		};
 
 		env
 	};
 
 
-	//------------------------------------------------------------	
-	// 
-	//------------------------------------------------------------	
+	//------------------------------------------------------------
+	//
+	//------------------------------------------------------------
 	//https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles
 	eulerToQuaternion = {|y,p,r|
 
@@ -362,17 +362,17 @@
     		sy * cp * cr - cy * sp * sr
 		)
 	};
-	//------------------------------------------------------------	
-	// 
-	//------------------------------------------------------------	
+	//------------------------------------------------------------
+	//
+	//------------------------------------------------------------
 	createGenerator = {|d|
 
 		var oscOut = NetAddr(d.ip, d.port);
 		var p,y,r,t;
 		var i=0;
 		var q;
-		Routine { 
-	    	loop {
+		Routine {
+	    	loop {
 
 				p = cos(i * 2pi * 0.002) * 90;
 				r = sin(i * 2pi * 0.01) * 90;
@@ -380,30 +380,30 @@
 
 				q = eulerToQuaternion.(y,p,r);
 				oscOut.sendMsg("/gyrosc/quat", q.coordinates[0],q.coordinates[1],q.coordinates[2],q.coordinates[3]);
-				
+
 				t = 3.1 + (cos(i * 2pi * 0.1) * 3);
 				[d.ip, d.port,t].postln;
 //				oscOut.sendMsg("/gyrosc/rrate", t,t,t);
 
-		        i = i + 0.03;
+		        i = i + 0.03;
 				0.03.yield;
 
-		    }
+		    }
 		}.stop;
 	};
 
-	//------------------------------------------------------------	
-	// 
-	//------------------------------------------------------------	
+	//------------------------------------------------------------
+	//
+	//------------------------------------------------------------
 	createMidiRout = {|d|
 
-		Routine { 
+		Routine {
 
-			loop{ 
+			loop{
 				d.env.use{
 
 					if(d.enabled == true,{
-		
+
 						//midi out has it's own set interval
 						~nextMidiOut.(d);
 
@@ -414,19 +414,19 @@
 			};
 		}
 	};
-	//------------------------------------------------------------	
-	// 
-	//------------------------------------------------------------	
+	//------------------------------------------------------------
+	//
+	//------------------------------------------------------------
 	createProcRout = {|d|
 
-		Routine { 
+		Routine {
 
-			loop{ 
+			loop{
 				d.env.use{
 
 					if(d.enabled == true,{
-		
-						// process data -> personality model 
+
+						// process data -> personality model
 						~processDeviceData.(d);
 
 						// model to functions
@@ -442,16 +442,16 @@
 			};
 		}
 	};
-	//------------------------------------------------------------	
-	// 
-	//------------------------------------------------------------	
-	
+	//------------------------------------------------------------
+	//
+	//------------------------------------------------------------
+
 	startup = {
 		names = loadDeviceList.();
 	};
 
-	// 
-	//------------------------------------------------------------	
+	//
+	//------------------------------------------------------------
 	shutdown = {
 
 		stopOSCListening.();
@@ -469,14 +469,14 @@
 
 
 		s.queryAllNodes;
-		
+
 		Pdef.clear;
 		Server.freeAll;
 
 	};
-	//------------------------------------------------------------	
-	// 
-	//------------------------------------------------------------	
+	//------------------------------------------------------------
+	//
+	//------------------------------------------------------------
 	removeDevice = {|d|
 
 			d.procRout.stop();
@@ -500,7 +500,7 @@
 	addDevice = { |ip,port|
 
 		var d = Event.new(proto:deviceProto);
-		
+
 
 		d.listeners = Event.new(proto:listenersProto);
 		d.sensors =  Event.new(proto:sensorsProto);
@@ -510,7 +510,7 @@
 		d.port = port;
 
 		devices.put(port,d);
-		
+
 		// load the data
 		reloadPersonality.(d);
 
@@ -537,8 +537,8 @@
 
 		// start new personality
 		d.env = loadPersonality.(d);
-		d.env.use{ 
-			~init.(); 
+		d.env.use{
+			~init.();
 			~buildPattern.();
 		};
 
@@ -555,14 +555,14 @@
 
 	};
 
-	//------------------------------------------------------------	
-	// 
-	//------------------------------------------------------------	
+	//------------------------------------------------------------
+	//
+	//------------------------------------------------------------
 	buildUI = {
-		
+
 		var window;
 
-		QtGUI.palette = QPalette.dark; 
+		QtGUI.palette = QPalette.dark;
 
 		GUI.skin.plot.gridLinePattern = FloatArray[1, 0];
 		GUI.skin.plot.gridColorX = Color.yellow(0.5);
@@ -595,7 +595,7 @@
 			shutdown.();
 		};
 		CmdPeriod.doOnce({window.close});
-		
+
 		createWindowView.(window);
 
 	};
@@ -612,7 +612,7 @@
 
 		var createGraphs = {
 
-			createPlotterGroup.(va, Rect(250,5,400,240), col, 
+			createPlotterGroup.(va, Rect(250,5,400,240), col,
 				[
 					"ymc",
 					[Color.yellow,Color.magenta,Color.cyan,Color.red,Color.green,Color.blue],
@@ -668,21 +668,21 @@
 				,valueLabel
 			);
 		sliders = sliders.add(slider);v}!2;
-		
+
 		var sliderView = {|v|
 			UserView(v,Rect(5,5,100,250)).layout_( HLayout(
 				*sliderViews.collect{|c,i|
 
-					// var mc = MIDIFunc.cc({|val, num, chan| 
+					// var mc = MIDIFunc.cc({|val, num, chan|
 					// 	//[c,val, num, chan].postln;
-					// 	//• TODO 
+					// 	//• TODO
 					// 	{
 					// 		c.valueAction_(val/127.0);
 
 					// 	}.defer(0);
 					// },midiControlOffset+i);
 
-					//midiControllers = midiControllers.add(mc);	
+					//midiControllers = midiControllers.add(mc);
 
 					c
 				};
@@ -708,7 +708,7 @@
 					},{
 						d.env.use{~stop.()};
 					});
-				}),	
+				}),
 
 			voltButton = Button()
 				.maxWidth_(80)
@@ -717,7 +717,7 @@
 					n = NetAddr.new(d.ip, d.port.asInt);
 					n.postln;
 					n.sendMsg("/togyrosc/volt", 42.asInt);
-				}),			
+				}),
 
 			StaticText(view)
 				.stringColor_(Color.white)
@@ -737,7 +737,7 @@
 			removeDeviceButton = Button(view)
 				.maxWidth_(40)
 				.states_([
-					["x",Color.red(0.5)],	
+					["x",Color.red(0.5)],
 				])
 				.action_({|b|
 					header.remove();
@@ -752,9 +752,9 @@
 			Button(view)
 				.maxWidth_(60)
 				.states_([
-					["2d"],	
+					["2d"],
 					["plotter"],
-					["3d"],	
+					["3d"],
 				])
 				.action_({|b|
 						stackLayout.index = b.value;
@@ -777,7 +777,7 @@
 						d.name = names.at(b.value);
 						reloadPersonality.(d);
 
-						d.env.use{ 
+						d.env.use{
 							~model.rrateMassThreshold = ~model.rrateMassThresholdSpec.map(sliders[0].value);
 							~model.accelMassAmpThreshold = ~model.accelMassThresholdSpec.map(sliders[1].value);
 						};
@@ -786,12 +786,12 @@
 			reloadButton = Button(view)
 				.minWidth_(80)
 				.states_([
-					["reload"],	
+					["reload"],
 				])
 				.action_({|b|
 
 					onOffButton.valueAction_(1);
-					{						
+					{
 						reloadPersonality.(d);
 						onOffButton.valueAction_(1);
 					}.defer(0.1);
@@ -836,9 +836,9 @@
 					),
 				sliderView.(stackView).maxWidth_(80)
 				))
-		);	
+		);
 
-		
+
 		createPlotterGroup.(vc,d);
 		createThreeDeeCanvas.(vb,d);
 		createTwoDeeCanvas.(va,d);
@@ -846,9 +846,9 @@
 		contentView.layout.add(nil);
 	};
 
-	//------------------------------------------------------------	
+	//------------------------------------------------------------
 	// createTwoDeeCanvas
-	//------------------------------------------------------------	
+	//------------------------------------------------------------
 
 	createTwoDeeCanvas = {|view, data|
 
@@ -891,8 +891,8 @@
 						bx = o[0] * scale;
 						by = o[1] * scale;
 
-					    Pen.moveTo(Point(ax, ay));
-					    Pen.lineTo(Point(bx, by));
+					    Pen.moveTo(Point(ax, ay));
+					    Pen.lineTo(Point(bx, by));
 						Pen.stroke;
 						prev = o;
 					});
@@ -913,9 +913,9 @@
 	};
 
 
-	//------------------------------------------------------------	
+	//------------------------------------------------------------
 	// createPlotterGroup
-	//------------------------------------------------------------	
+	//------------------------------------------------------------
 
 	createPlotterGroup = {|view, data|
 
@@ -927,7 +927,7 @@
 		var pmin = data.env.use{ ~plotMin.()};
 		var pmax = data.env.use{ ~plotMax.()};
 		var plotData = { data.env.use{ ~plot.(data)} };
-		
+
 		var plotter = Plotter("plotter", Rect(0,0,pw,ph),plotterView)
 			.value_((0..data.dataSize).dup(1)) //need to init arrays with data
 			.refresh;
@@ -950,7 +950,7 @@
 
 		plotterView.drawFunc = plotterView.drawFunc <> {
 			{
-				
+
 				plotter.superpose = true;
 				plotter.value = plotter.value.flop;
 				plotter.value = plotter.value.insert(0, plotData.());
@@ -959,7 +959,7 @@
 
 				// old way of parsing single values
 				// p.value = p.value.shift(1).putFirst(d.env.use{ ~plot.(d)});
-				
+
 				plotter.minval_(pmin);
 				plotter.maxval_(pmax);
 
@@ -971,14 +971,14 @@
 				// });
 
 
-			}.defer(0.1);// need to delay to allow for construction 
+			}.defer(0.1);// need to delay to allow for construction
 		}
 
 	};
 
-	//------------------------------------------------------------	
+	//------------------------------------------------------------
 	// Three Dee Canvas
-	//------------------------------------------------------------	
+	//------------------------------------------------------------
 	// special view for special data
 
 	createThreeDeeCanvas = { |view, data|
@@ -1070,13 +1070,13 @@
 				data.sensors.gyroEvent.x//2
 			];
 
-		    ico.transforms = [ 
+		    ico.transforms = [
 				Canvas3D.mScale(0.6,0.6,0.6),
 		        Canvas3D.mRotateX(tr[0]),
 		        Canvas3D.mRotateY(tr[1]),
 		        Canvas3D.mRotateZ(tr[2]),
 		    ];
-		    
+
 			accelY.transforms = [
 				Canvas3D.mScale(0.01,(data.sensors.accelEvent.y),0.01),
 		        Canvas3D.mRotateX(tr[0]),
@@ -1084,18 +1084,18 @@
 		        Canvas3D.mRotateZ(tr[2]),
 		    ];
 
-			accelX.transforms = [ 
+			accelX.transforms = [
 				Canvas3D.mScale((data.sensors.accelEvent.z),0.01,0.01),
 		        Canvas3D.mRotateX(tr[0]),
 		        Canvas3D.mRotateY(tr[1]),
 		        Canvas3D.mRotateZ(tr[2]),
 		    ];
-			accelZ.transforms = [ 
+			accelZ.transforms = [
 				Canvas3D.mScale(0.01,0.01,(data.sensors.accelEvent.x)),
 		        Canvas3D.mRotateX(tr[0]),
 		        Canvas3D.mRotateY(tr[1]),
 		        Canvas3D.mRotateZ(tr[2]),
-		    ];		    
+		    ];
 		    p1.transforms=ico.transforms;
 			p2.transforms=ico.transforms;
 			p3.transforms=ico.transforms;
@@ -1105,9 +1105,9 @@
 	};
 
 
-	//------------------------------------------------------------	
+	//------------------------------------------------------------
 	// osc listneners
-	//------------------------------------------------------------	
+	//------------------------------------------------------------
 	addOSCDeviceListeners = {|d|
 
 		var na = NetAddr.new(d.ip, d.port);
@@ -1135,7 +1135,7 @@
 					\y:msg[2].asFloat,
 					\z:msg[3].asFloat);
 			});
-		}, '/gyrosc/gyroSS', na); // see notes below
+		}, '/gyrosc/gyro', na); // see notes below
 
 		d.listeners.accelListener = OSCFunc({ |msg, time, addr, recvPort|
 
@@ -1161,7 +1161,7 @@
 					\y:msg[3].asFloat,
 					\z:msg[4].asFloat);
 
-				// take quaternion and convert to ueler angles 
+				// take quaternion and convert to ueler angles
 				qe = devices.at(addr.port).sensors.quatEvent;
 				q = Quaternion.new(qe.w,qe.x,qe.y,qe.z);
 				r = q.asEuler;
@@ -1172,10 +1172,10 @@
 					\z:tr[1].asFloat);
 			});
 
-		}, '/gyrosc/quat', na);
-			
+		}, '/gyrosc/quatSS', na);
+
 /*
-	quat being used for bounceOSC 
+	quat being used for bounceOSC
 
 	gyro being used for M5StickC
 
@@ -1186,7 +1186,7 @@
 		-DINPORT=56145
 		-DSTATIP=45
 
-	
+
 
 
 */
@@ -1217,18 +1217,18 @@
 						//msg[0] is the path
 						\index: msg[1].asInt,
 						\area: msg[2].asFloat,
-						\perimeter: msg[3].asFloat,	
+						\perimeter: msg[3].asFloat,
 						\center: Point(
-							msg[4].asFloat * scale, 
+							msg[4].asFloat * scale,
 							msg[5].asFloat * scale),
 						\rect: Rect(
-							msg[6].asFloat * scale, 
-							msg[7].asFloat * scale, 
-							msg[8].asFloat * scale, 
+							msg[6].asFloat * scale,
+							msg[7].asFloat * scale,
+							msg[8].asFloat * scale,
 							msg[9].asFloat * scale),
 
 						\label: msg[10].asInt,
-						\velocity: Point(msg[11],msg[12]),	
+						\velocity: Point(msg[11],msg[12]),
 						\dataSize: msg[13].asInt,
 						\data: msg.copyRange(14,256)
 
@@ -1272,9 +1272,9 @@
 		buttonListener.free;
 	};
 
-	//------------------------------------------------------------	
-	// 
-	//------------------------------------------------------------	
+	//------------------------------------------------------------
+	//
+	//------------------------------------------------------------
 
 
 	createWindowView = {|view|
@@ -1295,11 +1295,11 @@
 		// example of 	loading a device (can only make 1 with generator)
 			// d = addDevice.("127.0.0.1",64564);
 		// addOSCDeviceListeners.(d);
-	};	
+	};
 
-	//------------------------------------------------------------	
-	// 
-	//------------------------------------------------------------	
+	//------------------------------------------------------------
+	//
+	//------------------------------------------------------------
 
 
 	startup.();

@@ -21,9 +21,13 @@
 // const char *password = "zxzxzxzx";  //LAN password
 // const IPAddress outIp(10,1,1,40);  //LAN address
 
-const char *ssid = "SOHLA2"; //LAN name
-const char *password = "pleaseletmeinagain";  //LAN password
-const IPAddress outIp(10,1,1,4);  //LAN address
+const char *ssid = "LITTLENESTS"; //LAN name
+const char *password = "LITTLENESTS23";  //LAN password
+const IPAddress outIp(192,168,50,48);  //LAN address
+
+// const char *ssid = "SOHLA2"; //LAN name
+// const char *password = "pleaseletmeinagain";  //LAN password
+// const IPAddress outIp(10,1,1,4);  //LAN address
 
 // const char *ssid = "MGMS6"; //LAN name
 // const char *password = "pleaseletmein";  //LAN password
@@ -62,9 +66,11 @@ bool IMU6886Flag = false;
 // IPAddress secondaryDNS(8, 8, 4, 4); //optional
 
 
-IPAddress local_IP(10,1,1,STATIP);
-// Set your Gateway IP address
-IPAddress gateway(10,1,1,1);
+IPAddress local_IP(192,168,50,STATIP);
+IPAddress gateway(192,168,50,1);
+
+// IPAddress local_IP(10,1,1,STATIP);
+// IPAddress gateway(10,1,1,1);
 
 IPAddress subnet(255, 255, 255, 0);
 IPAddress primaryDNS(8, 8, 8, 8); //optional
