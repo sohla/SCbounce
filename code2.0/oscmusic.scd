@@ -124,6 +124,7 @@
     	\rotMatListner: nil,
     	\rrateListener: nil,
     	\accelListener: nil,
+    	\qXListener: nil,
     	\quatListener: nil,
     	\altListener: nil,
     	\ampListener: nil,
@@ -159,12 +160,12 @@
 	);
 
 	var deviceProto = (
-		\name: "gabe2",
+		\name: "as1",
 		\ip: "127.0.0.1",
 		\port: 57120,
 
 		\enabled: true, // are we running
-		\dataSize: dataSizes[1],
+		\dataSize: dataSizes[0],
 
 		\listeners: Event.new(proto:listenersProto),
 
@@ -278,17 +279,17 @@
 				// isMoving imp.
 				//
 
-				if(~model.rrateMassFiltered > ~model.rrateMassThreshold, {
-					if(~model.isMoving == false,{
-						~model.isMoving = true;
-						Pdef(~model.ptn).resume();
-					});
-				},{
-					if(~model.isMoving == true,{
-						~model.isMoving = false;
-						Pdef(~model.ptn).pause();
-					});
-				});
+			// if(~model.rrateMassFiltered > ~model.rrateMassThreshold, {
+			// 	if(~model.isMoving == false,{
+			// 		~model.isMoving = true;
+			// 		Pdef(~model.ptn).resume();
+			// 	});
+			// 	},{
+			// 		if(~model.isMoving == true,{
+			// 			~model.isMoving = false;
+			// 			Pdef(~model.ptn).pause();
+			// 		});
+			// });
 			};
 
 
@@ -308,10 +309,10 @@
 
 			//------------------------------------------------------------
 			~buildPattern = {
-				Pdef(~model.ptn).set(\type,\midi);
-				Pdef(~model.ptn).set(\midiout,~model.midiOut);
-				Pdef(~model.ptn).set(\chan,~model.midiChannel);
-				// Pdef(~model.ptn).play();
+			// Pdef(~model.ptn).set(\type,\midi);
+			// Pdef(~model.ptn).set(\midiout,~model.midiOut);
+			// Pdef(~model.ptn).set(\chan,~model.midiChannel);
+			// Pdef(~model.ptn).play();
 
 
 			};
@@ -494,13 +495,13 @@
 			d.listeners.gryoListner.free;
 			d.listeners.rrateListener.free;
 			d.listeners.accelListener.free;
+			d.listeners.qXListener.free;
 			d.listeners.quatListener.free;
 	};
 
 	addDevice = { |ip,port|
 
 		var d = Event.new(proto:deviceProto);
-
 
 		d.listeners = Event.new(proto:listenersProto);
 		d.sensors =  Event.new(proto:sensorsProto);
@@ -753,8 +754,8 @@
 				.maxWidth_(60)
 				.states_([
 					["2d"],
-					["plotter"],
 					["3d"],
+					["plotter"],
 				])
 				.action_({|b|
 						stackLayout.index = b.value;
@@ -766,7 +767,7 @@
 					.action_({|b|
 						d.dataSize = dataSizes.at(b.value);
 					})
-					.valueAction_(1),
+					.valueAction_(0),
 
 
 			popup = PopUpMenu(view)
@@ -920,7 +921,7 @@
 	createPlotterGroup = {|view, data|
 
 		var col = [Color.yellow,Color.magenta,Color.cyan,Color.red,Color.green,Color.blue];
-		var bounds = Rect(5,5,400,240);
+		var bounds = Rect(5,5,200,240);
 		var pw = bounds.width;
 		var ph = bounds.height;
 		var plotterView = UserView(view,bounds).animate_(true);
@@ -1149,6 +1150,38 @@
 		}, '/gyrosc/accel', na);
 
 
+		d.listeners.qXListener = OSCFunc({ |msg, time, addr, recvPort|
+			var sx,sy,sz,qe,q,ss,r;
+			var tr;
+
+			if(devices.at(addr.port) != nil,{
+
+			devices.at(addr.port).sensors.accelEvent = (
+					\x:msg[1].asFloat,
+					\y:msg[2].asFloat,
+					\z:msg[3].asFloat);
+
+			devices.at(addr.port).sensors.quatEvent = (
+					\w:msg[7].asFloat,
+					\x:msg[4].asFloat,
+					\y:msg[5].asFloat,
+					\z:msg[6].asFloat);
+
+			// msg[1].asFloat.postln;
+
+				// take quaternion and convert to ueler angles
+				qe = devices.at(addr.port).sensors.quatEvent;
+				q = Quaternion.new(qe.w,qe.x,qe.y,qe.z);
+				r = q.asEuler;
+				tr = [r[0],r[1],r[2] + pi.half];
+				devices.at(addr.port).sensors.gyroEvent = (
+					\x:tr[2].asFloat,
+					\y:tr[0].asFloat,
+					\z:tr[1].asFloat);
+			});
+
+	}, '/1/IMUFusedData');
+
 		d.listeners.quatListener = OSCFunc({ |msg, time, addr, recvPort|
 
 			var sx,sy,sz,qe,q,ss,r;
@@ -1291,11 +1324,12 @@
 				.string_(" :: osc music");
 
 		contentView.layout_(VLayout());
+	contentView.maxHeight_(5000);
 		scroll.canvas = contentView;
 
 		// example of 	loading a device (can only make 1 with generator)
-			// d = addDevice.("127.0.0.1",64564);
-		// addOSCDeviceListeners.(d);
+	d = addDevice.("127.0.0.1",58984);
+	addOSCDeviceListeners.(d);
 	};
 
 	//------------------------------------------------------------
