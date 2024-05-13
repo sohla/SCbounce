@@ -160,7 +160,7 @@
 	);
 
 	var deviceProto = (
-		\name: "as1",
+		\name: "gabe2",
 		\ip: "127.0.0.1",
 		\port: 57120,
 
@@ -279,17 +279,17 @@
 				// isMoving imp.
 				//
 
-			// if(~model.rrateMassFiltered > ~model.rrateMassThreshold, {
-			// 	if(~model.isMoving == false,{
-			// 		~model.isMoving = true;
-			// 		Pdef(~model.ptn).resume();
-			// 	});
-			// 	},{
-			// 		if(~model.isMoving == true,{
-			// 			~model.isMoving = false;
-			// 			Pdef(~model.ptn).pause();
-			// 		});
-			// });
+			if(~model.rrateMassFiltered > ~model.rrateMassThreshold, {
+				if(~model.isMoving == false,{
+					~model.isMoving = true;
+					Pdef(~model.ptn).resume();
+				});
+				},{
+					if(~model.isMoving == true,{
+						~model.isMoving = false;
+						Pdef(~model.ptn).pause();
+					});
+			});
 			};
 
 
@@ -309,10 +309,10 @@
 
 			//------------------------------------------------------------
 			~buildPattern = {
-			// Pdef(~model.ptn).set(\type,\midi);
-			// Pdef(~model.ptn).set(\midiout,~model.midiOut);
-			// Pdef(~model.ptn).set(\chan,~model.midiChannel);
-			// Pdef(~model.ptn).play();
+			Pdef(~model.ptn).set(\type,\midi);
+			Pdef(~model.ptn).set(\midiout,~model.midiOut);
+			Pdef(~model.ptn).set(\chan,~model.midiChannel);
+			Pdef(~model.ptn).play();
 
 
 			};
@@ -1328,8 +1328,8 @@
 		scroll.canvas = contentView;
 
 		// example of 	loading a device (can only make 1 with generator)
-	d = addDevice.("127.0.0.1",58984);
-	addOSCDeviceListeners.(d);
+	// d = addDevice.("127.0.0.1",58984);
+	// addOSCDeviceListeners.(d);
 	};
 
 	//------------------------------------------------------------

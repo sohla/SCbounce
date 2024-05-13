@@ -1,16 +1,16 @@
 var m = ~model;
-m.midiChannel = 1;
+m.midiChannel = 2;
 
-//------------------------------------------------------------	
+//------------------------------------------------------------
 // intial state
-//------------------------------------------------------------	
+//------------------------------------------------------------
 
-~init = ~init <> { 
+~init = ~init <> {
 
 	Pdef(m.ptn,
 		Pbind(
-			\note, Pseq([-5,0,4],inf),
-			\root, Pseq([0,5,-2,3,-4,1,-5].stutter(16*4),inf),
+			\note, Pseq([0,4,8,12],inf),
+			\root, Pseq([0,0,-6,-1,-1,2,-4].stutter(16),inf),
 			\func, Pfunc({|e| ~onEvent.(e)}),
 			\args, #[],
 		);
@@ -23,9 +23,9 @@ m.midiChannel = 1;
 };
 
 
-//------------------------------------------------------------	
+//------------------------------------------------------------
 // triggers
-//------------------------------------------------------------	
+//------------------------------------------------------------
 
 // example feeding the community
 ~onEvent = {|e|
@@ -38,21 +38,22 @@ m.midiChannel = 1;
 
 ~onHit = {|state|
 
-	// var vel = 100;
-	// var note = 60 + m.com.root - 24	;
+	var vel = 110;
+	var note = 60 - 24	+ m.com.root;
 
-	// if(state == true,{
-	// 	m.midiOut.noteOn(m.midiChannel, note  , vel);
-	// },{
-	// 	m.midiOut.noteOff(m.midiChannel, note, 0);
-	// });
+	if(state == true,{
+		m.midiOut.noteOn(m.midiChannel, note  , vel);
+		{m.midiOut.noteOff(m.midiChannel, note, 0)}.defer(0.3);
+	},{
+		// m.midiOut.noteOff(m.midiChannel, note, 0);
+	});
 };
 
 
-//------------------------------------------------------------	
+//------------------------------------------------------------
 // do all the work(logic) taking data in and playing pattern/synth
-//------------------------------------------------------------	
-~next = {|d| 
+//------------------------------------------------------------
+~next = {|d|
 
 	var oct = ((0.2 + m.rrateMassFiltered.cubed) * 25).mod(3).floor;
 
@@ -65,11 +66,11 @@ m.midiChannel = 1;
 
 ~nextMidiOut = {|d|
 	// m.midiOut.control(m.midiChannel, 0, m.accelMassFiltered * 64 );
-};			
+};
 
-//------------------------------------------------------------	
+//------------------------------------------------------------
 // plot with min and max
-//------------------------------------------------------------	
+//------------------------------------------------------------
 ~plotMin = -1;
 ~plotMax = 1;
 

@@ -1,31 +1,31 @@
 var m = ~model;
-m.midiChannel = 2;
+m.midiChannel = 3;
 
-//------------------------------------------------------------	
+//------------------------------------------------------------
 // intial state
-//------------------------------------------------------------	
+//------------------------------------------------------------
 
-~init = ~init <> { 
+~init = ~init <> {
 
 	Pdef(m.ptn,
 		Pbind(
-			\note, Pseq([0,16,4,19].stutter(3) - 5,inf),
-			// \root, Pseq([0,5,-2,3,-4,1,-5].stutter(16*4),inf),
+			\note, Pseq([0,16,4,19].stutter(1),inf),
+			\root, Pseq([0,0,-5,-3,0,0,-5,-3,-1,-1,0,0,-5,-3,0,0,-5,-3,2,2].stutter(8),inf),
 			\func, Pfunc({|e| ~onEvent.(e)}),
 			\args, #[],
 		);
 	);
 
-	Pdef(m.ptn).set(\dur,0.5);
-	Pdef(m.ptn).set(\octave,5);
+	Pdef(m.ptn).set(\dur,0.17);
+	Pdef(m.ptn).set(\octave,3);
 	Pdef(m.ptn).set(\amp,0.8);
 	Pdef(m.ptn).play();
 };
 
 
-//------------------------------------------------------------	
+//------------------------------------------------------------
 // triggers
-//------------------------------------------------------------	
+//------------------------------------------------------------
 
 // example feeding the community
 ~onEvent = {|e|
@@ -49,28 +49,28 @@ m.midiChannel = 2;
 };
 
 
-//------------------------------------------------------------	
+//------------------------------------------------------------
 // do all the work(logic) taking data in and playing pattern/synth
-//------------------------------------------------------------	
-~next = {|d| 
+//------------------------------------------------------------
+~next = {|d|
 
 	var oct = ((0.2 + m.rrateMassFiltered.cubed) * 25).mod(2).floor;
 
-	Pdef(m.ptn).set(\dur,(m.accelMassFiltered * 1 * m.rrateMassThreshold.reciprocal).reciprocal);
+	// Pdef(m.ptn).set(\dur,(m.accelMassFiltered * 1 * m.rrateMassThreshold.reciprocal).reciprocal);
 	Pdef(m.ptn).set(\amp, 0.3);
-	Pdef(m.ptn).set(\octave, 2 + oct);
-	Pdef(m.ptn).set(\root, m.com.root);
+	// Pdef(m.ptn).set(\octave, 2 + oct);
+	// Pdef(m.ptn).set(\root, m.com.root);
 
 	// ((m.accelMassFiltered * 2.0 * m.rrateMassThreshold.reciprocal).reciprocal).postln;
 };
 
 ~nextMidiOut = {|d|
-	m.midiOut.control(m.midiChannel, 1, m.accelMassFiltered * 64 );
-};			
+	// m.midiOut.control(m.midiChannel, 1, m.accelMassFiltered * 64 );
+};
 
-//------------------------------------------------------------	
+//------------------------------------------------------------
 // plot with min and max
-//------------------------------------------------------------	
+//------------------------------------------------------------
 ~plotMin = -1;
 ~plotMax = 1;
 
