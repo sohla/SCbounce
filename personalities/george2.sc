@@ -67,7 +67,7 @@ m.midiChannel = 5;
 
 
 	// Pdef(m.ptn).set(\root,bl[0]);
-	Pdef(m.ptn).set(\octave, 2 + (m.rrateMassFiltered * 2).floor);
+	Pdef(m.ptn).set(\octave, 2 + (m.rrateMassFiltered * 1).floor);
 	Pdef(m.ptn).set(\dur,(m.accelMassFiltered * 2 * m.rrateMassThreshold.reciprocal).reciprocal);
 
 };
