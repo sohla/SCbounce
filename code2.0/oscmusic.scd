@@ -1131,13 +1131,42 @@
 		//•• currently not being used : gets set in /gyrosc/quat
 		d.listeners.gryoListner = OSCFunc({ |msg, time, addr, recvPort|
 
+			var cy,sy,cr,sr,cp,sp,ge;
+			var qe,q,ss,r,tr;
+
 			if(devices.at(addr.port) != nil,{
 				devices.at(addr.port).sensors.gyroEvent = (
-					\x:msg[1].asFloat,
+					\x:msg[3].asFloat,
 					\y:msg[2].asFloat,
-					\z:msg[3].asFloat);
+					\z:msg[1].asFloat);
 			});
-		}, '/gyrosc/gyro', na); // see notes below
+
+		// ge = devices.at(addr.port).sensors.gyroEvent;
+		// cy = cos(ge.x * 0.5);
+		// sy = sin(ge.x * 0.5);
+		// cr = cos(ge.z * 0.5);
+		// sr = sin(ge.z * 0.5);
+		// cp = cos(ge.y * 0.5);
+		// sp = sin(ge.y * 0.5);
+		//
+		// devices.at(addr.port).sensors.quatEvent = (
+		// 	\w: cy * cr * cp + sy * sr * sp,
+		// 	\z: cy * sr * cp - sy * cr * sp,
+		// 	\y: cy * cr * sp + sy * sr * cp,
+		// \x: sy * cr * cp - cy * sr * sp);
+		//
+		//
+		// qe = devices.at(addr.port).sensors.quatEvent;
+		// q = Quaternion.new(qe.w,qe.z,qe.y,qe.x);
+		// r = q.asEuler;
+		// tr = [r[2],r[1],r[0]+ pi.half];
+		// devices.at(addr.port).sensors.gyroEvent = (
+		// 	\x:tr[0].asFloat,
+		// 	\y:tr[1].asFloat,
+		// \z:tr[2].asFloat);
+
+
+		}, '/gyrosc/gyroSSSS', na); // see notes below
 
 		d.listeners.accelListener = OSCFunc({ |msg, time, addr, recvPort|
 
@@ -1206,7 +1235,7 @@
 					\z:tr[1].asFloat);
 			});
 
-		}, '/gyrosc/quatSS', na);
+		}, '/gyrosc/quat, na);
 
 /*
 	quat being used for bounceOSC
@@ -1342,3 +1371,4 @@
 	startOSCListening.();
 
 )
+

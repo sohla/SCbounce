@@ -6,6 +6,8 @@
 #include <OSCMessage.h>
 #include <OSCData.h>
 
+
+
 //--------------------------------------------------------------------------
 
 #define OUTPORT 57120 //port for outgoing osc (to supercollider)
@@ -214,30 +216,35 @@ void loop(){
       Udp.endPacket();
       msgB.empty();
 
-      OSCMessage msgC("/gyrosc/gyro");
-      msgC.add(pitch / 60.0);
-      msgC.add(roll / 60.0);
-      msgC.add(yaw / 60.0);
-      Udp.beginPacket(outIp, OUTPORT);
-      msgC.send(Udp);
-      Udp.endPacket();
-      msgC.empty();
-
-
-      // w = cos((pitch + roll + yaw) * 0.5);
-      // x = sin(yaw * 0.5);
-      // y = sin(pitch * 0.5);
-      // z = sin(roll * 0.5);
-
-      // OSCMessage msgC("/gyrosc/quat");
-      // msgC.add(w);
-      // msgC.add(x);
-      // msgC.add(y);
-      // msgC.add(z);
+      // OSCMessage msgC("/gyrosc/gyro");
+      // msgC.add(pitch / 60.0);
+      // msgC.add(roll / 60.0);
+      // msgC.add(yaw / 60.0);
       // Udp.beginPacket(outIp, OUTPORT);
       // msgC.send(Udp);
       // Udp.endPacket();
       // msgC.empty();
+
+
+      // algor. from https://github.com/MartinWeigel/Quaternion/blob/master/Quaternion.c
+      float scale = 60;
+      float cy = cos(roll / scale);
+      float sy = sin(roll / scale);
+      float cr = cos(yaw / scale);
+      float sr = sin(yaw / scale);
+      float cp = cos(pitch / scale);
+      float sp = sin(pitch / scale);
+
+
+      OSCMessage msgC("/gyrosc/quat");
+      msgC.add(cy * cr * cp + sy * sr * sp);
+      msgC.add(cy * sr * cp - sy * cr * sp);
+      msgC.add(cy * cr * sp + sy * sr * cp);
+      msgC.add(sy * cr * cp - cy * sr * sp);
+      Udp.beginPacket(outIp, OUTPORT);
+      msgC.send(Udp);
+      Udp.endPacket();
+      msgC.empty();
 
 
   }
