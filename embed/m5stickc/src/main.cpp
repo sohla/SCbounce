@@ -10,7 +10,7 @@
 
 //--------------------------------------------------------------------------
 
-#define OUTPORT 57120 //port for outgoing osc (to supercollider)
+#define OUTPORT 57121 //port for outgoing osc (to supercollider)
 
 //--------------------------------------------------------------------------
 
@@ -25,7 +25,7 @@
 
 const char *ssid = "LITTLENESTS"; //LAN name
 const char *password = "LITTLENESTS23";  //LAN password
-const IPAddress outIp(192,168,50,48);  //LAN address
+const IPAddress outIp(192,168,50,172);  //LAN address
 
 // const char *ssid = "SOHLA2"; //LAN name
 // const char *password = "pleaseletmeinagain";  //LAN password
@@ -227,20 +227,24 @@ void loop(){
 
 
       // algor. from https://github.com/MartinWeigel/Quaternion/blob/master/Quaternion.c
-      float scale = 60;
-      float cy = cos(roll / scale);
-      float sy = sin(roll / scale);
-      float cr = cos(yaw / scale);
-      float sr = sin(yaw / scale);
-      float cp = cos(pitch / scale);
-      float sp = sin(pitch / scale);
+      double scale = 90;
+      double cy = cos(roll / scale);
+      double sy = sin(roll / scale);
+      double cr = cos(yaw / scale);
+      double sr = sin(yaw / scale);
+      double cp = cos(pitch / scale);
+      double sp = sin(pitch / scale);
 
+      double ww = cy * cr * cp + sy * sr * sp;
+      double xx = cy * sr * cp - sy * cr * sp;
+      double yy = cy * cr * sp + sy * sr * cp;
+      double zz = sy * cr * cp - cy * sr * sp;
 
       OSCMessage msgC("/gyrosc/quat");
-      msgC.add(cy * cr * cp + sy * sr * sp);
-      msgC.add(cy * sr * cp - sy * cr * sp);
-      msgC.add(cy * cr * sp + sy * sr * cp);
-      msgC.add(sy * cr * cp - cy * sr * sp);
+      msgC.add(ww);
+      msgC.add(zz);
+      msgC.add(yy);
+      msgC.add(xx);
       Udp.beginPacket(outIp, OUTPORT);
       msgC.send(Udp);
       Udp.endPacket();
