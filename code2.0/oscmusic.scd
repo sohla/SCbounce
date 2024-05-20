@@ -27,7 +27,7 @@
 
 
 	*/
-	var devicesDir = "~/Develop/SuperCollider/Projects/scbounce/personalities/";
+	var devicesDir = "~/Develop/SuperCollider/SCbounce/personalities/";
 
 	var midiControlOffset = 1;
 	var loadDeviceList;
