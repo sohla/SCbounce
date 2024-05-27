@@ -31,6 +31,9 @@ m.midiChannel = 1;
 ~onEvent = {|e|
 	m.com.root = e.root;
 	m.com.dur = e.dur;
+
+
+	e.postln;
 };
 
 
@@ -54,8 +57,10 @@ m.midiChannel = 1;
 ~next = {|d|
 
 	var oct = ((0.2 + m.rrateMassFiltered.cubed) * 25).mod(3).floor;
-
-	Pdef(m.ptn).set(\dur,(m.accelMassFiltered * 1.5 * m.rrateMassThreshold.reciprocal).reciprocal);
+	//
+	// Pdef(m.ptn).set(\dur, (m.accelMassFiltered * 1.5 * m.rrateMassThreshold.reciprocal).reciprocal);
+	Pdef(m.ptn).set(\dur,(m.accelMassFiltered * 2 * m.rrateMassThreshold.reciprocal).reciprocal);
+	Pdef(m.ptn).set(0.2);
 	Pdef(m.ptn).set(\amp, 0.3);
 	Pdef(m.ptn).set(\octave, 4 + oct);
 

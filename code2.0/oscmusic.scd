@@ -186,7 +186,8 @@
 	MIDIClient.init;
 	MIDIClient.destinations;
 
-	midiOut = MIDIOut.newByName("IAC Driver", "Bus 1", dieIfNotFound: true);
+	midiOut = MIDIOut.newByName("Network", "Session 1", dieIfNotFound: true);
+// midiOut = MIDIOut.newByName("IAC Driver", "Bus 1", dieIfNotFound: true);
 	midiOut.latency_(0.00);
 
 	// midiController = MIDIOut(2).latency_(0.0);
@@ -1371,6 +1372,9 @@
 	startOSCListening.();
 
 )
+
+
+
 
 
 
