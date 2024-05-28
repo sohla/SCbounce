@@ -252,7 +252,7 @@ void loop(){
 
 
   }
-  delay(50);
+  delay(80);
 
   uint16_t vbatData = M5.Axp.GetVbatData();
   double vbat = vbatData * 1.1 / 1000;
