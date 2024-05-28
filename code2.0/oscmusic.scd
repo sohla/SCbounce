@@ -27,7 +27,7 @@
 
 
 	*/
-	var devicesDir = "~/Develop/SuperCollider/Projects/scbounce/personalities/";
+	var devicesDir = "~/Develop/SuperCollider/SCbounce/personalities/";
 
 	var midiControlOffset = 1;
 	var loadDeviceList;
@@ -186,7 +186,8 @@
 	MIDIClient.init;
 	MIDIClient.destinations;
 
-	midiOut = MIDIOut.newByName("IAC Driver", "Bus 1", dieIfNotFound: true);
+	midiOut = MIDIOut.newByName("Network", "Session 1", dieIfNotFound: true);
+// midiOut = MIDIOut.newByName("IAC Driver", "Bus 1", dieIfNotFound: true);
 	midiOut.latency_(0.00);
 
 	// midiController = MIDIOut(2).latency_(0.0);
@@ -565,11 +566,11 @@
 
 		QtGUI.palette = QPalette.dark;
 
-		GUI.skin.plot.gridLinePattern = FloatArray[1, 0];
-		GUI.skin.plot.gridColorX = Color.yellow(0.5);
-		GUI.skin.plot.gridColorY = Color.yellow(0.5);
-		GUI.skin.plot.background = Color.black;
-		GUI.skin.plot.plotColor = Color.white;
+	// GUI.skin.plot.gridLinePattern = FloatArray[1, 0];
+	// GUI.skin.plot.gridColorX = Color.yellow(0.5);
+	// GUI.skin.plot.gridColorY = Color.yellow(0.5);
+	// GUI.skin.plot.background = Color.black;
+	// GUI.skin.plot.plotColor = Color.white;
 
 		window = Window("osc music", Rect(400, 200, width, height), false).front;
 		window.view.keyDownAction_({|view,char,mods,uni,code,key|
@@ -1235,7 +1236,7 @@
 					\z:tr[1].asFloat);
 			});
 
-		}, '/gyrosc/quat, na);
+	}, '/gyrosc/quat', na);
 
 /*
 	quat being used for bounceOSC
@@ -1371,4 +1372,10 @@
 	startOSCListening.();
 
 )
+
+
+
+
+
+
 
