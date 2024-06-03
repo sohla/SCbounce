@@ -51,7 +51,7 @@
 	var startOSCListening, stopOSCListening, enableOSCListening, disableOSCListening, addOSCDeviceListeners;
 
 	var addDevice, removeDevice, removeDeviceButton;
-    var buttonListener;
+	var buttonListener, airstickListeners = [], numAirsticks = 4;
 
     var oscOut = NetAddr.new("127.0.0.1", 9003);
 
@@ -1186,76 +1186,70 @@ midiOut = MIDIOut.newByName("Network", "Session 1", dieIfNotFound: true);
 		d.listeners.qXListener = OSCFunc({ |msg, time, addr, recvPort|
 			var sx,sy,sz,qe,q,ss,r;
 			var tr;
+
 			if(devices.at(addr.port) != nil,{
 
-			devices.at(addr.port).sensors.accelEvent = (
+				devices.at(addr.port).sensors.accelEvent = (
 					\x:msg[1].asFloat * 0.1,
 					\y:msg[2].asFloat * 0.1,
 					\z:msg[3].asFloat * 0.1);
 
-			devices.at(addr.port).sensors.quatEvent = (
+				devices.at(addr.port).sensors.quatEvent = (
 					\w:msg[7].asFloat,
 					\x:msg[4].asFloat,
 					\y:msg[5].asFloat,
 					\z:msg[6].asFloat);
-
-			// msg[1].asFloat.postln;
 
 				// take quaternion and convert to ueler angles
 				qe = devices.at(addr.port).sensors.quatEvent;
 				q = Quaternion.new(qe.w,qe.x,qe.y,qe.z);
 				r = q.asEuler;
 				tr = [r[0],r[1],r[2] + pi.half];
+
 				devices.at(addr.port).sensors.gyroEvent = (
 					\x:tr[2].asFloat,
 					\y:tr[0].asFloat,
 					\z:tr[1].asFloat);
-
-
-
 			});
+		}, '/1/IMUFusedData', na);
 
-	}, '/1/IMUFusedData', na);
-
-	d.listeners.qYListener = OSCFunc({ |msg, time, addr, recvPort|
+		d.listeners.qYListener = OSCFunc({ |msg, time, addr, recvPort|
 			var sx,sy,sz,qe,q,ss,r;
 			var tr;
-		var oldRate = devices.at(addr.port+1).sensors.gyroEvent;
+			var oldRate = devices.at(addr.port+1).sensors.gyroEvent;
 
-		devices.at(addr.port+1).sensors.rrateEvent.postln;
 			if(devices.at(addr.port+1) != nil,{
 
-			devices.at(addr.port+1).sensors.accelEvent = (
+				devices.at(addr.port+1).sensors.accelEvent = (
 					\x:msg[1].asFloat * 0.1,
 					\y:msg[2].asFloat * 0.1,
 					\z:msg[3].asFloat * 0.1);
 
-			devices.at(addr.port+1).sensors.quatEvent = (
+				devices.at(addr.port+1).sensors.quatEvent = (
 					\w:msg[7].asFloat,
 					\x:msg[4].asFloat,
 					\y:msg[5].asFloat,
 					\z:msg[6].asFloat);
-
-			// msg[1].asFloat.postln;
 
 				// take quaternion and convert to ueler angles
 				qe = devices.at(addr.port+1).sensors.quatEvent;
 				q = Quaternion.new(qe.w,qe.x,qe.y,qe.z);
 				r = q.asEuler;
 				tr = [r[0],r[1],r[2] + pi.half];
+
 				devices.at(addr.port+1).sensors.gyroEvent = (
 					\x:tr[2].asFloat,
 					\y:tr[0].asFloat,
 					\z:tr[1].asFloat);
 
-			devices.at(addr.port+1).sensors.rrateEvent = (
+				devices.at(addr.port+1).sensors.rrateEvent = (
 					\x:tr[2].asFloat - oldRate.x,
 					\y:tr[0].asFloat - oldRate.y,
 					\z:tr[1].asFloat - oldRate.z);
 
 			});
 
-	}, '/2/IMUFusedData', nb);
+		}, '/2/IMUFusedData', nb);
 
 		d.listeners.quatListener = OSCFunc({ |msg, time, addr, recvPort|
 
@@ -1358,6 +1352,22 @@ midiOut = MIDIOut.newByName("Network", "Session 1", dieIfNotFound: true);
 		// handy way to listen to multiple ports
 		// 4.do{|i| thisProcess.openUDPPort(57120 + i)};
 
+		numAirsticks.do({|i|
+		// ('\/'++(i+1)++'\/IMUFusedData').postln;
+			airstickListeners.add( OSCFunc({ |msg, time, addr, recvPort|
+
+				{
+					if(devices.at(addr.port+i) == nil,{
+						var d = addDevice.("127.0.0.1",addr.port+i);
+						addOSCDeviceListeners.(d);
+						addr.port.postln;
+						airstickListeners[i].free;
+
+					});
+				}.defer;
+			},'\/'++(i+1)++'\/IMUFusedData'));
+		});
+
 		buttonListener = OSCFunc({ |msg, time, addr, recvPort|
 			[msg, time, addr, recvPort].postln;
 			if(msg[1].asFloat == 1.0, {
@@ -1378,6 +1388,11 @@ midiOut = MIDIOut.newByName("Network", "Session 1", dieIfNotFound: true);
 
 
 	stopOSCListening = {
+		numAirsticks.do({|i|
+			airstickListeners[i].free;
+		});
+
+
 		buttonListener.free;
 	};
 
@@ -1405,8 +1420,8 @@ midiOut = MIDIOut.newByName("Network", "Session 1", dieIfNotFound: true);
 		// example of 	loading a device (can only make 1 with generator)
 	// d = addDevice.("127.0.0.1",53692);
 	// addOSCDeviceListeners.(d);
-	d = addDevice.("127.0.0.1",53692+1);
-	addOSCDeviceListeners.(d);
+	// d = addDevice.("127.0.0.1",53692+1);
+	// addOSCDeviceListeners.(d);
 	};
 
 	//------------------------------------------------------------
