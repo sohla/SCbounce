@@ -78,7 +78,7 @@ m.midiChannel = 1;
 ~plotMax = 1;
 
 ~plot = { |d,p|
-	[d.sensors.rrateEvent.sumabs * 0.1, m.rrateMass * 10, m.accelMassFiltered];
+	[d.sensors.rrateEvent.sumabs * 0.05, m.rrateMass * 0.05, m.accelMassFiltered * 0.5];
 	// [m.accelMass, m.accelMassFiltered,m.accelMassAmpThreshold];
 	// [m.accelMass + m.rrateMassFiltered, m.accelMassFiltered,m.rrateMassThreshold];
 	// [m.rrateMassFiltered, m.rrateMassThreshold, m.accelMassAmp];

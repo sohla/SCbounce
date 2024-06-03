@@ -27,7 +27,7 @@
 
 
 	*/
-	var devicesDir = "~/Develop/SuperCollider/SCbounce/personalities/";
+	var devicesDir = "~/Develop/SuperCollider/Projects/scbounce/personalities/";
 
 	var midiControlOffset = 1;
 	var loadDeviceList;
@@ -186,7 +186,7 @@
 	MIDIClient.init;
 	MIDIClient.destinations;
 
-	midiOut = MIDIOut.newByName("Network", "Session 1", dieIfNotFound: true);
+midiOut = MIDIOut.newByName("Network", "Session 1", dieIfNotFound: true);
 // midiOut = MIDIOut.newByName("IAC Driver", "Bus 1", dieIfNotFound: true);
 	midiOut.latency_(0.00);
 
@@ -754,9 +754,9 @@
 			Button(view)
 				.maxWidth_(60)
 				.states_([
-					["2d"],
 					["3d"],
 					["plotter"],
+					["2d"],
 				])
 				.action_({|b|
 						stackLayout.index = b.value;
@@ -841,9 +841,9 @@
 		);
 
 
-		createPlotterGroup.(vc,d);
-		createThreeDeeCanvas.(vb,d);
-		createTwoDeeCanvas.(va,d);
+		createThreeDeeCanvas.(va,d);
+		createPlotterGroup.(vb,d);
+		createTwoDeeCanvas.(vc,d);
 
 		contentView.layout.add(nil);
 	};
