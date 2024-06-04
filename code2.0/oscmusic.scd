@@ -161,7 +161,7 @@
 	);
 
 	var deviceProto = (
-		\name: "gabe2",
+		\name: "sheet1",
 		\ip: "127.0.0.1",
 		\port: 57120,
 
@@ -252,7 +252,22 @@ midiOut = MIDIOut.newByName("Network", "Session 1", dieIfNotFound: true);
 				~model.accelMass = d.sensors.accelEvent.sumabs * 0.33;
 				~model.rrateMass = d.sensors.rrateEvent.sumabs * 0.1;
 
-				~model.accelMassFiltered = ~tween.(~model.accelMass, ~model.accelMassFiltered, 0.2);
+			if(~model.accelMass > 0.3,{
+	//			(~model.accelMass - ~model.accelMassFiltered).sign.postln;
+				if( (~model.accelMass - ~model.accelMassFiltered).sign > 0, {
+					~model.accelMassFiltered = ~tween.(~model.accelMass, ~model.accelMassFiltered, 0.8);
+				},{
+					"decay".postln;
+					~model.accelMassFiltered = ~tween.(~model.accelMass, ~model.accelMassFiltered, 0.05);
+				});
+
+
+			},{
+				~model.accelMassFiltered = ~tween.(~model.accelMass, ~model.accelMassFiltered, 0.05);
+
+			});
+
+			// ~model.accelMassFiltered = ~tween.(~model.accelMass, ~model.accelMassFiltered, 0.2);
 				~model.rrateMassFiltered = ~tween.(~model.rrateMass, ~model.rrateMassFiltered, 0.2);
 
 			};
@@ -1352,13 +1367,13 @@ midiOut = MIDIOut.newByName("Network", "Session 1", dieIfNotFound: true);
 		// handy way to listen to multiple ports
 		// 4.do{|i| thisProcess.openUDPPort(57120 + i)};
 
+		// listen for data and if found, add device and stop listening
 		numAirsticks.do({|i|
-		// ('\/'++(i+1)++'\/IMUFusedData').postln;
 			airstickListeners.add( OSCFunc({ |msg, time, addr, recvPort|
 
 				{
 					if(devices.at(addr.port+i) == nil,{
-						var d = addDevice.("127.0.0.1",addr.port+i);
+						var d = addDevice.(addr.ip,addr.port+i);
 						addOSCDeviceListeners.(d);
 						addr.port.postln;
 						airstickListeners[i].free;
@@ -1434,10 +1449,4 @@ midiOut = MIDIOut.newByName("Network", "Session 1", dieIfNotFound: true);
 	startOSCListening.();
 
 )
-
-
-
-
-
-
 
