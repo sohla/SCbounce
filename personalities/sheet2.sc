@@ -60,7 +60,7 @@ SynthDef(\sheet1, { |out, frq=111, gate=0, amp = 1, pchx=0|
 	// var a = m.accelMassFiltered.squared.squared * 0.1;//m.accelMass * m.accelMass * m.accelMass * 0.5;
 	var a = m.accelMass * 0.5;
 	var f = 50 + (m.accelMassFiltered * 100);
-	var pchs = [0,12,24,36,48];
+	var pchs = [60,64,68];
 	var i = (d.sensors.gyroEvent.y.abs / pi) * (pchs.size);
 	// pchs[i.floor].postln;
 	if(a<0.02,{a=0});

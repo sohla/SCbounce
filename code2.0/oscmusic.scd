@@ -51,7 +51,7 @@
 	var startOSCListening, stopOSCListening, enableOSCListening, disableOSCListening, addOSCDeviceListeners;
 
 	var addDevice, removeDevice, removeDeviceButton;
-	var buttonListener, airstickListeners = [], numAirsticks = 4;
+	var buttonListener, airstickListeners = [], numAirsticks = 2;
 
     var oscOut = NetAddr.new("127.0.0.1", 9003);
 
@@ -66,6 +66,7 @@
 
 	var createGenerator;
 
+	var infoView;
 
 	var dataSizes = [100,200,300,400];
 
@@ -164,6 +165,7 @@
 		\name: "sheet1",
 		\ip: "127.0.0.1",
 		\port: 57120,
+		\did: "nil",
 
 		\enabled: true, // are we running
 		\dataSize: dataSizes[0],
@@ -524,7 +526,6 @@ midiOut = MIDIOut.newByName("Network", "Session 1", dieIfNotFound: true);
 		d.listeners = Event.new(proto:listenersProto);
 		d.sensors =  Event.new(proto:sensorsProto);
 		d.blob = Event.new(proto:blobProto);
-
 		d.ip = ip;
 		d.port = port;
 
@@ -738,11 +739,11 @@ midiOut = MIDIOut.newByName("Network", "Session 1", dieIfNotFound: true);
 					n.sendMsg("/togyrosc/volt", 42.asInt);
 				}),
 
-			StaticText(view)
+			infoView = StaticText(view)
 				.stringColor_(Color.white)
 				.font_(Font(size:12))
 				.minWidth_(100)
-				.string_(d.ip+":"+d.port),
+				.string_(d.ip+":"+d.port+"["+d.did+"]"),
 			Button()
 				.minWidth_(40)
 				.states_([["reset"]])
@@ -785,7 +786,7 @@ midiOut = MIDIOut.newByName("Network", "Session 1", dieIfNotFound: true);
 					.action_({|b|
 						d.dataSize = dataSizes.at(b.value);
 					})
-					.valueAction_(0),
+					.valueAction_(3),
 
 
 			popup = PopUpMenu(view)
@@ -939,7 +940,7 @@ midiOut = MIDIOut.newByName("Network", "Session 1", dieIfNotFound: true);
 	createPlotterGroup = {|view, data|
 
 		var col = [Color.yellow,Color.magenta,Color.cyan,Color.red,Color.green,Color.blue];
-		var bounds = Rect(5,5,200,240);
+		var bounds = Rect(5,5,600,440);
 		var pw = bounds.width;
 		var ph = bounds.height;
 		var plotterView = UserView(view,bounds).animate_(true);
@@ -1203,11 +1204,10 @@ midiOut = MIDIOut.newByName("Network", "Session 1", dieIfNotFound: true);
 			var tr;
 
 			if(devices.at(addr.port) != nil,{
-
-				devices.at(addr.port).sensors.accelEvent = (
-					\x:msg[1].asFloat * 0.1,
-					\y:msg[2].asFloat * 0.1,
-					\z:msg[3].asFloat * 0.1);
+			devices.at(addr.port).sensors.accelEvent = (
+				\x:msg[1].asFloat * 0.1,
+				\y:msg[2].asFloat * 0.1,
+			\z:msg[3].asFloat * 0.1);
 
 				devices.at(addr.port).sensors.quatEvent = (
 					\w:msg[7].asFloat,
@@ -1231,10 +1231,9 @@ midiOut = MIDIOut.newByName("Network", "Session 1", dieIfNotFound: true);
 		d.listeners.qYListener = OSCFunc({ |msg, time, addr, recvPort|
 			var sx,sy,sz,qe,q,ss,r;
 			var tr;
-			var oldRate = devices.at(addr.port+1).sensors.gyroEvent;
+		// var oldRate = devices.at(addr.port+1).sensors.gyroEvent;
 
 			if(devices.at(addr.port+1) != nil,{
-
 				devices.at(addr.port+1).sensors.accelEvent = (
 					\x:msg[1].asFloat * 0.1,
 					\y:msg[2].asFloat * 0.1,
@@ -1256,11 +1255,11 @@ midiOut = MIDIOut.newByName("Network", "Session 1", dieIfNotFound: true);
 					\x:tr[2].asFloat,
 					\y:tr[0].asFloat,
 					\z:tr[1].asFloat);
-
-				devices.at(addr.port+1).sensors.rrateEvent = (
-					\x:tr[2].asFloat - oldRate.x,
-					\y:tr[0].asFloat - oldRate.y,
-					\z:tr[1].asFloat - oldRate.z);
+			//
+			// devices.at(addr.port+1).sensors.rrateEvent = (
+			// 	\x:tr[2].asFloat - oldRate.x,
+			// 	\y:tr[0].asFloat - oldRate.y,
+			// \z:tr[1].asFloat - oldRate.z);
 
 			});
 
@@ -1374,6 +1373,7 @@ midiOut = MIDIOut.newByName("Network", "Session 1", dieIfNotFound: true);
 				{
 					if(devices.at(addr.port+i) == nil,{
 						var d = addDevice.(addr.ip,addr.port+i);
+					i.postln;
 						addOSCDeviceListeners.(d);
 						addr.port.postln;
 						airstickListeners[i].free;
