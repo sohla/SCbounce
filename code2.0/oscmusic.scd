@@ -35,7 +35,7 @@
 	var names;
 
 
-    var width = Window.screenBounds.width * 0.6, height = Window.screenBounds.height * 0.8;
+    var width = Window.screenBounds.width * 0.4, height = Window.screenBounds.height * 0.8;
 	var startup, shutdown, buildUI;
 
 	var contentView = UserView().background_(Color.grey(0.2));
@@ -51,7 +51,7 @@
 	var startOSCListening, stopOSCListening, enableOSCListening, disableOSCListening, addOSCDeviceListeners;
 
 	var addDevice, removeDevice, removeDeviceButton;
-	var buttonListener, airstickListeners = [], numAirsticks = 2;
+	var buttonListener, airstickListeners = [], numAirwareVirtualDevices = 4;
 
     var oscOut = NetAddr.new("127.0.0.1", 9003);
 
@@ -125,8 +125,7 @@
     	\rotMatListner: nil,
     	\rrateListener: nil,
     	\accelListener: nil,
-    	\qXListener: nil,
-    	\qYListener: nil,
+		\airware: [],
     	\quatListener: nil,
     	\altListener: nil,
     	\ampListener: nil,
@@ -514,8 +513,9 @@ midiOut = MIDIOut.newByName("Network", "Session 1", dieIfNotFound: true);
 			d.listeners.gryoListner.free;
 			d.listeners.rrateListener.free;
 			d.listeners.accelListener.free;
-			d.listeners.qXListener.free;
-			d.listeners.qYListener.free;
+			numAirwareVirtualDevices.do({ |i|
+				d.listeners.airware[i].free;
+			});
 			d.listeners.quatListener.free;
 	};
 
@@ -1132,7 +1132,6 @@ midiOut = MIDIOut.newByName("Network", "Session 1", dieIfNotFound: true);
 	addOSCDeviceListeners = {|d|
 
 		var na = NetAddr.new(d.ip, d.port);
-		var nb = NetAddr.new(d.ip, d.port - 1);
 
 		d.listeners.rrateListener = OSCFunc({ |msg, time, addr, recvPort|
 			// [msg, time, addr, recvPort].postln;
@@ -1188,6 +1187,8 @@ midiOut = MIDIOut.newByName("Network", "Session 1", dieIfNotFound: true);
 
 		}, '/gyrosc/gyroSSSS', na); // see notes below
 
+
+
 		d.listeners.accelListener = OSCFunc({ |msg, time, addr, recvPort|
 
 			if(devices.at(addr.port) != nil,{
@@ -1199,71 +1200,51 @@ midiOut = MIDIOut.newByName("Network", "Session 1", dieIfNotFound: true);
 		}, '/gyrosc/accel', na);
 
 
-		d.listeners.qXListener = OSCFunc({ |msg, time, addr, recvPort|
-			var sx,sy,sz,qe,q,ss,r;
-			var tr;
+		// listen to all the airware that are connected (1 ip/port)
+		numAirwareVirtualDevices.do({|i|
+			var pattern = "/"++(i+1)++"/IMUFusedData";
+			var address = NetAddr.new(d.ip, d.port - i);
 
-			if(devices.at(addr.port) != nil,{
-			devices.at(addr.port).sensors.accelEvent = (
-				\x:msg[1].asFloat * 0.1,
-				\y:msg[2].asFloat * 0.1,
-			\z:msg[3].asFloat * 0.1);
+			d.listeners.airware[i].add( OSCFunc({ |msg, time, addr, recvPort|
+				var sx,sy,sz,qe,q,ss,r;
+				var tr;
+				var oldRate = devices.at(addr.port+i).sensors.gyroEvent;
 
-				devices.at(addr.port).sensors.quatEvent = (
-					\w:msg[7].asFloat,
-					\x:msg[4].asFloat,
-					\y:msg[5].asFloat,
-					\z:msg[6].asFloat);
+				if(devices.at(addr.port+i) != nil,{
 
-				// take quaternion and convert to ueler angles
-				qe = devices.at(addr.port).sensors.quatEvent;
-				q = Quaternion.new(qe.w,qe.x,qe.y,qe.z);
-				r = q.asEuler;
-				tr = [r[0],r[1],r[2] + pi.half];
+					devices.at(addr.port+i).sensors.accelEvent = (
+						\x:msg[1].asFloat * 0.1,
+						\y:msg[2].asFloat * 0.1,
+						\z:msg[3].asFloat * 0.1);
 
-				devices.at(addr.port).sensors.gyroEvent = (
-					\x:tr[2].asFloat,
-					\y:tr[0].asFloat,
-					\z:tr[1].asFloat);
-			});
-		}, '/1/IMUFusedData', na);
+					devices.at(addr.port+i).sensors.quatEvent = (
+						\w:msg[7].asFloat,
+						\x:msg[4].asFloat,
+						\y:msg[5].asFloat,
+						\z:msg[6].asFloat);
 
-		d.listeners.qYListener = OSCFunc({ |msg, time, addr, recvPort|
-			var sx,sy,sz,qe,q,ss,r;
-			var tr;
-		// var oldRate = devices.at(addr.port+1).sensors.gyroEvent;
+					// take quaternion and convert to ueler angles
+					qe = devices.at(addr.port+i).sensors.quatEvent;
+					q = Quaternion.new(qe.w,qe.x,qe.y,qe.z);
+					r = q.asEuler;
+					tr = [r[0],r[1],r[2] + pi.half];
 
-			if(devices.at(addr.port+1) != nil,{
-				devices.at(addr.port+1).sensors.accelEvent = (
-					\x:msg[1].asFloat * 0.1,
-					\y:msg[2].asFloat * 0.1,
-					\z:msg[3].asFloat * 0.1);
+					devices.at(addr.port+i).sensors.gyroEvent = (
+						\x:tr[2].asFloat,
+						\y:tr[0].asFloat,
+						\z:tr[1].asFloat);
 
-				devices.at(addr.port+1).sensors.quatEvent = (
-					\w:msg[7].asFloat,
-					\x:msg[4].asFloat,
-					\y:msg[5].asFloat,
-					\z:msg[6].asFloat);
+					// calc. rate of change
+					devices.at(addr.port+i).sensors.rrateEvent = (
+						\x:tr[2].asFloat - oldRate.x,
+						\y:tr[0].asFloat - oldRate.y,
+						\z:tr[1].asFloat - oldRate.z);
 
-				// take quaternion and convert to ueler angles
-				qe = devices.at(addr.port+1).sensors.quatEvent;
-				q = Quaternion.new(qe.w,qe.x,qe.y,qe.z);
-				r = q.asEuler;
-				tr = [r[0],r[1],r[2] + pi.half];
+				});
+			}, pattern, address) );
+		});
 
-				devices.at(addr.port+1).sensors.gyroEvent = (
-					\x:tr[2].asFloat,
-					\y:tr[0].asFloat,
-					\z:tr[1].asFloat);
-			//
-			// devices.at(addr.port+1).sensors.rrateEvent = (
-			// 	\x:tr[2].asFloat - oldRate.x,
-			// 	\y:tr[0].asFloat - oldRate.y,
-			// \z:tr[1].asFloat - oldRate.z);
 
-			});
-
-		}, '/2/IMUFusedData', nb);
 
 		d.listeners.quatListener = OSCFunc({ |msg, time, addr, recvPort|
 
@@ -1288,8 +1269,7 @@ midiOut = MIDIOut.newByName("Network", "Session 1", dieIfNotFound: true);
 					\y:tr[0].asFloat,
 					\z:tr[1].asFloat);
 			});
-
-	}, '/gyrosc/quat', na);
+		}, '/gyrosc/quat', na);
 
 /*
 	quat being used for bounceOSC
@@ -1309,7 +1289,6 @@ midiOut = MIDIOut.newByName("Network", "Session 1", dieIfNotFound: true);
 */
 
 		d.listeners.ampListener = OSCFunc({ |msg, time, addr, recvPort|
-
 				if(devices.at(addr.port) != nil,{
 					devices.at(addr.port).sensors.ampValue = msg[1].asFloat;
 				});
@@ -1320,15 +1299,11 @@ midiOut = MIDIOut.newByName("Network", "Session 1", dieIfNotFound: true);
 			var v = "volt"+msg[1].round(0.1).asString;
 			v.postln;
 			{voltButton.states = [[v,Color.red]]}.defer(0);
-
 		}, '/gyrosc/volt');
 
 		d.listeners.lineListener = OSCFunc({ |msg, time, addr, recvPort|
-
 			var scale = 1;
-
 			if(devices.at(addr.port) != nil,{
-
 				// if( msg[11].asInt > 1, {
 					devices.at(addr.port).blob = (
 						//msg[0] is the path
@@ -1357,8 +1332,6 @@ midiOut = MIDIOut.newByName("Network", "Session 1", dieIfNotFound: true);
 
 			});
 		}, '/gyrosc/line', na);///•••••••
-
-
 	};
 
 	startOSCListening = {
@@ -1366,10 +1339,9 @@ midiOut = MIDIOut.newByName("Network", "Session 1", dieIfNotFound: true);
 		// handy way to listen to multiple ports
 		// 4.do{|i| thisProcess.openUDPPort(57120 + i)};
 
-		// listen for data and if found, add device and stop listening
-		numAirsticks.do({|i|
+		// listen for data and if found, add airware virtual device and stop listening
+		numAirwareVirtualDevices.do({|i|
 			airstickListeners.add( OSCFunc({ |msg, time, addr, recvPort|
-
 				{
 					if(devices.at(addr.port+i) == nil,{
 						var d = addDevice.(addr.ip,addr.port+i);
@@ -1383,6 +1355,7 @@ midiOut = MIDIOut.newByName("Network", "Session 1", dieIfNotFound: true);
 			},'\/'++(i+1)++'\/IMUFusedData'));
 		});
 
+		// trigger device creation via OSC
 		buttonListener = OSCFunc({ |msg, time, addr, recvPort|
 			[msg, time, addr, recvPort].postln;
 			if(msg[1].asFloat == 1.0, {
@@ -1403,7 +1376,7 @@ midiOut = MIDIOut.newByName("Network", "Session 1", dieIfNotFound: true);
 
 
 	stopOSCListening = {
-		numAirsticks.do({|i|
+		numAirwareVirtualDevices.do({|i|
 			airstickListeners[i].free;
 		});
 
