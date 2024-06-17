@@ -27,7 +27,7 @@
 
 
 	*/
-	var devicesDir = "~/Develop/SuperCollider/oscMusic/personalities/";
+	var devicesDir = "~/Develop/SuperCollider/Projects/scbounce/personalities/";
 
 	var midiControlOffset = 1;
 	var loadDeviceList;
