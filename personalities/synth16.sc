@@ -2,57 +2,47 @@ var m = ~model;
 m.midiChannel = 1;
 
 
-SynthDef(\glockenspiel, {
-    |freq = 440, amp = 0.5, decay = 1, pan = 0, hardness = 1|
-    var exciter, env, output;
+SynthDef(\synth16, { |out=0, freq=100, gate=1, att=0.1, dec=0.1, sus=0.3, rel=0.3, amp=1.0, dt=0.1|
+	var env = EnvGen.ar(Env.adsr(att, dec,sus, rel), gate, doneAction:2);
+	var in = LocalIn.ar(2);
+	var my = MouseY.kr(1,40);
+	var sig = SinOsc.ar([freq, freq + (freq * 0.02)], SinOsc.ar(freq * MouseX.kr(1,10), 0, my, my.neg) * in, 0.1);
+	var sub = SinOsc.ar([freq, freq + (freq * 0.02)] * 0.5, 0, 0.5);
+	LocalOut.ar(sig * sub);
+	sig = (sig + sub) * env * amp;
+	// sig = DelayC.ar(sig,2,dt/2, 1, sig);
 
-    // Create an excitation signal using a burst of noise
-    exciter = WhiteNoise.ar(amp) * Decay2.ar(Impulse.ar(0, 0, amp), 0.005, 0.02);
-
-    // Create an envelope for the overall amplitude
-    env = EnvGen.ar(Env.perc(0.001, decay), doneAction: Done.freeSelf);
-
-    // Create a bank of resonators using a parallel filter bank
-    output = DynKlank.ar(`[
-        // Frequency ratios for the glockenspiel bars
-        [1, 4.08, 10.7, 18.8, 24.5, 31.2],
-        // Amplitudes of the frequency components
-        [1, 0.8, 0.6, 0.4, 0.2, 0.1],
-        // Decay times for each frequency component
-        [1, 0.8, 0.6, 0.4, 0.2, 0.1]
-    ], exciter, freq, 0, hardness);
-
-    // Apply the envelope to the output
-    output = output * env;
-
-    // Apply panning and output the sound
-    output = Pan2.ar(output, pan);
-    Out.ar(0, output);
+	Out.ar(out, sig);
 }).add;
+
 //------------------------------------------------------------
 // intial state
 //------------------------------------------------------------
 // Synth(\glockenspiel, [\freq, 880, \amp, 0.2, \decay, 3.5, \pan, -0.5, \hardness, 3.2]);
 ~init = ~init <> {
-m.ptn.postln;
+
 	Pdef(m.ptn,
 		Pbind(
-			\instrument, \glockenspiel,
-			\note, Pseq([-5,0,4,7,-12,4],inf),
-			\root, Pseq([0,5,-2,3,-4,1,-5].stutter(16*4),inf),
-			\decay, 3.5,
-			\hardness, 3.5,
-			// \func, Pfunc({|e| ~onEvent.(e)}),
+			\instrument, \synth16,
+			\octave, Prand([3,4,5], inf),
+			\degree, Pxrand([0, 1, 2, 4, 5], inf),
+			\dur, Pxrand([0.4, 0.2, 0.1, 0.8], inf),
+			\dt, Pkey(\dur),
+			\att, Pwhite(0.004, 0.01),
+			\dec,  Pwhite(0.1,0.6),
+			\sus, 0,
+			\amp, 0.5,
 			\args, #[],
 		)
 	);
 
-	Pdef(m.ptn).set(\dur,0.2);
-	Pdef(m.ptn).set(\octave,5);
-	Pdef(m.ptn).set(\amp,0.15);
-	Pdef(m.ptn).play();
-};
 
+	Pdef(m.ptn).play(quant:[0.1]);
+};
+~stop = {
+	"stop".postln;
+	Pdef(m.ptn).stop();
+};
 
 //------------------------------------------------------------
 // triggers
@@ -81,28 +71,28 @@ m.ptn.postln;
 	// });
 };
 
-
 //------------------------------------------------------------
 // do all the work(logic) taking data in and playing pattern/synth
 //------------------------------------------------------------
 ~next = {|d|
 
-	var oct = m.accelMassFiltered.linlin(0,5,1,4).floor;
-	//
-	Pdef(m.ptn).set(\dur, 0.5 - m.accelMassFiltered.squared.linlin(0,8,0,0.45));
-	// Pdef(m.ptn).set(\dur,(m.accelMassFiltered * 2 * m.rrateMassThreshold.reciprocal).reciprocal);
-	// Pdef(m.ptn).set(0.2);
-	Pdef(m.ptn).set(\octave, 4 + oct);
+	// var dur = 0.4 * 2.pow(m.accelMassFiltered.linlin(0,4,0,3).floor).reciprocal;
+	// Pdef(m.ptn).set(\dur, dur);
+	// Pdef(m.ptn).set(\filtFreq, m.accelMassFiltered.linlin(0,4,80,4000));
 
-	if(m.accelMass > 0.08,{
+	if(m.accelMass > 0.2,{
 		if( Pdef(~model.ptn).isPlaying.not,{
-			Pdef(~model.ptn).resume()
+			Pdef(~model.ptn).play(quant:[0.1,0,0,0]);
 		});
 	},{
-		Pdef(~model.ptn).pause();
+		if( Pdef(~model.ptn).isPlaying,{
+			Pdef(~model.ptn).stop();
+		});
 	});
 
-	// ((m.accelMassFiltered * 2.0 * m.rrateMassThreshold.reciprocal).reciprocal).postln;
+
+
+
 };
 
 ~nextMidiOut = {|d|

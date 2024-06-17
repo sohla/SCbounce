@@ -1,9 +1,9 @@
 a = Routine {
-    var    i = 0;
-    loop {
-        i.yield;
-        i = i + 1;
-    };
+    var    i = 0;
+    loop {
+        i.yield;
+        i = i + 1;
+    };
 };
 
 a.nextN(10);
@@ -13,18 +13,18 @@ a = Pseries(start: 0, step: 1, length: inf).asStream;
 a.nextN(10);
 
 p = Pseries(0, 1, 10);
-p.next;    // always returns the Pseries, not actual numbers
+p.next;    // always returns the Pseries, not actual numbers
 
 q = p.asStream;
-q.next;    // calling this repeatedly gets the desired increasing integers
+q.next;    // calling this repeatedly gets the desired increasing integers
 
 
 r = p.asStream;
-r.next;    // starts from zero, even though q already gave out some numbers
+r.next;    // starts from zero, even though q already gave out some numbers
 
-q.next;    // resumes where q left off, with no effect from getting values from r
+q.next;    // resumes where q left off, with no effect from getting values from r
 
-[q.next, r.next]    // and so on...
+[q.next, r.next]    // and so on...
 
 
 
@@ -67,7 +67,7 @@ a.nextN(8)
 a = Place([0,1,[10,11],[12,13]],2).asStream.all
 
 
-Pseq(#[1, 2, 3], 4).asStream.all;  
+Pseq(#[1, 2, 3], 4).asStream.all;
 
 (-6, -4 .. 12)
 
@@ -89,13 +89,13 @@ Pseries(4, Pwhite(-2, 2, inf).reject({ |x| x == 0 }), inf).asStream.nextN(10)
 
 Pseries(4, Pwhite(-2, 2, inf).reject({ |x| x == 0 }), inf).fold(-7, 11).asStream.nextN(10)
 
-Prorate(1, 1).asStream.nextN(10) 
+Prorate(1, 1).asStream.nextN(10)
 
 (
 	a = #[0,1,2,4,7,10];
 Pbind(
 	\note,PdegreeToKey(Pwhite(0,a.size,inf),a,7).trace,
-	\dur, 0.125 
+	\dur, 0.125
 ).play
 )
 
@@ -127,40 +127,38 @@ Pbind(
 
 
 
-( 
-// trigger stream maker 
-f = { |pat, group| 
-        var ev, lastEv, str = pat.iter, hasStarted = 0; 
-        Pn(Pfunc { 
-                ev = str.next(()).play(); 
-                (hasStarted == 1).if { group.release }; 
-                hasStarted = 1; 
-                lastEv = ev; 
-        }).iter 
-}; 
+(
+// trigger stream maker
+f = { |pat, group|
+        var ev, lastEv, str = pat.iter, hasStarted = 0;
+        Pn(Pfunc {
+                ev = str.next(()).play();
+                (hasStarted == 1).if { group.release };
+                hasStarted = 1;
+                lastEv = ev;
+        }).iter
+};
 
-g = Group.new; 
+g = Group.new;
 
-p = Pbind( 
-        \dur, 0.5, 
-        \degree, Pseq([1, 2, 3, 4], inf), 
-        \group, g 
-); 
+p = Pbind(
+        \dur, 0.5,
+        \degree, Pseq([1, 2, 3, 4], inf),
+        \group, g
+);
 
-x = f.(p, g) 
-) 
+x = f.(p, g)
+)
 
 
 )
 
-// do several times 
-x.next(())
-x.play();
-
+// do several times
+x.next(());
 //• create synth SendTrig( LinkTrig(1))
 //• OSCrespond to trig and call x.next()
 
-g.release; 
+g.release;
 MIDIClient.disposeClient;
 Pdef.clear
 
@@ -185,13 +183,13 @@ midiOut = MIDIOut.newByName("IAC Driver", "Bus 1", dieIfNotFound: true).latency_
         Pdef(ptn).set(\dur,0.125);
         Pdef(ptn).set(\octave,3);
         Pdef(ptn).set(\amp,0.8);
-        
+
         Pdef(ptn).set(\type,\midi);
         Pdef(ptn).set(\midiout,midiOut);
         Pdef(ptn).set(\chan,1);
-        
+
         Pdef(ptn).set(\midicmd, \noteOn);
-        
+
         Pdef(ptn).play();
 )
 
@@ -205,6 +203,19 @@ p = Pbind(
     \legato, Pkey(\degree).linexp(-7, 7, 2.0, 0.05)
 ).play;
 )
-Pseries(-7, 1, 14).asStream.all;  
+Pseries(-7, 1, 14).asStream.all;
 
 Pseries(7, -1, 14).asStream.all
+
+
+(
+
+Pdef(\metronom,
+	Pbind(
+		\dur, 0.2,
+		\note, Pseq([0,2,4,5,7,9,11,12], inf),
+	);
+);
+)
+Pdef(\metronom).play(quant:[0.001,0,0]);
+Pdef(\metronom).stop;

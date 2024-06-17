@@ -27,7 +27,7 @@
 
 
 	*/
-	var devicesDir = "~/Develop/SuperCollider/Projects/scbounce/personalities/";
+	var devicesDir = "~/Develop/SuperCollider/oscMusic/personalities/";
 
 	var midiControlOffset = 1;
 	var loadDeviceList;
@@ -161,7 +161,7 @@
 	);
 
 	var deviceProto = (
-		\name: "sheet1",
+		\name: "synth16",
 		\ip: "127.0.0.1",
 		\port: 57120,
 		\did: "nil",
@@ -222,9 +222,9 @@ midiOut = MIDIOut.newByName("Network", "Session 1", dieIfNotFound: true);
 			~model = (
 				\com: com,
 				\name: d.name,
-				\ptn: Array.fill(16,{|i|i=90.rrand(65).asAscii}),
-				\midiOut: midiOut,
-				\midiChannel: 1,
+				\ptn: Array.fill(16,{|i|i=90.rrand(65).asAscii}).join(),
+			// \midiOut: midiOut,
+			// \midiChannel: 1,
 
 				\rrateMass: 0,
 				\rrateMassFiltered: 0,
@@ -300,12 +300,12 @@ midiOut = MIDIOut.newByName("Network", "Session 1", dieIfNotFound: true);
 			if(~model.rrateMassFiltered > ~model.rrateMassThreshold, {
 				if(~model.isMoving == false,{
 					~model.isMoving = true;
-					Pdef(~model.ptn).resume();
+					// Pdef(~model.ptn).resume();
 				});
 				},{
 					if(~model.isMoving == true,{
 						~model.isMoving = false;
-						Pdef(~model.ptn).pause();
+					// Pdef(~model.ptn).pause();
 					});
 			});
 			};
@@ -327,9 +327,9 @@ midiOut = MIDIOut.newByName("Network", "Session 1", dieIfNotFound: true);
 
 			//------------------------------------------------------------
 			~buildPattern = {
-			Pdef(~model.ptn).set(\type,\midi);
-			Pdef(~model.ptn).set(\midiout,~model.midiOut);
-			Pdef(~model.ptn).set(\chan,~model.midiChannel);
+			// Pdef(~model.ptn).set(\type,\midi);
+			// Pdef(~model.ptn).set(\midiout,~model.midiOut);
+			// Pdef(~model.ptn).set(\chan,~model.midiChannel);
 			Pdef(~model.ptn).play();
 
 
@@ -1208,9 +1208,9 @@ midiOut = MIDIOut.newByName("Network", "Session 1", dieIfNotFound: true);
 			d.listeners.airware[i].add( OSCFunc({ |msg, time, addr, recvPort|
 				var sx,sy,sz,qe,q,ss,r;
 				var tr;
-				var oldRate = devices.at(addr.port+i).sensors.gyroEvent;
 
 				if(devices.at(addr.port+i) != nil,{
+					var oldRate = devices.at(addr.port+i).sensors.gyroEvent;
 
 					devices.at(addr.port+i).sensors.accelEvent = (
 						\x:msg[1].asFloat * 0.1,
@@ -1239,6 +1239,7 @@ midiOut = MIDIOut.newByName("Network", "Session 1", dieIfNotFound: true);
 						\x:tr[2].asFloat - oldRate.x,
 						\y:tr[0].asFloat - oldRate.y,
 						\z:tr[1].asFloat - oldRate.z);
+
 
 				});
 			}, pattern, address) );
@@ -1421,4 +1422,3 @@ midiOut = MIDIOut.newByName("Network", "Session 1", dieIfNotFound: true);
 	startOSCListening.();
 
 )
-
