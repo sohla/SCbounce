@@ -258,7 +258,7 @@ midiOut = MIDIOut.newByName("Network", "Session 1", dieIfNotFound: true);
 				if( (~model.accelMass - ~model.accelMassFiltered).sign > 0, {
 					~model.accelMassFiltered = ~tween.(~model.accelMass, ~model.accelMassFiltered, 0.8);
 				},{
-					"decay".postln;
+					// "decay".postln;
 					~model.accelMassFiltered = ~tween.(~model.accelMass, ~model.accelMassFiltered, 0.05);
 				});
 
