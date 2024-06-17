@@ -1416,7 +1416,6 @@ midiOut = MIDIOut.newByName("Network", "Session 1", dieIfNotFound: true);
 	//
 	//------------------------------------------------------------
 
-
 	startup.();
 	buildUI.();
 	startOSCListening.();
