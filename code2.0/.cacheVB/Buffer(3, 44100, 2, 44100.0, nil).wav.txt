@@ -1,0 +1,14 @@
+var o, p;
+o = [
+	Array.prNew(10),  Rect.prNew
+];
+p = [
+	// Array
+	0, [ -1,  1,  0,  100,  
+		false,  true,  true,  o[1],  
+		false,  true ],  
+	// Rect
+	1, [ left: 1323.0,  top: 667.0,  
+		width: 400.0,  height: 400.0 ]
+];
+prUnarchive(o,p);
