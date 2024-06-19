@@ -64,7 +64,7 @@ SynthDef(\sheet1, { |out, frq=111, gate=0, amp = 1, pchx=0|
 	var i = (d.sensors.gyroEvent.y.abs / pi) * (pchs.size);
 	// pchs[i.floor].postln;
 	if(a<0.02,{a=0});
-	if(a>0.9,{a=0.9});
+	if(a>0.9,{a=0.5});
 	synth.set(\amp, a);
 	// synth.set(\frq,1 + (d.sensors.gyroEvent.y.abs));
 	synth.set(\pchx,pchs[i.floor]);
