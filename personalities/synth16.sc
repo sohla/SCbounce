@@ -21,8 +21,7 @@ SynthDef(\synth16, { |out=0, freq=100, gate=1, att=0.1, dec=0.1, sus=0.3, rel=0.
 // Synth(\glockenspiel, [\freq, 880, \amp, 0.2, \decay, 3.5, \pan, -0.5, \hardness, 3.2]);
 ~init = ~init <> {
 
-	Pdef(m.ptn,
-		Pbind(
+	var pat1 = Pbind(
 			\instrument, \synth16,
 			\octave, Prand([3,4,5], inf),
 			\degree, Pxrand([0, 1, 2, 4, 5], inf),
@@ -33,9 +32,23 @@ SynthDef(\synth16, { |out=0, freq=100, gate=1, att=0.1, dec=0.1, sus=0.3, rel=0.
 			\sus, 0,
 			\amp, 0.5,
 			\args, #[],
-		)
-	);
+		);
 
+	var pat2 = Pbind(
+			\instrument, \synth16,
+			\octave, Prand([6,7,8], inf),
+			\degree, Pxrand([0, 1, 2, 4, 5], inf),
+			\dur, Pxrand([0.1,0.2,0.1,0.1], inf),
+			\dt, Pkey(\dur),
+			\amp, 0.3,
+			\att, Pwhite(0.004, 0.001),
+			\dec, Pwhite(0.04,0.2),
+			\rel, 0.07,//Pwhite(0.1, 3) * 0.03,
+			\sus, 0.0,
+			\args, #[],
+		);
+
+	Pdef(m.ptn,Ppar([pat1,pat2], inf));
 
 	Pdef(m.ptn).play(quant:[0.1]);
 };
@@ -89,10 +102,6 @@ SynthDef(\synth16, { |out=0, freq=100, gate=1, att=0.1, dec=0.1, sus=0.3, rel=0.
 			Pdef(~model.ptn).stop();
 		});
 	});
-
-
-
-
 };
 
 ~nextMidiOut = {|d|
@@ -107,8 +116,8 @@ SynthDef(\synth16, { |out=0, freq=100, gate=1, att=0.1, dec=0.1, sus=0.3, rel=0.
 
 ~plot = { |d,p|
 	// [d.sensors.rrateEvent.x, m.rrateMass * 0.1, m.accelMassFiltered * 0.5];
-	[m.accelMass * 0.1, m.accelMassFiltered * 0.1];
-	// [m.rrateMassFiltered, m.rrateMassThreshold];
+	// [m.accelMass * 0.1, m.accelMassFiltered * 0.1];
+	[m.rrateMass, m.rrateMassThreshold];
 	// [m.rrateMassFiltered, m.rrateMassThreshold, m.accelMassAmp];
 	// [d.sensors.gyroEvent.x, d.sensors.gyroEvent.y, d.sensors.gyroEvent.z];
 	// [d.sensors.rrateEvent.x, d.sensors.rrateEvent.y, d.sensors.rrateEvent.z];
@@ -118,5 +127,23 @@ SynthDef(\synth16, { |out=0, freq=100, gate=1, att=0.1, dec=0.1, sus=0.3, rel=0.
 };
 
 
-
-
+//
+//
+//
+//
+// (
+//
+// var a = Pbind(
+// 	\dur, 0.2,
+// 	\note, Pseq([0,2,4,6,8,10], inf)
+// );
+//
+// var b = Pbind(
+// 	\dur, 0.3,
+// 	\octave, 3,
+// 	\note, Pseq([12,8,4,0], inf)
+// );
+//
+// Pdef(\pd, Ppar([a,b], inf));
+// Pdef(\pd).play();
+// )

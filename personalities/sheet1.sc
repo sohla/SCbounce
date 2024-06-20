@@ -10,7 +10,7 @@ SynthDef(\sheet1, { |out, frq=111, gate=0, amp = 1, pchx=0|
 	var follow = Amplitude.kr(amp, 0.0001, 0.1);
 	// var sig = Saw.ar(frq.lag(2),0.3 * env * amp.lag(1));
 	var trig = PinkNoise.ar(0.01) * env * follow;
-	var sig =  DynKlank.ar(`[[30,32,40,46,60].midicps + pchx.midicps, nil, [1, 1, 1, 1]], trig);
+	var sig =  DynKlank.ar(`[[30,37,42,46,49].midicps + pchx.lag(0.1).midicps, nil, [2, 1, 1, 1]], trig);
 	var dly = DelayC.ar(sig,0.03,[0.02,0.027]);
 	Out.ar(out, dly);
 }).add;

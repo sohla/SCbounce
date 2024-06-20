@@ -124,7 +124,7 @@ var listenersProto = (
 	\rotMatListner: nil,
 	\rrateListener: nil,
 	\accelListener: nil,
-	\airware: [],
+	\airware:nil,
 	\quatListener: nil,
 	\altListener: nil,
 	\ampListener: nil,
@@ -250,7 +250,7 @@ loadPersonality = {|d|
 		~processDeviceData = {|d|
 
 			~model.accelMass = d.sensors.accelEvent.sumabs * 0.33;
-			~model.rrateMass = d.sensors.rrateEvent.sumabs * 0.1;
+			~model.rrateMass = d.sensors.rrateEvent.sumabs;
 
 			if(~model.accelMass > 0.3,{
 				//			(~model.accelMass - ~model.accelMassFiltered).sign.postln;
@@ -512,9 +512,9 @@ removeDevice = {|d|
 	d.listeners.gryoListner.free;
 	d.listeners.rrateListener.free;
 	d.listeners.accelListener.free;
-	numAirwareVirtualDevices.do({ |i|
-		d.listeners.airware[i].free;
-	});
+	// numAirwareVirtualDevices.do({ |i|
+		d.listeners.airware.free;
+// });
 	d.listeners.quatListener.free;
 };
 
@@ -1201,47 +1201,52 @@ addOSCDeviceListeners = {|d|
 
 	// listen to all the airware that are connected (1 ip/port)
 	numAirwareVirtualDevices.do({|i|
+
+
 		var pattern = "/"++(i+1)++"/IMUFusedData";
 		var address = NetAddr.new(d.ip, d.port - i);
 
-		d.listeners.airware[i].add( OSCFunc({ |msg, time, addr, recvPort|
-			var sx,sy,sz,qe,q,ss,r;
-			var tr;
 
-			if(devices.at(addr.port+i) != nil,{
-				var oldRate = devices.at(addr.port+i).sensors.gyroEvent;
+		// if(devices.at(d.port) != nil,{
+			d.listeners.airware = OSCFunc({ |msg, time, addr, recvPort|
+				var sx,sy,sz,qe,q,ss,r;
+				var tr;
 
-				devices.at(addr.port+i).sensors.accelEvent = (
-					\x:msg[1].asFloat * 0.1,
-					\y:msg[2].asFloat * 0.1,
+				if(devices.at(addr.port+i) != nil,{
+					var oldRate = devices.at(addr.port+i).sensors.gyroEvent;
+
+					devices.at(addr.port+i).sensors.accelEvent = (
+						\x:msg[1].asFloat * 0.1,
+						\y:msg[2].asFloat * 0.1,
 					\z:msg[3].asFloat * 0.1);
 
-				devices.at(addr.port+i).sensors.quatEvent = (
-					\w:msg[7].asFloat,
-					\x:msg[4].asFloat,
-					\y:msg[5].asFloat,
-					\z:msg[6].asFloat);
+					devices.at(addr.port+i).sensors.quatEvent = (
+						\w:msg[7].asFloat,
+						\x:msg[4].asFloat,
+						\y:msg[5].asFloat,
+						\z:msg[6].asFloat);
 
-				// take quaternion and convert to ueler angles
-				qe = devices.at(addr.port+i).sensors.quatEvent;
-				q = Quaternion.new(qe.w,qe.x,qe.y,qe.z);
-				r = q.asEuler;
-				tr = [r[0],r[1],r[2] + pi.half];
+					// take quaternion and convert to ueler angles
+					qe = devices.at(addr.port+i).sensors.quatEvent;
+					q = Quaternion.new(qe.w,qe.x,qe.y,qe.z);
+					r = q.asEuler;
+					tr = [r[0],r[1],r[2] + pi.half];
 
-				devices.at(addr.port+i).sensors.gyroEvent = (
-					\x:tr[2].asFloat,
-					\y:tr[0].asFloat,
-					\z:tr[1].asFloat);
+					devices.at(addr.port+i).sensors.gyroEvent = (
+						\x:tr[2].asFloat,
+						\y:tr[0].asFloat,
+						\z:tr[1].asFloat);
 
-				// calc. rate of change
-				devices.at(addr.port+i).sensors.rrateEvent = (
-					\x:tr[2].asFloat - oldRate.x,
-					\y:tr[0].asFloat - oldRate.y,
-					\z:tr[1].asFloat - oldRate.z);
+					// calc. rate of change
+					devices.at(addr.port+i).sensors.rrateEvent = (
+						\x:tr[2].asFloat - oldRate.x,
+						\y:tr[0].asFloat - oldRate.y,
+						\z:tr[1].asFloat - oldRate.z);
 
-
-			});
-		}, pattern, address) );
+				});
+			}, pattern, address);
+	// });
+		// d.listeners.airware.postln;
 	});
 
 
@@ -1345,9 +1350,8 @@ startOSCListening = {
 			{
 				if(devices.at(addr.port+i) == nil,{
 					var d = addDevice.(addr.ip,addr.port+i);
-					i.postln;
-					addOSCDeviceListeners.(d);
-					addr.port.postln;
+					//addOSCDeviceListeners.(d);
+					["device:",i, d.port].postln;
 					airstickListeners[i].free;
 
 				});
@@ -1421,3 +1425,5 @@ buildUI.();
 startOSCListening.();
 
 )
+
+

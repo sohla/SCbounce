@@ -59,7 +59,7 @@ SynthDef(\pluck1, { |out=0, amp=0.3, pch=30, frq=30, gate=0 |
 //------------------------------------------------------------
 ~next = {|d|
 
-	var pch = 30 + (m.accelMass * 100);
+	var pch = 40 + (m.accelMass * 30);
 	var frq= 70 + (m.accelMassFiltered * 100);
 	synth.set(\pch,pch);
 	synth.set(\frq,frq);
@@ -86,7 +86,7 @@ SynthDef(\pluck1, { |out=0, amp=0.3, pch=30, frq=30, gate=0 |
 
 ~plot = { |d,p|
 	// [d.sensors.quatEvent.x, d.sensors.quatEvent.y, d.sensors.quatEvent.z];
-	// [m.accelMassFiltered * 0.1, d.sensors.gyroEvent.x * 0.1];
+	[m.accelMassFiltered * 0.1, d.sensors.gyroEvent.x * 0.1];
 	// [m.accelMass + m.rrateMassFiltered, m.accelMassFiltered,m.rrateMassThreshold];
 	// [m.rrateMassFiltered, m.rrateMassThreshold, m.accelMassAmp];
 	// [d.sensors.gyroEvent.x * d.sensors.gyroEvent.y * d.sensors.gyroEvent.z * 0.1];
