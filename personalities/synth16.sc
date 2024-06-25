@@ -25,12 +25,12 @@ SynthDef(\synth16, { |out=0, freq=100, gate=1, att=0.1, dec=0.1, sus=0.3, rel=0.
 			\instrument, \synth16,
 			\octave, Prand([3,4,5], inf),
 			\degree, Pxrand([0, 1, 2, 4, 5], inf),
-			\dur, Pxrand([0.4, 0.2, 0.1, 0.8], inf),
+		// \dur, Pxrand([0.4, 0.2, 0.1, 0.8], inf),
 			\dt, Pkey(\dur),
 			\att, Pwhite(0.004, 0.01),
 			\dec,  Pwhite(0.1,0.6),
 			\sus, 0,
-			\amp, 0.5,
+			\amp, 0.8,
 			\args, #[],
 		);
 
@@ -38,9 +38,9 @@ SynthDef(\synth16, { |out=0, freq=100, gate=1, att=0.1, dec=0.1, sus=0.3, rel=0.
 			\instrument, \synth16,
 			\octave, Prand([6,7,8], inf),
 			\degree, Pxrand([0, 1, 2, 4, 5], inf),
-			\dur, Pxrand([0.1,0.2,0.1,0.1], inf),
+		// \dur, Pxrand([0.1,0.2,0.1,0.1], inf),
 			\dt, Pkey(\dur),
-			\amp, 0.3,
+			\amp, 0.5,
 			\att, Pwhite(0.004, 0.001),
 			\dec, Pwhite(0.04,0.2),
 			\rel, 0.07,//Pwhite(0.1, 3) * 0.03,
@@ -89,11 +89,11 @@ SynthDef(\synth16, { |out=0, freq=100, gate=1, att=0.1, dec=0.1, sus=0.3, rel=0.
 //------------------------------------------------------------
 ~next = {|d|
 
-	// var dur = 0.4 * 2.pow(m.accelMassFiltered.linlin(0,4,0,3).floor).reciprocal;
-	// Pdef(m.ptn).set(\dur, dur);
+	var dur = 0.4 * 2.pow(m.accelMassFiltered.linlin(0,4,0,5).floor).reciprocal;
+	Pdef(m.ptn).set(\dur, dur);
 	// Pdef(m.ptn).set(\filtFreq, m.accelMassFiltered.linlin(0,4,80,4000));
 
-	if(m.accelMass > 0.2,{
+	if(m.accelMass > 0.15,{
 		if( Pdef(~model.ptn).isPlaying.not,{
 			Pdef(~model.ptn).play(quant:[0.1,0,0,0]);
 		});

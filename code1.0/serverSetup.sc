@@ -12,7 +12,7 @@ o.inDevice = ServerOptions.devices[i];
 o.outDevice = ServerOptions.devices[i];
 o.numOutputBusChannels = 32;
 o.numInputBusChannels = 32;
-s.reboot	
+s.reboot
 s.quit
 s.boot
 )
@@ -47,7 +47,7 @@ o.outDevice = ServerOptions.devices[ServerOptions.devices.indexOfEqual("MOTU Ult
 o.numOutputBusChannels = 2;
 
 Server.default.options.memSize = 8192;//2 ** 19;
-s.reboot	
+s.reboot
 s.quit
 s.boot
 
@@ -66,9 +66,9 @@ o.memSize = 8192 * 4;
 
 
 s.latency = 0.3
-s.reboot	
-s.options.protocol 
-s.ping(10); 
+s.reboot
+s.options.protocol
+s.ping(10);
 
 s.queryAllNodes
 )
@@ -76,4 +76,28 @@ s.queryAllNodes
 
 (
 //Soundflower (2ch)
+)
+
+External Headphones
+ServerOptions.devices
+
+(
+
+
+o = Server.local.options;
+
+o.inDevice = ServerOptions.devices[ServerOptions.devices.indexOfEqual("BlackHole 16ch")];
+o.numInputBusChannels = 2;
+
+o.outDevice = ServerOptions.devices[ServerOptions.devices.indexOfEqual("BlackHole 16ch")];
+o.outDevice = ServerOptions.devices[ServerOptions.devices.indexOfEqual("External Headphones")];
+o.numOutputBusChannels = 2;
+
+Server.default.options.memSize = 8192 * 2;//2 ** 19;
+s.reboot;
+// s.quit
+// s.boot
+
+
+
 )

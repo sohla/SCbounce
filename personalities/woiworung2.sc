@@ -1,25 +1,33 @@
 var m = ~model;
+var isPlaying = false;
 var synth;
+var notes = 60 + [9,11,2-12,9,6-12,11,9,2-12,11,13-12] - 12;
 m.midiChannel = 1;
 //------------------------------------------------------------
 // intial state
 //------------------------------------------------------------
 
-SynthDef(\sheet2, { |out, frq=111, gate=0, amp = 1, pchx=0|
-	var env = EnvGen.ar(Env.asr(0.3,1.0,8.0), gate, doneAction:Done.freeSelf);
-	var follow = Amplitude.kr(amp, 0.0001, 0.5);
-	// var sig = Saw.ar(frq.lag(2),0.3 * env * amp.lag(1));
-	var trig = PinkNoise.ar(0.01) * env * follow;
-	var sig =  DynKlank.ar(`[[30,32,40,46,60].midicps + pchx.lag(1).midicps, nil, [3, 2, 1, 1]], trig);
-	var dly = DelayC.ar(sig,0.03,[0.02,0.027]);
-	Out.ar(out, dly);
+SynthDef("woiworung2", {|out,freq = 1000, amp = 0.5, att = 2.02, dec = 0.3, sus = 1, rel = 1, gate = 1, fb = 1.2, ch=10|
+		var snd, env;
+		env = EnvGen.kr(Env.adsr(att, dec, sus, rel), gate: gate, doneAction: 2);
+
+		snd = SinOsc.ar(freq,
+			LocalIn.ar(2) * LFNoise1.ar(0.1,2),
+			LFNoise1.ar(ch.lag(0.3),6)
+			// LFNoise1.ar(MouseY.kr(0.2,19),MouseX.kr(0.1,4.1))
+		).tanh * amp.lag(0.3);
+		2.do{
+			snd = AllpassL.ar(snd,0.3,{0.1.rand+0.03}!2,5)
+		};
+
+
+	Out.ar(out, snd.tanh );
 }).add;
 
 
 ~init = ~init <> {
 
-	synth = Synth(\sheet2, [\frq, 140.rrand(80), \gate, 1]);
-
+	synth = Synth(\woiworung2, [\freq, (60+4).midicps, \gate, 1]);
 
 };
 ~stop = {
@@ -57,17 +65,29 @@ SynthDef(\sheet2, { |out, frq=111, gate=0, amp = 1, pchx=0|
 //------------------------------------------------------------
 ~next = {|d|
 
-	// var a = m.accelMassFiltered.squared.squared * 0.1;//m.accelMass * m.accelMass * m.accelMass * 0.5;
-	var a = m.accelMass * 0.5;
-	var f = 50 + (m.accelMassFiltered * 100);
-	var pchs = [60,64,68,72] ;
-	var i = (d.sensors.gyroEvent.y.abs / pi) * (pchs.size);
-	// pchs[i.floor].postln;
-	if(a<0.02,{a=0});
-	if(a>0.9,{a=0.9});
+	var a = m.accelMassFiltered * 0.25;
+	var ch = (m.accelMassFiltered * 0.25).linlin(0.0,1.0,0.2,19);
+	// var pchs = [0,12,24,36,48];
+	// var i = (d.sensors.gyroEvent.y.abs / pi) * (pchs.size);
+	if(a<0.1,{a=0});
+	if(a>0.9,{a=1.0});
 	synth.set(\amp, a);
-	// synth.set(\frq,1 + (d.sensors.gyroEvent.y.abs));
-	synth.set(\pchx,pchs[i.floor]);
+	synth.set(\ch, ch);
+
+	a = m.accelMassFiltered * 0.25;
+	if(a < 0.08, {
+		if(isPlaying.not,{
+			isPlaying = true;
+			notes = notes.rotate(-1);
+			synth.set(\freq,notes[0].midicps);
+		})
+	},{
+		if(isPlaying,{
+			isPlaying = false;
+		});
+	});
+
+
 };
 
 ~nextMidiOut = {|d|
@@ -82,8 +102,8 @@ SynthDef(\sheet2, { |out, frq=111, gate=0, amp = 1, pchx=0|
 
 ~plot = { |d,p|
 	// [d.sensors.quatEvent.x, d.sensors.quatEvent.y, d.sensors.quatEvent.z];
-	[m.accelMassFiltered * 0.1, d.sensors.gyroEvent.x * 0.1];
-	// [m.accelMass + m.rrateMassFiltered, m.accelMassFiltered,m.rrateMassThreshold];
+	// [m.accelMassFiltered * 0.1, d.sensors.gyroEvent.x * 0.1];
+		[m.accelMassFiltered * 0.25];
 	// [m.rrateMassFiltered, m.rrateMassThreshold, m.accelMassAmp];
 	// [d.sensors.gyroEvent.x, d.sensors.gyroEvent.y, d.sensors.gyroEvent.z];
 	// [d.sensors.rrateEvent.x, d.sensors.rrateEvent.y, d.sensors.rrateEvent.z];

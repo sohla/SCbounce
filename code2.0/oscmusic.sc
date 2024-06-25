@@ -25,9 +25,12 @@ wemos+BNO055 42
 m5sticks 43,44,45
 
 
+
+
+
 */
 var devicesDir = "~/Develop/SuperCollider/Projects/scbounce/personalities/";
-
+var first = "woiworung1";
 var midiControlOffset = 1;
 var loadDeviceList;
 
@@ -160,7 +163,7 @@ var blobProto = (
 );
 
 var deviceProto = (
-	\name: "synth16",
+	\name: first,
 	\ip: "127.0.0.1",
 	\port: 57120,
 	\did: "nil",
@@ -796,10 +799,10 @@ addDeviceView = { |view, d|
 			d.name = names.at(b.value);
 			reloadPersonality.(d);
 
-			d.env.use{
-				~model.rrateMassThreshold = ~model.rrateMassThresholdSpec.map(sliders[0].value);
-				~model.accelMassAmpThreshold = ~model.accelMassThresholdSpec.map(sliders[1].value);
-			};
+				// d.env.use{
+				// 	// ~model.rrateMassThreshold = ~model.rrateMassThresholdSpec.map(sliders[0].value);
+				// 	// ~model.accelMassAmpThreshold = ~model.accelMassThresholdSpec.map(sliders[1].value);
+				// };
 
 		}),
 		reloadButton = Button(view)

@@ -2,7 +2,7 @@ var m = ~model;
 m.midiChannel = 1;
 
 
-SynthDef(\funBass, {
+SynthDef(\funMelody, {
     |freq = 440, gate = 1, amp = 0.8, filtFreq = 2000, filtRes = 0.5, envAtk = 0.01, envDec = 0.1, envSus = 0.7, envRel = 0.2, rm = 0.5|
     var osc1, osc2, osc3, env, filter, output;
 	var a = rm;
@@ -11,12 +11,12 @@ SynthDef(\funBass, {
 	// [a,b,c].flat
 
     env = EnvGen.ar(Env.adsr(envAtk, envDec, envSus, envRel), gate, doneAction: Done.freeSelf);
-    osc1 = Saw.ar(freq, 1);
-    osc2 = Pulse.ar(freq * 0.99, 0.5, 1);
-    osc3 = SinOsc.ar(freq * 1.01, 0, 1);
+    osc1 = Saw.ar(freq, 1.5);
+    osc2 = Pulse.ar(freq * 0.99, 0.5, 0.5);
+    osc3 = SinOsc.ar(freq * 1.01, 0, 1.5);
     output = Mix([osc1, osc2, osc3]) * env * amp;
     filter = RLPF.ar(output, filtFreq, filtRes);
-    filter = (filter * 2.5).tanh;
+    filter = (filter * 1.5).tanh;
     Out.ar(0, filter!2);
 }).add;
 
@@ -27,17 +27,17 @@ SynthDef(\funBass, {
 m.ptn.postln;
 	Pdef(m.ptn,
 		Pbind(
-			\instrument, \funBass,
+			\instrument, \funMelody,
 			\note, Pseq([0,7,10,5].stutter(4), inf),
-			\octave,Pseq([2,3].stutter(2),inf),
-			\root, Pseq([0,3,5,-2].stutter(64), inf),
-			\envAtk,0.003,
-			\envDec, Pwhite(0.06, 0.3, inf),
+			\octave,Pseq([4,5].stutter(2),inf),
+			// \root, Pseq([0].stutter(32), inf),
+			\envAtk,0.002,
+			\envDec, Pwhite(0.2, 0.1, inf),
 			\envSus, 0.0,
-			\envRel,Pkey(\octave).squared * 0.07,
-    		\amp, 0.4,
-			\rm, Pwhite(0.1,0.9),
-    		\filtRes, Pwhite(0.4,0.6),
+			\envRel,Pkey(\octave).squared * 0.1,
+    		\amp, 0.2,
+			\rm, 0.5,
+    		\filtRes, 0.4,
 			\func, Pfunc({|e| ~onEvent.(e)}),
 			\args, #[],
 		)
@@ -60,8 +60,11 @@ m.ptn.postln;
 
 // example feeding the community
 ~onEvent = {|e|
-	m.com.root = e.root;
-	m.com.dur = e.dur;
+	// m.com.root = e.root;
+	// m.com.dur = e.dur;
+
+	// m.com.root.postln;
+	Pdef(m.ptn).set(\root, m.com.root);
 };
 
 ~onHit = {|state|
@@ -72,9 +75,9 @@ m.ptn.postln;
 //------------------------------------------------------------
 ~next = {|d|
 
-	var dur = 0.5 * 2.pow(m.accelMassFiltered.linlin(0,3,0,4).floor).reciprocal;
-	Pdef(m.ptn).set(\dur, 0.25);
-	Pdef(m.ptn).set(\filtFreq, m.accelMassFiltered.linexp(0,4,280,4000));
+	var dur = 0.5 * 2.pow(m.accelMassFiltered.linexp(0,3,0,5).floor).reciprocal;
+	Pdef(m.ptn).set(\dur, 0.125);
+	Pdef(m.ptn).set(\filtFreq, m.accelMassFiltered.linexp(0,4,180,14000));
 
 	if(m.accelMass > 0.03,{
 		if( Pdef(~model.ptn).isPlaying.not,{
@@ -98,8 +101,8 @@ m.ptn.postln;
 
 ~plot = { |d,p|
 	// [d.sensors.rrateEvent.x, m.rrateMass * 0.1, m.accelMassFiltered * 0.5];
-	// [m.accelMass * 0.1, m.accelMassFiltered * 0.1];
-	[m.rrateMassFiltered, m.rrateMassThreshold];
+	[m.accelMass * 0.1, m.accelMassFiltered * 0.1];
+	// [m.rrateMassFiltered, m.rrateMassThreshold];
 	// [m.rrateMassFiltered, m.rrateMassThreshold, m.accelMassAmp];
 	// [d.sensors.gyroEvent.x, d.sensors.gyroEvent.y, d.sensors.gyroEvent.z];
 	// [d.sensors.rrateEvent.x, d.sensors.rrateEvent.y, d.sensors.rrateEvent.z];

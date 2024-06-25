@@ -1,9 +1,13 @@
 (
 	[
+	"woiworung1",
+	"woiworung2",
+		"funBass",
+		"funMelody",
 		"synth16",
 		"synth16b",
 		"pluck1",
-		"funBass",
+		"pluck2",
 		"magicWand",
 		"sheet1",
 		"sheet2",
