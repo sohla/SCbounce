@@ -1,5 +1,7 @@
 (
 	[
+	"wingChimes1",
+	"wingChimes2",
 	"woiworung1",
 	"woiworung2",
 		"funBass",
