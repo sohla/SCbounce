@@ -37,7 +37,7 @@ var loadDeviceList;
 var names;
 
 
-var width = Window.screenBounds.width * 0.6, height = Window.screenBounds.height * 0.8;
+var width = Window.screenBounds.width * 0.6, height = Window.screenBounds.height * 1;
 var startup, shutdown, buildUI;
 
 var contentView = UserView().background_(Color.grey(0.2));
