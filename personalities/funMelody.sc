@@ -75,11 +75,12 @@ m.ptn.postln;
 //------------------------------------------------------------
 ~next = {|d|
 
-	var dur = 0.5 * 2.pow(m.accelMassFiltered.linexp(0,3,0,5).floor).reciprocal;
-	Pdef(m.ptn).set(\dur, 0.125);
+	// var dur = 0.5 * 2.pow(m.accelMassFiltered.linexp(0,3,0,5).floor).reciprocal;
+	var dur = 0.5 * 2.pow(m.accelMassFiltered.linlin(0,3,0,4).floor).reciprocal;
+	Pdef(m.ptn).set(\dur, dur);
 	Pdef(m.ptn).set(\filtFreq, m.accelMassFiltered.linexp(0,4,180,14000));
 
-	if(m.accelMass > 0.03,{
+	if(m.accelMass > 0.07,{
 		if( Pdef(~model.ptn).isPlaying.not,{
 			Pdef(~model.ptn).resume(quant:0.25);
 		});
