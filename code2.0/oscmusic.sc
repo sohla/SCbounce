@@ -1434,3 +1434,48 @@ s.waitForBoot({
 )
 
 
+/*
+// Helper function to convert quaternion to rotation matrix
+~quaternionToRotationMatrix = { |q|
+    var w = q[0], x = q[1], y = q[2], z = q[3];
+    [
+        [1 - 2*y.squared - 2*z.squared, 2*x*y - 2*z*w, 2*x*z + 2*y*w],
+        [2*x*y + 2*z*w, 1 - 2*x.squared - 2*z.squared, 2*y*z - 2*x*w],
+        [2*x*z - 2*y*w, 2*y*z + 2*x*w, 1 - 2*x.squared - 2*y.squared]
+    ];
+};
+
+// Main function to calculate gravity vector
+~calculateGravityVector = { |quaternion, acceleration|
+    var R, R_transpose, acceleration_global, g, gravity_vector;
+
+    // Convert quaternion to rotation matrix
+    R = ~quaternionToRotationMatrix.(quaternion);
+
+    // Transpose of R rotates from body frame to global frame
+    R_transpose = R.flop;  // In SuperCollider, .flop transposes a 2D array
+
+    // Rotate the measured acceleration to the global frame
+    acceleration_global = R_transpose.collect({ |row|
+        row.sum { |elem, i| elem * acceleration[i] }
+    });
+
+    // Subtract the rotated acceleration from the known gravity vector
+    g = [0, 0, -9.81];  // Assuming Earth's gravity
+    gravity_vector = g - acceleration_global;
+
+    gravity_vector
+};
+
+// Example usage
+(
+var quaternion = [0.7071, 0, 0.7071, 0];  // 90-degree rotation around Y-axis
+var acceleration = [1, 0, -9.81];  // Example acceleration measurement
+
+var result = ~calculateGravityVector.(quaternion, acceleration);
+"Calculated gravity vector:".postln;
+result.postln;
+)
+
+
+*/
