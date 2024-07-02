@@ -190,7 +190,7 @@ var deviceProto = (
 MIDIClient.init;
 MIDIClient.destinations;
 
-midiOut = MIDIOut.newByName("Network", "Session 1", dieIfNotFound: true);
+midiOut = MIDIOut.newByName("SuperCollider", "in0", dieIfNotFound: true);
 // midiOut = MIDIOut.newByName("IAC Driver", "Bus 1", dieIfNotFound: true);
 midiOut.latency_(0.00);
 
@@ -494,6 +494,8 @@ shutdown = {
 	Pdef.clear;
 	Server.freeAll;
 
+	s.quit;
+
 };
 //------------------------------------------------------------
 //
@@ -788,7 +790,7 @@ addDeviceView = { |view, d|
 		.action_({|b|
 			d.dataSize = dataSizes.at(b.value);
 		})
-		.valueAction_(3),
+		.valueAction_(0),
 
 
 		popup = PopUpMenu(view)
@@ -942,7 +944,7 @@ createTwoDeeCanvas = {|view, data|
 createPlotterGroup = {|view, data|
 
 	var col = [Color.yellow,Color.magenta,Color.cyan,Color.red,Color.green,Color.blue];
-	var bounds = Rect(5,5,600,440);
+	var bounds = Rect(5,5,240,240);
 	var pw = bounds.width;
 	var ph = bounds.height;
 	var plotterView = UserView(view,bounds).animate_(true);
@@ -1206,7 +1208,7 @@ addOSCDeviceListeners = {|d|
 	numAirwareVirtualDevices.do({|i|
 
 
-		var pattern = "/"++(i+1)++"/IMUFusedData";
+		var pattern = "/"++(i+1)++"/CombinedDataPacket";
 		var address = NetAddr.new(d.ip, d.port - i);
 
 
@@ -1359,7 +1361,7 @@ startOSCListening = {
 
 				});
 			}.defer;
-		},'\/'++(i+1)++'\/IMUFusedData'));
+		},'\/'++(i+1)++'\/CombinedDataPacket'));
 	});
 
 	// trigger device creation via OSC
@@ -1423,9 +1425,11 @@ createWindowView = {|view|
 //
 //------------------------------------------------------------
 
-startup.();
-buildUI.();
-startOSCListening.();
+s.waitForBoot({
+	startup.();
+	buildUI.();
+	startOSCListening.();
+});
 
 )
 
