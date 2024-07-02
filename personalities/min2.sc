@@ -72,9 +72,30 @@ m.midiChannel = 11;
 	var aa = m.accelMassFiltered;
 	var amp = (aa  * (3.pow(m.rrateMassThreshold * 4 + 1) + 1).reciprocal * 20);
 
+	var id = m.rrateMassFiltered.linlin(0,2.5,0,3).floor.asInteger;
+	var bs = [0.14*2, 0.14, 0.14 * 0.5];
+	var dd = bs[m.rrateMassFiltered.linlin(0,2.5,0,3).floor.asInteger];
+
+	Pdef(m.ptn).set(\dur,dd);
+
 	if( amp < m.rrateMassThreshold, { amp = 0});
 	Pdef(m.ptn).set(\amp, amp);
 	// Pdef(m.ptn).set(\root,cr[0]);
+
+
+
+	// if(m.rrateMassFiltered > =2,{
+	// 	Pdef(m.ptn).set(\dur,0.14 * 0.5);
+	// });
+
+	// if(m.rrateMassFiltered > 1 && m.rrateMassFiltered < 2,{
+	// 	Pdef(m.ptn).set(\dur,0.14 * 2);
+	// });
+
+	// if(m.rrateMassFiltered > 2,{
+	// 	Pdef(m.ptn).set(\dur,0.14 * 0.5);
+	// });
+
 
 };
 ~nextMidiOut = {|d|
@@ -86,7 +107,7 @@ m.midiChannel = 11;
 //------------------------------------------------------------	
 
 ~plotMin = 0;
-~plotMax = 1;
+~plotMax = 4;
 
 ~plot = { |d,p|
 	// [(m.rrateMassFiltered * 3).ceil.mod(3)];
@@ -117,5 +138,9 @@ m.midiChannel = 11;
 	// },{
 	// 	changeState.(false);
 	// });
-	[m.rrateMassFiltered, m.rrateMassThreshold];
+
+	var dd = m.rrateMassFiltered.linlin(0,2.5,0,3).floor.asInteger;
+	[m.rrateMassFiltered, dd];
 };
+
+

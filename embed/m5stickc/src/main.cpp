@@ -6,29 +6,34 @@
 #include <OSCMessage.h>
 #include <OSCData.h>
 
-//--------------------------------------------------------------------------
 
-#define OUTPORT 57120 //port for outgoing osc (to supercollider)
 
 //--------------------------------------------------------------------------
+
+#define OUTPORT 57121 //port for outgoing osc (to supercollider)
+
+//--------------------------------------------------------------------------
+
 
 // const char *ssid = "SOHLA3"; //LAN name
 // const char *password = "sohla3letmein";  //LAN password
-// const IPAddress outIp(192,168,20,11);  //LAN address
+// const IPAddress outIp(192,168,1,147);  //LAN address
 
-// const char *ssid = "SOHLA3"; //LAN name
-// const char *password = "sohla3letmein";  //LAN password
-// const IPAddress outIp(192,168,20,10);  //LAN address
+// const char *ssid = "nukuNet"; //LAN name
+// const char *password = "zxzxzxzx";  //LAN password
+// const IPAddress outIp(10,1,1,40);  //LAN address
 
-// const char *ssid = "SOHLA5"; //LAN name
-// const char *password = "sohla5letmein";  //LAN password
-// const IPAddress outIp(192,168,10,30);  //LAN address
+const char *ssid = "LITTLENESTS"; //LAN name
+const char *password = "LITTLENESTS23";  //LAN password
+const IPAddress outIp(192,168,50,172);  //LAN address
 
-const char *ssid = "SOHLA3"; //LAN name
-const char *password = "sohla3letmein";  //LAN password
-const IPAddress outIp(192,168,1,147);  //LAN address
+// const char *ssid = "SOHLA2"; //LAN name
+// const char *password = "pleaseletmeinagain";  //LAN password
+// const IPAddress outIp(10,1,1,4);  //LAN address
 
-
+// const char *ssid = "MGMS6"; //LAN name
+// const char *password = "pleaseletmein";  //LAN password
+// const IPAddress outIp(192,168,1,144);  //LAN address
 //--------------------------------------------------------------------------
 
 const int buttonA = 37;
@@ -49,29 +54,25 @@ float pitch, roll, yaw = 0;
 float w,x,y,z = 0;
 float temp = 0;
 
-bool IMU6886Flag = false;
+bool IMU6886Flag = false; 
 
 //--------------------------------------------------------------------------
-// // Set your Static IP address
-// IPAddress local_IP(192,168,10,STATIP);
-// // // Set your Gateway IP address
-// IPAddress gateway(192,168,10,254);
 
-// // Set your Static IP address
-// IPAddress local_IP(10,1,1,STATIP);
-// Set your Gateway IP address
-// IPAddress gateway(10,1,1,254);
-
+// Set your Static IP address
+// IPAddress local_IP(192,168,1,STATIP);
+// // Set your Gateway IP address
+// IPAddress gateway(192,168,1,1);
 
 // IPAddress subnet(255, 255, 255, 0);
 // IPAddress primaryDNS(8, 8, 8, 8); //optional
 // IPAddress secondaryDNS(8, 8, 4, 4); //optional
 
 
-// Set your Static IP address
-IPAddress local_IP(192,168,1,STATIP);
-// Set your Gateway IP address
-IPAddress gateway(192,168,1,1);
+IPAddress local_IP(192,168,50,STATIP);
+IPAddress gateway(192,168,50,1);
+
+// IPAddress local_IP(10,1,1,STATIP);
+// IPAddress gateway(10,1,1,1);
 
 IPAddress subnet(255, 255, 255, 0);
 IPAddress primaryDNS(8, 8, 8, 8); //optional
@@ -99,7 +100,7 @@ void beginWifi() {
       Serial.println("STA Failed to configure");
     }
   
-  //delay(100);
+  // delay(100);
   
   WiFi.begin(ssid, password);
   while (WiFi.status() != WL_CONNECTED) {
@@ -215,34 +216,43 @@ void loop(){
       Udp.endPacket();
       msgB.empty();
 
-      OSCMessage msgC("/gyrosc/gyro");
-      msgC.add(pitch / 60.0);
-      msgC.add(roll / 60.0);
-      msgC.add(yaw / 60.0);
-      Udp.beginPacket(outIp, OUTPORT);
-      msgC.send(Udp);
-      Udp.endPacket();
-      msgC.empty();
-
-
-      // w = cos((pitch + roll + yaw) * 0.5);
-      // x = sin(yaw * 0.5);
-      // y = sin(pitch * 0.5);
-      // z = sin(roll * 0.5);
-
-      // OSCMessage msgC("/gyrosc/quat");
-      // msgC.add(w);
-      // msgC.add(x);
-      // msgC.add(y);
-      // msgC.add(z);
+      // OSCMessage msgC("/gyrosc/gyro");
+      // msgC.add(pitch / 60.0);
+      // msgC.add(roll / 60.0);
+      // msgC.add(yaw / 60.0);
       // Udp.beginPacket(outIp, OUTPORT);
       // msgC.send(Udp);
       // Udp.endPacket();
       // msgC.empty();
 
 
+      // algor. from https://github.com/MartinWeigel/Quaternion/blob/master/Quaternion.c
+      double scale = 90;
+      double cy = cos(roll / scale);
+      double sy = sin(roll / scale);
+      double cr = cos(yaw / scale);
+      double sr = sin(yaw / scale);
+      double cp = cos(pitch / scale);
+      double sp = sin(pitch / scale);
+
+      double ww = cy * cr * cp + sy * sr * sp;
+      double xx = cy * sr * cp - sy * cr * sp;
+      double yy = cy * cr * sp + sy * sr * cp;
+      double zz = sy * cr * cp - cy * sr * sp;
+
+      OSCMessage msgC("/gyrosc/quat");
+      msgC.add(ww);
+      msgC.add(zz);
+      msgC.add(yy);
+      msgC.add(xx);
+      Udp.beginPacket(outIp, OUTPORT);
+      msgC.send(Udp);
+      Udp.endPacket();
+      msgC.empty();
+
+
   }
-  delay(50);
+  delay(80);
 
   uint16_t vbatData = M5.Axp.GetVbatData();
   double vbat = vbatData * 1.1 / 1000;

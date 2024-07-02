@@ -39,7 +39,7 @@ m.ptn.postln;
 		Pbind(
 			\instrument, \glockenspiel,
 			\note, Pseq([-5,0,4,7,-12,4],inf),
-			\root, Pseq([0,5,-2,3,-4,1,-5].stutter(16*4),inf),
+			\root, Pseq([0,5,-2,3,-4,1,-5].stutter(16),inf),
 			\decay, 3.5,
 			\hardness, 3.5,
 			// \func, Pfunc({|e| ~onEvent.(e)}),
@@ -94,12 +94,14 @@ m.ptn.postln;
 	// Pdef(m.ptn).set(0.2);
 	Pdef(m.ptn).set(\octave, 4 + oct);
 
-	if(m.accelMass > 0.08,{
+	if(m.accelMass > 0.03,{
 		if( Pdef(~model.ptn).isPlaying.not,{
-			Pdef(~model.ptn).resume()
+			Pdef(~model.ptn).resume();
 		});
 	},{
-		Pdef(~model.ptn).pause();
+		if( Pdef(~model.ptn).isPlaying,{
+			Pdef(~model.ptn).pause();
+		});
 	});
 
 	// ((m.accelMassFiltered * 2.0 * m.rrateMassThreshold.reciprocal).reciprocal).postln;
@@ -117,7 +119,7 @@ m.ptn.postln;
 
 ~plot = { |d,p|
 	// [d.sensors.rrateEvent.x, m.rrateMass * 0.1, m.accelMassFiltered * 0.5];
-	[m.accelMass * 0.1, m.accelMassFiltered * 0.1];
+	[m.accelMass * 0.1, m.accelMassFiltered.linlin(0,5,0,1)];
 	// [m.rrateMassFiltered, m.rrateMassThreshold];
 	// [m.rrateMassFiltered, m.rrateMassThreshold, m.accelMassAmp];
 	// [d.sensors.gyroEvent.x, d.sensors.gyroEvent.y, d.sensors.gyroEvent.z];
