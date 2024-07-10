@@ -190,8 +190,8 @@ var deviceProto = (
 MIDIClient.init;
 MIDIClient.destinations;
 
-midiOut = MIDIOut.newByName("SuperCollider", "in0", dieIfNotFound: true);
-// midiOut = MIDIOut.newByName("IAC Driver", "Bus 1", dieIfNotFound: true);
+// midiOut = MIDIOut.newByName("SuperCollider", "in0", dieIfNotFound: true);
+midiOut = MIDIOut.newByName("IAC Driver", "Bus 1", dieIfNotFound: true);
 midiOut.latency_(0.00);
 
 // midiController = MIDIOut(2).latency_(0.0);
@@ -1208,7 +1208,7 @@ addOSCDeviceListeners = {|d|
 	numAirwareVirtualDevices.do({|i|
 
 
-		var pattern = "/"++(i+1)++"/CombinedDataPacket";
+		var pattern = "/"++(i+1)++"/IMUFusedData";
 		var address = NetAddr.new(d.ip, d.port - i);
 
 
@@ -1361,7 +1361,7 @@ startOSCListening = {
 
 				});
 			}.defer;
-		},'\/'++(i+1)++'\/CombinedDataPacket'));
+		},'\/'++(i+1)++'\/IMUFusedData'));
 	});
 
 	// trigger device creation via OSC
@@ -1479,3 +1479,5 @@ result.postln;
 
 
 */
+
+
