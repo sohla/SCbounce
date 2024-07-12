@@ -1,5 +1,4 @@
 
-
 (
 ~sampleFolder = PathName("/Users/soh_la/Downloads/Voice recordings Music in Motion 25June2024/converted");
 ~buffers = ~sampleFolder.entries.collect({ |path|
@@ -46,14 +45,15 @@ Pdef(\a).play(quant:[0.15]);
 Pdef(\a,
 	Pbind(
 		\instrument, \folderSampler,
-		\bufnum, ~buffers[40],
+		\bufnum, ~buffers[21],
 		\amp,5,
 		\octave, Pxrand([3], inf),
 		\rate,1,
-		\start, Pseg(Pseq([0.3,0.7],inf), 2, \linear),
-		\note, Pxrand([34], inf),
-		\release,0.1,
-		\dur, Pseq([0.7,Rest(0.3)] * 0.3, inf)
+		\start, Pseg(Pseq([0.3,0.85],inf), Pseq([3,0], inf), \linear, inf),
+		\note, Pseq([34,32].stutter(60*2), inf),
+		\attack, 0.07,
+		\release,0.2,
+		\dur, Pseq([0.7,Rest(0.3)] * 0.1, inf)
 	)
 );
 

@@ -1,6 +1,4 @@
 (
-
-
 SynthDef(\pullstretch, {|amp = 0.8, buffer = 0, envbuf = -1, pch = 1.0, div=1|
 	var pos;
 	var mx,my;

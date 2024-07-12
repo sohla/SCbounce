@@ -14,7 +14,7 @@ SynthDef(\kickhat, {
            EnvGen.ar(Env.perc(0.01, subDecay), trig * seq);
 
     // Noise Hi-hat
-    hat = HPF.ar(WhiteNoise.ar, 6000) *
+    hat = HPF.ar(WhiteNoise.ar, 13000) *
           EnvGen.ar(Env.perc(0.001, hatDecay), trig * Demand.kr(trig, 0, Dseq([0, 1, 1, 1], inf)));
 
     // Mix and output
