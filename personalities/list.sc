@@ -16,6 +16,7 @@
 		"pluck1",
 		"pluck2",
 		"magicWand",
+		"magicWand2",
 		"sheet1",
 		"sheet2",
 		"gabe2",

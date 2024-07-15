@@ -18,7 +18,7 @@ SynthDef(\pullstretchMono, {|out, amp = 0.8, buffer = 0, envbuf = -1, pch = 1.0,
 			1,
 			1,
 			0
-	) * amp;
+	) * amp.lag(1);
 
 	mas = HPF.ar(sp,245);
 
@@ -67,8 +67,8 @@ SynthDef(\pullstretchMono, {|out, amp = 0.8, buffer = 0, envbuf = -1, pch = 1.0,
 ~next = {|d|
 
 
-	var amp = m.accelMassFiltered.linlin(0,1,0,0.8);
-
+	var amp = m.accelMass.linlin(0,1,0,0.8);
+	if(amp < 0.01, {amp = 0});
 	sa.set(\speed, m.rrateMass.linlin(3,10,0.01,2));
 	sb.set(\speed, m.rrateMass.linlin(3,10,0.01,2));
 	sc.set(\speed, m.rrateMass.linlin(3,10,0.01,2));

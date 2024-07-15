@@ -74,11 +74,12 @@ Pdef(~model.ptn).stop();
 //------------------------------------------------------------
 ~next = {|d|
 
-	var dur = m.accelMassFiltered.linlin(0,2.1,2,0.15);
+	var dur = m.accelMassFiltered.linexp(0,1.8,2,0.12);
 	var ring = m.accelMassFiltered.linlin(0,2,1.8,3.8);
 	// var start = m.accelMass.linlin(0,0.5,0.5,0.8);
 	// var amp = m.accelMass.linlin(0,1,0,4);
-	//
+		dur.postln;
+
 	// Pdef(m.ptn).set(\amp, amp);
 	Pdef(m.ptn).set(\dur, dur);
 	Pdef(m.ptn).set(\ringTime, ring);
@@ -86,15 +87,15 @@ Pdef(~model.ptn).stop();
 
 	// Pdef(m.ptn).set(\filtFreq, m.accelMassFiltered.linexp(0,4,180,14000));
 	//
-	// if(dur < 0.7,{
-	// 	if( Pdef(m.ptn).isPlaying.not,{
-	// 		Pdef(m.ptn).resume(quant:0.1);
-	// 	});
-	// 	},{
-	// 		if( Pdef(m.ptn).isPlaying,{
-	// 			Pdef(m.ptn).pause();
-	// 		});
-	// });
+	if(dur < 1.3,{
+		if( Pdef(m.ptn).isPlaying.not,{
+			Pdef(m.ptn).resume(quant:0.1);
+		});
+		},{
+			if( Pdef(m.ptn).isPlaying,{
+				Pdef(m.ptn).pause();
+			});
+	});
 };
 
 ~nextMidiOut = {|d|

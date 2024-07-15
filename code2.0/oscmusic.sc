@@ -29,7 +29,8 @@ m5sticks 43,44,45
 
 
 */
-var devicesDir = "~/Develop/SuperCollider/Projects/scbounce/personalities/";
+// var devicesDir = "~/Develop/SuperCollider/Projects/scbounce/personalities/";
+var devicesDir = "~/Develop/SuperCollider/oscMusic/personalities/";
 var first = "rope1";
 var midiControlOffset = 1;
 var loadDeviceList;
@@ -263,7 +264,7 @@ loadPersonality = {|d|
 					~model.accelMassFiltered = ~tween.(~model.accelMass, ~model.accelMassFiltered, 0.8);
 				},{
 					// "decay".postln;
-					~model.accelMassFiltered = ~tween.(~model.accelMass, ~model.accelMassFiltered, 0.05);
+					~model.accelMassFiltered = ~tween.(~model.accelMass, ~model.accelMassFiltered, 0.8);
 				});
 
 

@@ -25,7 +25,7 @@ SynthDef(\synth2211, { |out=0, gate=1, freq=100, rel=0.1, amp=0.1, shp= 0.09|
 			\root, Pseq([0,3,-2,-4].stutter(24)-3, inf),
 			// \dur, Pxrand([0.2,0.2,0.2,0.1,0.1,0.2] * 2, inf),
 			\rel, Pwhite(0.002, 0.9, inf),
-			\amp, Pkey(\octave).linlin(3,6,1,0.2),
+			\amp, Pkey(\octave).linlin(3,6,1,0.2) * Pkey(\da),
 			\shp, Pwhite(0.9,0.002, inf),
 			\args, #[],
 
@@ -70,14 +70,15 @@ SynthDef(\synth2211, { |out=0, gate=1, freq=100, rel=0.1, amp=0.1, shp= 0.09|
 
 
 	var dur = m.accelMassFiltered.linexp(0.0,1.0,5,0.18);
-
+	var amp = m.accelMassFiltered.linexp(0.0,1.0,0.05,1);
 	if(dur < 0.1, { dur = 0.18});
 
-	Pdef(m.ptn).set(\dur, dur);
+	Pdef(m.ptn).set(\da, amp);
+	Pdef(m.ptn).set(\dur, 0.25);
 
-	if(m.accelMass > 0.02,{
+	if(m.accelMass > 0.1,{
 		if( Pdef(~model.ptn).isPlaying.not,{
-			Pdef(~model.ptn).resume(quant:0.1);
+			Pdef(~model.ptn).resume(quant:0.25);
 		});
 		},{
 			if( Pdef(~model.ptn).isPlaying,{
