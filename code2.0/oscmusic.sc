@@ -30,7 +30,7 @@ m5sticks 43,44,45
 
 */
 var devicesDir = "~/Develop/SuperCollider/Projects/scbounce/personalities/";
-var first = "wingChimes1";
+var first = "rope1";
 var midiControlOffset = 1;
 var loadDeviceList;
 
@@ -219,6 +219,8 @@ loadPersonality = {|d|
 
 	// after adding personality to an Environment, add useful functions to be used by anyone
 	var env = Environment.make {
+
+
 
 
 		~model = (
@@ -1214,11 +1216,11 @@ addOSCDeviceListeners = {|d|
 
 		// if(devices.at(d.port) != nil,{
 			d.listeners.airware = OSCFunc({ |msg, time, addr, recvPort|
-				var sx,sy,sz,qe,q,ss,r;
+				var sx,sy,sz,qe,q,ss,r, rq, rr, rtr;
 				var tr;
 
 				if(devices.at(addr.port+i) != nil,{
-					var oldRate = devices.at(addr.port+i).sensors.gyroEvent;
+					var oq = devices.at(addr.port+i).sensors.quatEvent;
 
 					devices.at(addr.port+i).sensors.accelEvent = (
 						\x:msg[1].asFloat * 0.1,
@@ -1242,11 +1244,16 @@ addOSCDeviceListeners = {|d|
 						\y:tr[0].asFloat,
 						\z:tr[1].asFloat);
 
+
+					rq = Quaternion.new(oq.w-qe.w, oq.x-qe.x, oq.y-qe.y, oq.z-qe.z);
+					rr = rq.asEuler;
+					rtr = [rr[0],rr[1],rr[2] + pi.half];
+
 					// calc. rate of change
 					devices.at(addr.port+i).sensors.rrateEvent = (
-						\x:tr[2].asFloat - oldRate.x,
-						\y:tr[0].asFloat - oldRate.y,
-						\z:tr[1].asFloat - oldRate.z);
+						\x:tr[2].asFloat,
+						\y:tr[0].asFloat,
+						\z:tr[1].asFloat);
 
 				});
 			}, pattern, address);
@@ -1429,6 +1436,7 @@ s.waitForBoot({
 	startup.();
 	buildUI.();
 	startOSCListening.();
+
 });
 
 )

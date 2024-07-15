@@ -1,5 +1,5 @@
 (
-SynthDef(\pullstretch, {|amp = 0.8, buffer = 0, envbuf = -1, pch = 1.0, div=1|
+SynthDef(\pullstretchMono, {|amp = 0.8, buffer = 0, envbuf = -1, pch = 1.0, div=1|
 	var pos;
 	var mx,my;
 	var sp;
@@ -20,7 +20,7 @@ SynthDef(\pullstretch, {|amp = 0.8, buffer = 0, envbuf = -1, pch = 1.0, div=1|
 	mas = HPF.ar(sp,245);
 
 	Out.ar(0,mas);
-}).send(s);
+}).add;
 
 )
 
@@ -34,20 +34,20 @@ SynthDef(\pullstretch, {|amp = 0.8, buffer = 0, envbuf = -1, pch = 1.0, div=1|
 
 (
 
-Synth(\pullstretch,[\buffer,~buffers[6],\pch,0.midiratio, \amp,0.4, \div, 4]);
-Synth(\pullstretch,[\buffer,~buffers[6],\pch,12.midiratio, \amp,0.3, \div, 4]);
-Synth(\pullstretch,[\buffer,~buffers[6],\pch,7.midiratio, \amp,0.2, \div, 4]);
+Synth(\pullstretchMono,[\buffer,~buffers[6],\pch,0.midiratio, \amp,0.4, \div, 4]);
+Synth(\pullstretchMono,[\buffer,~buffers[6],\pch,12.midiratio, \amp,0.3, \div, 4]);
+Synth(\pullstretchMono,[\buffer,~buffers[6],\pch,7.midiratio, \amp,0.2, \div, 4]);
 )
 
 (
-Synth(\pullstretch,[\buffer,~buffers[10],\pch,0.midiratio, \amp,0.2, \div, 16]);
-Synth(\pullstretch,[\buffer,~buffers[10],\pch,4.midiratio, \amp,0.2, \div, 16]);
-Synth(\pullstretch,[\buffer,~buffers[10],\pch,7.midiratio, \amp,0.2, \div, 16]);
+Synth(\pullstretchMono,[\buffer,~buffers[10],\pch,0.midiratio, \amp,0.2, \div, 16]);
+Synth(\pullstretchMono,[\buffer,~buffers[10],\pch,4.midiratio, \amp,0.2, \div, 16]);
+Synth(\pullstretchMono,[\buffer,~buffers[10],\pch,7.midiratio, \amp,0.2, \div, 16]);
 )
 
 
 (
-Synth(\pullstretch,[\buffer,~buffers[40],\pch,0.midiratio, \amp,0.6, \div,1]);
+Synth(\pullstretchMono,[\buffer,~buffers[40],\pch,0.midiratio, \amp,0.6, \div,1]);
 )
 
 s.meter
@@ -85,4 +85,54 @@ Pdef(\a,
 
 Pdef(\a).play(quant:0);
 
+)
+
+
+
+
+
+(
+~sampleFolder = PathName("/Users/soh_la/Downloads/Voice recordings Music in Motion 2July2025/converted");
+~buffers = ~sampleFolder.entries.collect({ |path|
+    Buffer.read(s, path.fullPath);
+});
+)
+(
+SynthDef(\pullstretchStereo, {|amp = 0.8, buffer = 0, envbuf = -1, pch = 1.0, div=1|
+	var pos;
+	var mx,my;
+	var sp;
+	var mas;
+	var len = BufDur.kr(buffer) / div;
+	mx = LFSaw.kr( (1.0/len) * MouseX.kr(0.05,1.0) ,1,0.5,0.5);
+
+	my = MouseY.kr(0.01,1,1.0);//splay
+
+
+	sp = Splay.arFill(12,
+			{ |i| Warp1.ar(2, buffer, mx, pch,my, envbuf, 8, 0.1, 2)  },
+			1,
+			1,
+			0
+		) * amp;
+
+	mas = HPF.ar(sp,245);
+
+	Out.ar(0,mas);
+}).send(s);
+
+)
+
+
+
+
+(
+
+Synth(\pullstretchMono,[\buffer,~buffers[13],\pch,0.midiratio, \amp,1, \div, 4]);
+)
+(
+Synth(\pullstretchMono,[\buffer,~buffers[14],\pch,0.midiratio, \amp,3, \div, 12]);
+)
+(
+Synth(\pullstretchMono,[\buffer,~buffers[1],\pch,0.midiratio, \amp,3, \div, 8]);
 )

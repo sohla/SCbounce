@@ -1,5 +1,10 @@
 (
 	[
+	"rope1",
+	"rope2",
+	"percTexture1",
+	"percTexture2",
+	"animalMat",
 	"wingChimes1",
 	"wingChimes2",
 	"woiworung1",
