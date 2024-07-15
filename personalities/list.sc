@@ -1,5 +1,7 @@
 (
 	[
+	"grobt",
+	"blobblob",
 	"rope1",
 	"rope2",
 	"percTexture1",
