@@ -29,8 +29,8 @@ m5sticks 43,44,45
 
 
 */
-// var devicesDir = "~/Develop/SuperCollider/Projects/scbounce/personalities/";
-var devicesDir = "~/Develop/SuperCollider/oscMusic/personalities/";
+var devicesDir = "~/Develop/SuperCollider/Projects/scbounce/personalities/";
+// var devicesDir = "~/Develop/SuperCollider/oscMusic/personalities/";
 var first = "blobblob";
 var midiControlOffset = 1;
 var loadDeviceList;

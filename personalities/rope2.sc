@@ -78,7 +78,6 @@ Pdef(~model.ptn).stop();
 	var ring = m.accelMassFiltered.linlin(0,2,1.8,3.8);
 	// var start = m.accelMass.linlin(0,0.5,0.5,0.8);
 	// var amp = m.accelMass.linlin(0,1,0,4);
-		dur.postln;
 
 	// Pdef(m.ptn).set(\amp, amp);
 	Pdef(m.ptn).set(\dur, dur);
