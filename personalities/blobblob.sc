@@ -35,7 +35,7 @@ SynthDef(\monoSampler, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=44
 				~buffersB[bi];
 			},
 			\octave, Pxrand([3], inf),
-			\rate, Pseq([0,-0].midiratio, inf),
+			\rate, Pseq([0,-12,-5,-2,4,7,12].midiratio, inf),
 			\start, 0,
 			\note, Pseq([33], inf),
 			// \dur, 0.3,
@@ -89,7 +89,7 @@ SynthDef(\monoSampler, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=44
 
 	// Pdef(m.ptn).set(\filtFreq, m.accelMassFiltered.linexp(0,4,180,14000));
 	//
-	if(m.accelMass > 0.1,{
+	if(m.accelMass > 0.13,{
 		if( Pdef(~model.ptn).isPlaying.not,{
 			Pdef(~model.ptn).resume(quant:0.25);
 		});

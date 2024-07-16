@@ -29,7 +29,7 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, fre
 			\instrument, \stereoSampler,
 			\bufnum, ~buffersB[15],
 			\octave, Pxrand([3], inf),
-			\rate, Pseq([0,-0].midiratio, inf),
+			\rate, Pseq([0,-12,12,-5,7].midiratio, inf),
 			\start, Pseq([0.04,0.1,0.28,0.525,0.7,0.75,0.86,0.9], inf),
 			\note, Pseq([33], inf),
 			\attack, 0.07,

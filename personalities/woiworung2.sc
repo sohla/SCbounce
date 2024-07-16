@@ -75,7 +75,7 @@ SynthDef("woiworung2", {|out,freq = 1000, amp = 0.5, att = 2.02, dec = 0.3, sus 
 	synth.set(\ch, ch);
 
 	a = m.accelMassFiltered * 0.25;
-	if(a < 0.08, {
+	if(a < 0.005, {
 		if(isPlaying.not,{
 			isPlaying = true;
 			notes = notes.rotate(-1);

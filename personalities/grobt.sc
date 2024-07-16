@@ -35,7 +35,7 @@ SynthDef(\monoSampler, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=44
 				~buffersB[bi];
 			},
 			\octave, Pxrand([3], inf),
-			\rate, Pseq([0,-0].midiratio, inf),
+			\rate, Pseq([0,-3,-5,4,7,9,12,-12].midiratio, inf),
 			\start, 0,
 			\note, Pseq([33], inf),
 			// \dur, 0.3,
