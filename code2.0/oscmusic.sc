@@ -31,7 +31,7 @@ m5sticks 43,44,45
 */
 var devicesDir = "~/Develop/SuperCollider/Projects/scbounce/personalities/";
 // var devicesDir = "~/Develop/SuperCollider/oscMusic/personalities/";
-var first = "blobblob";
+var first = "wingChimes1";
 var midiControlOffset = 1;
 var loadDeviceList;
 
@@ -183,6 +183,11 @@ var deviceProto = (
 	\sensors: Event.new(proto:sensorsProto),
 
 	\blob:  Event.new(proto:blobProto),
+
+
+	\noteOnFunc: nil,
+	\noteOffFunc: nil
+
 );
 
 //------------------------------------------------------------
@@ -478,6 +483,7 @@ startup = {
 //------------------------------------------------------------
 shutdown = {
 
+
 	stopOSCListening.();
 
 	comRout.stop();
@@ -504,6 +510,9 @@ shutdown = {
 //
 //------------------------------------------------------------
 removeDevice = {|d|
+
+	d.noteOnFunc.free;
+	d.noteOffFunc.free;
 
 	d.procRout.stop();
 	d.midiRout.stop();
@@ -871,6 +880,32 @@ addDeviceView = { |view, d|
 	createTwoDeeCanvas.(vc,d);
 
 	contentView.layout.add(nil);
+
+	d.noteOnFunc = MIDIFunc.noteOff({ |...args|
+		{
+			if( args[1] == 4,{
+				var index = popup.value;
+				index = index + 2;
+				if( index >= popup.items.size, { index = index - popup.items.size });
+
+				popup.valueAction = index;
+				["midi on",args, index].postln;
+			});
+			if( args[1] == 5,{
+				var index = popup.value;
+				index = index - 2;
+				if( index < 0, { index = popup.items.size - index.abs });
+				popup.valueAction = index;
+				["midi on",args, index].postln;
+			});
+		}.defer;
+	});
+	d.noteOffFunc = MIDIFunc.noteOn({ |...args|
+		{
+		["midi off",args].postln;
+		}.defer;
+	});
+
 };
 
 //------------------------------------------------------------
