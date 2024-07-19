@@ -68,7 +68,7 @@ SynthDef(\pullstretchMono, {|out, amp = 0.8, buffer = 0, envbuf = -1, pch = 1.0,
 
 
 	var amp = m.accelMass.linlin(0,1,0,0.5);
-	if(amp < 0.01, {amp = 0});
+	if(amp < 0.03, {amp = 0});
 	sa.set(\speed, m.rrateMass.linlin(3,10,0.01,2));
 	sb.set(\speed, m.rrateMass.linlin(3,10,0.01,2));
 	sc.set(\speed, m.rrateMass.linlin(3,10,0.01,2));
@@ -77,9 +77,9 @@ SynthDef(\pullstretchMono, {|out, amp = 0.8, buffer = 0, envbuf = -1, pch = 1.0,
 	sb.set(\splay, m.rrateMass.linlin(3,10,0.01,1));
 	sc.set(\splay, m.rrateMass.linlin(3,10,0.01,1));
 
-	sa.set(\amp, amp);
-	sb.set(\amp, amp);
-	sc.set(\amp, amp);
+	sa.set(\amp, amp * 0.3);
+	sb.set(\amp, amp * 0.3);
+	sc.set(\amp, amp * 0.3);
 };
 
 ~nextMidiOut = {|d|
