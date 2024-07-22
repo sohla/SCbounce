@@ -51,8 +51,8 @@ SynthDef(\imuRhythmSynth, {
 // Assuming you have set up your IMU data to be written to a control bus
 // Replace 'yourControlBusIndex' with the actual bus index
 ~imuBus = Bus.control(s, 4);
-Synth(\mouse, [\bus, ~imuBus.index]);
 
+Synth(\mouse, [\bus, ~imuBus.index]);
 ~imuBus.setnAt(2,[0.1,0.1]);
 
 // Start the synth

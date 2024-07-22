@@ -28,6 +28,11 @@
 	Synth(\mouseX, [\bus, mx.index]);
 	Synth(\mouseY, [\bus, my.index]);
 
+	var mx = Bus.control(s,1);
+	var my = Bus.control(s,1);
+	Synth(\mouseX, [\bus, mx.index]);
+	Synth(\mouseY, [\bus, my.index]);
+
 
 ~reichPattern = Pbind(
     \instrument, \pluckedString,

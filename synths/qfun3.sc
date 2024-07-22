@@ -56,6 +56,12 @@ SynthDef(\imuExpandedRhythmSynth, {
     Out.ar(out, Limiter.ar(pan, 0.95));
 }).add;
 	SynthDef(\mouse, { |bus| Out.kr(bus, [MouseX.kr(0,1.0), MouseY.kr(0,1.0)])}).add;
+	SynthDef(\mouse4, { |bus| Out.kr(bus, [
+		MouseX.kr(0,1.0),
+		MouseY.kr(0,1.0),
+		MouseX.kr(1.0,0),
+		MouseY.kr(1.0,0)
+	])}).add;
 
 )
 
@@ -64,8 +70,8 @@ SynthDef(\imuExpandedRhythmSynth, {
 // Assuming you have set up your IMU data to be written to a control bus
 // Replace 'yourControlBusIndex' with the actual bus index
 ~imuBus = Bus.control(s, 7); // Now 7 channels for qw, qx, qy, qz, x, y, z
-Synth(\mouse, [\bus, ~imuBus.index]);
- ~imuBus.setnAt(4,[0.9,0.1,0.1]);
+Synth(\mouse4, [\bus, ~imuBus.index]);
+~imuBus.setnAt(4,[0.9,0.9,0.9]);
 
 // Start the synth
 x = Synth(\imuExpandedRhythmSynth, [\ctrlBus, ~imuBus, \tempo, 4]);
