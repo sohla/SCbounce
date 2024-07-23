@@ -100,4 +100,14 @@ s.reboot;
 
 
 
+
+
 )
+
+
+OSCFunc.trace(true); // Turn posting on
+OSCFunc.trace(false); // Turn posting off
+
+
+
+

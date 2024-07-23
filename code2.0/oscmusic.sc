@@ -54,7 +54,8 @@ var createWindowView, addDeviceView;
 var startOSCListening, stopOSCListening, enableOSCListening, disableOSCListening, addOSCDeviceListeners;
 
 var addDevice, removeDevice, removeDeviceButton;
-var buttonListener, airstickListeners = [], numAirwareVirtualDevices = 4;
+var buttonListener, airstickListeners = [];
+var numAirwareVirtualDevices = 4;
 
 var oscOut = NetAddr.new("127.0.0.1", 9003);
 
@@ -1246,7 +1247,7 @@ addOSCDeviceListeners = {|d|
 	numAirwareVirtualDevices.do({|i|
 
 
-		var pattern = "/"++(i+1)++"/CombinedDataPacket";
+		var pattern = "/"++(i+1)++"/IMUFusedData";
 		var address = NetAddr.new(d.ip, d.port - i);
 
 
@@ -1404,7 +1405,7 @@ startOSCListening = {
 
 				});
 			}.defer;
-		},'\/'++(i+1)++'\/CombinedDataPacket'));
+		},'\/'++(i+1)++'\/IMUFusedData'));
 	});
 
 	// trigger device creation via OSC
