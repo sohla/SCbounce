@@ -1255,8 +1255,6 @@ addOSCDeviceListeners = {|d|
 				var sx,sy,sz,qe,q,ss,r, rq, rr, rtr;
 				var tr;
 
-				msg.postln;
-
 				if(devices.at(addr.port+i) != nil,{
 					var oq = devices.at(addr.port+i).sensors.quatEvent;
 
