@@ -1246,7 +1246,7 @@ addOSCDeviceListeners = {|d|
 	numAirwareVirtualDevices.do({|i|
 
 
-		var pattern = "/"++(i+1)++"/IMUFusedData";
+		var pattern = "/"++(i+1)++"/CombinedDataPacket";
 		var address = NetAddr.new(d.ip, d.port - i);
 
 
@@ -1254,6 +1254,8 @@ addOSCDeviceListeners = {|d|
 			d.listeners.airware = OSCFunc({ |msg, time, addr, recvPort|
 				var sx,sy,sz,qe,q,ss,r, rq, rr, rtr;
 				var tr;
+
+				msg.postln;
 
 				if(devices.at(addr.port+i) != nil,{
 					var oq = devices.at(addr.port+i).sensors.quatEvent;
@@ -1404,7 +1406,7 @@ startOSCListening = {
 
 				});
 			}.defer;
-		},'\/'++(i+1)++'\/IMUFusedData'));
+		},'\/'++(i+1)++'\/CombinedDataPacket'));
 	});
 
 	// trigger device creation via OSC
