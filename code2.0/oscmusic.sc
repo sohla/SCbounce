@@ -54,8 +54,8 @@ var createWindowView, addDeviceView;
 var startOSCListening, stopOSCListening, enableOSCListening, disableOSCListening, addOSCDeviceListeners;
 
 var addDevice, removeDevice, removeDeviceButton;
-var buttonListener, airstickListeners = [];
-var numAirwareVirtualDevices = 4;
+var numAirwareVirtualDevices = 2;
+var buttonListener, airstickListeners = Array.newClear(numAirwareVirtualDevices);
 
 var oscOut = NetAddr.new("127.0.0.1", 9003);
 
@@ -168,6 +168,7 @@ var deviceProto = (
 	\name: first,
 	\ip: "127.0.0.1",
 	\port: 57120,
+	\macAddress: "00:11:22:33:44:55",
 	\did: "nil",
 
 	\enabled: true, // are we running
@@ -536,7 +537,7 @@ removeDevice = {|d|
 	d.listeners.quatListener.free;
 };
 
-addDevice = { |ip,port|
+addDevice = { |ip,port, ma|
 
 	var d = Event.new(proto:deviceProto);
 
@@ -545,13 +546,14 @@ addDevice = { |ip,port|
 	d.blob = Event.new(proto:blobProto);
 	d.ip = ip;
 	d.port = port;
+	d.macAddress = ma;
 
-	devices.put(port,d);
+	devices.put(ma,d);
 
 	// load the data
 	reloadPersonality.(d);
 
-	addDeviceView.(contentView, d);
+	{ addDeviceView.(contentView, d); }.defer;
 
 	addOSCDeviceListeners.(d);
 
@@ -1247,7 +1249,8 @@ addOSCDeviceListeners = {|d|
 	numAirwareVirtualDevices.do({|i|
 
 
-		var pattern = "/"++(i+1)++"/IMUFusedData";
+		// var pattern = "/"++(i+1)++"/IMUFusedData";
+		var pattern = "/"++(d.macAddress)++"/IMUFusedData";
 		var address = NetAddr.new(d.ip, d.port - i);
 
 
@@ -1256,27 +1259,27 @@ addOSCDeviceListeners = {|d|
 				var sx,sy,sz,qe,q,ss,r, rq, rr, rtr;
 				var tr;
 
-				if(devices.at(addr.port+i) != nil,{
-					var oq = devices.at(addr.port+i).sensors.quatEvent;
+				if(devices.at(d.macAddress) != nil,{
+					var oq = devices.at(d.macAddress).sensors.quatEvent;
 
-					devices.at(addr.port+i).sensors.accelEvent = (
+					devices.at(d.macAddress).sensors.accelEvent = (
 						\x:msg[1].asFloat * 0.1,
 						\y:msg[2].asFloat * 0.1,
-					\z:msg[3].asFloat * 0.1);
+						\z:msg[3].asFloat * 0.1);
 
-					devices.at(addr.port+i).sensors.quatEvent = (
+					devices.at(d.macAddress).sensors.quatEvent = (
 						\w:msg[7].asFloat,
 						\x:msg[4].asFloat,
 						\y:msg[5].asFloat,
 						\z:msg[6].asFloat);
 
 					// take quaternion and convert to ueler angles
-					qe = devices.at(addr.port+i).sensors.quatEvent;
+				qe = devices.at(d.macAddress).sensors.quatEvent;
 					q = Quaternion.new(qe.w,qe.x,qe.y,qe.z);
 					r = q.asEuler;
 					tr = [r[0],r[1],r[2] + pi.half];
 
-					devices.at(addr.port+i).sensors.gyroEvent = (
+					devices.at(d.macAddress).sensors.gyroEvent = (
 						\x:tr[2].asFloat,
 						\y:tr[0].asFloat,
 						\z:tr[1].asFloat);
@@ -1287,7 +1290,7 @@ addOSCDeviceListeners = {|d|
 					rtr = [rr[0],rr[1],rr[2] + pi.half];
 
 					// calc. rate of change
-					devices.at(addr.port+i).sensors.rrateEvent = (
+					devices.at(d.macAddress).sensors.rrateEvent = (
 						\x:tr[2].asFloat,
 						\y:tr[0].asFloat,
 						\z:tr[1].asFloat);
@@ -1390,47 +1393,34 @@ addOSCDeviceListeners = {|d|
 
 startOSCListening = {
 
-	// handy way to listen to multiple ports
-	// 4.do{|i| thisProcess.openUDPPort(57120 + i)};
-
-	// listen for data and if found, add airware virtual device and stop listening
 	numAirwareVirtualDevices.do({|i|
-		airstickListeners.add( OSCFunc({ |msg, time, addr, recvPort|
-			{
-				if(devices.at(addr.port+i) == nil,{
-					var d = addDevice.(addr.ip,addr.port+i);
-					//addOSCDeviceListeners.(d);
-					["device:",i, d.port].postln;
-					airstickListeners[i].free;
 
+		var func = { |msg, time, addr|
+
+			if(msg[0] != '/status.reply') {
+				var macAddress = msg[0].asString.split($/)[1];
+				if(devices.at(macAddress) == nil,{
+					if(msg[0].asString.split($/).last.contains("IMUFusedData"),{
+						"time: % sender: %\nmessage: %\n".postf(time, addr.port, macAddress);
+						d = addDevice.(addr.ip,addr.port, macAddress);
+						thisProcess.removeOSCRecvFunc(func);
+					});
 				});
-			}.defer;
-		},'\/'++(i+1)++'\/IMUFusedData'));
+			};
+			msg[0].asString.split($/)[1]
+		};
+		airstickListeners.put(i,func);
+		thisProcess.addOSCRecvFunc(func);
 	});
 
-	// trigger device creation via OSC
-	buttonListener = OSCFunc({ |msg, time, addr, recvPort|
-		[msg, time, addr, recvPort].postln;
-		if(msg[1].asFloat == 1.0, {
-			if(devices.at(addr.port) == nil,{
-				{
-					var d = addDevice.(addr.ip, addr.port);
-				}.defer;
-			});
-		},{
-			// {
-			// 	//• TODO UI is not repsonsive outside its scope
-			// 	// removeDeviceButton.valueAction_(0);
-			// }.defer;
-		});
-
-	}, '/gyrosc/button');
 };
 
 
 stopOSCListening = {
 	numAirwareVirtualDevices.do({|i|
-		airstickListeners[i].free;
+		// airstickListeners[i].free;
+		thisProcess.removeOSCRecvFunc(airstickListeners[i]);
+
 	});
 
 
@@ -1526,3 +1516,5 @@ result.postln;
 */
 
 
+// OSCFunc.trace(true)
+// OSCFunc.trace(false)
