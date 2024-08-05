@@ -28,11 +28,6 @@
 	Synth(\mouseX, [\bus, mx.index]);
 	Synth(\mouseY, [\bus, my.index]);
 
-	var mx = Bus.control(s,1);
-	var my = Bus.control(s,1);
-	Synth(\mouseX, [\bus, mx.index]);
-	Synth(\mouseY, [\bus, my.index]);
-
 
 ~reichPattern = Pbind(
     \instrument, \pluckedString,
@@ -44,7 +39,7 @@
     \scale, Scale.major,
 	\root, Pseq([0,1,3,-2,1,3,-2,1].stutter(16), inf),
     \octave, Pseq([3, 4], inf),
-	\amp, Pexprand(0.1, 0.2),
+	\amp, Pexprand(0.5, 0.7),
 	\attack, Pseg(Pseq([0.001, 0.1], inf), Pseq([3, 3], inf), \linear, inf),
     \decay, Pfunc{ mx.getSynchronous.linlin(0.0,1.0,1.5,0.2)},
 	\phs, Pseg(Pseq([5, 20], inf), Pseq([10, 10], inf), \sine, inf),
