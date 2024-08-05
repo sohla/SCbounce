@@ -24,7 +24,7 @@ SynthDef(\arpOdyssey, {
         SinOsc.ar(lfoRate),
         LFSaw.ar(lfoRate),
         LFPulse.ar(lfoRate, width: 0.5),
-        LFNoise0.r(lfoRate)
+        LFNoise0.ar(lfoRate)
     ]);
 
     sh = Latch.kr(WhiteNoise.kr, Impulse.kr(sampleHoldRate));
