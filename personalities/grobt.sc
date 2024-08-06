@@ -79,10 +79,15 @@ SynthDef(\monoSampler, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=44
 //------------------------------------------------------------
 ~next = {|d|
 
-	var dur = m.accelMassFiltered.linlin(0,1,0.8,0.15);
+	var dur = m.accelMassFiltered.linlin(0,1,2.4,0.15);
 	// var start = m.accelMass.linlin(0,0.5,0.5,0.8);
 	// var amp = m.accelMass.linlin(0,1,0,4);
 	//
+		var amp = m.accelMass.linlin(0,1,0,1);
+
+	if(amp < 0.2, {amp = 0});
+	Pdef(m.ptn).set(\amp, amp);
+
 	// Pdef(m.ptn).set(\amp, amp);
 	Pdef(m.ptn).set(\dur, dur);
 	// Pdef(m.ptn).set(\start, start);
