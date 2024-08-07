@@ -86,11 +86,21 @@ SynthDef(\pluck2, { |out=0, amp=0.3, pch=30, frq=30, gate=0 |
 
 ~plot = { |d,p|
 	// [d.sensors.quatEvent.x, d.sensors.quatEvent.y, d.sensors.quatEvent.z];
-	[m.accelMassFiltered * 0.1, d.sensors.gyroEvent.x * 0.1];
+	// [m.accelMassFiltered * 0.1, d.sensors.gyroEvent.x * 0.1];
 	// [m.accelMass + m.rrateMassFiltered, m.accelMassFiltered,m.rrateMassThreshold];
+
 	// [m.rrateMassFiltered, m.rrateMassThreshold, m.accelMassAmp];
+
 	// [d.sensors.gyroEvent.x * d.sensors.gyroEvent.y * d.sensors.gyroEvent.z * 0.1];
-	// [d.sensors.rrateEvent.x, d.sensors.rrateEvent.y, d.sensors.rrateEvent.z];
+
+	// var x = d.sensors.gyroEvent.x - pi.half;
+	// var y = d.sensors.gyroEvent.y;
+	// var z = d.sensors.gyroEvent.z * pi;
+	// if(x <= 0, { x = pi - (pi + x)});
+	// if(y <= 0, { y = pi - (pi + y)});
+	// if(z <= 0, { z = pi - (pi + z)});
+	// [x / pi, y / pi, z / pi];
+	[d.sensors.rrateEvent.x, d.sensors.rrateEvent.y, d.sensors.rrateEvent.z];
 	// [d.sensors.accelEvent.x, d.sensors.accelEvent.y, d.sensors.accelEvent.z];
 
 
@@ -112,5 +122,4 @@ SynthDef(\pluck2, { |out=0, amp=0.3, pch=30, frq=30, gate=0 |
 // 	SinOsc.ar([freq, freq + (freq*0.03)], 0, 0.5 * env)
 // }.play;
 // )
-
 

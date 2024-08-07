@@ -30,8 +30,9 @@ m5sticks 43,44,45
 
 */
 var devicesDir = "~/Develop/SuperCollider/Projects/scbounce/personalities/";
+var oscMessageTag  = "IMUFusedData";
 // var devicesDir = "~/Develop/SuperCollider/oscMusic/personalities/";
-var first = "timDrums";
+var first = "pluck2";
 var midiControlOffset = 1;
 var loadDeviceList;
 
@@ -54,7 +55,7 @@ var createWindowView, addDeviceView;
 var startOSCListening, stopOSCListening, enableOSCListening, disableOSCListening, addOSCDeviceListeners;
 
 var addDevice, removeDevice, removeDeviceButton;
-var buttonListener, airstickListeners = [], numAirwareVirtualDevices = 4;
+var buttonListener, airstickListeners = [], numAirwareVirtualDevices = 1;
 
 var oscOut = NetAddr.new("127.0.0.1", 9003);
 
@@ -1246,10 +1247,12 @@ addOSCDeviceListeners = {|d|
 	numAirwareVirtualDevices.do({|i|
 
 
-		var pattern = "/"++(i+1)++"/CombinedDataPacket";
+		// var pattern = "/"++(i+1)++"/"++oscMessageTag;
+		var pattern = "/60:01:E2:E2:27:48/"++oscMessageTag;
 		var address = NetAddr.new(d.ip, d.port - i);
 		var prev = fourCh;
 		var angVel = threeCh;
+		var rx,ry,rz,ox=0,oy=0,oz=0;
 /*
 
 Quaternion quaternion_normalize(Quaternion q) {
@@ -1325,6 +1328,8 @@ Quaternion quaternion_normalize(Quaternion q) {
 			d.listeners.airware = OSCFunc({ |msg, time, addr, recvPort|
 				var sx,sy,sz,qe,q,ss,r, rq, rr, rtr;
 				var tr;
+
+
 				if(devices.at(addr.port+i) != nil,{
 					var oq = devices.at(addr.port+i).sensors.quatEvent;
 
@@ -1351,18 +1356,39 @@ Quaternion quaternion_normalize(Quaternion q) {
 					\y:tr[0].asFloat,
 					\z:tr[1].asFloat);
 
+
+				rx = tr[2] - pi.half;
+				ry = tr[0];
+				rz = tr[1] * pi;
+
+				if(rx <= 0, { rx = pi - (pi + rx)});
+				if(ry <= 0, { ry = pi - (pi + ry)});
+				if(rz <= 0, { rz = pi - (pi + rz)});
+				// [x / pi, y / pi, z / pi];
+
+				devices.at(addr.port).sensors.rrateEvent = (
+					\x:rx - ox,
+					\y:ry - oy,
+					\z:rz - oz);
+
+				ox = rx;
+				oy = ry;
+				oz = rz;
+
+
+
 				// devices.at(addr.port).sensors.rrateEvent = (
 				// 	\x:msg[14].asFloat,
 				// 	\y:msg[15].asFloat,
 				// \z:msg[16].asFloat);
 
 				// qe = normQuan.(qe);
-				angVel = quanToAngularVelocity.(qe,prev,0.1);
-				prev = qe;
-				devices.at(addr.port+i).sensors.rrateEvent = (
-					\x:angVel.x.asFloat,
-					\y:angVel.y.asFloat,
-					\z:angVel.z.asFloat);
+				// angVel = quanToAngularVelocity.(qe,prev,0.1);
+				// prev = qe;
+				// devices.at(addr.port+i).sensors.rrateEvent = (
+				// 	\x:angVel.x.asFloat,
+				// 	\y:angVel.y.asFloat,
+				// \z:angVel.z.asFloat);
 				});
 
 
@@ -1376,7 +1402,7 @@ Quaternion quaternion_normalize(Quaternion q) {
 			// 	\y:rr[1].asFloat,
 			// \z:rr[2].asFloat + pi.half);
 			// });
-			}, pattern, address);
+				}, pattern, address);
 	// });
 		// d.listeners.airware.postln;
 	});
@@ -1480,6 +1506,7 @@ startOSCListening = {
 	numAirwareVirtualDevices.do({|i|
 		airstickListeners.add( OSCFunc({ |msg, time, addr, recvPort|
 			{
+				msg.postln;
 				if(devices.at(addr.port+i) == nil,{
 					var d = addDevice.(addr.ip,addr.port+i);
 					//addOSCDeviceListeners.(d);
@@ -1488,7 +1515,8 @@ startOSCListening = {
 
 				});
 			}.defer;
-		},'\/'++(i+1)++'\/CombinedDataPacket'));
+		// },"\/"++(i+1)++"\/"++oscMessageTag));
+		},"\/60:01:E2:E2:27:48\/"++oscMessageTag));
 	});
 
 	// trigger device creation via OSC
