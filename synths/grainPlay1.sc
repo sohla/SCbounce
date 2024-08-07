@@ -92,7 +92,9 @@ Pdef(\a).play(quant:0);
 
 
 (
-~sampleFolder = PathName("/Users/soh_la/Downloads/Voice recordings Music in Motion 2July2025/converted");
+~sampleFolder = PathName("/Users/soh_la/Downloads/Voice recordings Music in Motion 25June2024/converted");
+// ~sampleFolder = PathName("/Users/soh_la/Downloads/Voice recordings Music in Motion 2July2025/converted");
+
 ~buffers = ~sampleFolder.entries.collect({ |path|
     Buffer.read(s, path.fullPath);
 });
@@ -135,4 +137,10 @@ Synth(\pullstretchMono,[\buffer,~buffers[14],\pch,0.midiratio, \amp,3, \div, 12]
 )
 (
 Synth(\pullstretchMono,[\buffer,~buffers[1],\pch,0.midiratio, \amp,3, \div, 8]);
+)
+
+
+(
+Synth(\pullstretchMono,[\buffer,~buffers[12],\pch,0.midiratio, \amp,1, \div, 2]);
+Synth(\pullstretchMono,[\buffer,~buffers[12],\pch,12.midiratio, \amp,0.2, \div, 2]);
 )

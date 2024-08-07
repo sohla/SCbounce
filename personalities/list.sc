@@ -1,5 +1,8 @@
 (
 	[
+	"timDrums",
+	"mattCello",
+	"disneyFun",
 	"grobt",
 	"blobblob",
 	"rope1",
