@@ -247,8 +247,11 @@ f = { |msg, time, addr|
 	    if(msg[0] != '/status.reply') {
 			if(msg[0].asString.split($/).last.contains("IMUFusedData"),{
 			var macAddress= msg[0].asString.split($/)[1];
-			// "time: % sender: %\nmessage: %\n".postf(time, addr.port, macAddress);
-			"time: % dif: %\n".postf(time, (time - l).round(1e-4));
+			var timeDif = (time - l).round(1e-4) * 1000;
+
+			//"time: % dif: % : %\n".postf(time, (time - l).round(1e-4) * 1000, msg);
+			if(timeDif > 20.0, { "time: % dif: % : %\n".postf(time, (time - l).round(1e-4) * 1000, msg) });
+
 			l = time;
 
 			// thisProcess.removeOSCRecvFunc(func);
@@ -259,9 +262,4 @@ f = { |msg, time, addr|
 	};
 	thisProcess.addOSCRecvFunc(f);
 )
-
- thisProcess.removeOSCRecvFunc(f);
-
-
-
-
+thisProcess.removeOSCRecvFunc(f);
