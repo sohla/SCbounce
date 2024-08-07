@@ -101,10 +101,12 @@ SynthDef(\monoSampler, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=
 ~next = {|d|
 
 	var dur = m.accelMassFiltered.linlin(0,1,0.5,0.02);
-	var start = (d.sensors.gyroEvent.y / 2pi) + 0.5;
+	var start = d.sensors.gyroEvent.x;
 	var amp = m.accelMass.linlin(0,1,0,1);
 
-	if(amp < 0.04, {amp = 0});
+
+
+	if(amp < 0.07, {amp = 0});
 
 
 	Pdef(m.ptn).set(\amp, amp);
@@ -124,11 +126,11 @@ SynthDef(\monoSampler, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=
 ~plotMax = 1;
 
 ~plot = { |d,p|
-	[m.rrateMass * 0.1, m.rrateMassFiltered * 0.1];
+	// [m.rrateMass * 0.1, m.rrateMassFiltered * 0.1];
 	// [m.accelMass * 0.3, m.accelMassFiltered * 0.5];
 	// [m.rrateMassFiltered, m.rrateMassThreshold];
 	// [m.rrateMassFiltered, m.rrateMassThreshold, m.accelMassAmp];
-	// [d.sensors.gyroEvent.x, d.sensors.gyroEvent.y, d.sensors.gyroEvent.z];
+	[d.sensors.gyroEvent.x, d.sensors.gyroEvent.y, d.sensors.gyroEvent.z];
 	// [d.sensors.rrateEvent.x, d.sensors.rrateEvent.y, d.sensors.rrateEvent.z];
 	// [d.sensors.accelEvent.x, d.sensors.accelEvent.y, d.sensors.accelEvent.z];
 

@@ -30,7 +30,8 @@ m5sticks 43,44,45
 
 */
 var devicesDir = "~/Develop/SuperCollider/Projects/scbounce/personalities/";
-var oscMessageTag  = "IMUFusedData";
+// var oscMessageTag  = "IMUFusedData";
+var oscMessageTag  = "CombinedDataPacket";
 // var devicesDir = "~/Develop/SuperCollider/oscMusic/personalities/";
 var first = "pluck2";
 var midiControlOffset = 1;
@@ -55,7 +56,7 @@ var createWindowView, addDeviceView;
 var startOSCListening, stopOSCListening, enableOSCListening, disableOSCListening, addOSCDeviceListeners;
 
 var addDevice, removeDevice, removeDeviceButton;
-var buttonListener, airstickListeners = [], numAirwareVirtualDevices = 1;
+var buttonListener, airstickListeners = [], numAirwareVirtualDevices = 4;
 
 var oscOut = NetAddr.new("127.0.0.1", 9003);
 
@@ -280,7 +281,7 @@ loadPersonality = {|d|
 			});
 
 			// ~model.accelMassFiltered = ~tween.(~model.accelMass, ~model.accelMassFiltered, 0.2);
-			~model.rrateMassFiltered = ~tween.(~model.rrateMass, ~model.rrateMassFiltered, 0.2);
+			~model.rrateMassFiltered = ~tween.(~model.rrateMass, ~model.rrateMassFiltered, 0.4);
 
 		};
 
@@ -1247,82 +1248,12 @@ addOSCDeviceListeners = {|d|
 	numAirwareVirtualDevices.do({|i|
 
 
-		// var pattern = "/"++(i+1)++"/"++oscMessageTag;
-		var pattern = "/60:01:E2:E2:27:48/"++oscMessageTag;
+		var pattern = "/"++(i+1)++"/"++oscMessageTag;
+		// var pattern = "/60:01:E2:E2:27:48/"++oscMessageTag;
 		var address = NetAddr.new(d.ip, d.port - i);
 		var prev = fourCh;
 		var angVel = threeCh;
 		var rx,ry,rz,ox=0,oy=0,oz=0;
-/*
-
-Quaternion quaternion_normalize(Quaternion q) {
-    double magnitude = sqrt(q.w*q.w + q.x*q.x + q.y*q.y + q.z*q.z);
-    q.w /= magnitude;
-    q.x /= magnitude;
-    q.y /= magnitude;
-    q.z /= magnitude;
-    return q;
-}
-
-*/
-		var normQuan = {|q|
-			var magnitude = sqrt(q.w*q.w + q.x*q.x + q.y*q.y + q.z*q.z);
-		    q.w = q.w / magnitude;
-		    q.x = q.x / magnitude;
-		    q.y = q.y / magnitude;
-		    q.z = q.z / magnitude;
-			q
-		};
-
-		var quanToAngularVelocity = {|q_current,q_previous, dt|
-			var q_diff = fourCh;
-			var angle;
-			var s;
-			var axis = threeCh;
-			var angular_velocity = threeCh;
-
-			var rq, rr;
-
-			// q_diff.w = q.w * q_prev.w + q.x * q_prev.x + q.y * q_prev.y + q.z * q_prev.z;
-			// q_diff.x = q.w * q_prev.x - q.x * q_prev.w - q.y * q_prev.z + q.z * q_prev.y;
-			// q_diff.y = q.w * q_prev.y + q.x * q_prev.z - q.y * q_prev.w - q.z * q_prev.x;
-			// q_diff.z = q.w * q_prev.z - q.x * q_prev.y + q.y * q_prev.x - q.z * q_prev.w;
-
-			// q_diff.w = q_current.w * q_previous.w + q_current.x * q_previous.x + q_current.y * q_previous.y + q_current.z * q_previous.z;
-			// q_diff.x = q_current.x * q_previous.w - q_current.w * q_previous.x - q_current.z * q_previous.y + q_current.y * q_previous.z;
-			// q_diff.y = q_current.y * q_previous.w + q_current.z * q_previous.x - q_current.w * q_previous.y - q_current.x * q_previous.z;
-			// q_diff.z = q_current.z * q_previous.w - q_current.y * q_previous.x + q_current.x * q_previous.y - q_current.w * q_previous.z;
-
-			q_diff.w = q_current.w - q_previous.w;
-			q_diff.x = q_current.x - q_previous.x;
-			q_diff.y = q_current.y - q_previous.y;
-			q_diff.z = q_current.z - q_previous.z;
-
-			// q_diff.w.postln;
-
-
-			angular_velocity.x = 2 * q_diff.x / dt;
-			angular_velocity.y = 2 * q_diff.y / dt;
-		    angular_velocity.z = 2 * q_diff.z / dt;
-			// angle = 2 * acos(q_diff.w);
-			// s = sqrt(1 - q_diff.w * q_diff.w);
-			//
-			// if(s < 1e6, {
-			// 	axis.x = q_diff.x;
-			// 	axis.y = q_diff.y;
-			// 	axis.z = q_diff.z;
-			// 	},{
-			// 		axis.x = q_diff.x / s;
-			// 		axis.y = q_diff.y / s;
-			// 		axis.z = q_diff.z / s;
-			// });
-			//
-			// angular_velocity.x = axis.x * angle / dt;
-			// angular_velocity.y = axis.y * angle / dt;
-			// angular_velocity.z = axis.z * angle / dt;
-
-			angular_velocity
-		};
 
 		// if(devices.at(d.port) != nil,{
 			d.listeners.airware = OSCFunc({ |msg, time, addr, recvPort|
@@ -1349,24 +1280,28 @@ Quaternion quaternion_normalize(Quaternion q) {
 				qe = devices.at(addr.port+i).sensors.quatEvent;
 				q = Quaternion.new(qe.w,qe.x,qe.y,qe.z);
 				r = q.asEuler;
-				tr = [r[0],r[1],r[2] + pi.half];
-
-				devices.at(addr.port+i).sensors.gyroEvent = (
-					\x:tr[2].asFloat,
-					\y:tr[0].asFloat,
-					\z:tr[1].asFloat);
+				tr = [r[0],r[1],r[2]];
 
 
-				rx = tr[2] - pi.half;
+				// normalize gyro from 0 to pi
+				rx = tr[2];
 				ry = tr[0];
-				rz = tr[1] * pi;
+				rz = tr[1] * (pi.half + pi.half.half);
 
 				if(rx <= 0, { rx = pi - (pi + rx)});
 				if(ry <= 0, { ry = pi - (pi + ry)});
 				if(rz <= 0, { rz = pi - (pi + rz)});
-				// [x / pi, y / pi, z / pi];
 
-				devices.at(addr.port).sensors.rrateEvent = (
+				// rx,ry,rz / pi = 0-1
+
+				devices.at(addr.port+i).sensors.gyroEvent = (
+					\x:rx.asFloat / pi,
+					\y:ry.asFloat / pi,
+					\z:rz.asFloat / pi);
+
+
+				// store rate of change
+				devices.at(addr.port+i).sensors.rrateEvent = (
 					\x:rx - ox,
 					\y:ry - oy,
 					\z:rz - oz);
@@ -1375,36 +1310,8 @@ Quaternion quaternion_normalize(Quaternion q) {
 				oy = ry;
 				oz = rz;
 
-
-
-				// devices.at(addr.port).sensors.rrateEvent = (
-				// 	\x:msg[14].asFloat,
-				// 	\y:msg[15].asFloat,
-				// \z:msg[16].asFloat);
-
-				// qe = normQuan.(qe);
-				// angVel = quanToAngularVelocity.(qe,prev,0.1);
-				// prev = qe;
-				// devices.at(addr.port+i).sensors.rrateEvent = (
-				// 	\x:angVel.x.asFloat,
-				// 	\y:angVel.y.asFloat,
-				// \z:angVel.z.asFloat);
-				});
-
-
-				//
-				//
-			// rq = Quaternion.new(oq.w-qe.w * 0.01, oq.x-qe.x * 0.01, oq.y-qe.y * 0.01, oq.z-qe.z * 0.01);
-			// rr = rq.asEuler;
-			// rtr = [rr[0],rr[1],rr[2] + pi.half];
-			// devices.at(addr.port+i).sensors.rrateEvent = (
-			// 	\x:rr[0].asFloat,
-			// 	\y:rr[1].asFloat,
-			// \z:rr[2].asFloat + pi.half);
-			// });
-				}, pattern, address);
-	// });
-		// d.listeners.airware.postln;
+			});
+		}, pattern, address);
 	});
 
 
@@ -1506,7 +1413,6 @@ startOSCListening = {
 	numAirwareVirtualDevices.do({|i|
 		airstickListeners.add( OSCFunc({ |msg, time, addr, recvPort|
 			{
-				msg.postln;
 				if(devices.at(addr.port+i) == nil,{
 					var d = addDevice.(addr.ip,addr.port+i);
 					//addOSCDeviceListeners.(d);
@@ -1515,8 +1421,8 @@ startOSCListening = {
 
 				});
 			}.defer;
-		// },"\/"++(i+1)++"\/"++oscMessageTag));
-		},"\/60:01:E2:E2:27:48\/"++oscMessageTag));
+			},"\/"++(i+1)++"\/"++oscMessageTag));
+// },"\/60:01:E2:E2:27:48\/"++oscMessageTag));
 	});
 
 	// trigger device creation via OSC
