@@ -1,8 +1,8 @@
 var m = ~model;
 m.midiChannel = 1;
 
-
-	SynthDef(\wingChimes1, {|freq = 1000, pulseFreq = 10, amp = 0.1, rq = 0.001, att = 0.03, dec = 1.3, sus = 0, rel = 2, gate = 1, numHarms = 200|
+	SynthDef(\wingChimes1, {
+		|freq = 1000, pulseFreq = 10, amp = 0.1, rq = 0.001, att = 0.03, dec = 1.3, sus = 0, rel = 2, gate = 1, numHarms = 200|
 		var snd, env;
 		env = EnvGen.kr(Env.adsr(att, dec, sus, rel), gate: gate, doneAction: 2);
 		snd = BPF.ar(
@@ -22,7 +22,7 @@ m.midiChannel = 1;
 //------------------------------------------------------------
 // intial state
 //------------------------------------------------------------
-// Synth(\glockenspiel, [\freq, 880, \amp, 0.2, \decay, 3.5, \pan, -0.5, \hardness, 3.2]);
+
 ~init = ~init <> {
 	var pat1 = Pbind(
 		\instrument, \wingChimes1,
@@ -31,16 +31,14 @@ m.midiChannel = 1;
 		\root, Pseq([0,7,3,0,7,4].stutter(24),inf),
 		\pulseFreq, Pwhite(3, 7),
 		\numHarms, 30,
-			\func, Pfunc({|e| ~onEvent.(e)}),
-	\args, #[],
-
+		\func, Pfunc({|e| ~onEvent.(e)}),
+		\args, #[],
 	);
 
-
 	Pdef(m.ptn,pat1);
-
 	Pdef(m.ptn).play(quant:[0.1]);
 };
+
 ~stop = {
 	"stop".postln;
 	Pdef(m.ptn).stop();
@@ -54,22 +52,9 @@ m.midiChannel = 1;
 ~onEvent = {|e|
 	m.com.root = e.root;
 	m.com.dur = e.dur;
-
-
 };
 
-
-
 ~onHit = {|state|
-
-	// var vel = 100;
-	// var note = 60 + m.com.root - 24	;
-
-	// if(state == true,{
-	// 	m.midiOut.noteOn(m.midiChannel, note  , vel);
-	// },{
-	// 	m.midiOut.noteOff(m.midiChannel, note, 0);
-	// });
 };
 
 //------------------------------------------------------------
@@ -97,7 +82,6 @@ m.midiChannel = 1;
 };
 
 ~nextMidiOut = {|d|
-	// m.midiOut.control(m.midiChannel, 0, m.accelMassFiltered * 64 );
 };
 
 //------------------------------------------------------------
@@ -114,28 +98,5 @@ m.midiChannel = 1;
 	// [d.sensors.gyroEvent.x, d.sensors.gyroEvent.y, d.sensors.gyroEvent.z];
 	[d.sensors.rrateEvent.x, d.sensors.rrateEvent.y, d.sensors.rrateEvent.z];
 	// [d.sensors.accelEvent.x, d.sensors.accelEvent.y, d.sensors.accelEvent.z];
-
-
 };
 
-
-//
-//
-//
-//
-// (
-//
-// var a = Pbind(
-// 	\dur, 0.2,
-// 	\note, Pseq([0,2,4,6,8,10], inf)
-// );
-//
-// var b = Pbind(
-// 	\dur, 0.3,
-// 	\octave, 3,
-// 	\note, Pseq([12,8,4,0], inf)
-// );
-//
-// Pdef(\pd, Ppar([a,b], inf));
-// Pdef(\pd).play();
-// )
