@@ -1,0 +1,76 @@
+To set up a Raspberry Pi as a DHCP server for a local WiFi network, follow these steps:
+
+Install and configure hostapd (WiFi access point software):
+
+>>
+sudo apt install hostapd
+sudo systemctl unmask hostapd
+sudo systemctl enable hostapd
+
+Install dnsmasq (DHCP and DNS server):
+
+>>
+sudo apt install dnsmasq
+
+Configure the static IP for the Raspberry Pi's WiFi interface (wlan0):
+Edit /etc/dhcpcd.conf:
+
+>>
+sudo nano /etc/dhcpcd.conf
+
+Add these lines at the end:
+
+>>
+interface wlan0
+static ip_address=192.168.4.1/24
+nohook wpa_supplicant
+
+Configure hostapd:
+Create /etc/hostapd/hostapd.conf:
+
+>>
+sudo nano /etc/hostapd/hostapd.conf
+
+Add:
+Copyinterface=wlan0
+driver=nl80211
+ssid=YourNetworkName
+hw_mode=g
+channel=7
+wmm_enabled=0
+macaddr_acl=0
+auth_algs=1
+ignore_broadcast_ssid=0
+wpa=2
+wpa_passphrase=YourPassword
+wpa_key_mgmt=WPA-PSK
+wpa_pairwise=TKIP
+rsn_pairwise=CCMP
+
+Configure dnsmasq:
+Backup the original config:
+
+>>
+sudo mv /etc/dnsmasq.conf /etc/dnsmasq.conf.orig
+
+Create a new config:
+>>
+sudo nano /etc/dnsmasq.conf
+Add:
+Copyinterface=wlan0
+dhcp-range=192.168.4.2,192.168.4.20,255.255.255.0,24h
+domain=wlan
+address=/gw.wlan/192.168.4.1
+
+Enable IP forwarding:
+Edit /etc/sysctl.conf:
+
+>>
+sudo nano /etc/sysctl.conf
+Uncomment:
+Copynet.ipv4.ip_forward=1
+
+Reboot the Raspberry Pi:
+
+>>
+sudo reboot
