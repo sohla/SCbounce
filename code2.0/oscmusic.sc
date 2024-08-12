@@ -68,16 +68,7 @@ var fourCh = (\w: 0, \x: 0, \y:0, \z:0);
 
 var listenersProto = (
 
-	\gryoListner: nil,
-	\rotMatListner: nil,
-	\rrateListener: nil,
-	\accelListener: nil,
 	\airware:nil,
-	\quatListener: nil,
-	\altListener: nil,
-	\ampListener: nil,
-	\voltListener: nil,
-	\lineListener: nil;
 
 );
 
@@ -892,73 +883,6 @@ addOSCDeviceListeners = {|d|
 
 	var na = NetAddr.new(d.ip, d.port);
 
-	d.listeners.rrateListener = OSCFunc({ |msg, time, addr, recvPort|
-		// [msg, time, addr, recvPort].postln;
-
-		if(devices.at(addr.port) != nil,{
-			devices.at(addr.port).sensors.rrateEvent = (
-				\x:msg[1].asFloat,
-				\y:msg[2].asFloat,
-				\z:msg[3].asFloat);
-			// devices.at(addr.port).sensors.rrateEvent.sumabs.postln;
-		});
-
-	}, '/gyrosc/rrate', na);
-
-
-	//•• currently not being used : gets set in /gyrosc/quat
-	d.listeners.gryoListner = OSCFunc({ |msg, time, addr, recvPort|
-
-		var cy,sy,cr,sr,cp,sp,ge;
-		var qe,q,ss,r,tr;
-
-		if(devices.at(addr.port) != nil,{
-			devices.at(addr.port).sensors.gyroEvent = (
-				\x:msg[3].asFloat,
-				\y:msg[2].asFloat,
-				\z:msg[1].asFloat);
-		});
-
-		// ge = devices.at(addr.port).sensors.gyroEvent;
-		// cy = cos(ge.x * 0.5);
-		// sy = sin(ge.x * 0.5);
-		// cr = cos(ge.z * 0.5);
-		// sr = sin(ge.z * 0.5);
-		// cp = cos(ge.y * 0.5);
-		// sp = sin(ge.y * 0.5);
-		//
-		// devices.at(addr.port).sensors.quatEvent = (
-		// 	\w: cy * cr * cp + sy * sr * sp,
-		// 	\z: cy * sr * cp - sy * cr * sp,
-		// 	\y: cy * cr * sp + sy * sr * cp,
-		// \x: sy * cr * cp - cy * sr * sp);
-		//
-		//
-		// qe = devices.at(addr.port).sensors.quatEvent;
-		// q = Quaternion.new(qe.w,qe.z,qe.y,qe.x);
-		// r = q.asEuler;
-		// tr = [r[2],r[1],r[0]+ pi.half];
-		// devices.at(addr.port).sensors.gyroEvent = (
-		// 	\x:tr[0].asFloat,
-		// 	\y:tr[1].asFloat,
-		// \z:tr[2].asFloat);
-
-
-	}, '/gyrosc/gyroSSSS', na); // see notes below
-
-
-
-	d.listeners.accelListener = OSCFunc({ |msg, time, addr, recvPort|
-
-		if(devices.at(addr.port) != nil,{
-			devices.at(addr.port).sensors.accelEvent = (
-				\x:msg[1].asFloat,
-				\y:msg[2].asFloat,
-				\z:msg[3].asFloat);
-		});
-	}, '/gyrosc/accel', na);
-
-
 	// listen to all the airware that are connected (1 ip/port)
 	numAirwareVirtualDevices.do({|i|
 
@@ -1029,101 +953,10 @@ addOSCDeviceListeners = {|d|
 			});
 		}, pattern, address);
 	});
-
-
-
-	d.listeners.quatListener = OSCFunc({ |msg, time, addr, recvPort|
-
-		var sx,sy,sz,qe,q,ss,r;
-		var tr;
-		// [msg, time, addr, recvPort].postln;
-
-		if(devices.at(addr.port) != nil,{
-			devices.at(addr.port).sensors.quatEvent = (
-				\w:msg[1].asFloat,
-				\x:msg[2].asFloat,
-				\y:msg[3].asFloat,
-				\z:msg[4].asFloat);
-
-			// take quaternion and convert to ueler angles
-			qe = devices.at(addr.port).sensors.quatEvent;
-			q = Quaternion.new(qe.w,qe.x,qe.y,qe.z);
-			r = q.asEuler;
-			tr = [r[0],r[1],r[2] + pi.half];
-			devices.at(addr.port).sensors.gyroEvent = (
-				\x:tr[2].asFloat,
-				\y:tr[0].asFloat,
-				\z:tr[1].asFloat);
-		});
-	}, '/gyrosc/quat', na);
-
-	/*
-	quat being used for bounceOSC
-
-	gyro being used for M5StickC
-
-	quat being used for WemosBNO055 but range is wrong!
-
-	each device needs to have it's own INPORT address:
-	eg:
-	-DINPORT=56145
-	-DSTATIP=45
-
-
-
-
-	*/
-
-	d.listeners.ampListener = OSCFunc({ |msg, time, addr, recvPort|
-		if(devices.at(addr.port) != nil,{
-			devices.at(addr.port).sensors.ampValue = msg[1].asFloat;
-		});
-	}, '/gyrosc/amp', na);
-
-	//• NEED TO TEST THIS!! working for Wemos only
-	d.listeners.voltListener = OSCFunc({ |msg, time, addr, recvPort|
-		var v = "volt"+msg[1].round(0.1).asString;
-		v.postln;
-		{voltButton.states = [[v,Color.red]]}.defer(0);
-	}, '/gyrosc/volt');
-
-	d.listeners.lineListener = OSCFunc({ |msg, time, addr, recvPort|
-		var scale = 1;
-		if(devices.at(addr.port) != nil,{
-			// if( msg[11].asInt > 1, {
-			devices.at(addr.port).blob = (
-				//msg[0] is the path
-				\index: msg[1].asInt,
-				\area: msg[2].asFloat,
-				\perimeter: msg[3].asFloat,
-				\center: Point(
-					msg[4].asFloat * scale,
-					msg[5].asFloat * scale),
-				\rect: Rect(
-					msg[6].asFloat * scale,
-					msg[7].asFloat * scale,
-					msg[8].asFloat * scale,
-					msg[9].asFloat * scale),
-
-				\label: msg[10].asInt,
-				\velocity: Point(msg[11],msg[12]),
-				\dataSize: msg[13].asInt,
-				\data: msg.copyRange(14,256)
-
-
-			);
-			// },{
-			// 	//devices.at(addr.port).blob = ();
-			// });
-
-		});
-	}, '/gyrosc/line', na);///•••••••
 };
 
 startOSCListening = {
 
-	// handy way to listen to multiple ports
-	// 4.do{|i| thisProcess.openUDPPort(57120 + i)};
 
 	// listen for data and if found, add airware virtual device and stop listening
 	numAirwareVirtualDevices.do({|i|
@@ -1138,26 +971,10 @@ startOSCListening = {
 				});
 			}.defer;
 			},"\/"++(i+1)++"\/"++oscMessageTag));
-// },"\/60:01:E2:E2:27:48\/"++oscMessageTag));
+			// },"\/60:01:E2:E2:27:48\/"++oscMessageTag));
 	});
 
-	// trigger device creation via OSC
-	buttonListener = OSCFunc({ |msg, time, addr, recvPort|
-		[msg, time, addr, recvPort].postln;
-		if(msg[1].asFloat == 1.0, {
-			if(devices.at(addr.port) == nil,{
-				{
-					var d = addDevice.(addr.ip, addr.port);
-				}.defer;
-			});
-		},{
-			// {
-			// 	//• TODO UI is not repsonsive outside its scope
-			// 	// removeDeviceButton.valueAction_(0);
-			// }.defer;
-		});
 
-	}, '/gyrosc/button');
 };
 
 
