@@ -1,9 +1,9 @@
 (
 
-var devicesDir = "~/Develop/SuperCollider/Projects/scbounce/personalities/";
+// var devicesDir = "~/Develop/SuperCollider/Projects/scbounce/personalities/";
+var devicesDir = "~/Develop/SuperCollider/oscMusic/personalities/";
 // var oscMessageTag  = "IMUFusedData";
 var oscMessageTag  = "CombinedDataPacket";
-// var devicesDir = "~/Develop/SuperCollider/oscMusic/personalities/";
 var first = "timDrums";
 
 
@@ -693,7 +693,7 @@ addDeviceView = { |view, d|
 createPlotterGroup = {|view, data|
 
 	var col = [Color.yellow,Color.magenta,Color.cyan,Color.red,Color.green,Color.blue];
-	var bounds = Rect(5,5,570/2 - 10,200);
+	var bounds = Rect(0,0,570/2 - 20,200);
 	var pw = bounds.width;
 	var ph = bounds.height;
 	var plotterView = UserView(view,bounds).animate_(true);
@@ -701,12 +701,15 @@ createPlotterGroup = {|view, data|
 	var pmax = data.env.use{ ~plotMax.()};
 	var plotData = { data.env.use{ ~plot.(data)} };
 
-	var plotter = Plotter("plotter", Rect(0,0,pw,ph),plotterView)
-	.value_((0..data.dataSize).dup(1)) //need to init arrays with data
+	var plotter = Plotter("plotter", Rect(10,30,pw-10,ph-30),plotterView)
+	.value_((0..data.dataSize)) //need to init arrays with data
 	.refresh;
 
 	var st = Array.fill(4,"""");
+	var checkBox = CheckBox(view, Rect(10,-20,50,70), "plot");
 
+	checkBox.action_({ plotterView.visible = checkBox.value });
+	checkBox.valueAction_(checkBox.value);
 
 	plotData.().size.do({|i|
 
@@ -725,25 +728,26 @@ createPlotterGroup = {|view, data|
 	plotterView.drawFunc = plotterView.drawFunc <> {
 		{
 
-			plotter.superpose = true;
-			plotter.value = plotter.value.flop;
-			plotter.value = plotter.value.insert(0, plotData.());
-			plotter.value = plotter.value.keep(data.dataSize);
-			plotter.value = plotter.value.flop;
 
-			// old way of parsing single values
-			// p.value = p.value.shift(1).putFirst(d.env.use{ ~plot.(d)});
+				plotter.superpose = true;
+				plotter.value = plotter.value.flop;
+				plotter.value = plotter.value.insert(0, plotData.());
+				plotter.value = plotter.value.keep(data.dataSize);
+				plotter.value = plotter.value.flop;
+
+				// old way of parsing single values
+				// p.value = p.value.shift(1).putFirst(d.env.use{ ~plot.(d)});
+
+
+				plotter.setProperties(\plotColor, col).refresh;
+
+				//• this breaks
+				// plotData.().do({|o,i|
+				// 	st[i].string = o.round(0.01).asString;
+				// });
 
 			plotter.minval_(pmin);
 			plotter.maxval_(pmax);
-
-			plotter.setProperties(\plotColor, col).refresh;
-
-			//• this breaks
-			// plotData.().do({|o,i|
-			// 	st[i].string = o.round(0.01).asString;
-			// });
-
 
 		}.defer(0.1);// need to delay to allow for construction
 	}
@@ -761,8 +765,10 @@ createThreeDeeCanvas = { |view, data|
 	var p1,p2,p3;
 	var t = (1.0 + (5.0).sqrt) / 2.0;
 	var accelX, accelY, accelZ;
-	graph1 = Canvas3D(view, Rect(5, 5, 570/2, 240))
-	.scale_(250)
+	var checkBox = CheckBox(view, Rect(10,-20,50,70), "3d").value_(true);
+
+	graph1 = Canvas3D(view, Rect(10, 30, 570/2 - 30, 170))
+	.scale_(140)
 	.background_(Color.gray(0.25))
 	.perspective_(0.5)
 	.transforms_([Canvas3D.mTranslate(0,0,0)])
@@ -835,10 +841,10 @@ createThreeDeeCanvas = { |view, data|
 		.width_(1)
 	);
 
+	checkBox.action_({ graph1.visible = checkBox.value });
+	checkBox.valueAction_(checkBox.value);
 	// animate
 	graph1.animate(renderRate) {|t|
-
-		// gyroEvent data is calculated by quatListener from quaternion values
 		var tr = [
 			data.sensors.gyroEvent.y,//0
 			data.sensors.gyroEvent.z,//1
@@ -874,7 +880,6 @@ createThreeDeeCanvas = { |view, data|
 		p1.transforms=ico.transforms;
 		p2.transforms=ico.transforms;
 		p3.transforms=ico.transforms;
-
 	};
 
 };
