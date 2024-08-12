@@ -1,7 +1,7 @@
 (
 
-// var devicesDir = "~/Develop/SuperCollider/Projects/scbounce/personalities/";
-var devicesDir = "~/Develop/SuperCollider/oscMusic/personalities/";
+var devicesDir = "~/Develop/SuperCollider/Projects/scbounce/personalities/";
+// var devicesDir = "~/Develop/SuperCollider/oscMusic/personalities/";
 // var oscMessageTag  = "IMUFusedData";
 var oscMessageTag  = "CombinedDataPacket";
 var first = "timDrums";
