@@ -41,7 +41,6 @@ var loadPersonality;
 var reloadPersonality;
 var createProcRout;
 
-var createGenerator;
 
 var infoView;
 
@@ -86,17 +85,6 @@ var sensorsProto = (
 
 );
 
-var blobProto = (
-	\index: 0,
-	\dataSize: 3,
-	\area: 0,
-	\perimeter: 0,
-	\center: Point(0,0),
-	\rect: Rect(0,0,20,20),
-	\label: 0,
-	\velocity: Point(0,0),
-	\data: [[0,0]],
-);
 
 var deviceProto = (
 	\name: first,
@@ -112,15 +100,7 @@ var deviceProto = (
 	\env: nil,	// Environment for injected code
 	\procRout: nil,	// Routine calls ~next every ~fps
 
-	\generator: nil, // Routine for generating data
-
 	\sensors: Event.new(proto:sensorsProto),
-
-	\blob:  Event.new(proto:blobProto),
-
-
-	\noteOnFunc: nil,
-	\noteOffFunc: nil
 
 );
 
@@ -146,10 +126,6 @@ loadPersonality = {|d|
 
 	// after adding personality to an Environment, add useful functions to be used by anyone
 	var env = Environment.make {
-
-
-
-
 		~model = (
 			\com: com,
 			\name: d.name,
@@ -178,27 +154,10 @@ loadPersonality = {|d|
 		//------------------------------------------------------------
 		// process data->model
 		~processDeviceData = {|d|
-
 			~model.accelMass = d.sensors.accelEvent.sumabs * 0.33;
 			~model.rrateMass = d.sensors.rrateEvent.sumabs;
-
-			if(~model.accelMass > 0.3,{
-				//			(~model.accelMass - ~model.accelMassFiltered).sign.postln;
-				if( (~model.accelMass - ~model.accelMassFiltered).sign > 0, {
-					~model.accelMassFiltered = ~tween.(~model.accelMass, ~model.accelMassFiltered, 0.8);
-				},{
-					// "decay".postln;
-					~model.accelMassFiltered = ~tween.(~model.accelMass, ~model.accelMassFiltered, 0.8);
-				});
-
-
-			},{
-				~model.accelMassFiltered = ~tween.(~model.accelMass, ~model.accelMassFiltered, 0.05);
-
-			});
-
-			// ~model.accelMassFiltered = ~tween.(~model.accelMass, ~model.accelMassFiltered, 0.2);
-			~model.rrateMassFiltered = ~tween.(~model.rrateMass, ~model.rrateMassFiltered, 0.4);
+			~model.accelMassFiltered = ~smooth.(~model.accelMass, ~model.accelMassFiltered, 0.5, 0.08);
+			~model.rrateMassFiltered = ~smooth.(~model.rrateMass, ~model.rrateMassFiltered, 0.8, 0.1);
 
 		};
 
@@ -242,29 +201,29 @@ loadPersonality = {|d|
 
 		//------------------------------------------------------------
 		~play = {
-			Pdef(~model.ptn).play();
+			// Pdef(~model.ptn).play();
 		};
 
 		~stop = {
-			Pdef(~model.ptn).stop();
+			// Pdef(~model.ptn).stop();
 		};
 
 		//------------------------------------------------------------
 		~init = {
-			("init" + ~model.name).postln;
+			// ("init" + ~model.name).postln;
 		};
 
 		//------------------------------------------------------------
 		~buildPattern = {
-			Pdef(~model.ptn).play();
+			// Pdef(~model.ptn).play();
 
 
 		};
 		//------------------------------------------------------------
 		~deinit = {
-			~stop.();
-			Pdef(~model.ptn).clear;//or use endless?
-			("deinit" + ~model.name).postln;
+			// ~stop.();
+			// Pdef(~model.ptn).clear;//or use endless?
+			// ("deinit" + ~model.name).postln;
 		};
 
 		//------------------------------------------------------------
@@ -273,9 +232,11 @@ loadPersonality = {|d|
 		interpret(str);
 		//------------------------------------------------------------
 
-
-		~tween = {|input,history,friction = 0.5|
-			(friction * input + ((1 - friction) * history))
+		~smooth= {|input,history, attack=0.5, decay=0.05|
+			var coeff = attack;
+			if(history > input, {coeff = decay});
+			(coeff * input + ((1 - coeff) * history))
+			// history + coeff * (input - history)
 		};
 
 		~slope = {|input,history|
@@ -307,36 +268,6 @@ eulerToQuaternion = {|y,p,r|
 		sy * cp * cr - cy * sp * sr
 	)
 };
-//------------------------------------------------------------
-//
-//------------------------------------------------------------
-createGenerator = {|d|
-
-	var oscOut = NetAddr(d.ip, d.port);
-	var p,y,r,t;
-	var i=0;
-	var q;
-	Routine {
-		loop {
-
-			p = cos(i * 2pi * 0.002) * 90;
-			r = sin(i * 2pi * 0.01) * 90;
-			y = sin(i * 2pi * 0.006) * 90;
-
-			q = eulerToQuaternion.(y,p,r);
-			oscOut.sendMsg("/gyrosc/quat", q.coordinates[0],q.coordinates[1],q.coordinates[2],q.coordinates[3]);
-
-			t = 3.1 + (cos(i * 2pi * 0.1) * 3);
-			[d.ip, d.port,t].postln;
-			//				oscOut.sendMsg("/gyrosc/rrate", t,t,t);
-
-			i = i + 0.03;
-			0.03.yield;
-
-		}
-	}.stop;
-};
-
 
 //------------------------------------------------------------
 //
@@ -399,14 +330,11 @@ shutdown = {
 //------------------------------------------------------------
 removeDevice = {|d|
 
-	d.noteOnFunc.free;
-	d.noteOffFunc.free;
 
 	d.procRout.stop();
 
 	d.procRout.free;
 
-	d.generator.stop();
 	d.env.use{ ~deinit.() };
 
 		d.listeners.airware.free;
@@ -418,7 +346,7 @@ addDevice = { |ip,port|
 
 	d.listeners = Event.new(proto:listenersProto);
 	d.sensors =  Event.new(proto:sensorsProto);
-	d.blob = Event.new(proto:blobProto);
+
 	d.ip = ip;
 	d.port = port;
 
@@ -436,9 +364,7 @@ addDevice = { |ip,port|
 
 reloadPersonality = { |d|
 
-
 	// stop personality
-
 	d.procRout.stop;
 
 	d.procRout.free;
@@ -453,12 +379,9 @@ reloadPersonality = { |d|
 		~buildPattern.();
 	};
 
-
 	d.procRout = createProcRout.(d);
 	d.procRout.reset.play(AppClock);
 
-	d.generator = createGenerator.(d);
-	//d.generator.reset.play(AppClock);
 
 };
 
@@ -471,12 +394,6 @@ buildUI = {
 
 	QtGUI.palette = QPalette.dark;
 
-	// GUI.skin.plot.gridLinePattern = FloatArray[1, 0];
-	// GUI.skin.plot.gridColorX = Color.yellow(0.5);
-	// GUI.skin.plot.gridColorY = Color.yellow(0.5);
-	// GUI.skin.plot.background = Color.black;
-	// GUI.skin.plot.plotColor = Color.white;
-
 	window = Window("osc music", Rect(400, 200, width, height), false).front;
 	window.view.keyDownAction_({|view,char,mods,uni,code,key|
 		if(uni==114,{//r
@@ -484,29 +401,15 @@ buildUI = {
 				reloadPersonality.(v);
 			});
 		});
-		// if(uni==97,{//a
-		// 	stackButton.valueAction_((stackButton.value+1).mod(3));
-		// });
-		if(uni==100,{
-			//•disconnect
-		});
-		//uni.postln;
 	});
-	// contentView.drawFunc = {
-	// 	Pen.scale(1.1,1.1);
-	// 	Pen.drawImage( Point(0,-250), image, operation: 'sourceOver', opacity:0.1);
-
-	// };
 
 	window.onClose = {
 		shutdown.();
 	};
 	CmdPeriod.doOnce({window.close});
-
 	createWindowView.(window);
 
 };
-
 
 addDeviceView = { |view, d|
 
@@ -533,14 +436,12 @@ addDeviceView = { |view, d|
 		va.children[2].remove;
 	};
 
-
-
 	var onOffButton;
 
 	header = View(view).background_(col).maxHeight_(100).layout_( GridLayout.rows( [
 
 		removeDeviceButton = Button(view)
-		.maxWidth_(40)
+		.minWidth_(120)
 		.states_([
 			["x",Color.red(0.5)],
 		])
@@ -550,83 +451,15 @@ addDeviceView = { |view, d|
 			removeDevice.(d);
 			devices.removeAt(d.port);
 		}),
-		onOffButton = Button()
-		.maxWidth_(40)
-		.states_([["mute",Color.yellow],["mute"]])
-		.valueAction_(1)
-		.action_({|b|
-			d.enabled = b.value.asBoolean;
-
-			if(d.enabled == true,{
-				// reloadPersonality.(d);
-				d.env.use{~play.()};
-			},{
-				d.env.use{~stop.()};
-			});
-		}),
-
-	/*	voltButton = Button()
-		.maxWidth_(80)
-		.states_([["volt",Color.red]])
-		.action_({|b|
-			n = NetAddr.new(d.ip, d.port.asInt);
-			n.postln;
-			n.sendMsg("/togyrosc/volt", 42.asInt);
-		}),
-*/
-		Button()
-		.maxWidth_(40)
-		.states_([["reset"]])
-		.action_({
-			d.ip.class.postln;
-			d.port.class.postln;
-			b = NetAddr.new(d.ip, d.port.asInt+1);    // create the NetAddr
-			b.sendMsg("/bounce", "motionReset");    // send the application the messa
-
-		}),
-
-
 		infoView = StaticText(view)
 		.stringColor_(Color.white)
 		.font_(Font(size:12))
 		.minWidth_(100)
 		.string_(d.ip+":"+d.port+"["+d.did+"]"),
 
-	],[
-
-		dataSizeMenu = PopUpMenu(view)
-		.maxWidth_(60)
-		.items_(dataSizes)
-		.valueAction_(0)
-		.action_({|b|
-			d.dataSize = dataSizes.at(b.value);
-		})
-		.valueAction_(3),
-
-
-		popup = PopUpMenu(view)
-		.minWidth_(120)
-		.items_(names)
-		.valueAction_(names.find([d.name]))
-		.action_({|b|
-			d.name = names.at(b.value);
-			reloadPersonality.(d);
-		}),
-
-		Button()
-		.maxWidth_(40)
-		.states_([["gen", Color.white],["gen",Color.green]])
-		.action_({|b|
-			//b.value.postln;
-			if(b.value == 1,{
-				d.generator.reset.play(AppClock);
-			},{
-				d.generator.stop();
-			});
-		}),
 
 		reloadButton = Button(view)
-		.minWidth_(200)
+		.minWidth_(120)
 		.states_([
 			["reload"],
 		])
@@ -639,8 +472,41 @@ addDeviceView = { |view, d|
 			}.defer(0.1);
 		}),
 
+		],[
+
+		onOffButton = Button()
+		.maxWidth_(120)
+		.states_([["mute",Color.yellow],["mute"]])
+		.valueAction_(1)
+		.action_({|b|
+			d.enabled = b.value.asBoolean;
+
+			if(d.enabled == true,{
+				d.env.use{~play.()};
+			},{
+				d.env.use{~stop.()};
+			});
+		}),
 
 
+		popup = PopUpMenu(view)
+		.minWidth_(220)
+		.items_(names)
+		.valueAction_(names.find([d.name]))
+		.action_({|b|
+			d.name = names.at(b.value);
+			reloadPersonality.(d);
+		}),
+
+
+		dataSizeMenu = PopUpMenu(view)
+		.maxWidth_(120)
+		.items_(dataSizes.collect{|v| v+"points"})
+		.valueAction_(0)
+		.action_({|b|
+			d.dataSize = dataSizes.at(b.value);
+		})
+		.valueAction_(1),
 
 	]));
 
@@ -663,8 +529,6 @@ addDeviceView = { |view, d|
 	createThreeDeeCanvas.(vc,d);
 
 	contentView.layout.add(nil);
-
-
 };
 
 
@@ -714,7 +578,7 @@ createPlotterGroup = {|view, data|
 			pd = pd.addFirst(plotData.());
 			if(pd.size > data.dataSize, {pd.pop()});
 			plotter.superpose = true;
-			plotter.setValue(pd, false, true, false, minval: pmin, maxval: pmax);
+			plotter.setValue(pd, false, true, false);
 			plotter.value = plotter.value.keep(data.dataSize).flop;
 
 			// plotter.superpose = true;
@@ -722,9 +586,9 @@ createPlotterGroup = {|view, data|
 			// plotter.value = plotter.value.insert(0, plotData.());
 			// plotter.value = plotter.value.keep(data.dataSize);
 			// plotter.value = plotter.value.flop;
-			// plotter.minval_(pmin);
-			// plotter.maxval_(pmax);
 
+			plotter.minval_(pmin);
+			plotter.maxval_(pmax);
 			plotter.setProperties(\plotColor, col).refresh;
 
 		}.defer(0.1);// need to delay to allow for construction
@@ -744,16 +608,16 @@ createThreeDeeCanvas = { |view, data|
 	var checkBox = CheckBox(view, Rect(10,-20,50,70), "3d").value_(true);
 
 	graph1 = Canvas3D(view, Rect(10, 30, 570/2 - 30, 170))
-	.scale_(140)
+	.scale_(160)
 	.background_(Color.gray(0.25))
-	.perspective_(0.5)
+	.perspective_(0)
 	.transforms_([Canvas3D.mTranslate(0,0,0)])
 	.distance_(3.5);
 
 	graph1.add(cube = Canvas3DItem.cube()
 			.color_(Color.white.alpha_(0.4))
 			.width_(2)
-			.transform(Canvas3D.mScale(0.4,0.6,1))
+			.transform(Canvas3D.mScale(0.4,0.5,1))
 	);
 
 
@@ -942,11 +806,6 @@ createWindowView = {|view|
 	contentView.maxHeight_(5000);
 	scroll.canvas = contentView;
 
-	// example of 	loading a device (can only make 1 with generator)
-	// d = addDevice.("127.0.0.1",53692);
-	// addOSCDeviceListeners.(d);
-	// d = addDevice.("127.0.0.1",53692+1);
-	// addOSCDeviceListeners.(d);
 };
 
 //------------------------------------------------------------

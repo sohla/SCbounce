@@ -1,4 +1,7 @@
 var m = ~model;
+var pa = m.ptn ++ "A";
+var pb = m.ptn ++ "B";
+
 m.midiChannel = 1;
 
 
@@ -16,69 +19,76 @@ SynthDef(\monoSampler, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=
 //------------------------------------------------------------
 // intial state
 //------------------------------------------------------------
-~init = ~init <> {
+~init = {|d|
 
 	~sampleFolderB = PathName("/Users/soh_la/Downloads/Voice recordings Music in Motion 25June2024/converted");
-	~buffersB = ~sampleFolderB.entries.collect({ |path|
-		("loading : "+ path.fileName).postln;
-	    Buffer.read(s, path.fullPath);
+
+	~sampleFolderB.entries.do({ |path,i|
+
+		if(path.fileName.contains("TR laughing2.wav"),{
+
+			postf("loading [%]: % \n", i, path.fileName);
+
+			Buffer.read(s, path.fullPath, action:{ |buf|
+				Pdef(pa,
+					Pbind(
+						\instrument, \monoSampler,
+						\bufnum, buf,
+						\octave, Pxrand([3], inf),
+						\rate, 1,
+						\root, Pseq([0].stutter(8), inf),
+						\note, Pseq([33+7], inf),
+						\attack, 0.07,
+						\decay,0.1,
+						\sustain,0.04,
+						\args, #[],
+					)
+				);
+				Pdef(pb,
+					Pbind(
+						\instrument, \monoSampler,
+						\bufnum, buf,
+						\octave, [2,3],
+						\rate, 1,
+						\root, Pseq([0].stutter(8), inf),
+						\note, Pseq([33-12+7], inf),
+						\attack, 0.07,
+						\sustain,0.03,
+						\args, #[],
+					)
+				);
+
+				Pdef(pa).play(quant:0.125);
+				Pdef(pb).play(quant:0.125);
+
+			});
+		});
 	});
 
-	Pdef(m.ptn,
-	Pbind(
-		\instrument, \monoSampler,
-		\bufnum, ~buffersB[40],
-			// \amp,1,
-		\octave, Pxrand([3], inf),
-		\rate, 1,
-		\root, Pseq([0].stutter(8), inf),
-			// \start, Pfunc{ mx.getSynchronous.linlin(0.0,1.0,0.2,0.75) * (1 + 0.03.rand)},
-		\note, Pseq([33], inf),
-		\attack, 0.07,
-		\decay,0.1,
-		\sustain,0.04,
-		\release,0.112,
-		\dur, Pseq([0.5,0.5,0.5,0.5] * 0.25, inf),
-		\args, #[],
-	)
-);
 
-	Pdef(\pb,
-	Pbind(
-		\instrument, \monoSampler,
-		\bufnum, ~buffersB[40],
-			// \amp,1,
-		\octave, [2,3],
-		\rate, 1,
-		\root, Pseq([0].stutter(8), inf),
-			// \start, Pfunc{ mx.getSynchronous.linlin(0.0,1.0,0.75,0.2) * (1 + 0.03.rand)},
-		// \start, Pfunc{ mx.getSynchronous.linlin(0.0,1.0,0.55,0.65) * (1 + 0.05.rand)},
-		\note, Pseq([33-12], inf),
-		\attack, 0.07,
-		\sustain,0.03,
-		\release,0.1,
-		\dur, Pseq([0.125] , inf),
-		\args, #[],
-	)
-);
-
-
-	Pdef(m.ptn).play(quant:0.125);
-	Pdef(\pb).play(quant:0.125);
 };
-
 
 ~deinit = {
-	Pdef.removeAll;
-	s.freeAllBuffers;
+	Pdef(pa).remove;
+	Pdef(pb).remove;
+	("deinit" + ~model.name).postln;
+
+	// s.freeAllBuffers;
+	Pdef.all.size.postln;
+	Pdef.all.class.postln;
 
 };
+~play= {
+	postf("play % \n",m.ptn);
+	Pdef(pa).play();
+	Pdef(pb).play();
+};
+
 ~stop = {
-	"stop".postln;
-	Pdef(m.ptn).stop();
-	Pdef(\pb).stop();
+	postf("stop % \n",m.ptn);
+	Pdef(pa).stop();
+	Pdef(pb).stop();
 };
-
 //------------------------------------------------------------
 // triggers
 //------------------------------------------------------------
@@ -101,18 +111,24 @@ SynthDef(\monoSampler, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=
 ~next = {|d|
 
 	var dur = m.accelMassFiltered.linlin(0,1,0.5,0.02);
-	var start = d.sensors.gyroEvent.x;
+	var start = d.sensors.gyroEvent.y.linlin(0,1,0.2,0.75);
 	var amp = m.accelMass.linlin(0,1,0,1);
-
-
+	var div = d.sensors.gyroEvent.x.linlin(-1,1,1,2);
+	var rels = [3,0.1];
 
 	if(amp < 0.07, {amp = 0});
 
+	Pdef(pa).set(\amp, amp);
+	Pdef(pb).set(\amp, amp);
 
-	Pdef(m.ptn).set(\amp, amp);
-	Pdef(m.ptn).set(\start, start.linlin(0,1,0.2,0.75));
-	Pdef(\pb).set(\amp, amp);
-	Pdef(\pb).set(\start, start.linlin(0,1,0.75,0.2));
+	Pdef(pa).set(\start, start);
+	Pdef(pb).set(\start, start.linlin(0,1,0.75,0.2));
+
+	Pdef(pa).set(\dur,div.floor.reciprocal * 0.25);
+	Pdef(pb).set(\dur,div.floor.reciprocal * 0.25);
+
+	Pdef(pa).set(\release, rels[div.asInteger]);
+	Pdef(pb).set(\release, rels[div.asInteger]);
 
 };
 
@@ -126,7 +142,7 @@ SynthDef(\monoSampler, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=
 ~plotMax = 1;
 
 ~plot = { |d,p|
-	// [m.rrateMass * 0.1, m.rrateMassFiltered * 0.1];
+	// [m.rrateMass, m.rrateMassFiltered];
 	// [m.accelMass * 0.3, m.accelMassFiltered * 0.5];
 	// [m.rrateMassFiltered, m.rrateMassThreshold];
 	// [m.rrateMassFiltered, m.rrateMassThreshold, m.accelMassAmp];
@@ -137,10 +153,3 @@ SynthDef(\monoSampler, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=
 
 };
 
-// (
-// var a = 1.0.linrand;
-// var b = Array.linrand(1,0.0,1.0-a);
-// var c = 1.0 - b - a;
-// [a,b,c].flat
-// )
-//
