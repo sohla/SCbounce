@@ -2,9 +2,6 @@ var m = ~model;
 var pa = m.ptn ++ "A";
 var pb = m.ptn ++ "B";
 
-m.midiChannel = 1;
-
-
 SynthDef(\monoSampler, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=440,
     attack=0.01, decay=0.1, sustain=0.3, release=0.2, gate=1,cutoff=20000, rq=1|
 
@@ -19,7 +16,7 @@ SynthDef(\monoSampler, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=
 //------------------------------------------------------------
 // intial state
 //------------------------------------------------------------
-~init = {|d|
+~init = {
 
 	~sampleFolderB = PathName("/Users/soh_la/Downloads/Voice recordings Music in Motion 25June2024/converted");
 
@@ -75,7 +72,7 @@ SynthDef(\monoSampler, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=
 
 	// s.freeAllBuffers;
 	Pdef.all.size.postln;
-	Pdef.all.class.postln;
+	Pdef.all.hash.postln;
 
 };
 ~play= {

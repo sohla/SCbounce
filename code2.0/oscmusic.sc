@@ -3,50 +3,40 @@
 var devicesDir = "~/Develop/SuperCollider/Projects/scbounce/personalities/";
 // var devicesDir = "~/Develop/SuperCollider/oscMusic/personalities/";
 // var oscMessageTag  = "IMUFusedData";
-var oscMessageTag  = "CombinedDataPacket";
 var first = "timDrums";
 
-
-
-
+var oscMessageTag  = "CombinedDataPacket";
 var loadDeviceList;
-
 var names;
-
-
 var width = 600, height = Window.screenBounds.height * 0.9;
 var startup, shutdown, buildUI;
-
 var contentView = UserView().background_(Color.grey(0.2));
-
 var reloadButton;
 var voltButton;
-
-
 var createPlotterGroup, createThreeDeeCanvas, createTransportView, createTwoDeeCanvas;
-
 var createWindowView, addDeviceView;
 var startOSCListening, stopOSCListening, enableOSCListening, disableOSCListening, addOSCDeviceListeners;
-
 var addDevice, removeDevice, removeDeviceButton;
 var buttonListener, airstickListeners = [], numAirwareVirtualDevices = 4;
-
 var oscOut = NetAddr.new("127.0.0.1", 9003);
-
 var devices = Dictionary();
-
 var dataRate = 1;
 var renderRate = 30;
 var loadPersonality;
 var reloadPersonality;
 var createProcRout;
-
-
 var infoView;
-
 var dataSizes = [100,200,300,400];
-
 var eulerToQuaternion;
+
+//------------------------------------------------------------
+// models
+//------------------------------------------------------------
+
+var twoCh = (\x: 0, \y:0);
+var threeCh = (\x: 0, \y:0, \z:0);
+var fourCh = (\w: 0, \x: 0, \y:0, \z:0);
+
 
 var com = (
 	\root: 0,
@@ -55,24 +45,11 @@ var com = (
 	\rrateMass: 0,
 );
 
-
-//------------------------------------------------------------
-// models
-//------------------------------------------------------------
-//• can we use this Event proto as a way of decalritive building an application
-
-var twoCh = (\x: 0, \y:0);
-var threeCh = (\x: 0, \y:0, \z:0);
-var fourCh = (\w: 0, \x: 0, \y:0, \z:0);
-
 var listenersProto = (
-
 	\airware:nil,
-
 );
 
 var sensorsProto = (
-
 	\gyroEvent: threeCh,
 	\gyroMass: 0,
 	\rrateEvent: threeCh,
@@ -81,10 +58,7 @@ var sensorsProto = (
 	\accelMass: 1,
 	\quatEvent: fourCh,
 	\ampValue: 0,
-
-
 );
-
 
 var deviceProto = (
 	\name: first,
