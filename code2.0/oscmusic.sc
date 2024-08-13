@@ -409,16 +409,7 @@ removeDevice = {|d|
 	d.generator.stop();
 	d.env.use{ ~deinit.() };
 
-	d.listeners.voltListener.free;
-	d.listeners.lineListener.free;
-	d.listeners.ampListener.free;
-	d.listeners.gryoListner.free;
-	d.listeners.rrateListener.free;
-	d.listeners.accelListener.free;
-	// numAirwareVirtualDevices.do({ |i|
 		d.listeners.airware.free;
-// });
-	d.listeners.quatListener.free;
 };
 
 addDevice = { |ip,port|
@@ -610,7 +601,7 @@ addDeviceView = { |view, d|
 		.action_({|b|
 			d.dataSize = dataSizes.at(b.value);
 		})
-		.valueAction_(0),
+		.valueAction_(3),
 
 
 		popup = PopUpMenu(view)
@@ -698,6 +689,7 @@ createPlotterGroup = {|view, data|
 
 	var st = Array.fill(4,"""");
 	var checkBox = CheckBox(view, Rect(10,-20,50,70), "plot");
+	var pd = [];
 
 	checkBox.action_({ plotterView.visible = checkBox.value });
 	checkBox.valueAction_(checkBox.value);
@@ -719,26 +711,21 @@ createPlotterGroup = {|view, data|
 	plotterView.drawFunc = plotterView.drawFunc <> {
 		{
 
+			pd = pd.addFirst(plotData.());
+			if(pd.size > data.dataSize, {pd.pop()});
+			plotter.superpose = true;
+			plotter.setValue(pd, false, true, false, minval: pmin, maxval: pmax);
+			plotter.value = plotter.value.keep(data.dataSize).flop;
 
-				plotter.superpose = true;
-				plotter.value = plotter.value.flop;
-				plotter.value = plotter.value.insert(0, plotData.());
-				plotter.value = plotter.value.keep(data.dataSize);
-				plotter.value = plotter.value.flop;
+			// plotter.superpose = true;
+			// plotter.value = plotter.value.flop;
+			// plotter.value = plotter.value.insert(0, plotData.());
+			// plotter.value = plotter.value.keep(data.dataSize);
+			// plotter.value = plotter.value.flop;
+			// plotter.minval_(pmin);
+			// plotter.maxval_(pmax);
 
-				// old way of parsing single values
-				// p.value = p.value.shift(1).putFirst(d.env.use{ ~plot.(d)});
-
-
-				plotter.setProperties(\plotColor, col).refresh;
-
-				//• this breaks
-				// plotData.().do({|o,i|
-				// 	st[i].string = o.round(0.01).asString;
-				// });
-
-			plotter.minval_(pmin);
-			plotter.maxval_(pmax);
+			plotter.setProperties(\plotColor, col).refresh;
 
 		}.defer(0.1);// need to delay to allow for construction
 	}
@@ -752,9 +739,7 @@ createPlotterGroup = {|view, data|
 
 createThreeDeeCanvas = { |view, data|
 	var graph1;
-	var cube, top, rate, loc, ico;
-	var p1,p2,p3;
-	var t = (1.0 + (5.0).sqrt) / 2.0;
+	var cube;
 	var accelX, accelY, accelZ;
 	var checkBox = CheckBox(view, Rect(10,-20,50,70), "3d").value_(true);
 
@@ -765,59 +750,12 @@ createThreeDeeCanvas = { |view, data|
 	.transforms_([Canvas3D.mTranslate(0,0,0)])
 	.distance_(3.5);
 
-	graph1.add(p1 = Canvas3DItem.grid(2)
-		.color_(Color.green)
-		.fill_(false)
-		.width_(0)
-		.transform(Canvas3D.mScale(1,t,1))
-	);
-	graph1.add(p2 = Canvas3DItem.grid(2)
-		.color_(Color.red)
-		.width_(1)
-		.fill_(false)
-		.transform(Canvas3D.mScale(t,1,1))
-		.transform(Canvas3D.mRotateY(pi/2))
-	);
-	graph1.add(p3 = Canvas3DItem.grid(2)
-		.color_(Color.blue)
-		.width_(1)
-		.fill_(false)
-		.transform(Canvas3D.mScale(t,1,t))
-		.transform(Canvas3D.mRotateX(pi/2))
+	graph1.add(cube = Canvas3DItem.cube()
+			.color_(Color.white.alpha_(0.4))
+			.width_(2)
+			.transform(Canvas3D.mScale(0.4,0.6,1))
 	);
 
-	graph1.add(ico = Canvas3DItem()
-		.color_(Color.white.alpha_(0.1))
-		.width_(1)
-		.fill_(true)
-		.paths_([
-			[p1.paths[0][0],p1.paths[0][1],p2.paths[0][1]],
-			[p2.paths[0][1],p3.paths[0][0],p1.paths[0][0]],
-			[p1.paths[0][1],p3.paths[0][1],p2.paths[0][1]],
-			[p1.paths[0][0],p2.paths[0][0],p1.paths[0][1]],
-			[p1.paths[0][1],p3.paths[1][1],p2.paths[0][0]],
-			[p1.paths[0][0],p3.paths[1][0],p2.paths[0][0]],
-
-			[p1.paths[1][0],p2.paths[1][0],p1.paths[1][1]],
-			[p1.paths[1][1],p3.paths[1][1],p2.paths[1][0]],
-			[p1.paths[1][0],p3.paths[1][0],p2.paths[1][0]],
-			[p1.paths[1][0],p2.paths[1][1],p1.paths[1][1]],
-			[p1.paths[1][1],p3.paths[0][1],p2.paths[1][1]],
-			[p1.paths[1][0],p3.paths[0][0],p2.paths[1][1]],
-
-			[p2.paths[0][1],p3.paths[0][0],p2.paths[1][1]],
-			[p2.paths[0][1],p3.paths[0][1],p2.paths[1][1]],
-
-			[p2.paths[0][0],p3.paths[1][1],p2.paths[1][0]],
-			[p2.paths[0][0],p3.paths[1][0],p2.paths[1][0]],
-
-			[p3.paths[0][0],p1.paths[1][0],p3.paths[1][0]],
-			[p3.paths[0][0],p1.paths[0][0],p3.paths[1][0]],
-
-			[p3.paths[0][1],p1.paths[1][1],p3.paths[1][1]],
-			[p3.paths[0][1],p1.paths[0][1],p3.paths[1][1]],
-		])
-	);
 
 	graph1.add(accelX = Canvas3DItem.regPrism()
 		.color_(Color.yellow(0.9))
@@ -834,6 +772,7 @@ createThreeDeeCanvas = { |view, data|
 
 	checkBox.action_({ graph1.visible = checkBox.value });
 	checkBox.valueAction_(checkBox.value);
+
 	// animate
 	graph1.animate(renderRate) {|t|
 		var tr = [
@@ -842,8 +781,7 @@ createThreeDeeCanvas = { |view, data|
 			data.sensors.gyroEvent.x//2
 		];
 
-		ico.transforms = [
-			Canvas3D.mScale(0.6,0.6,0.6),
+		cube.transforms = [
 			Canvas3D.mRotateX(tr[0]),
 			Canvas3D.mRotateY(tr[1]),
 			Canvas3D.mRotateZ(tr[2]),
@@ -868,11 +806,7 @@ createThreeDeeCanvas = { |view, data|
 			Canvas3D.mRotateY(tr[1]),
 			Canvas3D.mRotateZ(tr[2]),
 		];
-		p1.transforms=ico.transforms;
-		p2.transforms=ico.transforms;
-		p3.transforms=ico.transforms;
 	};
-
 };
 
 
@@ -1027,4 +961,7 @@ s.waitForBoot({
 });
 
 )
+
+
+
 
