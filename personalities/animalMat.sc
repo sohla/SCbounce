@@ -19,38 +19,50 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, fre
 ~init = ~init <> {
 
 	~sampleFolderB = PathName("/Users/soh_la/Downloads/Voice recordings Music in Motion 2July2025/converted");
-	~buffersB = ~sampleFolderB.entries.collect({ |path|
-		("loading : "+ path.fileName).postln;
-	    Buffer.read(s, path.fullPath);
+	~sampleFolderB.entries.do({ |path,i|
+
+		if(path.fileName.contains("STE-1004.wav"),{
+
+			postf("loading [%]: % \n", i, path.fileName);
+
+			Buffer.read(s, path.fullPath, action:{ |buf|
+
+				Pdef(m.ptn,
+					Pbind(
+						\instrument, \stereoSampler,
+						\bufnum, buf,
+						\octave, Pxrand([3], inf),
+						\rate, Pseq([0,12,-5,7].stutter(8).midiratio, inf),
+						\start, Pseq([0.04,0.1,0.28,0.525,0.7,0.75,0.86,0.9], inf),
+						\note, Pseq([33], inf),
+						\attack, 0.07,
+						\release,0.2,
+						\args, #[],
+					)
+				);
+
+				Pdef(m.ptn).play(quant:0.25);
+
+			});
+		});
 	});
 
-	Pdef(m.ptn,
-		Pbind(
-			\instrument, \stereoSampler,
-			\bufnum, ~buffersB[15],
-			\octave, Pxrand([3], inf),
-			\rate, Pseq([0,-12,12,-5,7].midiratio, inf),
-			\start, Pseq([0.04,0.1,0.28,0.525,0.7,0.75,0.86,0.9], inf),
-			\note, Pseq([33], inf),
-			\attack, 0.07,
-			\release,0.2,
-			\args, #[],
-		)
-	);
-
-	Pdef(m.ptn).play(quant:0.25);
 };
-
 
 ~deinit = {
-	Pdef.removeAll;
-	s.freeAllBuffers;
+	Pdef(m.ptn).remove;
+	("deinit" + ~model.name).postln;
+};
+~play= {
+	postf("play % \n",m.ptn);
+	Pdef(m.ptn).play();
+};
 
-};
 ~stop = {
-	"stop".postln;
-	Pdef(~model.ptn).stop();
+	postf("stop % \n",m.ptn);
+	Pdef(m.ptn).stop();
 };
+
 
 //------------------------------------------------------------
 // triggers
@@ -71,13 +83,14 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, fre
 //------------------------------------------------------------
 // do all the work(logic) taking data in and playing pattern/synth
 //------------------------------------------------------------
+// (0..10).lincurve(0, 10, 0, 10,-3).plot;
+
 ~next = {|d|
 
-	var dur = m.accelMassFiltered.linlin(0,1,0.5,0.02);
+	var dur = m.accelMassFiltered.linlin(0,1,0.8,0.05).lag(5);
 	var start = m.accelMass.linlin(0,0.5,0.5,0.8);
-	var amp = m.accelMass.linlin(0,1,0,4);
+	var amp = m.accelMass.linlin(0,1,0,3).lag(6);
 	if(amp < 0.07, {amp = 0});
-
 	Pdef(m.ptn).set(\amp, amp);
 	Pdef(m.ptn).set(\dur, dur);
 	// Pdef(m.ptn).set(\start, start);

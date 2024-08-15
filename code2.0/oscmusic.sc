@@ -4,7 +4,7 @@
 var devicesDir = "~/Develop/SuperCollider/Projects/scbounce/personalities/";
 // var devicesDir = "~/Develop/SuperCollider/oscMusic/personalities/";
 // var oscMessageTag  = "IMUFusedData";
-var defaultPersonality = "timDrums";
+var defaultPersonality = "animalMat";
 var oscMessageTag  = "CombinedDataPacket";
 var renderRate = 30;
 
