@@ -76,24 +76,21 @@ SynthDef(\monoSampler, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=
 
 };
 
-~deinit = {
+~deinit = ~deinit <> {
 	Pdef(pa).remove;
 	Pdef(pb).remove;
-	("deinit" + ~model.name).postln;
 
 	// s.freeAllBuffers;
 	Pdef.all.size.postln;
 	Pdef.all.hash.postln;
 
 };
-~play= {
-	postf("play % \n",m.ptn);
+~play = ~play <> {
 	Pdef(pa).play();
 	Pdef(pb).play();
 };
 
-~stop = {
-	postf("stop % \n",m.ptn);
+~stop = ~stop <> {
 	Pdef(pa).stop();
 	Pdef(pb).stop();
 };

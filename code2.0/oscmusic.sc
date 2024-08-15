@@ -4,7 +4,7 @@
 var devicesDir = "~/Develop/SuperCollider/Projects/scbounce/personalities/";
 // var devicesDir = "~/Develop/SuperCollider/oscMusic/personalities/";
 // var oscMessageTag  = "IMUFusedData";
-var defaultPersonality = "animalMat";
+var defaultPersonality = "mattCello";
 var oscMessageTag  = "CombinedDataPacket";
 var renderRate = 30;
 
@@ -103,10 +103,14 @@ loadPersonality = {|d|
 			\ptn: Array.fill(16,{|i|i=90.rrand(65).asAscii}).join(),
 			\rrateMass: 0,
 			\rrateMassFiltered: 0,
+			\rrateMassFilteredAttack: 0.8,
+			\rrateMassFilteredDecay: 0.1,
 			\rrateMassThreshold: 0.21, //use for isMoving
 			\rrateMassThresholdSpec: ControlSpec(0.07, 0.4, \lin, 0.01, 0.21),
 			\accelMass: 0,
 			\accelMassFiltered: 0,
+			\accelMassFilteredAttack: 0.5,
+			\accelMassFilteredDecay: 0.08,
 			\accelMassAmpThreshold: 2.0,
 			\accelMassThresholdSpec: ControlSpec(0.4, 3.0, \lin, 0.1, 2.0),
 			\isHit: false,
@@ -124,8 +128,8 @@ loadPersonality = {|d|
 		~processDeviceData = {|d|
 			~model.accelMass = d.sensors.accelEvent.sumabs * 0.33;
 			~model.rrateMass = d.sensors.rrateEvent.sumabs;
-			~model.accelMassFiltered = ~smooth.(~model.accelMass, ~model.accelMassFiltered, 0.5, 0.08);
-			~model.rrateMassFiltered = ~smooth.(~model.rrateMass, ~model.rrateMassFiltered, 0.8, 0.1);
+			~model.accelMassFiltered = ~smooth.(~model.accelMass, ~model.accelMassFiltered, ~model.accelMassFilteredAttack,  ~model.accelMassFilteredDecay);
+			~model.rrateMassFiltered = ~smooth.(~model.rrateMass, ~model.rrateMassFiltered, ~model.rrateMassFilteredAttack, ~model.rrateMassFilteredDecay);
 
 		};
 
@@ -166,19 +170,22 @@ loadPersonality = {|d|
 			});
 		};
 
-
 		//------------------------------------------------------------
-		~play = {
-			// Pdef(~model.ptn).play();
-		};
-
-		~stop = {
-			// Pdef(~model.ptn).stop();
-		};
-
+		// ~play = {
+		// 	postf("play : % \n",~model.name);
+		// 	"echo hello world".unixCmd;
+		// 	Pdef(~model.ptn).play(0.125);
+		//
+		// };
+		//
+		// ~stop = {
+		// 	postf("stop : % \n",~model.name);
+		// 	Pdef(~model.ptn).stop();
+		// };
+		//
 		//------------------------------------------------------------
 		~init = {
-			// ("init" + ~model.name).postln;
+			postf("init : % [%] \n",~model.name, ~model.ptn);
 		};
 
 		//------------------------------------------------------------
@@ -189,9 +196,9 @@ loadPersonality = {|d|
 		};
 		//------------------------------------------------------------
 		~deinit = {
-			// ~stop.();
-			// Pdef(~model.ptn).clear;//or use endless?
-			// ("deinit" + ~model.name).postln;
+			postf("deinit : % [%] \n",~model.name, ~model.ptn);
+			Pdef(~model.ptn).remove;
+
 		};
 
 		//------------------------------------------------------------
@@ -308,7 +315,7 @@ removeDevice = {|d|
 		d.listeners.airware.free;
 };
 
-addDevice = { |ip,port|
+addDevice = { |ip,port, id|
 
 	var d = Event.new(proto:deviceProto);
 
@@ -317,6 +324,7 @@ addDevice = { |ip,port|
 
 	d.ip = ip;
 	d.port = port;
+	d.did = id;
 
 	devices.put(port,d);
 
@@ -385,7 +393,7 @@ addDeviceView = { |view, d|
 	var va,vb,vc;
 	var stackView, stackLayout;
 	var popup;
-	var col = Color.rand(0.1,0.9).alpha_(0.8);
+	var col = Color.rand(0.1,0.9).alpha_(0.75);
 
 	var createGraphs = {
 		createPlotterGroup.(va, Rect(250,5,400,240), col,
@@ -421,7 +429,7 @@ addDeviceView = { |view, d|
 			.stringColor_(Color.white)
 			.font_(Font(size:12))
 			.minWidth_(100)
-			.string_(d.ip+":"+d.port+"["+d.did+"]")
+		.string_("ID: "+d.did+" OSC: ["++d.ip+", "+d.port++"]")
 	};
 	var muteButtonLocal;
 	var muteButton = {|view|
@@ -737,14 +745,14 @@ startOSCListening = {
 		var pattern = patternBase.format(i+1);
 		// var pattern = patternBase.format("60:01:E2:E2:27:48");
 
-		airstickListeners.add( OSCFunc({ |msg, time, addr, recvPort|
+		airstickListeners = airstickListeners.add( OSCFunc({ |msg, time, addr, recvPort|
 			{
 				if(devices.at(addr.port+i) == nil,{
-					var d = addDevice.(addr.ip,addr.port+i);
-					//addOSCDeviceListeners.(d);
-					["device:",i, d.port].postln;
-					airstickListeners[i].free;
-
+					var d = addDevice.(addr.ip,addr.port+i,i+1);
+					postf("device auto detected : % \n", d.did);
+					//
+					// airstickListeners[i].free;
+					// airstickListeners.removeAt(i);
 				});
 			}.defer;
 		}, pattern));
@@ -754,8 +762,9 @@ startOSCListening = {
 };
 
 stopOSCListening = {
-	numAirwareVirtualDevices.do({|i|
-		airstickListeners[i].free;
+	airstickListeners.do({|obj|
+		postf("free : %\n", obj);
+		obj.free;
 	});
 };
 
@@ -793,7 +802,3 @@ s.waitForBoot({
 });
 
 )
-
-
-
-

@@ -49,19 +49,6 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, fre
 
 };
 
-~deinit = {
-	Pdef(m.ptn).remove;
-	("deinit" + ~model.name).postln;
-};
-~play= {
-	postf("play % \n",m.ptn);
-	Pdef(m.ptn).play();
-};
-
-~stop = {
-	postf("stop % \n",m.ptn);
-	Pdef(m.ptn).stop();
-};
 
 
 //------------------------------------------------------------
@@ -93,19 +80,6 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, fre
 	if(amp < 0.07, {amp = 0});
 	Pdef(m.ptn).set(\amp, amp);
 	Pdef(m.ptn).set(\dur, dur);
-	// Pdef(m.ptn).set(\start, start);
-
-	// Pdef(m.ptn).set(\filtFreq, m.accelMassFiltered.linexp(0,4,180,14000));
-	//
-	// if(m.accelMass > 0.1,{
-	// 	if( Pdef(~model.ptn).isPlaying.not,{
-	// 		Pdef(~model.ptn).resume(quant:0.25);
-	// 	});
-	// 	},{
-	// 		if( Pdef(~model.ptn).isPlaying,{
-	// 			Pdef(~model.ptn).pause();
-	// 		});
-	// });
 };
 
 ~nextMidiOut = {|d|
@@ -126,13 +100,4 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, fre
 	// [d.sensors.rrateEvent.x, d.sensors.rrateEvent.y, d.sensors.rrateEvent.z];
 	// [d.sensors.accelEvent.x, d.sensors.accelEvent.y, d.sensors.accelEvent.z];
 
-
 };
-
-// (
-// var a = 1.0.linrand;
-// var b = Array.linrand(1,0.0,1.0-a);
-// var c = 1.0 - b - a;
-// [a,b,c].flat
-// )
-//

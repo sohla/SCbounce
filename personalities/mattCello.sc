@@ -1,6 +1,7 @@
 var m = ~model;
-m.midiChannel = 1;
 
+m.rrateMassFilteredAttack = 0.99;
+m.rrateMassFilteredDecay = 0.3;
 
 SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=440,
     attack=0.01, decay=0.1, sustain=0.3, release=0.2, gate=1,cutoff=20000, rq=1|
@@ -19,43 +20,32 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, fre
 ~init = ~init <> {
 
 	~sampleFolderB = PathName("/Users/soh_la/Downloads/Voice recordings Music in Motion 2July2025/converted");
+	~sampleFolderB.entries.do({ |path,i|
 
-	~buffersB = ~sampleFolderB.entries.collect({ |path|
-		("loading : "+ path.fileName).postln;
-	    Buffer.read(s, path.fullPath);
+		if(path.fileName.contains("STE-002.wav"),{
+
+			postf("loading [%]: % \n", i, path.fileName);
+
+			Buffer.read(s, path.fullPath, action:{ |buf|
+				Pdef(m.ptn,
+					Pbind(
+						\instrument, \stereoSampler,
+						\bufnum, buf,
+						\octave, Pxrand([3], inf),
+						\note, Pseq([33-2], inf),
+						\attack, 0.07,
+						\decay, 0.2,
+						\sustain,0.1,
+						\release,0.2,
+						\dur, Pseq([0.125] , inf),
+						\args, #[],
+					)
+				);
+				Pdef(m.ptn).play(quant:0.125);
+
+			});
+		});
 	});
-
-	Pdef(m.ptn,
-	Pbind(
-		\instrument, \stereoSampler,
-		\bufnum, ~buffersB[1],
-			// \amp,2,
-		\octave, Pxrand([3], inf),
-			// \rate, 2,
-		\note, Pseq([33-2], inf),
-		\attack, 0.07,
-		\decay, 0.2,
-		\sustain,0.1,
-		\release,0.2,
-		\dur, Pseq([0.125] , inf),
-		\args, #[],
-	)
-);
-
-
-
-	Pdef(m.ptn).play(quant:0.125);
-};
-
-
-~deinit = {
-	Pdef.removeAll;
-	s.freeAllBuffers;
-
-};
-~stop = {
-	"stop".postln;
-	Pdef(~model.ptn).stop();
 };
 
 //------------------------------------------------------------
@@ -102,21 +92,13 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, fre
 ~plotMax = 1;
 
 ~plot = { |d,p|
-	[m.rrateMass * 0.1, m.rrateMassFiltered * 0.1];
+	// [m.rrateMass * 0.1, m.rrateMassFiltered * 0.1];
 	// [m.accelMass * 0.3, m.accelMassFiltered * 0.5];
 	// [m.rrateMassFiltered, m.rrateMassThreshold];
-	// [m.rrateMassFiltered, m.rrateMassThreshold, m.accelMassAmp];
+	[m.rrateMass, m.rrateMassFiltered, d.sensors.rrateEvent.x];
 	// [d.sensors.gyroEvent.x, d.sensors.gyroEvent.y, d.sensors.gyroEvent.z];
 	// [d.sensors.rrateEvent.x, d.sensors.rrateEvent.y, d.sensors.rrateEvent.z];
 	// [d.sensors.accelEvent.x, d.sensors.accelEvent.y, d.sensors.accelEvent.z];
 
 
 };
-
-// (
-// var a = 1.0.linrand;
-// var b = Array.linrand(1,0.0,1.0-a);
-// var c = 1.0 - b - a;
-// [a,b,c].flat
-// )
-//
