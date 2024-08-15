@@ -29,7 +29,6 @@ var startup, shutdown, buildUI, addDevice, removeDevice, reloadPersonality;
 var addDeviceView, createPlotterGroup, createThreeDeeCanvas, createTwoDeeCanvas;
 var createWindowView;
 var addOSCDeviceListeners, startOSCListening, stopOSCListening, enableOSCListening, disableOSCListening;
-var buttonListener;
 
 
 //------------------------------------------------------------
@@ -385,12 +384,10 @@ addDeviceView = { |view, d|
 	var header;
 	var va,vb,vc;
 	var stackView, stackLayout;
-	var dataSizeMenu;
 	var popup;
 	var col = Color.rand(0.1,0.9).alpha_(0.8);
 
 	var createGraphs = {
-
 		createPlotterGroup.(va, Rect(250,5,400,240), col,
 			[
 				"ymc",
@@ -405,86 +402,90 @@ addDeviceView = { |view, d|
 		va.children[2].remove;
 	};
 
-	var onOffButton;
+	var removeDeviceButton = {|view|
+		Button(view)
+			.minWidth_(120)
+			.states_([
+				["x",Color.red(0.5)],
+			])
+			.action_({|b|
+				header.remove();
+				stackView.remove();
+				removeDevice.(d);
+				devices.removeAt(d.port);
+			})
+	};
 
-	header = View(view).background_(col).maxHeight_(100).layout_( GridLayout.rows( [
+	var infoView = {|view|
+		StaticText(view)
+			.stringColor_(Color.white)
+			.font_(Font(size:12))
+			.minWidth_(100)
+			.string_(d.ip+":"+d.port+"["+d.did+"]")
+	};
+	var muteButtonLocal;
+	var muteButton = {|view|
+		muteButtonLocal = Button()
+			.maxWidth_(120)
+			.states_([["mute"],["mute",Color.red(0.5)]])
+			.action_({|b|
+				d.enabled = b.value.asBoolean;
 
-		removeDeviceButton = Button(view)
-		.minWidth_(120)
-		.states_([
-			["x",Color.red(0.5)],
-		])
-		.action_({|b|
-			header.remove();
-			stackView.remove();
-			removeDevice.(d);
-			devices.removeAt(d.port);
-		}),
-		infoView = StaticText(view)
-		.stringColor_(Color.white)
-		.font_(Font(size:12))
-		.minWidth_(100)
-		.string_(d.ip+":"+d.port+"["+d.did+"]"),
+				if(d.enabled == true,{
+					d.env.use{~stop.()};
+				},{
+					d.env.use{~play.()};
+				});
+			})
+	};
 
+	var reloadButton = {|view|
+		Button(view)
+			.minWidth_(120)
+			.states_([
+				["reload"],
+			])
+			.action_({|b|
+				{
+					reloadPersonality.(d);
+				}.defer(0.1);
+			})
+	};
 
-		reloadButton = Button(view)
-		.minWidth_(120)
-		.states_([
-			["reload"],
-		])
-		.action_({|b|
-
-			onOffButton.valueAction_(1);
-			{
+	var personalityMenu = {|view|
+		PopUpMenu(view)
+			.minWidth_(220)
+			.items_(names)
+			.valueAction_(names.find([d.name]))
+			.action_({|b|
+				d.name = names.at(b.value);
 				reloadPersonality.(d);
-				onOffButton.valueAction_(1);
-			}.defer(0.1);
-		}),
+			})
+	};
 
-		],[
-
-		onOffButton = Button()
-		.maxWidth_(120)
-		.states_([["mute",Color.yellow],["mute"]])
-		.valueAction_(1)
-		.action_({|b|
-			d.enabled = b.value.asBoolean;
-
-			if(d.enabled == true,{
-				d.env.use{~play.()};
-			},{
-				d.env.use{~stop.()};
-			});
-		}),
+	var dataSizeMenu = {|view|
+		PopUpMenu(view)
+			.maxWidth_(120)
+			.items_(dataSizeOptions.collect{|v| v+"points"})
+			.action_({|b|
+				d.dataSize = dataSizeOptions.at(b.value);
+			})
+			.valueAction_(1)
+	};
 
 
-		popup = PopUpMenu(view)
-		.minWidth_(220)
-		.items_(names)
-		.valueAction_(names.find([d.name]))
-		.action_({|b|
-			d.name = names.at(b.value);
-			reloadPersonality.(d);
-		}),
-
-
-		dataSizeMenu = PopUpMenu(view)
-		.maxWidth_(120)
-		.items_(dataSizeOptions.collect{|v| v+"points"})
-		.valueAction_(0)
-		.action_({|b|
-			d.dataSize = dataSizeOptions.at(b.value);
-		})
-		.valueAction_(1),
-
+	// build layout
+	header = View(view).background_(col).maxHeight_(100).layout_( GridLayout.rows( [
+		removeDeviceButton.(view),
+		infoView.(view),
+		reloadButton.(view)
+	],[
+		muteButton.(view),
+		personalityMenu.(view),
+		dataSizeMenu.(view)
 	]));
 
-
-	//------------------------------------------------------------
-	//view.layout.spacing_(1);
 	view.layout.add(stackView = View()
-		// .minHeight_(270)
-		// .maxHeight_(270)
 		.background_(col)
 		.layout_(
 			stackLayout = HLayout(
@@ -492,8 +493,6 @@ addDeviceView = { |view, d|
 				vb = View().background_(col),
 		)).minHeight_(250)
 	);
-
-
 	createPlotterGroup.(vb,d);
 	createThreeDeeCanvas.(vc,d);
 
@@ -504,6 +503,7 @@ addDeviceView = { |view, d|
 //------------------------------------------------------------
 // createPlotterGroup
 //------------------------------------------------------------
+// plots up to 3 streams of data
 
 createPlotterGroup = {|view, data|
 
@@ -543,13 +543,14 @@ createPlotterGroup = {|view, data|
 
 	plotterView.drawFunc = plotterView.drawFunc <> {
 		{
-
+			// another way but still slow
 			pd = pd.addFirst(plotData.());
 			if(pd.size > data.dataSize, {pd.pop()});
 			plotter.superpose = true;
 			plotter.setValue(pd, false, true, false);
 			plotter.value = plotter.value.keep(data.dataSize).flop;
 
+			// original version and cpu intensive
 			// plotter.superpose = true;
 			// plotter.value = plotter.value.flop;
 			// plotter.value = plotter.value.insert(0, plotData.());
@@ -568,7 +569,7 @@ createPlotterGroup = {|view, data|
 //------------------------------------------------------------
 // Three Dee Canvas
 //------------------------------------------------------------
-// special view for special data
+// special view for 3d data
 
 createThreeDeeCanvas = { |view, data|
 	var graph1;
@@ -644,8 +645,10 @@ createThreeDeeCanvas = { |view, data|
 
 
 //------------------------------------------------------------
-// osc listneners
+// device listnener
 //------------------------------------------------------------
+// passes Airware OSC data to local models
+
 addOSCDeviceListeners = {|d|
 
 	var na = NetAddr.new(d.ip, d.port);
@@ -657,38 +660,42 @@ addOSCDeviceListeners = {|d|
 
 		var address = NetAddr.new(d.ip, d.port - i);
 		var pattern = patternBase.format(i+1);
-		var pattern = patternBase.format("/60:01:E2:E2:27:48/");
+		// var pattern = patternBase.format("/60:01:E2:E2:27:48/");
 		var prev = fourCh;
 		var angVel = threeCh;
 		var rx,ry,rz,ox=0,oy=0,oz=0;
 
-		// if(devices.at(d.port) != nil,{
-			d.listeners.airware = OSCFunc({ |msg, time, addr, recvPort|
-				var sx,sy,sz,qe,q,ss,r, rq, rr, rtr;
-				var tr;
+		d.listeners.airware = OSCFunc({ |msg, time, addr, recvPort|
+			var sx,sy,sz,qe,q,ss,r, rq, rr, rtr;
+			var tr;
 
 
-				if(devices.at(addr.port+i) != nil,{
-					var oq = devices.at(addr.port+i).sensors.quatEvent;
+			if(devices.at(addr.port+i) != nil,{
+				var oq = devices.at(addr.port+i).sensors.quatEvent;
 
-					devices.at(addr.port+i).sensors.accelEvent = (
-						\x:msg[1].asFloat * 0.1,
-						\y:msg[2].asFloat * 0.1,
-						\z:msg[3].asFloat * 0.1);
+				devices.at(addr.port+i).sensors.accelEvent = (
+					\x:msg[1].asFloat * 0.1,
+					\y:msg[2].asFloat * 0.1,
+					\z:msg[3].asFloat * 0.1
+				);
 
-					devices.at(addr.port+i).sensors.quatEvent = (
-						\w:msg[7].asFloat,
-						\x:msg[4].asFloat,
-						\y:msg[5].asFloat,
-						\z:msg[6].asFloat);
+				devices.at(addr.port+i).sensors.quatEvent = (
+					\w:msg[7].asFloat,
+					\x:msg[4].asFloat,
+					\y:msg[5].asFloat,
+					\z:msg[6].asFloat
+				);
 
-
-					// take quaternion and convert to ueler angles
+				// take quaternion and convert to ueler angles
 				qe = devices.at(addr.port+i).sensors.quatEvent;
 				q = Quaternion.new(qe.w,qe.x,qe.y,qe.z);
 				r = q.asEuler;
 				tr = [r[0],r[1],r[2]];
 
+				devices.at(addr.port+i).sensors.gyroEvent = (
+					\x:tr[2].asFloat,
+					\y:tr[0].asFloat,
+					\z:tr[1].asFloat);
 
 				// normalize gyro from 0 to pi
 				rx = tr[2];
@@ -699,14 +706,8 @@ addOSCDeviceListeners = {|d|
 				if(ry <= 0, { ry = pi - (pi + ry)});
 				if(rz <= 0, { rz = pi - (pi + rz)});
 
-				// rx,ry,rz / pi = 0-1
+				// rx,ry,rz / pi = 0-1 ie. normalized
 				//•• need to save rx,ry,rz
-
-				devices.at(addr.port+i).sensors.gyroEvent = (
-					\x:tr[2].asFloat,
-					\y:tr[0].asFloat,
-					\z:tr[1].asFloat);
-
 
 				// store rate of change
 				devices.at(addr.port+i).sensors.rrateEvent = (
@@ -723,11 +724,19 @@ addOSCDeviceListeners = {|d|
 	});
 };
 
+//------------------------------------------------------------
+// osc listnener
+//------------------------------------------------------------
+
 startOSCListening = {
 
+	var patternBase = "/%/" ++ oscMessageTag;
 
 	// listen for data and if found, add airware virtual device and stop listening
 	numAirwareVirtualDevices.do({|i|
+		var pattern = patternBase.format(i+1);
+		// var pattern = patternBase.format("60:01:E2:E2:27:48");
+
 		airstickListeners.add( OSCFunc({ |msg, time, addr, recvPort|
 			{
 				if(devices.at(addr.port+i) == nil,{
@@ -738,21 +747,16 @@ startOSCListening = {
 
 				});
 			}.defer;
-			},"\/"++(i+1)++"\/"++oscMessageTag));
-			// },"\/60:01:E2:E2:27:48\/"++oscMessageTag));
+		}, pattern));
 	});
 
 
 };
 
-
 stopOSCListening = {
 	numAirwareVirtualDevices.do({|i|
 		airstickListeners[i].free;
 	});
-
-
-	buttonListener.free;
 };
 
 //------------------------------------------------------------
@@ -766,11 +770,11 @@ createWindowView = {|view|
 	var d;
 
 	StaticText(view)
-	.stringColor_(Color.yellow)
-	.font_(Font(size:14))
-	.minHeight_(30)
-	.minWidth_(200)
-	.string_(" :: osc music");
+		.stringColor_(Color.yellow)
+		.font_(Font(size:14))
+		.minHeight_(30)
+		.minWidth_(200)
+		.string_(" :: osc music");
 
 	contentView.layout_(VLayout());
 	contentView.maxHeight_(5000);
@@ -786,7 +790,6 @@ s.waitForBoot({
 	startup.();
 	buildUI.();
 	startOSCListening.();
-
 });
 
 )
