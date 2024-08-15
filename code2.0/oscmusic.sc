@@ -649,14 +649,15 @@ createThreeDeeCanvas = { |view, data|
 addOSCDeviceListeners = {|d|
 
 	var na = NetAddr.new(d.ip, d.port);
+	var patternBase = "/%/" ++ oscMessageTag;
 
 	// listen to all the airware that are connected (1 ip/port)
 	numAirwareVirtualDevices.do({|i|
 
 
-		var pattern = "/"++(i+1)++"/"++oscMessageTag;
-		// var pattern = "/60:01:E2:E2:27:48/"++oscMessageTag;
 		var address = NetAddr.new(d.ip, d.port - i);
+		var pattern = patternBase.format(i+1);
+		var pattern = patternBase.format("/60:01:E2:E2:27:48/");
 		var prev = fourCh;
 		var angVel = threeCh;
 		var rx,ry,rz,ox=0,oy=0,oz=0;
