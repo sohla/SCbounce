@@ -1,10 +1,9 @@
 var m = ~model;
 var synth;
-m.midiChannel = 1;
 //------------------------------------------------------------
 // intial state
 //------------------------------------------------------------
-SynthDef(\pluck2, { |out=0, amp=0.3, pch=30, frq=30, gate=0 |
+SynthDef(\pluck2, { |out=0, amp=0, pch=30, frq=30, gate=0 |
 	var env = EnvGen.ar(Env.asr(0.1,1.0,0.3), gate, doneAction:0);
 	var sig = Impulse.ar(pch.linlin(30,300,1,30));
 	var dly = Decay.ar(sig, 0.01, BrownNoise.ar(0.1));
@@ -16,9 +15,15 @@ SynthDef(\pluck2, { |out=0, amp=0.3, pch=30, frq=30, gate=0 |
 ~init = ~init <> {
 	synth = Synth(\pluck2, [\frq, 440.rrand(80), \gate, 1]);
 };
+~play =  {
+	// synth.set(\gate,1);
+};
+
 ~stop = {
-	"stop".postln;
-	synth.set(\gate,0);
+	// synth.set(\gate,0);
+};
+
+~deinit = ~deinit <> {
 	synth.free;
 };
 
@@ -39,14 +44,14 @@ SynthDef(\pluck2, { |out=0, amp=0.3, pch=30, frq=30, gate=0 |
 //------------------------------------------------------------
 ~next = {|d|
 
-	// var pch = 30 + (m.accelMass * 260);
-	// var frq= 60 + (m.accelMassFiltered * 50);
-	var frq = 60 + (d.sensors.gyroEvent.x * 50);
-	var pch = 30 + (d.sensors.gyroEvent.x * 400);
+	var pch = 30 + (m.accelMass * 260);
+	var frq= 60 + (m.accelMassFiltered * 450);
+	// var frq = 60 + (d.sensors.gyroEvent.x.abs * 150);
+	// var pch = 90 + (d.sensors.gyroEvent.x.abs * 140);
 	synth.set(\pch,pch);
 	synth.set(\frq,frq);
 
-	synth.set(\amp, 0.8);
+	synth.set(\amp, 0.5);
 
 	if(m.accelMass < 0.1,{
 		synth.set(\gate,0)},{

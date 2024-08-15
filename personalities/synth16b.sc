@@ -1,5 +1,4 @@
 var m = ~model;
-m.midiChannel = 1;
 
 
 SynthDef(\synth16, { |out=0, freq=100, gate=1, att=0.1, dec=0.1, sus=0.3, rel=0.3, amp=1.0, dt=0.1|
@@ -10,19 +9,13 @@ SynthDef(\synth16, { |out=0, freq=100, gate=1, att=0.1, dec=0.1, sus=0.3, rel=0.
 	var sub = SinOsc.ar([freq, freq + (freq * 0.02)] * 0.5, 0, 0.5);
 	LocalOut.ar(sig * sub);
 	sig = (sig + sub) * env * amp;
-	// sig = DelayC.ar(sig,2,dt/2, 1, sig);
-
 	Out.ar(out, sig);
 }).add;
 
 //------------------------------------------------------------
 // intial state
 //------------------------------------------------------------
-// Synth(\glockenspiel, [\freq, 880, \amp, 0.2, \decay, 3.5, \pan, -0.5, \hardness, 3.2]);
 ~init = ~init <> {
-
-
-
 	Pdef(m.ptn,
 		Pbind(
 			\instrument, \synth16,
@@ -39,10 +32,6 @@ SynthDef(\synth16, { |out=0, freq=100, gate=1, att=0.1, dec=0.1, sus=0.3, rel=0.
 	);
 	Pdef(m.ptn).play(quant:[0.1]);
 };
-~stop = {
-	"stop".postln;
-	Pdef(m.ptn).stop();
-};
 
 //------------------------------------------------------------
 // triggers
@@ -52,23 +41,9 @@ SynthDef(\synth16, { |out=0, freq=100, gate=1, att=0.1, dec=0.1, sus=0.3, rel=0.
 ~onEvent = {|e|
 	m.com.root = e.root;
 	m.com.dur = e.dur;
-
-
-	e.postln;
 };
 
-
-
 ~onHit = {|state|
-
-	// var vel = 100;
-	// var note = 60 + m.com.root - 24	;
-
-	// if(state == true,{
-	// 	m.midiOut.noteOn(m.midiChannel, note  , vel);
-	// },{
-	// 	m.midiOut.noteOff(m.midiChannel, note, 0);
-	// });
 };
 
 //------------------------------------------------------------
@@ -89,10 +64,6 @@ SynthDef(\synth16, { |out=0, freq=100, gate=1, att=0.1, dec=0.1, sus=0.3, rel=0.
 			Pdef(~model.ptn).stop();
 		});
 	});
-
-
-
-
 };
 
 ~nextMidiOut = {|d|
@@ -116,7 +87,3 @@ SynthDef(\synth16, { |out=0, freq=100, gate=1, att=0.1, dec=0.1, sus=0.3, rel=0.
 
 
 };
-
-
-
-

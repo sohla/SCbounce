@@ -1,6 +1,4 @@
 var m = ~model;
-var sa, sb, sc;
-m.midiChannel = 1;
 
 SynthDef(\synth2211, { |out=0, gate=1, freq=100, rel=0.1, amp=0.1, shp= 0.09|
 	var env = EnvGen.ar(Env.perc(rel.linlin(0.002,0.4,0.001,0.01), rel), gate, [1, 0.2, 0.04, 0.02], doneAction:0);
@@ -36,16 +34,6 @@ SynthDef(\synth2211, { |out=0, gate=1, freq=100, rel=0.1, amp=0.1, shp= 0.09|
 
 };
 
-
-~deinit = {
-	Pdef.removeAll;
-
-};
-~stop = {
-	"stop".postln;
-	Pdef(~model.ptn).stop();
-
-};
 
 //------------------------------------------------------------
 // triggers
@@ -108,11 +96,3 @@ SynthDef(\synth2211, { |out=0, gate=1, freq=100, rel=0.1, amp=0.1, shp= 0.09|
 
 
 };
-
-// (
-// var a = 1.0.linrand;
-// var b = Array.linrand(1,0.0,1.0-a);
-// var c = 1.0 - b - a;
-// [a,b,c].flat
-// )
-//

@@ -1,6 +1,5 @@
 var m = ~model;
 var bi = 0;
-m.midiChannel = 1;
 
 
 SynthDef(\monoSampler, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
@@ -20,10 +19,15 @@ SynthDef(\monoSampler, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=44
 //------------------------------------------------------------
 ~init = ~init <> {
 
+	//• this needs some work : buffers may not all be loaded before playing!
+
 	~sampleFolderB = PathName("/Users/soh_la/Downloads/robt");
-	~buffersB = ~sampleFolderB.entries.collect({ |path|
-		("loading : "+ path.fileName).postln;
-	    Buffer.read(s, path.fullPath);
+	~buffersB = ~sampleFolderB.entries.collect({ |path,i|
+		Buffer.read(s, path.fullPath, action:{|buf|
+			if(PathName("/Users/soh_la/Downloads/robt").entries.size - 1 == i,{
+				"samples loaded".postln;
+			});
+		});
 	});
 
 	Pdef(m.ptn,
@@ -39,7 +43,7 @@ SynthDef(\monoSampler, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=44
 			\start, 0,
 			\note, Pseq([33], inf),
 			// \dur, 0.3,
-			\amp, 1,
+			\amp, 0.3,
 			\attack, 0.07,
 			\release,0.2,
 			\args, #[],
@@ -50,13 +54,6 @@ SynthDef(\monoSampler, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=44
 };
 
 
-~deinit = {
-
-};
-~stop = {
-	"stop".postln;
-	Pdef(~model.ptn).stop();
-};
 
 //------------------------------------------------------------
 // triggers
@@ -125,11 +122,3 @@ SynthDef(\monoSampler, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=44
 
 
 };
-
-// (
-// var a = 1.0.linrand;
-// var b = Array.linrand(1,0.0,1.0-a);
-// var c = 1.0 - b - a;
-// [a,b,c].flat
-// )
-//

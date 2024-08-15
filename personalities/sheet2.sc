@@ -1,11 +1,10 @@
 var m = ~model;
 var synth;
-m.midiChannel = 1;
 //------------------------------------------------------------
 // intial state
 //------------------------------------------------------------
-
-SynthDef(\sheet2, { |out, frq=111, gate=0, amp = 1, pchx=0|
+Routine{
+SynthDef(\sheet2, { |out, frq=111, gate=0, amp = 0, pchx=0|
 	var env = EnvGen.ar(Env.asr(0.3,1.0,8.0), gate, doneAction:Done.freeSelf);
 	var follow = Amplitude.kr(amp, 0.0001, 0.5);
 	// var sig = Saw.ar(frq.lag(2),0.3 * env * amp.lag(1));
@@ -15,17 +14,25 @@ SynthDef(\sheet2, { |out, frq=111, gate=0, amp = 1, pchx=0|
 	Out.ar(out, dly);
 }).add;
 
+		s.sync;
+}.play;
 
 ~init = ~init <> {
-
 	synth = Synth(\sheet2, [\frq, 140.rrand(80), \gate, 1]);
-
-
 };
+
+~play =  {
+	// synth.set(\gate,1);
+};
+
 ~stop = {
-	"stop".postln;
-	synth.set(\gate,0);
+	// synth.set(\gate,0);
 };
+
+~deinit = ~deinit <> {
+	synth.free;
+};
+
 //------------------------------------------------------------
 // triggers
 //------------------------------------------------------------
@@ -37,18 +44,8 @@ SynthDef(\sheet2, { |out, frq=111, gate=0, amp = 1, pchx=0|
 
 };
 
-
-
 ~onHit = {|state|
 
-
-	// if(state == true,{
-	// 	synth = Synth(\sheet1, [\frq, 140.rrand(80), \gate,1]);
-	// 	{		 synth.set(\gate,0)}.defer(0.1);
-	//
-	// 	},{
-	//
-	// });
 };
 
 
@@ -91,22 +88,4 @@ SynthDef(\sheet2, { |out, frq=111, gate=0, amp = 1, pchx=0|
 
 
 };
-// { Klank.ar(`[[300,600,900,1200], nil, [1, 1, 1, 1]], Impulse.ar(MouseX.kr(3,300), 0, 0.01)) }.play;
-
-// (
-// {
-// 	var my = MouseY.kr(0.1, 20, 1);
-// 	var mx = MouseX.kr(0.00001, 0.1, 1);
-// 	var tempo = 8;
-// 	var seq = Dseq([30,42,37].stutter(4), inf);
-// 	var trig = Impulse.ar(tempo);
-// 	var inforce = Trig.ar(trig, tempo.reciprocal);
-// 	var outforce = Spring.ar(inforce, my, mx);
-// 	var root = Demand.ar(trig, 0, seq);
-// 	var freq = (outforce * 54.midicps) + root.midicps;
-// 	var env = EnvGen.ar(Env.adsr(0.01,0.3,0.8,1.0),inforce);
-// 	SinOsc.ar([freq, freq + (freq*0.03)], 0, 0.5 * env)
-// }.play;
-// )
-
 

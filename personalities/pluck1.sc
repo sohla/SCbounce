@@ -1,13 +1,10 @@
 var m = ~model;
 var synth;
-m.midiChannel = 1;
 //------------------------------------------------------------
 // intial state
 //------------------------------------------------------------
-SynthDef(\pluck1, { |out=0, amp=0.3, pch=30, frq=30, gate=0 |
-	// var pch = MouseX.kr(30,300);
+SynthDef(\pluck1, { |out=0, amp=0, pch=30, frq=30, gate=0 |
 	var env = EnvGen.ar(Env.asr(0.1,1.0,0.3), gate, doneAction:0);
-
 	var sig = Impulse.ar(pch.linlin(30,300,1,30));
 	var dly = Decay.ar(sig, 0.01, BrownNoise.ar(0.1));
 	var plk = Pluck.ar(WhiteNoise.ar, sig, frq.reciprocal, frq.reciprocal, 8, 0.9, 0.7);
@@ -15,19 +12,22 @@ SynthDef(\pluck1, { |out=0, amp=0.3, pch=30, frq=30, gate=0 |
 	Out.ar(out, ton+(dly*0.01) * amp * env);
 }).add;
 
-
-
 ~init = ~init <> {
-
 	synth = Synth(\pluck1, [\frq, 140.rrand(80), \gate, 1]);
-
-
 };
+
+~play =  {
+	// synth.set(\gate,1);
+};
+
 ~stop = {
-	"stop".postln;
-	synth.set(\gate,0);
+	// synth.set(\gate,0);
+};
+
+~deinit = ~deinit <> {
 	synth.free;
 };
+
 //------------------------------------------------------------
 // triggers
 //------------------------------------------------------------
@@ -39,20 +39,8 @@ SynthDef(\pluck1, { |out=0, amp=0.3, pch=30, frq=30, gate=0 |
 
 };
 
-
-
 ~onHit = {|state|
-
-
-	// if(state == true,{
-	// 	synth = Synth(\sheet1, [\frq, 140.rrand(80), \gate,1]);
-	// 	{		 synth.set(\gate,0)}.defer(0.1);
-	//
-	// 	},{
-	//
-	// });
 };
-
 
 //------------------------------------------------------------
 // do all the work(logic) taking data in and playing pattern/synth
@@ -95,22 +83,3 @@ SynthDef(\pluck1, { |out=0, amp=0.3, pch=30, frq=30, gate=0 |
 
 
 };
-// { Klank.ar(`[[300,600,900,1200], nil, [1, 1, 1, 1]], Impulse.ar(MouseX.kr(3,300), 0, 0.01)) }.play;
-
-// (
-// {
-// 	var my = MouseY.kr(0.1, 20, 1);
-// 	var mx = MouseX.kr(0.00001, 0.1, 1);
-// 	var tempo = 8;
-// 	var seq = Dseq([30,42,37].stutter(4), inf);
-// 	var trig = Impulse.ar(tempo);
-// 	var inforce = Trig.ar(trig, tempo.reciprocal);
-// 	var outforce = Spring.ar(inforce, my, mx);
-// 	var root = Demand.ar(trig, 0, seq);
-// 	var freq = (outforce * 54.midicps) + root.midicps;
-// 	var env = EnvGen.ar(Env.adsr(0.01,0.3,0.8,1.0),inforce);
-// 	SinOsc.ar([freq, freq + (freq*0.03)], 0, 0.5 * env)
-// }.play;
-// )
-
-

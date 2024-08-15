@@ -1,5 +1,4 @@
 var m = ~model;
-m.midiChannel = 1;
 
 	SynthDef(\wingChimes1, {
 		|freq = 1000, pulseFreq = 10, amp = 0.1, rq = 0.001, att = 0.03, dec = 1.3, sus = 0, rel = 2, gate = 1, numHarms = 200|
@@ -28,7 +27,7 @@ m.midiChannel = 1;
 		\instrument, \wingChimes1,
 		\note, Prand([0,4,7,11], inf),
 		\octave, Pwhite(3,6),
-		\root, Pseq([0,7,3,0,7,4].stutter(24),inf),
+		\root, Pseq([0,7,3,0,7,4].stutter(48* 2),inf),
 		\pulseFreq, Pwhite(3, 7),
 		\numHarms, 30,
 		\func, Pfunc({|e| ~onEvent.(e)}),
@@ -37,11 +36,6 @@ m.midiChannel = 1;
 
 	Pdef(m.ptn,pat1);
 	Pdef(m.ptn).play(quant:[0.1]);
-};
-
-~stop = {
-	"stop".postln;
-	Pdef(m.ptn).stop();
 };
 
 //------------------------------------------------------------

@@ -4,7 +4,7 @@
 var devicesDir = "~/Develop/SuperCollider/Projects/scbounce/personalities/";
 // var devicesDir = "~/Develop/SuperCollider/oscMusic/personalities/";
 // var oscMessageTag  = "IMUFusedData";
-var defaultPersonality = "mattCello";
+var defaultPersonality = "pluck1";
 var oscMessageTag  = "CombinedDataPacket";
 var renderRate = 30;
 
@@ -100,7 +100,7 @@ loadPersonality = {|d|
 		~model = (
 			\com: com,
 			\name: d.name,
-			\ptn: Array.fill(16,{|i|i=90.rrand(65).asAscii}).join(),
+			\ptn: Array.fill(16,{|i|i=90.rrand(65).asAscii.toLower}).join(),
 			\rrateMass: 0,
 			\rrateMassFiltered: 0,
 			\rrateMassFilteredAttack: 0.8,
@@ -171,18 +171,17 @@ loadPersonality = {|d|
 		};
 
 		//------------------------------------------------------------
-		// ~play = {
-		// 	postf("play : % \n",~model.name);
-		// 	"echo hello world".unixCmd;
-		// 	Pdef(~model.ptn).play(0.125);
-		//
-		// };
-		//
-		// ~stop = {
-		// 	postf("stop : % \n",~model.name);
-		// 	Pdef(~model.ptn).stop();
-		// };
-		//
+		~play = {
+			postf("play : % \n",~model.name);
+			Pdef(~model.ptn).play(0.125);
+
+		};
+
+		~stop = {
+			postf("stop : % \n",~model.name);
+			Pdef(~model.ptn).stop();
+		};
+
 		//------------------------------------------------------------
 		~init = {
 			postf("init : % [%] \n",~model.name, ~model.ptn);
@@ -434,6 +433,7 @@ addDeviceView = { |view, d|
 	var muteButtonLocal;
 	var muteButton = {|view|
 		muteButtonLocal = Button()
+			.enabled_(false) //broken
 			.maxWidth_(80)
 			.states_([["mute"],["mute",Color.red(0.5)]])
 			.action_({|b|

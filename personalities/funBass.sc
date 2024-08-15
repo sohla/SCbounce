@@ -1,5 +1,4 @@
 var m = ~model;
-m.midiChannel = 1;
 
 
 SynthDef(\funBass, {
@@ -16,8 +15,8 @@ SynthDef(\funBass, {
     osc3 = SinOsc.ar(freq * 1.01, 0, 1);
     output = Mix([osc1, osc2, osc3]) * env * amp;
     filter = RLPF.ar(output, filtFreq, filtRes);
-    filter = (filter * 2.5).tanh;
-    Out.ar(0, filter!2);
+	filter = ([filter.distort, filter.tanh] * 2.5);
+    Out.ar(0, filter);
 }).add;
 
 //------------------------------------------------------------
@@ -28,9 +27,9 @@ m.ptn.postln;
 	Pdef(m.ptn,
 		Pbind(
 			\instrument, \funBass,
-			\note, Pseq([0,7,10,5].stutter(4), inf),
+			\note, Pseq([0,12,10,7].stutter(4), inf),
 			\octave,Pseq([2,3].stutter(2),inf),
-			\root, Pseq([0,3,5,-2].stutter(64), inf),
+			\root, Pseq([0,3,5,-2].stutter(16), inf),
 			\envAtk,0.003,
 			\envDec, Pwhite(0.06, 0.3, inf),
 			\envSus, 0.0,
@@ -43,16 +42,9 @@ m.ptn.postln;
 		)
 	);
 
-	// Pdef(m.ptn).set(\dur,0.2);
-	// Pdef(m.ptn).set(\octave,5);
-	// Pdef(m.ptn).set(\amp,0.15);
 	Pdef(m.ptn).play(quant:0.25);
 };
 
-~stop = {
-	"stop".postln;
-	Pdef(~model.ptn).stop();
-};
 
 //------------------------------------------------------------
 // triggers
@@ -109,10 +101,3 @@ m.ptn.postln;
 
 };
 
-// (
-// var a = 1.0.linrand;
-// var b = Array.linrand(1,0.0,1.0-a);
-// var c = 1.0 - b - a;
-// [a,b,c].flat
-// )
-//

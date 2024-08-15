@@ -1,5 +1,4 @@
 var m = ~model;
-m.midiChannel = 1;
 
 
 SynthDef(\glockenspiel, {
@@ -48,8 +47,6 @@ m.ptn.postln;
 	);
 
 	Pdef(m.ptn).set(\dur,0.2);
-	// Pdef(m.ptn).set(\octave,5);
-	// Pdef(m.ptn).set(\amp,0.15);
 	Pdef(m.ptn).play();
 };
 
@@ -64,18 +61,8 @@ m.ptn.postln;
 	m.com.dur = e.dur;
 };
 
-
-
 ~onHit = {|state|
 
-	// var vel = 100;
-	// var note = 60 + m.com.root - 24	;
-
-	// if(state == true,{
-	// 	m.midiOut.noteOn(m.midiChannel, note  , vel);
-	// },{
-	// 	m.midiOut.noteOff(m.midiChannel, note, 0);
-	// });
 };
 
 

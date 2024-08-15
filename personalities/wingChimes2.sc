@@ -1,5 +1,4 @@
 var m = ~model;
-m.midiChannel = 1;
 
 
 	SynthDef(\wingChimes2, {|freq = 1000, pulseFreq = 10, amp = 0.1, rq = 0.001, att = 0.23, dec = 1.3, sus = 0, rel = 3, gate = 1, numHarms = 200|
@@ -22,14 +21,12 @@ m.midiChannel = 1;
 //------------------------------------------------------------
 // intial state
 //------------------------------------------------------------
-// Synth(\glockenspiel, [\freq, 880, \amp, 0.2, \decay, 3.5, \pan, -0.5, \hardness, 3.2]);
 ~init = ~init <> {
 	var pat1 = Pbind(
 		\instrument, \wingChimes2,
-		\note, Prand([-0.04], inf),
-		\octave, [3,4],
-		// \root, Pseq([0,7,3,0,7,4].stutter(24*4),inf),
-		\pulseFreq, Pwhite(3, 7),
+		\note, Prand([-0.1], inf),
+		\octave, Pseq([2,4], inf),
+		\pulseFreq, Pwhite(1, 3),
 		\numHarms, 10,
 			\func, Pfunc({|e| ~onEvent.(e)}),
 	\args, #[],
@@ -40,10 +37,6 @@ m.midiChannel = 1;
 	Pdef(m.ptn,pat1);
 
 	Pdef(m.ptn).play(quant:[0.1]);
-};
-~stop = {
-	"stop".postln;
-	Pdef(m.ptn).stop();
 };
 
 //------------------------------------------------------------
@@ -58,18 +51,8 @@ m.midiChannel = 1;
 
 };
 
-
-
 ~onHit = {|state|
 
-	// var vel = 100;
-	// var note = 60 + m.com.root - 24	;
-
-	// if(state == true,{
-	// 	m.midiOut.noteOn(m.midiChannel, note  , vel);
-	// },{
-	// 	m.midiOut.noteOff(m.midiChannel, note, 0);
-	// });
 };
 
 //------------------------------------------------------------

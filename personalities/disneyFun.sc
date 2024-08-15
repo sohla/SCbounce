@@ -1,6 +1,4 @@
 var m = ~model;
-m.midiChannel = 1;
-
 
 SynthDef(\monoSampler, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=440,
     attack=0.01, decay=0.1, sustain=0.3, release=0.2, gate=1,cutoff=20000, rq=1|
@@ -19,41 +17,38 @@ SynthDef(\monoSampler, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=
 ~init = ~init <> {
 
 	~sampleFolderB = PathName("/Users/soh_la/Downloads/Voice recordings Music in Motion 25June2024/converted");
-	~buffersB = ~sampleFolderB.entries.collect({ |path|
-		("loading : "+ path.fileName).postln;
-	    Buffer.read(s, path.fullPath);
+	~sampleFolderB.entries.do({ |path,i|
+
+		if(path.fileName.contains("DC power of love.wav"),{
+
+			postf("loading [%]: % \n", i, path.fileName);
+
+			Buffer.read(s, path.fullPath, action:{ |buf|
+
+				Pdef(m.ptn,
+					Pbind(
+						\instrument, \monoSampler,
+						\bufnum, buf,
+						\octave, Pxrand([3], inf),
+						\rate, 1,
+						\note, Pseq([33,37,33-5,33-12], inf),
+						\attack, 0.07,
+						\sustain,0.4,
+						\release,0.3,
+						\dur, Pseq([0.125] , inf),
+						\args, #[],
+					)
+				);
+
+				Pdef(m.ptn).play(quant:0.25);
+
+			});
+		});
 	});
-
-	Pdef(m.ptn,
-	Pbind(
-		\instrument, \monoSampler,
-		\bufnum, ~buffersB[12],
-		\octave, Pxrand([3], inf),
-		\rate, 1,
-		\note, Pseq([33,37,33-5,33-12], inf),
-		\attack, 0.07,
-		\sustain,0.4,
-		\release,0.3,
-		\dur, Pseq([0.125] , inf),
-		\args, #[],
-
-	)
-);
-
-
 	Pdef(m.ptn).play(quant:0.125);
 };
 
 
-~deinit = {
-	Pdef.removeAll;
-	s.freeAllBuffers;
-
-};
-~stop = {
-	"stop".postln;
-	Pdef(~model.ptn).stop();
-};
 
 //------------------------------------------------------------
 // triggers
@@ -108,11 +103,3 @@ SynthDef(\monoSampler, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=
 
 
 };
-
-// (
-// var a = 1.0.linrand;
-// var b = Array.linrand(1,0.0,1.0-a);
-// var c = 1.0 - b - a;
-// [a,b,c].flat
-// )
-//

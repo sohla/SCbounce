@@ -33,22 +33,16 @@ SynthDef(\pullstretchMono, {|out, amp = 0.8, buffer = 0, envbuf = -1, pch = 1.0,
 	~sampleFolder = PathName("/Users/soh_la/Downloads/Voice recordings Music in Motion 25June2024/converted");
 	Buffer.read(s, ~sampleFolder.entries[6].fullPath, action:{|buf|
 		"loaded".postln;
-		sa = Synth(\pullstretchMono,[\buffer,buf,\pch,0.midiratio, \amp,0.4, \div, 4]);
-		sb = Synth(\pullstretchMono,[\buffer,buf,\pch,12.midiratio, \amp,0.3, \div, 4]);
+		sa = Synth(\pullstretchMono,[\buffer,buf,\pch,0.midiratio, \amp,0.7, \div, 4]);
+		sb = Synth(\pullstretchMono,[\buffer,buf,\pch,3.midiratio, \amp,0.6, \div, 4]);
 		// sc = Synth(\pullstretchMono,[\buffer,buf,\pch,7.midiratio, \amp,0.2, \div, 4]);
 	});
 };
 
 
-~deinit = {
+~deinit = ~deinit <> {
 	sa.free;
 	sb.free;
-	// sc.free;
-	s.freeAllBuffers;
-
-};
-~stop = {
-	"stop".postln;
 
 };
 
@@ -71,15 +65,15 @@ SynthDef(\pullstretchMono, {|out, amp = 0.8, buffer = 0, envbuf = -1, pch = 1.0,
 	if(amp < 0.03, {amp = 0});
 	sa.set(\speed, m.rrateMass.linlin(3,10,0.01,2));
 	sb.set(\speed, m.rrateMass.linlin(3,10,0.01,2));
-	sc.set(\speed, m.rrateMass.linlin(3,10,0.01,2));
+	// sc.set(\speed, m.rrateMass.linlin(3,10,0.01,2));
 
 	sa.set(\splay, m.rrateMass.linlin(3,10,0.01,1));
 	sb.set(\splay, m.rrateMass.linlin(3,10,0.01,1));
-	sc.set(\splay, m.rrateMass.linlin(3,10,0.01,1));
+	// sc.set(\splay, m.rrateMass.linlin(3,10,0.01,1));
 
-	sa.set(\amp, amp * 0.3);
-	sb.set(\amp, amp * 0.3);
-	sc.set(\amp, amp * 0.3);
+	sa.set(\amp, amp * 0.6);
+	sb.set(\amp, amp * 0.6);
+	// sc.set(\amp, amp * 0.6);
 };
 
 ~nextMidiOut = {|d|

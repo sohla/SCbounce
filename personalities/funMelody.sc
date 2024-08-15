@@ -1,5 +1,4 @@
 var m = ~model;
-m.midiChannel = 1;
 
 
 SynthDef(\funMelody, {
@@ -16,15 +15,14 @@ SynthDef(\funMelody, {
     osc3 = SinOsc.ar(freq * 1.01, 0, 1.5);
     output = Mix([osc1, osc2, osc3]) * env * amp;
     filter = RLPF.ar(output, filtFreq, filtRes);
-    filter = (filter * 1.5).tanh;
-    Out.ar(0, filter!2);
+	filter = ([filter, DelayN.ar(filter, 0.02, 0.02)] * 1.5).tanh;
+    Out.ar(0, filter);
 }).add;
 
 //------------------------------------------------------------
 // intial state
 //------------------------------------------------------------
 ~init = ~init <> {
-m.ptn.postln;
 	Pdef(m.ptn,
 		Pbind(
 			\instrument, \funMelody,
@@ -43,27 +41,14 @@ m.ptn.postln;
 		)
 	);
 
-	// Pdef(m.ptn).set(\dur,0.2);
-	// Pdef(m.ptn).set(\octave,5);
-	// Pdef(m.ptn).set(\amp,0.15);
 	Pdef(m.ptn).play(quant:0.25);
-};
-
-~stop = {
-	"stop".postln;
-	Pdef(~model.ptn).stop();
 };
 
 //------------------------------------------------------------
 // triggers
 //------------------------------------------------------------
 
-// example feeding the community
 ~onEvent = {|e|
-	// m.com.root = e.root;
-	// m.com.dur = e.dur;
-
-	// m.com.root.postln;
 	Pdef(m.ptn).set(\root, m.com.root);
 };
 
@@ -112,10 +97,3 @@ m.ptn.postln;
 
 };
 
-// (
-// var a = 1.0.linrand;
-// var b = Array.linrand(1,0.0,1.0-a);
-// var c = 1.0 - b - a;
-// [a,b,c].flat
-// )
-//

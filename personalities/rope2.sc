@@ -1,5 +1,4 @@
 var m = ~model;
-m.midiChannel = 1;
 
 
 SynthDef(\woodBamboo2, {
@@ -44,14 +43,6 @@ m.ptn.postln;
 	Pdef(m.ptn).play(quant:0.25);
 };
 
-
-~deinit = {
-Pdef(~model.ptn).stop();
-};
-~stop = {
-	"stop".postln;
-	Pdef(~model.ptn).stop();
-};
 
 //------------------------------------------------------------
 // triggers
@@ -118,10 +109,3 @@ Pdef(~model.ptn).stop();
 
 };
 
-// (
-// var a = 1.0.linrand;
-// var b = Array.linrand(1,0.0,1.0-a);
-// var c = 1.0 - b - a;
-// [a,b,c].flat
-// )
-//
