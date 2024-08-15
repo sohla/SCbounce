@@ -1,36 +1,39 @@
 (
 
+// Global confiig
 var devicesDir = "~/Develop/SuperCollider/Projects/scbounce/personalities/";
 // var devicesDir = "~/Develop/SuperCollider/oscMusic/personalities/";
 // var oscMessageTag  = "IMUFusedData";
-var first = "timDrums";
-
+var defaultPersonality = "timDrums";
 var oscMessageTag  = "CombinedDataPacket";
-var loadDeviceList;
+var renderRate = 30;
+
+// UI config
+var windowWidth = 600, windowHeight = Window.screenBounds.height * 0.9;
+var dataSizeOptions = [100,200,300,400];
+
+// Device managment
+var devices = Dictionary();
 var names;
-var width = 600, height = Window.screenBounds.height * 0.9;
-var startup, shutdown, buildUI;
+var airstickListeners = [], numAirwareVirtualDevices = 4;
+
+// UI elements
 var contentView = UserView().background_(Color.grey(0.2));
 var reloadButton;
-var voltButton;
-var createPlotterGroup, createThreeDeeCanvas, createTransportView, createTwoDeeCanvas;
-var createWindowView, addDeviceView;
-var startOSCListening, stopOSCListening, enableOSCListening, disableOSCListening, addOSCDeviceListeners;
-var addDevice, removeDevice, removeDeviceButton;
-var buttonListener, airstickListeners = [], numAirwareVirtualDevices = 4;
-var oscOut = NetAddr.new("127.0.0.1", 9003);
-var devices = Dictionary();
-var dataRate = 1;
-var renderRate = 30;
-var loadPersonality;
-var reloadPersonality;
-var createProcRout;
+var removeDeviceButton;
 var infoView;
-var dataSizes = [100,200,300,400];
-var eulerToQuaternion;
+
+// Functions
+var loadDeviceList, loadPersonality, eulerToQuaternion, createProcRout;
+var startup, shutdown, buildUI, addDevice, removeDevice, reloadPersonality;
+var addDeviceView, createPlotterGroup, createThreeDeeCanvas, createTwoDeeCanvas;
+var createWindowView;
+var addOSCDeviceListeners, startOSCListening, stopOSCListening, enableOSCListening, disableOSCListening;
+var buttonListener;
+
 
 //------------------------------------------------------------
-// models
+// Models
 //------------------------------------------------------------
 
 var twoCh = (\x: 0, \y:0);
@@ -61,21 +64,16 @@ var sensorsProto = (
 );
 
 var deviceProto = (
-	\name: first,
+	\name: defaultPersonality,
 	\ip: "127.0.0.1",
 	\port: 57120,
 	\did: "nil",
-
 	\enabled: true, // are we running
-	\dataSize: dataSizes[0],
-
+	\dataSize: dataSizeOptions[0],
 	\listeners: Event.new(proto:listenersProto),
-
 	\env: nil,	// Environment for injected code
 	\procRout: nil,	// Routine calls ~next every ~fps
-
 	\sensors: Event.new(proto:sensorsProto),
-
 );
 
 //------------------------------------------------------------
@@ -104,17 +102,14 @@ loadPersonality = {|d|
 			\com: com,
 			\name: d.name,
 			\ptn: Array.fill(16,{|i|i=90.rrand(65).asAscii}).join(),
-
 			\rrateMass: 0,
 			\rrateMassFiltered: 0,
 			\rrateMassThreshold: 0.21, //use for isMoving
 			\rrateMassThresholdSpec: ControlSpec(0.07, 0.4, \lin, 0.01, 0.21),
-
 			\accelMass: 0,
 			\accelMassFiltered: 0,
 			\accelMassAmpThreshold: 2.0,
 			\accelMassThresholdSpec: ControlSpec(0.4, 3.0, \lin, 0.1, 2.0),
-
 			\isHit: false,
 			\isMoving: true,
 			\accelMassAmp: 0.0,
@@ -368,7 +363,7 @@ buildUI = {
 
 	QtGUI.palette = QPalette.dark;
 
-	window = Window("osc music", Rect(400, 200, width, height), false).front;
+	window = Window("osc music", Rect(400, 200, windowWidth, windowHeight), false).front;
 	window.view.keyDownAction_({|view,char,mods,uni,code,key|
 		if(uni==114,{//r
 			devices.keysValuesDo({|k,v|
@@ -475,10 +470,10 @@ addDeviceView = { |view, d|
 
 		dataSizeMenu = PopUpMenu(view)
 		.maxWidth_(120)
-		.items_(dataSizes.collect{|v| v+"points"})
+		.items_(dataSizeOptions.collect{|v| v+"points"})
 		.valueAction_(0)
 		.action_({|b|
-			d.dataSize = dataSizes.at(b.value);
+			d.dataSize = dataSizeOptions.at(b.value);
 		})
 		.valueAction_(1),
 
@@ -766,7 +761,7 @@ stopOSCListening = {
 
 createWindowView = {|view|
 
-	var scroll = ScrollView(view,Rect(0,30,width ,height - 50 ));
+	var scroll = ScrollView(view,Rect(0,30,windowWidth ,windowHeight- 50 ));
 	var d;
 
 	StaticText(view)
