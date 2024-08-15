@@ -412,7 +412,7 @@ addDeviceView = { |view, d|
 
 	var removeDeviceButton = {|view|
 		Button(view)
-			.minWidth_(120)
+			.minWidth_(80)
 			.states_([
 				["x",Color.red(0.5)],
 			])
@@ -434,7 +434,7 @@ addDeviceView = { |view, d|
 	var muteButtonLocal;
 	var muteButton = {|view|
 		muteButtonLocal = Button()
-			.maxWidth_(120)
+			.maxWidth_(80)
 			.states_([["mute"],["mute",Color.red(0.5)]])
 			.action_({|b|
 				d.enabled = b.value.asBoolean;
@@ -449,7 +449,7 @@ addDeviceView = { |view, d|
 
 	var reloadButton = {|view|
 		Button(view)
-			.minWidth_(120)
+			.minWidth_(80)
 			.states_([
 				["reload"],
 			])
@@ -473,8 +473,8 @@ addDeviceView = { |view, d|
 
 	var dataSizeMenu = {|view|
 		PopUpMenu(view)
-			.maxWidth_(120)
-			.items_(dataSizeOptions.collect{|v| v+"points"})
+			.maxWidth_(80)
+			.items_(dataSizeOptions.collect{|v| v+"pnts"})
 			.action_({|b|
 				d.dataSize = dataSizeOptions.at(b.value);
 			})
@@ -532,18 +532,20 @@ createPlotterGroup = {|view, data|
 	var checkBox = CheckBox(view, Rect(10,-20,50,70), "plot");
 	var pd = [];
 
-	checkBox.action_({ plotterView.visible = checkBox.value });
-	checkBox.valueAction_(checkBox.value);
 
 	plotData.().size.do({|i|
-
 		st[i] = StaticText(view,Rect(10+(ph/2 * i), 210, pw * 0.2, 14))
 		.string_("channel"+i)
 		.font_(Font(size:9))
 		.background_(Color.gray(0.25))
 		.align_(\center)
-		.stringColor_(col[i]);
+		.stringColor_(col[i].alpha_(0.5));
 	});
+
+	checkBox.action_({
+		plotterView.visible = checkBox.value;
+	});
+	checkBox.valueAction_(checkBox.value);
 
 	plotterView.drawFunc_({});
 
@@ -598,18 +600,17 @@ createThreeDeeCanvas = { |view, data|
 			.transform(Canvas3D.mScale(0.4,0.5,1))
 	);
 
-
 	graph1.add(accelX = Canvas3DItem.regPrism()
 		.color_(Color.yellow(0.9))
-		.width_(1)
+		.width_(2)
 	);
 	graph1.add(accelY = Canvas3DItem.regPrism()
 		.color_(Color.magenta(0.9))
-		.width_(1)
+		.width_(2)
 	);
 	graph1.add(accelZ = Canvas3DItem.regPrism()
 		.color_(Color.cyan(0.9))
-		.width_(1)
+		.width_(2)
 	);
 
 	checkBox.action_({ graph1.visible = checkBox.value });
@@ -777,13 +778,17 @@ createWindowView = {|view|
 
 	var scroll = ScrollView(view,Rect(0,30,windowWidth ,windowHeight- 50 ));
 	var d;
+	var wifiAddress = ("ifconfig | grep \"\inet \"\ | grep -v 127.0.0.1 | awk '{print $2}'").unixCmdGetStdOut();
+	wifiAddress = wifiAddress[0..wifiAddress.size-2];
 
 	StaticText(view)
-		.stringColor_(Color.yellow)
-		.font_(Font(size:14))
+		.stringColor_(Color.gray(0.5))
+		.align_(\right)
+		.font_(Font(size:12))
 		.minHeight_(30)
-		.minWidth_(200)
-		.string_(" :: osc music");
+		.minWidth_(windowWidth)
+		.string_("OSC: ["++wifiAddress++", "+NetAddr.localAddr.port++"] ");
+
 
 	contentView.layout_(VLayout());
 	contentView.maxHeight_(5000);
