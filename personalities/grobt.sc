@@ -56,22 +56,6 @@ SynthDef(\monoSampler, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=44
 
 
 //------------------------------------------------------------
-// triggers
-//------------------------------------------------------------
-
-// example feeding the community
-~onEvent = {|e|
-	// m.com.root = e.root;
-	// m.com.dur = e.dur;
-
-	// m.com.root.postln;
-	// Pdef(m.ptn).set(\root, m.com.root);
-};
-
-~onHit = {|state|
-};
-
-//------------------------------------------------------------
 // do all the work(logic) taking data in and playing pattern/synth
 //------------------------------------------------------------
 ~next = {|d|
@@ -100,9 +84,6 @@ SynthDef(\monoSampler, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=44
 				Pdef(~model.ptn).pause();
 			});
 	});
-};
-
-~nextMidiOut = {|d|
 };
 
 //------------------------------------------------------------

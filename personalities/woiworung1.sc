@@ -16,7 +16,6 @@ SynthDef("woiworung1", {|out,freq = 1000, amp = 0.5, att = 2.02, dec = 0.3, sus 
 	snd = SinOsc.ar(freq,
 		LocalIn.ar(2) * LFNoise1.ar(0.1,2),
 		LFNoise1.ar(ch.lag(0.3),6)
-		// LFNoise1.ar(MouseY.kr(0.2,19),MouseX.kr(0.1,4.1))
 	).tanh * amp.lag(0.3);
 	2.do{
 		snd = AllpassL.ar(snd,0.3,{0.1.rand+0.03}!2,5)
@@ -72,12 +71,6 @@ SynthDef("woiworung1", {|out,freq = 1000, amp = 0.5, att = 2.02, dec = 0.3, sus 
 			isPlaying = false;
 		});
 	});
-
-
-};
-
-~nextMidiOut = {|d|
-	// m.midiOut.control(m.midiChannel, 0, m.accelMassFiltered * 64 );
 };
 
 //------------------------------------------------------------

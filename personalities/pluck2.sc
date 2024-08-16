@@ -1,5 +1,9 @@
 var m = ~model;
 var synth;
+
+m.accelMassFilteredAttack = 0.5;
+m.accelMassFilteredDecay = 0.9;
+
 //------------------------------------------------------------
 // intial state
 //------------------------------------------------------------

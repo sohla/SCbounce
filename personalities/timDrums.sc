@@ -2,6 +2,10 @@ var m = ~model;
 var pa = m.ptn ++ "A";
 var pb = m.ptn ++ "B";
 
+
+m.accelMassFilteredAttack = 0.5;
+m.accelMassFilteredDecay = 0.9;
+
 SynthDef(\monoSampler, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=440,
     attack=0.01, decay=0.1, sustain=0.3, release=0.2, gate=1,cutoff=20000, rq=1|
 
@@ -94,21 +98,6 @@ SynthDef(\monoSampler, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=
 	Pdef(pa).stop();
 	Pdef(pb).stop();
 };
-//------------------------------------------------------------
-// triggers
-//------------------------------------------------------------
-
-// example feeding the community
-~onEvent = {|e|
-	// m.com.root = e.root;
-	// m.com.dur = e.dur;
-
-	// m.com.root.postln;
-	// Pdef(m.ptn).set(\root, m.com.root);
-};
-
-~onHit = {|state|
-};
 
 //------------------------------------------------------------
 // do all the work(logic) taking data in and playing pattern/synth
@@ -121,7 +110,7 @@ SynthDef(\monoSampler, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=
 	var div = d.sensors.gyroEvent.x.linlin(-1,1,1,2);
 	var rels = [3,0.1];
 
-	if(amp < 0.09, {amp = 0});
+	if(amp < 0.09, {amp = 0}, { amp = 0.5 });
 
 	Pdef(pa).set(\amp, amp);
 	Pdef(pb).set(\amp, amp);
