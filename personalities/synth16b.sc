@@ -10,7 +10,7 @@ SynthDef(\synth16, { |out=0, freq=100, gate=1, att=0.1, dec=0.1, sus=0.3, rel=0.
 	var sub = SinOsc.ar([freq, freq + (freq * 0.02)] * 0.5, 0, 0.5);
 	LocalOut.ar(sig * sub);
 	sig = (sig + sub) * env * amp;
-	sig = DelayC.ar(sig,2,dt/2, 1, sig);
+	// sig = DelayC.ar(sig,2,dt/2, 1, sig);
 
 	Out.ar(out, sig);
 }).add;

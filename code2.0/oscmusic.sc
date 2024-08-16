@@ -1,43 +1,20 @@
 (
-/*
 
-ubiquity loco m2
-user : admin
-pw: zxzxzxzx
-
-SOHLA3 (netcomm)
-user : admin
-ssid : SOHLA3
-pw : sohla3letmein
-192.168.20.1 router
-192.168.20.10 laptop
-
-
-nukuNet - (netgear)
-admin : admin
-pw : admin66899
-ssid : nukuNet
-pw: zxzxzxzx
-10.1.1.1 router
-10.1.1.40 laptop
-
-wemos+BNO055 42
-m5sticks 43,44,45
-
-
-
-
-
-*/
 var devicesDir = "~/Develop/SuperCollider/Projects/scbounce/personalities/";
-var first = "wingChimes1";
-var midiControlOffset = 1;
+// var oscMessageTag  = "IMUFusedData";
+var oscMessageTag  = "CombinedDataPacket";
+// var devicesDir = "~/Develop/SuperCollider/oscMusic/personalities/";
+var first = "timDrums";
+
+
+
+
 var loadDeviceList;
 
 var names;
 
 
-var width = Window.screenBounds.width * 0.6, height = Window.screenBounds.height * 1;
+var width = 600, height = Window.screenBounds.height * 0.9;
 var startup, shutdown, buildUI;
 
 var contentView = UserView().background_(Color.grey(0.2));
@@ -45,7 +22,6 @@ var contentView = UserView().background_(Color.grey(0.2));
 var reloadButton;
 var voltButton;
 
-var sliders = [];
 
 var createPlotterGroup, createThreeDeeCanvas, createTransportView, createTwoDeeCanvas;
 
@@ -64,17 +40,12 @@ var renderRate = 30;
 var loadPersonality;
 var reloadPersonality;
 var createProcRout;
-var createMidiRout;
 
 var createGenerator;
 
 var infoView;
 
 var dataSizes = [100,200,300,400];
-
-var midiOut;//, midiController;
-
-var midiControllers = []; //hold the sliderViews and values
 
 var eulerToQuaternion;
 
@@ -85,32 +56,6 @@ var com = (
 	\rrateMass: 0,
 );
 
-var comRout = Routine {
-	loop {
-
-		var a = 0, r = 0;
-
-		devices.keysValuesDo({|k,v|
-			v.env.use{
-
-				a = a + ~model.accelMassFiltered;
-				r = r + ~model.rrateMassFiltered;
-
-				//• pre call each device
-
-				//• call com process functiom
-				//~onCom.(com,v);
-				//• post call each device
-			};
-		});
-
-		com.accelMass = a;
-		com.rrateMass = r;
-
-		0.06.yield;
-
-	}
-}.play;
 
 //------------------------------------------------------------
 // models
@@ -175,27 +120,18 @@ var deviceProto = (
 
 	\env: nil,	// Environment for injected code
 	\procRout: nil,	// Routine calls ~next every ~fps
-	\midiRout: nil,	// Routine calls ~nextMidiOut
 
 	\generator: nil, // Routine for generating data
 
 	\sensors: Event.new(proto:sensorsProto),
 
 	\blob:  Event.new(proto:blobProto),
+
+
+	\noteOnFunc: nil,
+	\noteOffFunc: nil
+
 );
-
-//------------------------------------------------------------
-// midi
-//------------------------------------------------------------
-MIDIClient.init;
-MIDIClient.destinations;
-
-midiOut = MIDIOut.newByName("SuperCollider", "in0", dieIfNotFound: true);
-// midiOut = MIDIOut.newByName("IAC Driver", "Bus 1", dieIfNotFound: true);
-midiOut.latency_(0.00);
-
-// midiController = MIDIOut(2).latency_(0.0);
-MIDIIn.connectAll;
 
 //------------------------------------------------------------
 //
@@ -221,12 +157,12 @@ loadPersonality = {|d|
 	var env = Environment.make {
 
 
+
+
 		~model = (
 			\com: com,
 			\name: d.name,
 			\ptn: Array.fill(16,{|i|i=90.rrand(65).asAscii}).join(),
-			// \midiOut: midiOut,
-			// \midiChannel: 1,
 
 			\rrateMass: 0,
 			\rrateMassFiltered: 0,
@@ -261,7 +197,7 @@ loadPersonality = {|d|
 					~model.accelMassFiltered = ~tween.(~model.accelMass, ~model.accelMassFiltered, 0.8);
 				},{
 					// "decay".postln;
-					~model.accelMassFiltered = ~tween.(~model.accelMass, ~model.accelMassFiltered, 0.05);
+					~model.accelMassFiltered = ~tween.(~model.accelMass, ~model.accelMassFiltered, 0.8);
 				});
 
 
@@ -271,7 +207,7 @@ loadPersonality = {|d|
 			});
 
 			// ~model.accelMassFiltered = ~tween.(~model.accelMass, ~model.accelMassFiltered, 0.2);
-			~model.rrateMassFiltered = ~tween.(~model.rrateMass, ~model.rrateMassFiltered, 0.2);
+			~model.rrateMassFiltered = ~tween.(~model.rrateMass, ~model.rrateMassFiltered, 0.4);
 
 		};
 
@@ -329,9 +265,6 @@ loadPersonality = {|d|
 
 		//------------------------------------------------------------
 		~buildPattern = {
-			// Pdef(~model.ptn).set(\type,\midi);
-			// Pdef(~model.ptn).set(\midiout,~model.midiOut);
-			// Pdef(~model.ptn).set(\chan,~model.midiChannel);
 			Pdef(~model.ptn).play();
 
 
@@ -413,28 +346,7 @@ createGenerator = {|d|
 	}.stop;
 };
 
-//------------------------------------------------------------
-//
-//------------------------------------------------------------
-createMidiRout = {|d|
 
-	Routine {
-
-		loop{
-			d.env.use{
-
-				if(d.enabled == true,{
-
-					//midi out has it's own set interval
-					~nextMidiOut.(d);
-
-				});
-
-				(0.1).yield;
-			};
-		};
-	}
-};
 //------------------------------------------------------------
 //
 //------------------------------------------------------------
@@ -475,18 +387,12 @@ startup = {
 //------------------------------------------------------------
 shutdown = {
 
+
 	stopOSCListening.();
-
-	comRout.stop();
-
-	//midiControllers.do{|mc|mc.postln;mc.free};
 
 	devices.keysValuesDo({|k,d|
 		removeDevice.(d);
 	});
-
-	// strange bug, we can not restart if we don't defer
-	{MIDIClient.disposeClient}.defer(1);
 
 
 	s.queryAllNodes;
@@ -502,11 +408,12 @@ shutdown = {
 //------------------------------------------------------------
 removeDevice = {|d|
 
+	d.noteOnFunc.free;
+	d.noteOffFunc.free;
+
 	d.procRout.stop();
-	d.midiRout.stop();
 
 	d.procRout.free;
-	d.midiRout.free;
 
 	d.generator.stop();
 	d.env.use{ ~deinit.() };
@@ -551,10 +458,8 @@ reloadPersonality = { |d|
 	// stop personality
 
 	d.procRout.stop;
-	d.midiRout.stop;
 
 	d.procRout.free;
-	d.midiRout.free;
 
 	if(d.env != nil,{ d.env.use{ ~deinit.() }});
 
@@ -569,10 +474,6 @@ reloadPersonality = { |d|
 
 	d.procRout = createProcRout.(d);
 	d.procRout.reset.play(AppClock);
-
-	d.midiRout = createMidiRout.(d);
-	d.midiRout.reset.play(AppClock);
-
 
 	d.generator = createGenerator.(d);
 	//d.generator.reset.play(AppClock);
@@ -650,75 +551,23 @@ addDeviceView = { |view, d|
 		va.children[2].remove;
 	};
 
-	var sliderViews = {|i|
 
-		var label = StaticText().string_(["Movement","Trigger"].at(i));
-		var valueLabel = StaticText()
-		.string_("-");
-		var slider;
-		var v = VLayout(
-			label,
-			slider = Slider()
-			.maxWidth_(30)
-			.action_({|o|
-				d.env.use{
-					switch(i,
-						0, {
-							// for isMoving
-							~model.rrateMassThreshold = ~model.rrateMassThresholdSpec.map(o.value);
-							valueLabel.string_(~model.rrateMassThresholdSpec.map(o.value).round(0.01));
-
-							// (~model.rrateMassThreshold.reciprocal).postln;
-						},1, {
-							~model.accelMassAmpThreshold = ~model.accelMassThresholdSpec.map(o.value);
-							valueLabel.string_(~model.accelMassThresholdSpec.map(o.value).round(0.01));
-					});
-					//[~model.rrateMassThreshold, ~model.accelMassAmpThreshold].postln;
-				};
-
-			})
-			.valueAction_(
-				d.env.use{
-					switch(i,
-						0, {
-							~model.rrateMassThresholdSpec.unmap(~model.rrateMassThresholdSpec.default)
-						},1, {
-							~model.accelMassThresholdSpec.unmap(~model.accelMassThresholdSpec.default)
-					});
-				}
-			)
-
-
-			,valueLabel
-		);
-		sliders = sliders.add(slider);v}!2;
-
-	var sliderView = {|v|
-		UserView(v,Rect(5,5,100,250)).layout_( HLayout(
-			*sliderViews.collect{|c,i|
-
-				// var mc = MIDIFunc.cc({|val, num, chan|
-				// 	//[c,val, num, chan].postln;
-				// 	//• TODO
-				// 	{
-				// 		c.valueAction_(val/127.0);
-
-				// 	}.defer(0);
-				// },midiControlOffset+i);
-
-				//midiControllers = midiControllers.add(mc);
-
-				c
-			};
-		)
-		);
-
-	};
 
 	var onOffButton;
 
 	header = View(view).background_(col).maxHeight_(100).layout_( GridLayout.rows( [
 
+		removeDeviceButton = Button(view)
+		.maxWidth_(40)
+		.states_([
+			["x",Color.red(0.5)],
+		])
+		.action_({|b|
+			header.remove();
+			stackView.remove();
+			removeDevice.(d);
+			devices.removeAt(d.port);
+		}),
 		onOffButton = Button()
 		.maxWidth_(40)
 		.states_([["mute",Color.yellow],["mute"]])
@@ -734,7 +583,7 @@ addDeviceView = { |view, d|
 			});
 		}),
 
-		voltButton = Button()
+	/*	voltButton = Button()
 		.maxWidth_(80)
 		.states_([["volt",Color.red]])
 		.action_({|b|
@@ -742,14 +591,9 @@ addDeviceView = { |view, d|
 			n.postln;
 			n.sendMsg("/togyrosc/volt", 42.asInt);
 		}),
-
-		infoView = StaticText(view)
-		.stringColor_(Color.white)
-		.font_(Font(size:12))
-		.minWidth_(100)
-		.string_(d.ip+":"+d.port+"["+d.did+"]"),
+*/
 		Button()
-		.minWidth_(40)
+		.maxWidth_(40)
 		.states_([["reset"]])
 		.action_({
 			d.ip.class.postln;
@@ -758,31 +602,16 @@ addDeviceView = { |view, d|
 			b.sendMsg("/bounce", "motionReset");    // send the application the messa
 
 		}),
-		removeDeviceButton = Button(view)
-		.maxWidth_(40)
-		.states_([
-			["x",Color.red(0.5)],
-		])
-		.action_({|b|
-			header.remove();
-			stackView.remove();
-			removeDevice.(d);
-			// remove midi controller listener
-			// midiControllers.do{|mc|mc.postln;mc.free};
-			devices.removeAt(d.port);
-		})
+
+
+		infoView = StaticText(view)
+		.stringColor_(Color.white)
+		.font_(Font(size:12))
+		.minWidth_(100)
+		.string_(d.ip+":"+d.port+"["+d.did+"]"),
 
 	],[
-		Button(view)
-		.maxWidth_(60)
-		.states_([
-			["3d"],
-			["plotter"],
-			["2d"],
-		])
-		.action_({|b|
-			stackLayout.index = b.value;
-		}),
+
 		dataSizeMenu = PopUpMenu(view)
 		.maxWidth_(60)
 		.items_(dataSizes)
@@ -800,33 +629,6 @@ addDeviceView = { |view, d|
 		.action_({|b|
 			d.name = names.at(b.value);
 			reloadPersonality.(d);
-
-				// d.env.use{
-				// 	// ~model.rrateMassThreshold = ~model.rrateMassThresholdSpec.map(sliders[0].value);
-				// 	// ~model.accelMassAmpThreshold = ~model.accelMassThresholdSpec.map(sliders[1].value);
-				// };
-
-		}),
-		reloadButton = Button(view)
-		.minWidth_(80)
-		.states_([
-			["reload"],
-		])
-		.action_({|b|
-
-			onOffButton.valueAction_(1);
-			{
-				reloadPersonality.(d);
-				onOffButton.valueAction_(1);
-			}.defer(0.1);
-			// load the list again allows us to make changes
-			// names = loadDeviceList.();
-			// popup.items = names;
-			// //• i think this might be broken...eventually calls reload
-			// //• but not everything works well again??
-			// popup.valueAction = names.find([d.name]);
-
-
 		}),
 
 		Button()
@@ -841,6 +643,21 @@ addDeviceView = { |view, d|
 			});
 		}),
 
+		reloadButton = Button(view)
+		.minWidth_(200)
+		.states_([
+			["reload"],
+		])
+		.action_({|b|
+
+			onOffButton.valueAction_(1);
+			{
+				reloadPersonality.(d);
+				onOffButton.valueAction_(1);
+			}.defer(0.1);
+		}),
+
+
 
 
 	]));
@@ -852,86 +669,18 @@ addDeviceView = { |view, d|
 		// .minHeight_(270)
 		// .maxHeight_(270)
 		.background_(col)
-		.layout_( HLayout(
-			stackLayout = StackLayout(
-				va = View().background_(col),
-				vb = View().background_(col),
+		.layout_(
+			stackLayout = HLayout(
 				vc = View().background_(col),
-			),
-			sliderView.(stackView).maxWidth_(80)
-		))
+				vb = View().background_(col),
+		)).minHeight_(250)
 	);
 
 
-	createThreeDeeCanvas.(va,d);
 	createPlotterGroup.(vb,d);
-	createTwoDeeCanvas.(vc,d);
+	createThreeDeeCanvas.(vc,d);
 
 	contentView.layout.add(nil);
-};
-
-//------------------------------------------------------------
-// createTwoDeeCanvas
-//------------------------------------------------------------
-
-createTwoDeeCanvas = {|view, data|
-
-	var cols = [Color.yellow,Color.magenta,Color.cyan,Color.red,Color.green,Color.blue];
-	var bounds = Rect(5,5,600,440);
-	var prev = [];
-	var ax, ay, bx, by, mx, my;
-	var scale = 0.45;
-
-	var updateGraphView = {|v|
-
-
-		var blob = data.blob;
-
-		if(blob.isEmpty.not,{
-
-			Pen.fillColor = Color.gray(0.25);
-			Pen.fillRect(bounds);
-			Pen.smoothing_(true);
-			Pen.width = 1;
-
-
-			if( blob.area > 0.001, {
-
-				Pen.fillColor = cols.at(blob.index);
-				Pen.strokeColor = cols.at(blob.index);
-
-				Pen.fillOval(Rect(blob.center.x * 270, blob.center.y * 270,6,6));
-				//Pen.fillRect(Rect(0 + (blob.index * 22), 550, 10, blob.rect.width * -1));
-				// Pen.fillRect(Rect(12 + (blob.index * 22), 550, 10, blob.pWidth.rateFiltered * -1));
-
-				Pen.strokeRect(blob.rect);
-				Pen.stringAtPoint(	blob.index + ":" + blob.label, blob.center.x * 270 + 10@(blob.center.y * 270));
-
-				prev = blob.data.reshape(1,2)[0];
-				blob.data.reshape(blob.data.size,2).do({|o,j|
-
-					ax = prev[0] * scale;
-					ay = prev[1] * scale;
-					bx = o[0] * scale;
-					by = o[1] * scale;
-
-					Pen.moveTo(Point(ax, ay));
-					Pen.lineTo(Point(bx, by));
-					Pen.stroke;
-					prev = o;
-				});
-
-			},{
-				// no blob
-			});
-		});
-	};
-
-	var plotterView = UserView(view, bounds)
-	.drawFunc_(updateGraphView)
-	.animate_(true)
-	.clearOnRefresh_(true);
-
 
 
 };
@@ -944,7 +693,7 @@ createTwoDeeCanvas = {|view, data|
 createPlotterGroup = {|view, data|
 
 	var col = [Color.yellow,Color.magenta,Color.cyan,Color.red,Color.green,Color.blue];
-	var bounds = Rect(5,5,240,240);
+	var bounds = Rect(5,5,570/2 - 10,200);
 	var pw = bounds.width;
 	var ph = bounds.height;
 	var plotterView = UserView(view,bounds).animate_(true);
@@ -961,9 +710,10 @@ createPlotterGroup = {|view, data|
 
 	plotData.().size.do({|i|
 
-		st[i] = StaticText(view,Rect(0, (ph/6 * i) - 40, pw * 0.1, ph / 2))
-		.string_("CH"+i)
+		st[i] = StaticText(view,Rect(10+(ph/2 * i), 210, pw * 0.2, 14))
+		.string_("channel"+i)
 		.font_(Font(size:9))
+		.background_(Color.gray(0.25))
 		.align_(\center)
 		.stringColor_(col[i]);
 	});
@@ -1011,11 +761,11 @@ createThreeDeeCanvas = { |view, data|
 	var p1,p2,p3;
 	var t = (1.0 + (5.0).sqrt) / 2.0;
 	var accelX, accelY, accelZ;
-	graph1 = Canvas3D(view, Rect(5, 5, 600, 440))
-	.scale_(200)
+	graph1 = Canvas3D(view, Rect(5, 5, 570/2, 240))
+	.scale_(250)
 	.background_(Color.gray(0.25))
 	.perspective_(0.5)
-	.transforms_([Canvas3D.mTranslate(0,-2,0)])
+	.transforms_([Canvas3D.mTranslate(0,0,0)])
 	.distance_(3.5);
 
 	graph1.add(p1 = Canvas3DItem.grid(2)
@@ -1208,22 +958,26 @@ addOSCDeviceListeners = {|d|
 	numAirwareVirtualDevices.do({|i|
 
 
-		var pattern = "/"++(i+1)++"/CombinedDataPacket";
+		var pattern = "/"++(i+1)++"/"++oscMessageTag;
+		// var pattern = "/60:01:E2:E2:27:48/"++oscMessageTag;
 		var address = NetAddr.new(d.ip, d.port - i);
-
+		var prev = fourCh;
+		var angVel = threeCh;
+		var rx,ry,rz,ox=0,oy=0,oz=0;
 
 		// if(devices.at(d.port) != nil,{
 			d.listeners.airware = OSCFunc({ |msg, time, addr, recvPort|
-				var sx,sy,sz,qe,q,ss,r;
+				var sx,sy,sz,qe,q,ss,r, rq, rr, rtr;
 				var tr;
 
+
 				if(devices.at(addr.port+i) != nil,{
-					var oldRate = devices.at(addr.port+i).sensors.gyroEvent;
+					var oq = devices.at(addr.port+i).sensors.quatEvent;
 
 					devices.at(addr.port+i).sensors.accelEvent = (
 						\x:msg[1].asFloat * 0.1,
 						\y:msg[2].asFloat * 0.1,
-					\z:msg[3].asFloat * 0.1);
+						\z:msg[3].asFloat * 0.1);
 
 					devices.at(addr.port+i).sensors.quatEvent = (
 						\w:msg[7].asFloat,
@@ -1231,27 +985,44 @@ addOSCDeviceListeners = {|d|
 						\y:msg[5].asFloat,
 						\z:msg[6].asFloat);
 
+
 					// take quaternion and convert to ueler angles
-					qe = devices.at(addr.port+i).sensors.quatEvent;
-					q = Quaternion.new(qe.w,qe.x,qe.y,qe.z);
-					r = q.asEuler;
-					tr = [r[0],r[1],r[2] + pi.half];
+				qe = devices.at(addr.port+i).sensors.quatEvent;
+				q = Quaternion.new(qe.w,qe.x,qe.y,qe.z);
+				r = q.asEuler;
+				tr = [r[0],r[1],r[2]];
 
-					devices.at(addr.port+i).sensors.gyroEvent = (
-						\x:tr[2].asFloat,
-						\y:tr[0].asFloat,
-						\z:tr[1].asFloat);
 
-					// calc. rate of change
-					devices.at(addr.port+i).sensors.rrateEvent = (
-						\x:tr[2].asFloat - oldRate.x,
-						\y:tr[0].asFloat - oldRate.y,
-						\z:tr[1].asFloat - oldRate.z);
+				// normalize gyro from 0 to pi
+				rx = tr[2];
+				ry = tr[0];
+				rz = tr[1] * (pi.half + pi.half.half);
 
-				});
-			}, pattern, address);
-	// });
-		// d.listeners.airware.postln;
+				if(rx <= 0, { rx = pi - (pi + rx)});
+				if(ry <= 0, { ry = pi - (pi + ry)});
+				if(rz <= 0, { rz = pi - (pi + rz)});
+
+				// rx,ry,rz / pi = 0-1
+				//•• need to save rx,ry,rz
+
+				devices.at(addr.port+i).sensors.gyroEvent = (
+					\x:tr[2].asFloat,
+					\y:tr[0].asFloat,
+					\z:tr[1].asFloat);
+
+
+				// store rate of change
+				devices.at(addr.port+i).sensors.rrateEvent = (
+					\x:rx - ox,
+					\y:ry - oy,
+					\z:rz - oz);
+
+				ox = rx;
+				oy = ry;
+				oz = rz;
+
+			});
+		}, pattern, address);
 	});
 
 
@@ -1361,7 +1132,8 @@ startOSCListening = {
 
 				});
 			}.defer;
-		},'\/'++(i+1)++'\/CombinedDataPacket'));
+			},"\/"++(i+1)++"\/"++oscMessageTag));
+// },"\/60:01:E2:E2:27:48\/"++oscMessageTag));
 	});
 
 	// trigger device creation via OSC
@@ -1429,53 +1201,8 @@ s.waitForBoot({
 	startup.();
 	buildUI.();
 	startOSCListening.();
+
 });
 
 )
 
-
-/*
-// Helper function to convert quaternion to rotation matrix
-~quaternionToRotationMatrix = { |q|
-    var w = q[0], x = q[1], y = q[2], z = q[3];
-    [
-        [1 - 2*y.squared - 2*z.squared, 2*x*y - 2*z*w, 2*x*z + 2*y*w],
-        [2*x*y + 2*z*w, 1 - 2*x.squared - 2*z.squared, 2*y*z - 2*x*w],
-        [2*x*z - 2*y*w, 2*y*z + 2*x*w, 1 - 2*x.squared - 2*y.squared]
-    ];
-};
-
-// Main function to calculate gravity vector
-~calculateGravityVector = { |quaternion, acceleration|
-    var R, R_transpose, acceleration_global, g, gravity_vector;
-
-    // Convert quaternion to rotation matrix
-    R = ~quaternionToRotationMatrix.(quaternion);
-
-    // Transpose of R rotates from body frame to global frame
-    R_transpose = R.flop;  // In SuperCollider, .flop transposes a 2D array
-
-    // Rotate the measured acceleration to the global frame
-    acceleration_global = R_transpose.collect({ |row|
-        row.sum { |elem, i| elem * acceleration[i] }
-    });
-
-    // Subtract the rotated acceleration from the known gravity vector
-    g = [0, 0, -9.81];  // Assuming Earth's gravity
-    gravity_vector = g - acceleration_global;
-
-    gravity_vector
-};
-
-// Example usage
-(
-var quaternion = [0.7071, 0, 0.7071, 0];  // 90-degree rotation around Y-axis
-var acceleration = [1, 0, -9.81];  // Example acceleration measurement
-
-var result = ~calculateGravityVector.(quaternion, acceleration);
-"Calculated gravity vector:".postln;
-result.postln;
-)
-
-
-*/

@@ -1,5 +1,15 @@
 (
 	[
+	"timDrums",
+	"mattCello",
+	"disneyFun",
+	"grobt",
+	"blobblob",
+	"rope1",
+	"rope2",
+	"percTexture1",
+	"percTexture2",
+	"animalMat",
 	"wingChimes1",
 	"wingChimes2",
 	"woiworung1",
@@ -11,6 +21,7 @@
 		"pluck1",
 		"pluck2",
 		"magicWand",
+		"magicWand2",
 		"sheet1",
 		"sheet2",
 		"gabe2",

@@ -35,7 +35,7 @@ m.ptn.postln;
 			\envDec, Pwhite(0.2, 0.1, inf),
 			\envSus, 0.0,
 			\envRel,Pkey(\octave).squared * 0.1,
-    		\amp, 0.2,
+    		\amp, 0.1,
 			\rm, 0.5,
     		\filtRes, 0.4,
 			\func, Pfunc({|e| ~onEvent.(e)}),

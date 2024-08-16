@@ -2,7 +2,7 @@ var m = ~model;
 m.midiChannel = 1;
 
 
-SynthDef(\glockenspiel, {
+SynthDef(\glockenspiel2, {
     |freq = 440, amp = 0.5, decay = 1, pan = 0, hardness = 1|
     var exciter, env, output;
 
@@ -37,9 +37,9 @@ SynthDef(\glockenspiel, {
 m.ptn.postln;
 	Pdef(m.ptn,
 		Pbind(
-			\instrument, \glockenspiel,
-			\note, Pseq([-5,0,4,7,-12,4],inf),
-			\root, Pseq([0,5,-2,3,-4,1,-5].stutter(32),inf),
+			\instrument, \glockenspiel2,
+			\note, Pseq([12,9,7,4,2,0],inf),
+			// \root, Pseq([0,5,-2,3,-4,1,-5].stutter(32),inf),
 			\decay, 3.5,
 			\hardness, 3.5,
 			\func, Pfunc({|e| ~onEvent.(e)}),
@@ -60,8 +60,9 @@ m.ptn.postln;
 
 // example feeding the community
 ~onEvent = {|e|
-	m.com.root = e.root;
-	m.com.dur = e.dur;
+
+	Pdef(m.ptn).set(\root, m.com.root);
+
 };
 
 
@@ -84,17 +85,18 @@ m.ptn.postln;
 //------------------------------------------------------------
 ~next = {|d|
 
-	var oct = m.accelMassFiltered.linlin(0,5,2,5).floor;
+	var oct = m.accelMassFiltered.linlin(0,5,3,4).floor;
 	var dur = 0.5 - m.accelMassFiltered.squared.linlin(0,3,0,0.43);
 	Pdef(m.ptn).set(\dur, dur);
 	// Pdef(m.ptn).set(\dur,(m.accelMassFiltered * 2 * m.rrateMassThreshold.reciprocal).reciprocal);
 	// Pdef(m.ptn).set(0.2);
-	Pdef(m.ptn).set(\octave, 4 + oct);
-	Pdef(m.ptn).set(\amp, oct.linlin(2,5,0.1,0.2));
+
+	Pdef(m.ptn).set(\octave, 2 + oct);
+	Pdef(m.ptn).set(\amp, oct.linlin(3,4,0.15,0.3));
 
 	if(dur < 0.48,{
 		if( Pdef(~model.ptn).isPlaying.not,{
-			Pdef(~model.ptn).resume(quant:0);
+			Pdef(~model.ptn).resume(quant:0.1);
 		});
 	},{
 		if( Pdef(~model.ptn).isPlaying,{
