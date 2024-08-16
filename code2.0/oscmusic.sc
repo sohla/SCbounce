@@ -1,11 +1,11 @@
 (
 
-// Global confiig
-var devicesDir = "~/Develop/SuperCollider/Projects/scbounce/personalities/";
-// var devicesDir = "~/Develop/SuperCollider/oscMusic/personalities/";
-// var oscMessageTag  = "IMUFusedData";
+// Global config
+// var personalityDir = "~/Develop/SuperCollider/Projects/scbounce/personalities/";
+var personalityDir = "~/Develop/SuperCollider/oscMusic/personalities/";
 var defaultPersonality = "pluck1";
 var oscMessageTag  = "CombinedDataPacket";
+// var oscMessageTag  = "IMUFusedData";
 var renderRate = 30;
 
 // UI config
@@ -23,12 +23,15 @@ var reloadButton;
 var removeDeviceButton;
 var infoView;
 
+
 // Functions
-var loadDeviceList, loadPersonality, eulerToQuaternion, createProcRout;
-var startup, shutdown, buildUI, addDevice, removeDevice, reloadPersonality;
+var startup, shutdown;
+var loadPersonalityList, interpretPersonality, reloadPersonality;
+var eulerToQuaternion, createProcRout;
+var buildUI, addDevice, removeDevice;
 var addDeviceView, createPlotterGroup, createThreeDeeCanvas, createTwoDeeCanvas;
 var createWindowView;
-var addOSCDeviceListeners, startOSCListening, stopOSCListening, enableOSCListening, disableOSCListening;
+var addOSCDeviceListeners, startOSCListening, stopOSCListening;
 
 
 //------------------------------------------------------------
@@ -79,9 +82,9 @@ var deviceProto = (
 //
 //------------------------------------------------------------
 
-loadDeviceList = {
+loadPersonalityList = {
 
-	var path = PathName.new(devicesDir++"list.sc");
+	var path = PathName.new(personalityDir++"list.sc");
 	var file = File.new(path.asAbsolutePath,"r");
 	var str = file.readAllString;
 
@@ -89,9 +92,9 @@ loadDeviceList = {
 };
 
 //------------------------------------------------------------
-loadPersonality = {|d|
+interpretPersonality = {|d|
 
-	var path = PathName.new(devicesDir++d.name++".sc");
+	var path = PathName.new(personalityDir++d.name++".sc");
 	var file = File.new(path.asAbsolutePath,"r");
 	var str = file.readAllString;
 
@@ -126,48 +129,22 @@ loadPersonality = {|d|
 		//------------------------------------------------------------
 		// process data->model
 		~processDeviceData = {|d|
-			~model.accelMass = d.sensors.accelEvent.sumabs * 0.33;
+			~model.accelMass = d.sensors.accelEvent.sumabs * 0.33; // scale it
 			~model.rrateMass = d.sensors.rrateEvent.sumabs;
-			~model.accelMassFiltered = ~smooth.(~model.accelMass, ~model.accelMassFiltered, ~model.accelMassFilteredAttack,  ~model.accelMassFilteredDecay);
-			~model.rrateMassFiltered = ~smooth.(~model.rrateMass, ~model.rrateMassFiltered, ~model.rrateMassFilteredAttack, ~model.rrateMassFilteredDecay);
+			~model.accelMassFiltered = ~smooth.(
+				~model.accelMass,
+				~model.accelMassFiltered,
+				~model.accelMassFilteredAttack,
+				~model.accelMassFilteredDecay
 
-		};
+			);
+			~model.rrateMassFiltered = ~smooth.(
+				~model.rrateMass,
+				~model.rrateMassFiltered,
+				~model.rrateMassFilteredAttack,
+				~model.rrateMassFilteredDecay
 
-		//------------------------------------------------------------
-		// process triggers
-		~processTriggers = {|d|
-
-
-			// isHit imp.
-			//
-			var changeState = {|state|
-				if(~model.isHit != state,{
-					~model.isHit = state;
-					if(~model.isHit == true,{~onHit.(~model.isHit)},{~onHit.(~model.isHit)});
-				});
-			};
-
-			// use raw accelMass to get the quickest response
-			if( ~model.accelMass > ~model.accelMassAmpThreshold,{
-				changeState.(true);
-			},{
-				changeState.(false);
-			});
-
-			// isMoving imp.
-			//
-
-			if(~model.rrateMassFiltered > ~model.rrateMassThreshold, {
-				if(~model.isMoving == false,{
-					~model.isMoving = true;
-					// Pdef(~model.ptn).resume();
-				});
-			},{
-				if(~model.isMoving == true,{
-					~model.isMoving = false;
-					// Pdef(~model.ptn).pause();
-				});
-			});
+			);
 		};
 
 		//------------------------------------------------------------
@@ -188,11 +165,6 @@ loadPersonality = {|d|
 		};
 
 		//------------------------------------------------------------
-		~buildPattern = {
-			// Pdef(~model.ptn).play();
-
-
-		};
 		//------------------------------------------------------------
 		~deinit = {
 			postf("deinit : % [%] \n",~model.name, ~model.ptn);
@@ -258,9 +230,6 @@ createProcRout = {|d|
 					// process data -> personality model
 					~processDeviceData.(d);
 
-					// model to functions
-					~processTriggers.(d);
-
 					//post process : make changes to patterns etc.
 					~next.(d);
 
@@ -276,13 +245,12 @@ createProcRout = {|d|
 //------------------------------------------------------------
 
 startup = {
-	names = loadDeviceList.();
+	names = loadPersonalityList.();
 };
 
 //
 //------------------------------------------------------------
 shutdown = {
-
 
 	stopOSCListening.();
 
@@ -290,11 +258,10 @@ shutdown = {
 		removeDevice.(d);
 	});
 
-
-	s.queryAllNodes;
-
 	Pdef.clear;
 	Server.freeAll;
+
+	s.queryAllNodes;
 
 	s.quit;
 
@@ -320,43 +287,37 @@ addDevice = { |ip,port, id|
 
 	d.listeners = Event.new(proto:listenersProto);
 	d.sensors =  Event.new(proto:sensorsProto);
-
 	d.ip = ip;
 	d.port = port;
 	d.did = id;
 
 	devices.put(port,d);
-
-	// load the data
 	reloadPersonality.(d);
-
 	addDeviceView.(contentView, d);
-
 	addOSCDeviceListeners.(d);
 
-	d // return the device (g)
+	d // return the device
 };
 
 reloadPersonality = { |d|
 
 	// stop personality
 	d.procRout.stop;
-
 	d.procRout.free;
 
 	if(d.env != nil,{ d.env.use{ ~deinit.() }});
 
-
-	// start new personality
-	d.env = loadPersonality.(d);
+	d.env = interpretPersonality.(d);
 	d.env.use{
-		~init.();
-		~buildPattern.();
+		Routine{
+			s.sync;
+			~init.();
+			s.sync;
+		}.play;
 	};
 
 	d.procRout = createProcRout.(d);
 	d.procRout.reset.play(AppClock);
-
 
 };
 

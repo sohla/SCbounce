@@ -3,6 +3,7 @@ var synth;
 //------------------------------------------------------------
 // intial state
 //------------------------------------------------------------
+
 SynthDef(\pluck1, { |out=0, amp=0, pch=30, frq=30, gate=0 |
 	var env = EnvGen.ar(Env.asr(0.1,1.0,0.3), gate, doneAction:0);
 	var sig = Impulse.ar(pch.linlin(30,300,1,30));
@@ -12,8 +13,9 @@ SynthDef(\pluck1, { |out=0, amp=0, pch=30, frq=30, gate=0 |
 	Out.ar(out, ton+(dly*0.01) * amp * env);
 }).add;
 
+
 ~init = ~init <> {
-	synth = Synth(\pluck1, [\frq, 140.rrand(80), \gate, 1]);
+	synth = Synth(\pluck1, [\frq, 140.rrand(80), \gate, 0]);
 };
 
 ~play =  {
@@ -37,9 +39,6 @@ SynthDef(\pluck1, { |out=0, amp=0, pch=30, frq=30, gate=0 |
 	m.com.root = e.root;
 	m.com.dur = e.dur;
 
-};
-
-~onHit = {|state|
 };
 
 //------------------------------------------------------------

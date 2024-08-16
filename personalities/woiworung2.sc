@@ -25,7 +25,7 @@ SynthDef("woiworung2", {|out,freq = 1000, amp = 0.5, att = 2.02, dec = 0.3, sus 
 }).add;
 
 ~init = ~init <> {
-	synth = Synth(\woiworung2, [\freq, (60+4).midicps, \gate, 1]);
+	synth = Synth(\woiworung2, [\freq, (60+4).midicps, \gate, 1, \amp, 0]);
 };
 ~stop = ~stop <> {
 	synth.set(\gate,0);
