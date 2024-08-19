@@ -1,8 +1,8 @@
 (
 
 // Global config
-// var personalityDir = "~/Develop/SuperCollider/Projects/scbounce/personalities/";
-var personalityDir = "~/Develop/SuperCollider/oscMusic/personalities/";
+var personalityDir = "~/Develop/SuperCollider/Projects/scbounce/personalities/";
+// var personalityDir = "~/Develop/SuperCollider/oscMusic/personalities/";
 var defaultPersonality = "bee";
 var oscMessageTag  = "CombinedDataPacket";
 // var oscMessageTag  = "IMUFusedData";

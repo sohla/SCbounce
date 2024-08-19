@@ -1,7 +1,7 @@
 var m = ~model;
 var synth;
 var lastTime=0;
-var notes = [-24];
+var notes = [-24,-36];
 var currentNote = notes[0];
 var currentRoot = m.com.root;
 m.accelMassFilteredAttack = 0.5;
@@ -99,6 +99,9 @@ SynthDef(\warmRichSynth, {
 	if(move > 0.2, {
 		if(TempoClock.beats > (lastTime + 0.35),{
 			lastTime = TempoClock.beats;
+			notes = notes.rotate(-1);
+			currentNote = notes[0];
+			currentRoot = m.com.root;
 			synth = Synth(\warmRichSynth, [
 				\freq, (58 + currentNote + currentRoot).midicps,
 				\gate, 1,
@@ -112,9 +115,6 @@ SynthDef(\warmRichSynth, {
 			    \amp, 0.9
 			]);
 			synth.server.sendBundle(0.5,[\n_set, synth.nodeID, \gate, 0]);
-			notes = notes.rotate(-1);
-			currentNote = notes[0];
-			currentRoot = m.com.root;
 		});
 	});
 };

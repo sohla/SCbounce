@@ -100,13 +100,13 @@ SynthDef(\warmRichSynth, {
 	if(move > 0.2, {
 		if(TempoClock.beats > (lastTime + 0.35),{
 			lastTime = TempoClock.beats;
-			synth = Synth(\warmRichSynth, [\freq, (58 + currentNote + currentRoot).midicps, \gate, 1]);
-			synth.server.sendBundle(0.3,[\n_set, synth.nodeID, \gate, 0]);
 			notes = notes.rotate(-1);
 			currentNote = notes[0];
 			roots = roots.rotate(-1);
 			currentRoot = roots[0];
 			m.com.root = currentRoot;
+			synth = Synth(\warmRichSynth, [\freq, (58 + currentNote + currentRoot).midicps, \gate, 1]);
+			synth.server.sendBundle(0.3,[\n_set, synth.nodeID, \gate, 0]);
 		});
 	});
 };
