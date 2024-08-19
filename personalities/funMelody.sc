@@ -65,7 +65,7 @@ SynthDef(\funMelody, {
 	Pdef(m.ptn).set(\dur, dur);
 	Pdef(m.ptn).set(\filtFreq, m.accelMassFiltered.linexp(0,4,180,14000));
 
-	if(m.accelMass > 0.07,{
+	if(m.accelMass > 0.12,{
 		if( Pdef(~model.ptn).isPlaying.not,{
 			Pdef(~model.ptn).resume(quant:0.25);
 		});

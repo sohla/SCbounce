@@ -69,7 +69,7 @@ m.ptn.postln;
 	Pdef(m.ptn).set(\dur, dur);
 	Pdef(m.ptn).set(\filtFreq, m.accelMassFiltered.linexp(0,4,280,4000));
 
-	if(m.accelMass > 0.07,{
+	if(m.accelMass > 0.12,{
 		if( Pdef(~model.ptn).isPlaying.not,{
 			Pdef(~model.ptn).resume(quant:0.25);
 		});

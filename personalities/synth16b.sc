@@ -19,14 +19,14 @@ SynthDef(\synth16, { |out=0, freq=100, gate=1, att=0.1, dec=0.1, sus=0.3, rel=0.
 	Pdef(m.ptn,
 		Pbind(
 			\instrument, \synth16,
-			\octave, Prand([6,7,8]-1, inf),
+			\octave, Prand([6,7,8], inf),
 			\degree, Pxrand([0, 1, 2, 4, 5], inf),
-			\dur, Pxrand([0.4], inf),
+			\dur, Pxrand([0.6], inf),
 			\dt, Pkey(\dur),
 			\amp, 0.3,
 			\att, Pwhite(0.4, 0.1),
 			\dec, Pwhite(0.1,0.6),
-			\rel, 1.4,//Pwhite(0.1, 3) * 0.03,
+			\rel, 2.4,//Pwhite(0.1, 3) * 0.03,
 			\sus, 0.1,
 		)
 	);
@@ -55,7 +55,7 @@ SynthDef(\synth16, { |out=0, freq=100, gate=1, att=0.1, dec=0.1, sus=0.3, rel=0.
 	// Pdef(m.ptn).set(\dur, dur);
 	// Pdef(m.ptn).set(\filtFreq, m.accelMassFiltered.linlin(0,4,80,4000));
 
-	if(m.accelMass > 0.15,{
+	if(m.accelMass > 0.35,{
 		if( Pdef(~model.ptn).isPlaying.not,{
 			Pdef(~model.ptn).play(quant:[0.1,0,0,0]);
 		});

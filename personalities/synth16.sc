@@ -70,7 +70,7 @@ SynthDef(\synth16, { |out=0, freq=100, gate=1, att=0.1, dec=0.1, sus=0.3, rel=0.
 	Pdef(m.ptn).set(\dur, dur);
 	// Pdef(m.ptn).set(\filtFreq, m.accelMassFiltered.linlin(0,4,80,4000));
 
-	if(m.accelMass > 0.15,{
+	if(m.accelMass > 0.25,{
 		if( Pdef(~model.ptn).isPlaying.not,{
 			Pdef(~model.ptn).play(quant:[0.1,0,0,0]);
 		});
