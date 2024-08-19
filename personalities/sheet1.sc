@@ -3,7 +3,6 @@ var synth;
 //------------------------------------------------------------
 // intial state
 //------------------------------------------------------------
-Routine{
 
 SynthDef(\sheet1, { |out, frq=111, gate=0, amp = 0, pchx=0|
 	var env = EnvGen.ar(Env.asr(0.3,1.0,2.0), gate, doneAction:Done.freeSelf);
@@ -14,8 +13,6 @@ SynthDef(\sheet1, { |out, frq=111, gate=0, amp = 0, pchx=0|
 	var dly = DelayC.ar(sig,0.03,[0.02,0.027]);
 	Out.ar(out, dly);
 }).add;
-		s.sync;
-}.play;
 
 ~init = ~init <> {
 	synth = Synth(\sheet1, [\frq, 140.rrand(80), \gate, 1]);

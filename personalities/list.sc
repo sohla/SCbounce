@@ -1,5 +1,11 @@
 (
 	[
+		"bee",
+		"heatherLaugh",
+		"heatherTeddies",
+		"arialBass",
+		"arialOstinato",
+		"arialMelody",
 		"timDrums",
 		"mattCello",
 		"disneyFun",
