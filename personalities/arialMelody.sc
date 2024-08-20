@@ -97,7 +97,7 @@ SynthDef(\warmRichSynth, {
 
 	var move = m.accelMassFiltered.linlin(0,3,0,1);
 
-	if(move > 0.2, {
+	if(move > 0.05, {
 		if(TempoClock.beats > (lastTime + 0.35),{
 			lastTime = TempoClock.beats;
 			notes = notes.rotate(-1);

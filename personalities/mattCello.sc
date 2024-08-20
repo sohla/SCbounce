@@ -61,7 +61,7 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, fre
 	var amp = m.accelMassFiltered.linlin(0,1,0,1);
 	var rate= m.accelMass.linlin(0,1,0,2);
 
-	if(amp < 0.1, {amp = 0}, {amp = 0.5 + (amp * 0.5)});
+	if(amp < 0.03, {amp = 0}, {amp = 0.5 + (amp * 0.5)});
 
 
 	Pdef(m.ptn).set(\amp, amp);

@@ -77,7 +77,7 @@ SynthDef(\monoSampler, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=
 
 	var dur = m.accelMassFiltered.linlin(0,1,0.5,0.04);
 	var start = (d.sensors.gyroEvent.y / 2pi) + 0.5;
-	var amp = m.accelMass.linlin(0,1,0,1);
+	var amp = m.accelMass.linlin(0,1,0,6);
 
 	if(amp < 0.15, {amp = 0});
 

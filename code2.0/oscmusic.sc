@@ -3,7 +3,7 @@
 // Global config
 var personalityDir = "~/Develop/SuperCollider/Projects/scbounce/personalities/";
 // var personalityDir = "~/Develop/SuperCollider/oscMusic/personalities/";
-var defaultPersonality = "bee";
+var defaultPersonality = "wingChimes1";
 var oscMessageTag  = "CombinedDataPacket";
 // var oscMessageTag  = "IMUFusedData";
 var renderRate = 30;

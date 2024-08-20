@@ -1,6 +1,9 @@
 (
 	[
-		"bee",
+		"wingChimes1",
+		"wingChimes2",
+		"woiworung1",
+		"woiworung2",
 		"heatherLaugh",
 		"heatherTeddies",
 		"arialBass",
@@ -16,10 +19,6 @@
 		"percTexture1",
 		"percTexture2",
 		"animalMat",
-		"wingChimes1",
-		"wingChimes2",
-		"woiworung1",
-		"woiworung2",
 		"funBass",
 		"funMelody",
 		"synth16",
@@ -30,6 +29,7 @@
 		"magicWand2",
 	"sheet1",
 	"sheet2",
+		"bee",
 
 	]
 
