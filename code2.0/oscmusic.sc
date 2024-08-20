@@ -1,8 +1,8 @@
 (
 
 // Global config
-var personalityDir = "~/Develop/SuperCollider/Projects/scbounce/personalities/";
-// var personalityDir = "~/Develop/SuperCollider/oscMusic/personalities/";
+// var personalityDir = "~/Develop/SuperCollider/Projects/scbounce/personalities/";
+var personalityDir = "~/Develop/SuperCollider/oscMusic/personalities/";
 var defaultPersonality = "wingChimes1";
 var oscMessageTag  = "CombinedDataPacket";
 // var oscMessageTag  = "IMUFusedData";
@@ -740,9 +740,10 @@ createWindowView = {|view|
 	var scroll = ScrollView(view,Rect(0,30,windowWidth ,windowHeight- 50 ));
 	var d;
 	var wifiAddress = ("ifconfig | grep \"\inet \"\ | grep -v 127.0.0.1 | awk '{print $2}'").unixCmdGetStdOut();
+	var wifiInfoView, cpuInfo;
 	wifiAddress = wifiAddress[0..wifiAddress.size-2];
 
-	StaticText(view)
+	wifiInfoView = StaticText(view)
 		.stringColor_(Color.gray(0.5))
 		.align_(\right)
 		.font_(Font(size:12))
@@ -750,13 +751,19 @@ createWindowView = {|view|
 		.minWidth_(windowWidth)
 		.string_("OSC: ["++wifiAddress++", "+NetAddr.localAddr.port++"] ");
 
-
+	cpuInfo = UserView(view)
+		.maxWidth_(80)
+		.maxHeight_(30)
+		.animate_(true)
+		.drawFunc_({|uv|
+		(s.peakCPU.asStringPrec(2)++"%").drawAtPoint(8@8, Font.default, Color.yellow(0.5));
+	});
+	// view.layout_( HLayout(cpuInfo,wifiInfoView));
 	contentView.layout_(VLayout());
 	contentView.maxHeight_(5000);
 	scroll.canvas = contentView;
 
 };
-
 //------------------------------------------------------------
 //
 //------------------------------------------------------------
