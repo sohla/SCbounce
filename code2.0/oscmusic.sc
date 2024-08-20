@@ -756,7 +756,7 @@ createWindowView = {|view|
 		.maxHeight_(30)
 		.animate_(true)
 		.drawFunc_({|uv|
-		(s.peakCPU.asStringPrec(2)++"%").drawAtPoint(8@8, Font.default, Color.yellow(0.5));
+		(s.peakCPU.asStringPrec(2)++"%").drawAtPoint(8@8, Font.default, Color.yellow);
 	});
 	// view.layout_( HLayout(cpuInfo,wifiInfoView));
 	contentView.layout_(VLayout());
