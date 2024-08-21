@@ -1,9 +1,9 @@
 (
 
 // Global config
-// var personalityDir = "~/Develop/SuperCollider/Projects/scbounce/personalities/";
-var personalityDir = "~/Develop/SuperCollider/oscMusic/personalities/";
-var defaultPersonality = "wingChimes1";
+var personalityDir = "~/Develop/SuperCollider/Projects/scbounce/personalities/";
+// var personalityDir = "~/Develop/SuperCollider/oscMusic/personalities/";
+var defaultPersonality = "arialBass";
 var oscMessageTag  = "CombinedDataPacket";
 // var oscMessageTag  = "IMUFusedData";
 var renderRate = 30;
@@ -168,8 +168,6 @@ interpretPersonality = {|d|
 		//------------------------------------------------------------
 		~deinit = {
 			postf("deinit : % [%] \n",~model.name, ~model.ptn);
-			Pdef(~model.ptn).remove;
-
 		};
 
 		//------------------------------------------------------------
@@ -305,7 +303,13 @@ reloadPersonality = { |d|
 	d.procRout.stop;
 	d.procRout.free;
 
-	if(d.env != nil,{ d.env.use{ ~deinit.() }});
+	if(d.env != nil,{ d.env.use{
+		Routine{
+			s.sync;
+			~deinit.();
+			s.sync;
+		}.play;
+	}});
 
 	d.env = interpretPersonality.(d);
 	d.env.use{

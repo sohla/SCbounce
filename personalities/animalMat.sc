@@ -1,9 +1,11 @@
 var m = ~model;
-m.midiChannel = 1;
+var buffer;
 
+//------------------------------------------------------------
 m.rrateMassFilteredAttack = 0.8;
 m.rrateMassFilteredDecay = 0.2;
 
+//------------------------------------------------------------
 SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=440,
     attack=0.01, decay=0.1, sustain=0.3, release=0.2, gate=1,cutoff=20000, rq=1|
 	var lr = rate * BufRateScale.kr(bufnum) * (freq/440.0);
@@ -15,46 +17,39 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, fre
 }).add;
 
 //------------------------------------------------------------
-// intial state
-//------------------------------------------------------------
 ~init = ~init <> {
 
-	~sampleFolderB = PathName("/Users/soh_la/Downloads/Voice recordings Music in Motion 2July2025/converted");
-	~sampleFolderB.entries.do({ |path,i|
+	var path = PathName("/Users/soh_la/Downloads/Voice recordings Music in Motion 2July2025/converted/STE-1004.wav");
+	postf("loading sample : % \n", path.fileName);
 
-		if(path.fileName.contains("STE-1004.wav"),{
+	buffer = Buffer.read(s, path.fullPath, action:{ |buf|
+		postf("buffer alloc [%] \n", buf);
 
-			postf("loading [%]: % \n", i, path.fileName);
-
-			Buffer.read(s, path.fullPath, action:{ |buf|
-
-				Pdef(m.ptn,
-					Pbind(
-						\instrument, \stereoSampler,
-						\bufnum, buf,
-						// \octave, Pxrand([3], inf),
-						\rate, Pseq([0,12,-5,7].stutter(8).midiratio, inf),
-						\start, Pseq([0.04,0.1,0.28,0.525,0.7,0.75,0.86,0.9], inf),
-						\note, Pseq([33], inf),
-						\attack, 0.07,
-						\release,0.2,
-						\args, #[],
-					)
-				);
-
-				Pdef(m.ptn).play(quant:0.25);
-
-			});
-		});
+		Pdef(m.ptn,
+			Pbind(
+				\instrument, \stereoSampler,
+				\bufnum, buf,
+				// \octave, Pxrand([3], inf),
+				\rate, Pseq([0,12,-5,7].stutter(8).midiratio, inf),
+				\start, Pseq([0.04,0.1,0.28,0.525,0.7,0.75,0.86,0.9], inf),
+				\note, Pseq([33], inf),
+				\attack, 0.07,
+				\release,0.2,
+				\args, #[],
+			)
+		);
+		Pdef(m.ptn).play(quant:0.25);
 	});
 
 };
 
-//------------------------------------------------------------
-// do all the work(logic) taking data in and playing pattern/synth
-//------------------------------------------------------------
-// (0..10).lincurve(0, 10, 0, 10,-3).plot;
+~deinit = ~deinit <> {
+	Pdef(m.ptn).remove;
+	postf("buffer dealloc [%] \n", buffer);
+	buffer.free;
+};
 
+//------------------------------------------------------------
 ~next = {|d|
 
 	var dur = m.accelMassFiltered.linlin(0,1,1.2,0.04).lag(5);
@@ -67,9 +62,6 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, fre
 	Pdef(m.ptn).set(\octave, oct);
 };
 
-
-//------------------------------------------------------------
-// plot with min and max
 //------------------------------------------------------------
 ~plotMin = -1;
 ~plotMax = 1;
@@ -82,5 +74,4 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, fre
 	[d.sensors.gyroEvent.x / pi, d.sensors.gyroEvent.y / pi, d.sensors.gyroEvent.z / pi];
 	// [d.sensors.rrateEvent.x, d.sensors.rrateEvent.y, d.sensors.rrateEvent.z];
 	// [d.sensors.accelEvent.x, d.sensors.accelEvent.y, d.sensors.accelEvent.z];
-
 };
