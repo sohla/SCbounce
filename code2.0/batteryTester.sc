@@ -1,27 +1,3 @@
-(
-	var d = Date.localtime;
-	var file = File(("~/batteryTest_"++d.day++"_"++d.month++"_"++d.year++"_"++d.hour++"_"++d.minute++".text").standardizePath,"w");
-	var values = [];
-
-	o = OSCFunc({ |msg, time, addr, recvPort|
-		var m = Date.localtime.rawSeconds.asString++" : " ++ msg.asString++"\n";
-		m.asString.postln;
-	// { file.write(m) }.defer;
-	values = values.add(msg[1],msg[2]);
-	values.postln;
-	},'/60:01:E2:E2:27:48/Battery');
-
-	CmdPeriod.add({
-		file.close;
-		o.free;
-	});
-
-)
-
-
-
-
-
 
 (
 	var w = Window(bounds:Rect(0,0,1200,400));
