@@ -1,7 +1,8 @@
 var m = ~model;
 var bi = 0;
+var buffers;
 
-
+//------------------------------------------------------------
 SynthDef(\monoSampler, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
     attack=0.01, decay=0.1, sustain=0.3, release=0.2, gate=1,cutoff=20000, rq=1|
 
@@ -15,16 +16,15 @@ SynthDef(\monoSampler, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=44
 }).add;
 
 //------------------------------------------------------------
-// intial state
-//------------------------------------------------------------
 ~init = ~init <> {
 
-	//• this needs some work : buffers may not all be loaded before playing!
+	var folder  = PathName("~/Downloads/yourDNASamples/robt");
+	postf("loading samples : % \n", folder);
 
-	~sampleFolderB = PathName("/Users/soh_la/Downloads/robt");
-	~buffersB = ~sampleFolderB.entries.collect({ |path,i|
+	buffers = folder.entries.collect({ |path,i|
 		Buffer.read(s, path.fullPath, action:{|buf|
-			if(PathName("/Users/soh_la/Downloads/robt").entries.size - 1 == i,{
+			postf("buffer alloc [%] \n", buf);
+			if(folder.entries.size - 1 == i,{
 				"samples loaded".postln;
 			});
 		});
@@ -35,8 +35,8 @@ SynthDef(\monoSampler, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=44
 			\instrument, \monoSampler,
 			\bufnum, Pfunc{
 				bi = bi + 1;
-				if(bi >= (~buffersB.size-1),{bi=0});
-				~buffersB[bi];
+				if(bi >= (buffers.size-1),{bi=0});
+				buffers[bi];
 			},
 			\octave, Pxrand([3], inf),
 			\rate, Pseq([0,-3,-5,4,7,9,12,-12].midiratio, inf),
@@ -53,45 +53,40 @@ SynthDef(\monoSampler, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=44
 	Pdef(m.ptn).play(quant:0.25);
 };
 
+~deinit = ~deinit <> {
+	Pdef(m.ptn).remove;
+
+	buffers.do({|buf|
+		buf.free;
+		postf("buffer dealloc [%] \n", buf);
+	});
+};
 
 
-//------------------------------------------------------------
-// do all the work(logic) taking data in and playing pattern/synth
 //------------------------------------------------------------
 ~next = {|d|
 
 	var dur = m.accelMassFiltered.linlin(0,1,2.4,0.15);
-	// var start = m.accelMass.linlin(0,0.5,0.5,0.8);
-	// var amp = m.accelMass.linlin(0,1,0,4);
-	//
-		var amp = m.accelMass.linlin(0,1,0,1);
+	var amp = m.accelMass.linlin(0,1,0,1);
 
 	if(amp < 0.2, {amp = 0});
 	Pdef(m.ptn).set(\amp, amp);
-
-	// Pdef(m.ptn).set(\amp, amp);
 	Pdef(m.ptn).set(\dur, dur);
-	// Pdef(m.ptn).set(\start, start);
 
-	// Pdef(m.ptn).set(\filtFreq, m.accelMassFiltered.linexp(0,4,180,14000));
-	//
 	if(m.accelMass > 0.1,{
 		if( Pdef(~model.ptn).isPlaying.not,{
 			Pdef(~model.ptn).resume(quant:0.25);
 		});
-		},{
-			if( Pdef(~model.ptn).isPlaying,{
-				Pdef(~model.ptn).pause();
-			});
+	},{
+		if( Pdef(~model.ptn).isPlaying,{
+			Pdef(~model.ptn).pause();
+		});
 	});
 };
 
 //------------------------------------------------------------
-// plot with min and max
-//------------------------------------------------------------
 ~plotMin = -1;
 ~plotMax = 1;
-
 ~plot = { |d,p|
 	[m.rrateMass * 0.1, m.rrateMassFiltered * 0.1];
 	// [m.accelMass * 0.3, m.accelMassFiltered * 0.5];

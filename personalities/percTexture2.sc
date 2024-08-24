@@ -1,17 +1,13 @@
 var m = ~model;
 var sa, sb, sc;
-m.midiChannel = 1;
 
 
 SynthDef(\pullstretchMono, {|out, amp = 0.8, buffer = 0, envbuf = -1, pch = 1.0, div=1, speed = 0.01, splay = 0.5|
 	var pos;
-	// var mx,my;
 	var sp;
 	var mas;
 	var len = BufDur.kr(buffer) / div;
 	var lfo = LFSaw.kr( (1.0/len) * speed ,1,0.5,0.5);
-	// my = MouseY.kr(0.01,1,1.0);//splay
-
 
 	sp = Splay.arFill(12,
 			{ |i| Warp1.ar(1, buffer, lfo, pch,splay, envbuf, 8, 0.1, 2)  },
@@ -29,8 +25,8 @@ SynthDef(\pullstretchMono, {|out, amp = 0.8, buffer = 0, envbuf = -1, pch = 1.0,
 // intial state
 //------------------------------------------------------------
 ~init = ~init <> {
-
-	~sampleFolder = PathName("/Users/soh_la/Downloads/Voice recordings Music in Motion 25June2024/converted");
+//Copy of Jam1 25June2024
+	~sampleFolder = PathName("/Users/soh_la/Downloads/Voice recordings Music in Motion 25June2024/converted");~sampleFolder.entries[6].fullPath.postln;
 	Buffer.read(s, ~sampleFolder.entries[6].fullPath, action:{|buf|
 		"loaded".postln;
 		sa = Synth(\pullstretchMono,[\buffer,buf,\pch,0.midiratio, \amp,0.7, \div, 4]);

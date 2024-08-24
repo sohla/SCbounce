@@ -67,31 +67,14 @@ SynthDef(\warmRichSynth, {
 ~init = ~init <> {
 };
 
-~play =  {
-	// synth.set(\gate,1);
-};
-
-~stop = {
-	// synth.set(\gate,0);
-};
-
 ~deinit = ~deinit <> {
-	synth.free;
 };
 
 //------------------------------------------------------------
-// triggers
-//------------------------------------------------------------
-
-// example feeding the community
 ~onEvent = {|e|
 	m.com.root = e.root;
 	m.com.dur = e.dur;
 };
-
-
-//------------------------------------------------------------
-// do all the work(logic) taking data in and playing pattern/synth
 //------------------------------------------------------------
 ~next = {|d|
 
@@ -111,16 +94,9 @@ SynthDef(\warmRichSynth, {
 	});
 };
 
-~nextMidiOut = {|d|
-	// m.midiOut.control(m.midiChannel, 0, m.accelMassFiltered * 64 );
-};
-
-//------------------------------------------------------------
-// plot with min and max
 //------------------------------------------------------------
 ~plotMin = -1;
 ~plotMax = 1;
-
 ~plot = { |d,p|
 	// [d.sensors.rrateEvent.x, m.rrateMass * 0.1, m.accelMassFiltered * 0.5];
 	[m.accelMass * 0.1, m.accelMassFiltered.linlin(0,3,0,1)];

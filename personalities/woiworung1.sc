@@ -5,8 +5,7 @@ var notes = 60 + [4,-10,4,8-12,-10,6-12,4,8-12];
 
 m.accelMassFilteredAttack = 0.5;
 m.accelMassFilteredDecay = 0.9;
-//------------------------------------------------------------
-// intial state
+
 //------------------------------------------------------------
 
 SynthDef("woiworung1", {|out,freq = 1000, amp = 0.5, att = 2.02, dec = 0.3, sus = 1, rel = 1, gate = 1, fb = 1.2, ch=10|
@@ -27,9 +26,11 @@ SynthDef("woiworung1", {|out,freq = 1000, amp = 0.5, att = 2.02, dec = 0.3, sus 
 	synth = Synth(\woiworung1, [\freq, (60+4).midicps, \gate, 0, \amp, 0]);
 };
 
-~stop = ~stop <> {
+~deinit = ~deinit <> {
 	synth.set(\gate,0);
+	synth.free; // for now
 };
+
 //------------------------------------------------------------
 // triggers
 //------------------------------------------------------------

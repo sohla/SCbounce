@@ -1,5 +1,7 @@
 var m = ~model;
+var buffer;
 
+//------------------------------------------------------------
 SynthDef(\monoSampler, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=440,
     attack=0.01, decay=0.1, sustain=0.3, release=0.2, gate=1,cutoff=20000, rq=1|
 
@@ -12,62 +14,39 @@ SynthDef(\monoSampler, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=
 }).add;
 
 //------------------------------------------------------------
-// intial state
-//------------------------------------------------------------
 ~init = ~init <> {
 
-	~sampleFolderB = PathName("/Users/soh_la/Downloads/Voice recordings Music in Motion 25June2024/converted");
-	~sampleFolderB.entries.do({ |path,i|
+	var path = PathName("~/Downloads/yourDNASamples/DC power of love.wav");
+	postf("loading sample : % \n", path.fileName);
 
-		if(path.fileName.contains("DC power of love.wav"),{
+	buffer = Buffer.read(s, path.fullPath, action:{ |buf|
+		postf("buffer alloc [%] \n", buf);
 
-			postf("loading [%]: % \n", i, path.fileName);
-
-			Buffer.read(s, path.fullPath, action:{ |buf|
-
-				Pdef(m.ptn,
-					Pbind(
-						\instrument, \monoSampler,
-						\bufnum, buf,
-						\octave, Pxrand([3], inf),
-						\rate, 1,
-						\note, Pseq([33,37,33-5,33-12], inf),
-						\attack, 0.07,
-						\sustain,0.4,
-						\release,0.3,
-						\dur, Pseq([0.125] , inf),
-						\args, #[],
-					)
-				);
-
-				Pdef(m.ptn).play(quant:0.25);
-
-			});
-		});
+		Pdef(m.ptn,
+			Pbind(
+				\instrument, \monoSampler,
+				\bufnum, buf,
+				\octave, Pxrand([3], inf),
+				\rate, 1,
+				\note, Pseq([33,37,33-5,33-12], inf),
+				\attack, 0.07,
+				\sustain,0.4,
+				\release,0.3,
+				\dur, Pseq([0.125] , inf),
+				\args, #[],
+			)
+		);
+		Pdef(m.ptn).play(quant:0.25);
 	});
 	Pdef(m.ptn).play(quant:0.125);
 };
 
-
-
-//------------------------------------------------------------
-// triggers
-//------------------------------------------------------------
-
-// example feeding the community
-~onEvent = {|e|
-	// m.com.root = e.root;
-	// m.com.dur = e.dur;
-
-	// m.com.root.postln;
-	// Pdef(m.ptn).set(\root, m.com.root);
+~deinit = ~deinit <> {
+	Pdef(m.ptn).remove;
+	postf("buffer dealloc [%] \n", buffer);
+	buffer.free;
 };
 
-~onHit = {|state|
-};
-
-//------------------------------------------------------------
-// do all the work(logic) taking data in and playing pattern/synth
 //------------------------------------------------------------
 ~next = {|d|
 
@@ -83,15 +62,9 @@ SynthDef(\monoSampler, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=
 
 };
 
-~nextMidiOut = {|d|
-};
-
-//------------------------------------------------------------
-// plot with min and max
 //------------------------------------------------------------
 ~plotMin = -1;
 ~plotMax = 1;
-
 ~plot = { |d,p|
 	[m.rrateMass * 0.1, m.rrateMassFiltered * 0.1];
 	// [m.accelMass * 0.3, m.accelMassFiltered * 0.5];

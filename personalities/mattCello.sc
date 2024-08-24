@@ -1,10 +1,12 @@
 var m = ~model;
+var buffer;
 
 m.rrateMassFilteredAttack = 0.99;
 m.rrateMassFilteredDecay = 0.6;
 m.accelMassFilteredAttack = 0.8;
 m.accelMassFilteredDecay = 0.9;
 
+//------------------------------------------------------------
 SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=440,
     attack=0.01, decay=0.1, sustain=0.3, release=0.2, gate=1,cutoff=20000, rq=1|
 
@@ -17,42 +19,36 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, fre
 }).add;
 
 //------------------------------------------------------------
-// intial state
-//------------------------------------------------------------
 ~init = ~init <> {
 
-	~sampleFolderB = PathName("/Users/soh_la/Downloads/Voice recordings Music in Motion 2July2025/converted");
-	~sampleFolderB.entries.do({ |path,i|
+	var path = PathName("~/Downloads/yourDNASamples/STE-1004.wav");
+	postf("loading sample : % \n", path.fileName);
 
-		if(path.fileName.contains("STE-002.wav"),{
-
-			postf("loading [%]: % \n", i, path.fileName);
-
-			Buffer.read(s, path.fullPath, action:{ |buf|
-				Pdef(m.ptn,
-					Pbind(
-						\instrument, \stereoSampler,
-						\bufnum, buf,
-						\octave, Pxrand([3], inf),
-						\note, Pwhite(33,36, inf).floor,//Pseq([33-2], inf),
-						\attack, 0.07,
-						\decay, 0.2,
-						\sustain,0.1,
-						\release,0.2,
-						\dur, Pseq([0.125 * 0.5] , inf),
-						\args, #[],
-					)
-				);
-				Pdef(m.ptn).play(quant:0.125);
-
-			});
-		});
+	buffer = Buffer.read(s, path.fullPath, action:{ |buf|
+		postf("buffer alloc [%] \n", buf);
+		Pdef(m.ptn,
+			Pbind(
+				\instrument, \stereoSampler,
+				\bufnum, buf,
+				\octave, Pxrand([3], inf),
+				\note, Pwhite(33,36, inf).floor,
+				\attack, 0.07,
+				\decay, 0.2,
+				\sustain,0.1,
+				\release,0.2,
+				\dur, Pseq([0.125 * 0.5] , inf),
+				\args, #[],
+			)
+		);
+		Pdef(m.ptn).play(quant:0.125);
 	});
 };
+~deinit = ~deinit <> {
+	Pdef(m.ptn).remove;
+	postf("buffer dealloc [%] \n", buffer);
+	buffer.free;
+};
 
-
-//------------------------------------------------------------
-// do all the work(logic) taking data in and playing pattern/synth
 //------------------------------------------------------------
 ~next = {|d|
 
@@ -70,11 +66,6 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, fre
 
 };
 
-~nextMidiOut = {|d|
-};
-
-//------------------------------------------------------------
-// plot with min and max
 //------------------------------------------------------------
 ~plotMin = -1;
 ~plotMax = 1;

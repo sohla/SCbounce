@@ -1,4 +1,5 @@
 var m = ~model;
+var buffer;
 var pa = m.ptn ++ "A";
 var pb = m.ptn ++ "B";
 
@@ -6,87 +7,65 @@ var pb = m.ptn ++ "B";
 m.accelMassFilteredAttack = 0.5;
 m.accelMassFilteredDecay = 0.9;
 
-SynthDef(\monoSampler, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=440,
-    attack=0.01, decay=0.1, sustain=0.3, release=0.2, gate=1,cutoff=20000, rq=1|
-
-	var lr = rate * BufRateScale.kr(bufnum) * (freq/440.0);
-    var env = EnvGen.kr(Env.adsr(attack, decay, sustain, release), gate, doneAction: 2);
-	var sig = PlayBuf.ar(1, bufnum, rate: [lr, lr * 1.003], startPos: start * BufFrames.kr(bufnum), loop: 0);
-    sig = RLPF.ar(sig, cutoff, rq);
-    sig = Balance2.ar(sig[0], sig[1], pan, amp * env);
-    Out.ar(out, sig);
-}).add;
-
-
-SynthDef(\monoSampler, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=440,
-    attack=0.01, decay=0.1, sustain=0.3, release=0.2, gate=1,cutoff=20000, rq=1|
-
-	var lr = rate * BufRateScale.kr(bufnum) * (freq/440.0);
-    var env = EnvGen.kr(Env.adsr(attack, decay, sustain, release), gate, doneAction: 2);
-	var sig = PlayBuf.ar(1, bufnum, rate: [lr, lr * 1.003], startPos: start * BufFrames.kr(bufnum), loop: 0);
-    sig = RLPF.ar(sig, cutoff, rq);
-    sig = Balance2.ar(sig[0], sig[1], pan, amp * env);
-    Out.ar(out, sig);
-}).add;
-
 //------------------------------------------------------------
-// intial state
+SynthDef(\monoSampler, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=440,
+    attack=0.01, decay=0.1, sustain=0.3, release=0.2, gate=1,cutoff=20000, rq=1|
+
+	var lr = rate * BufRateScale.kr(bufnum) * (freq/440.0);
+    var env = EnvGen.kr(Env.adsr(attack, decay, sustain, release), gate, doneAction: 2);
+	var sig = PlayBuf.ar(1, bufnum, rate: [lr, lr * 1.003], startPos: start * BufFrames.kr(bufnum), loop: 0);
+    sig = RLPF.ar(sig, cutoff, rq);
+    sig = Balance2.ar(sig[0], sig[1], pan, amp * env);
+    Out.ar(out, sig);
+}).add;
+
+
 //------------------------------------------------------------
 ~init = {
 
-	~sampleFolderB = PathName("/Users/soh_la/Downloads/Voice recordings Music in Motion 25June2024/converted");
-	~sampleFolderB.entries.do({ |path,i|
+	var path = PathName("~/Downloads/yourDNASamples/TR laughing2.wav");
+	postf("loading sample : % \n", path.fileName);
 
-		if(path.fileName.contains("TR laughing2.wav"),{
+	buffer = Buffer.read(s, path.fullPath, action:{ |buf|
+		postf("buffer alloc [%] \n", buf);
+		Pdef(pa,
+			Pbind(
+				\instrument, \monoSampler,
+				\bufnum, buf,
+				\octave, Pxrand([3], inf),
+				\rate, 1,
+				\root, Pseq([0,5,4,-5].stutter(24), inf),
+				\note, Pseq([33+7], inf),
+				\attack, 0.07,
+				\decay,0.1,
+				\sustain,0.04,
+				\args, #[],
+			)
+		);
+		Pdef(pb,
+			Pbind(
+				\instrument, \monoSampler,
+				\bufnum, buf,
+				\octave, Pseq([2,4], inf),
+				\rate, 1,
+				\root, Pseq([0,-2,2,0].stutter(24), inf),
+				\note, Pseq([33-12+7], inf),
+				\attack, 0.07,
+				\sustain,0.03,
+				\args, #[],
+			)
+		);
 
-			postf("loading [%]: % \n", i, path.fileName);
+		Pdef(pa).play(quant:0.125);
+		Pdef(pb).play(quant:0.125);
 
-			Buffer.read(s, path.fullPath, action:{ |buf|
-				Pdef(pa,
-					Pbind(
-						\instrument, \monoSampler,
-						\bufnum, buf,
-						\octave, Pxrand([3], inf),
-						\rate, 1,
-						\root, Pseq([0,5,4,-5].stutter(24), inf),
-						\note, Pseq([33+7], inf),
-						\attack, 0.07,
-						\decay,0.1,
-						\sustain,0.04,
-						\args, #[],
-					)
-				);
-				Pdef(pb,
-					Pbind(
-						\instrument, \monoSampler,
-						\bufnum, buf,
-						\octave, Pseq([2,4], inf),
-						\rate, 1,
-						\root, Pseq([0,-2,2,0].stutter(24), inf),
-						\note, Pseq([33-12+7], inf),
-						\attack, 0.07,
-						\sustain,0.03,
-						\args, #[],
-					)
-				);
-
-				Pdef(pa).play(quant:0.125);
-				Pdef(pb).play(quant:0.125);
-
-			});
-		});
 	});
-
-
 };
 
 ~deinit = ~deinit <> {
 	Pdef(pa).remove;
 	Pdef(pb).remove;
-
-	// s.freeAllBuffers;
-	Pdef.all.size.postln;
-	Pdef.all.hash.postln;
+	buffer.free;
 
 };
 ~play = ~play <> {
@@ -99,8 +78,6 @@ SynthDef(\monoSampler, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=
 	Pdef(pb).stop();
 };
 
-//------------------------------------------------------------
-// do all the work(logic) taking data in and playing pattern/synth
 //------------------------------------------------------------
 ~next = {|d|
 
@@ -126,15 +103,10 @@ SynthDef(\monoSampler, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=
 
 };
 
-~nextMidiOut = {|d|
-};
 
-//------------------------------------------------------------
-// plot with min and max
 //------------------------------------------------------------
 ~plotMin = -1;
 ~plotMax = 1;
-
 ~plot = { |d,p|
 	// [m.rrateMass, m.rrateMassFiltered];
 	// [m.accelMass * 0.3, m.accelMassFiltered * 0.5];
@@ -146,4 +118,3 @@ SynthDef(\monoSampler, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=
 
 
 };
-

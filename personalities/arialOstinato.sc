@@ -65,9 +65,7 @@ SynthDef(\warmRichSynth, {
 			\instrument, \warmRichSynth,
 			\scale, Scale.major,
 			\octave, Pseq([7,8].stutter(3), inf),
-			// \root, Pseq([0,3,-6,-3].stutter(60)-2, inf),
 			\note, Pseq([-5,0,4,-5,0,4,-5,0,4,-5,0,4,-3,2,6,-3,2,6,-3,2,6,-3,2,6,-3,2,6,-3,2,6]-2, inf),
-			// \dur, Pseq([0.5/3], inf),
 			\legato, 1,
 			\attackTime, 0.001,
 			\decayTime, 0.2,
@@ -82,6 +80,10 @@ SynthDef(\warmRichSynth, {
 
 	Pdef(m.ptn).play(quant:0.5/3);
 };
+~deinit = ~deinit <> {
+	Pdef(m.ptn).remove;
+};
+
 //------------------------------------------------------------
 // triggers
 //------------------------------------------------------------
@@ -89,11 +91,10 @@ SynthDef(\warmRichSynth, {
 // example feeding the community
 ~onEvent = {|e|
 	if(e.root != m.com.root,{
-		"key change!".postln;
+		// "key change".postln;
 		Pdef(m.ptn).reset;
 	});
 	Pdef(m.ptn).set(\root, m.com.root);
-
 };
 
 

@@ -1,5 +1,6 @@
 var m = ~model;
 
+//------------------------------------------------------------
 SynthDef(\synth2211, { |out=0, gate=1, freq=100, rel=0.1, amp=0.1, shp= 0.09|
 	var env = EnvGen.ar(Env.perc(rel.linlin(0.002,0.4,0.001,0.01), rel), gate, [1, 0.2, 0.04, 0.02], doneAction:0);
 	var sig = DynKlang.ar(`[ [1,3,5,7] * freq * LFNoise2.ar(30).linlin(-1,1,0.98,1.02), env, [[0,pi,0],[pi, 0, pi]]], 1, 0) * 0.3;
@@ -11,8 +12,6 @@ SynthDef(\synth2211, { |out=0, gate=1, freq=100, rel=0.1, amp=0.1, shp= 0.09|
 
 
 //------------------------------------------------------------
-// intial state
-//------------------------------------------------------------
 ~init = ~init <> {
 
 	Pdef(m.ptn,
@@ -21,41 +20,23 @@ SynthDef(\synth2211, { |out=0, gate=1, freq=100, rel=0.1, amp=0.1, shp= 0.09|
 			\octave, Pxrand([3,4,5], inf),
 			\note, Pseq([0], inf),
 			\root, Pseq([0,3,-2,-4].stutter(24)-3, inf),
-			// \dur, Pxrand([0.2,0.2,0.2,0.1,0.1,0.2] * 2, inf),
 			\rel, Pwhite(0.002, 0.9, inf),
 			\amp, Pkey(\octave).linlin(3,6,1,0.2) * Pkey(\da),
 			\shp, Pwhite(0.9,0.002, inf),
 			\args, #[],
-
 		)
 	);
 
 	Pdef(m.ptn).play(quant:0.25);
 
 };
-
-
-//------------------------------------------------------------
-// triggers
-//------------------------------------------------------------
-
-// example feeding the community
-~onEvent = {|e|
-	// m.com.root = e.root;
-	// m.com.dur = e.dur;
-
-	// m.com.root.postln;
-	// Pdef(m.ptn).set(\root, m.com.root);
+~deinit = ~deinit <> {
+	Pdef(m.ptn).remove;
 };
 
-~onHit = {|state|
-};
 
-//------------------------------------------------------------
-// do all the work(logic) taking data in and playing pattern/synth
 //------------------------------------------------------------
 ~next = {|d|
-
 
 	var dur = m.accelMassFiltered.linexp(0.0,1.0,5,0.18);
 	var amp = m.accelMassFiltered.linexp(0.0,1.0,0.05,0.6);
@@ -76,11 +57,6 @@ SynthDef(\synth2211, { |out=0, gate=1, freq=100, rel=0.1, amp=0.1, shp= 0.09|
 
 };
 
-~nextMidiOut = {|d|
-};
-
-//------------------------------------------------------------
-// plot with min and max
 //------------------------------------------------------------
 ~plotMin = -1;
 ~plotMax = 1;

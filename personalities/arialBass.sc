@@ -66,12 +66,6 @@ SynthDef(\warmRichSynth, {
 ~init = ~init <> {
 };
 
-~play =  {
-};
-
-~stop = {
-};
-
 ~deinit = ~deinit <> {
 };
 

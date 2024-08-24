@@ -19,7 +19,7 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, fre
 //------------------------------------------------------------
 ~init = ~init <> {
 
-	var path = PathName("/Users/soh_la/Downloads/Voice recordings Music in Motion 2July2025/converted/STE-1004.wav");
+	var path = PathName("~/Downloads/yourDNASamples/STE-1004.wav");
 	postf("loading sample : % \n", path.fileName);
 
 	buffer = Buffer.read(s, path.fullPath, action:{ |buf|
@@ -38,7 +38,7 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, fre
 				\args, #[],
 			)
 		);
-		Pdef(m.ptn).play(quant:0.25);
+		Pdef(m.ptn).play(quant:0.04);
 	});
 
 };
@@ -52,11 +52,11 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, fre
 //------------------------------------------------------------
 ~next = {|d|
 
-	var dur = m.accelMassFiltered.linlin(0,1,1.2,0.04).lag(5);
+	var dur = m.accelMassFiltered.linlin(0,1,0.8,0.04).lag(2);
 	var start = m.accelMass.linlin(0,0.5,0.5,0.8);
-	var amp = m.accelMass.linlin(0,1,0,3).lag(6);
+	var amp = m.accelMass.linlin(0,1,0,3);
 	var oct = (d.sensors.gyroEvent.y / pi).linlin(-1,1,2,6).floor;
-	if(amp < 0.07, {amp = 0});
+	if(amp < 0.06, {amp = 0}, { amp = 3 });
 	Pdef(m.ptn).set(\amp, amp);
 	Pdef(m.ptn).set(\dur, dur);
 	Pdef(m.ptn).set(\octave, oct);
