@@ -56,8 +56,7 @@ SynthDef(\monoSampler, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=
 
 	if(amp < 0.07, {amp = 0});
 
-
-	Pdef(m.ptn).set(\amp, amp);
+	Pdef(m.ptn).set(\amp, amp * 0.8);
 	Pdef(m.ptn).set(\start, start.linlin(0,1,0,0.9));
 
 };

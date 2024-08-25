@@ -3,7 +3,8 @@
 // Global config
 // var personalityDir = "~/Develop/SuperCollider/Projects/scbounce/personalities/";
 var personalityDir = "~/Develop/SuperCollider/oscMusic/personalities/";
-var defaultPersonality = "percTexture2";
+var defaultPersonality = "wingChimes1";
+var defaultList = "list_yourDNA.sc";
 var oscMessageTag  = "CombinedDataPacket";
 // var oscMessageTag  = "IMUFusedData";
 var renderRate = 30;
@@ -84,7 +85,7 @@ var deviceProto = (
 
 loadPersonalityList = {
 
-	var path = PathName.new(personalityDir++"list.sc");
+	var path = PathName.new(personalityDir++defaultList);
 	var file = File.new(path.asAbsolutePath,"r");
 	var str = file.readAllString;
 
@@ -432,7 +433,7 @@ addDeviceView = { |view, d|
 			.valueAction_(names.find([d.name]))
 			.action_({|b|
 				d.name = names.at(b.value);
-				reloadPersonality.(d);
+			{reloadPersonality.(d)}.defer(0.1);
 			})
 	};
 

@@ -1,7 +1,8 @@
 var m = ~model;
-var sa, sb, sc;
+var buffer;
+var sa, sb;
 
-
+//------------------------------------------------------------
 SynthDef(\pullstretchMono, {|out, amp = 0.8, buffer = 0, envbuf = -1, pch = 1.0, div=1, speed = 0.01, splay = 0.5|
 	var pos;
 	var sp;
@@ -22,65 +23,43 @@ SynthDef(\pullstretchMono, {|out, amp = 0.8, buffer = 0, envbuf = -1, pch = 1.0,
 }).add;
 
 //------------------------------------------------------------
-// intial state
-//------------------------------------------------------------
 ~init = ~init <> {
-//Copy of Jam1 25June2024
-	~sampleFolder = PathName("/Users/soh_la/Downloads/Voice recordings Music in Motion 25June2024/converted");~sampleFolder.entries[6].fullPath.postln;
-	Buffer.read(s, ~sampleFolder.entries[6].fullPath, action:{|buf|
-		"loaded".postln;
-		sa = Synth(\pullstretchMono,[\buffer,buf,\pch,0.midiratio, \amp,0.7, \div, 4]);
-		sb = Synth(\pullstretchMono,[\buffer,buf,\pch,3.midiratio, \amp,0.6, \div, 4]);
-		// sc = Synth(\pullstretchMono,[\buffer,buf,\pch,7.midiratio, \amp,0.2, \div, 4]);
+
+	var path = PathName("~/Downloads/yourDNASamples/Copy of Jam1 25June2024.wav");
+	postf("loading sample : % \n", path.fileName);
+
+	buffer = Buffer.read(s, path.fullPath, action:{ |buf|
+		postf("buffer alloc [%] \n", buf);
+		sa = Synth(\pullstretchMono,[\buffer,buf,\pch,0.midiratio, \amp,0.0, \div, 4]);
+		sb = Synth(\pullstretchMono,[\buffer,buf,\pch,3.midiratio, \amp,0.0, \div, 4]);
 	});
 };
-
 
 ~deinit = ~deinit <> {
 	sa.free;
 	sb.free;
+	buffer.free;
 
 };
 
-//------------------------------------------------------------
-// triggers
-//------------------------------------------------------------
-~onEvent = {|e|
-};
-
-~onHit = {|state|
-};
-
-//------------------------------------------------------------
-// do all the work(logic) taking data in and playing pattern/synth
 //------------------------------------------------------------
 ~next = {|d|
-
 
 	var amp = m.accelMass.linlin(0,1,0,0.5);
 	if(amp < 0.03, {amp = 0});
 	sa.set(\speed, m.rrateMass.linlin(3,10,0.01,2));
 	sb.set(\speed, m.rrateMass.linlin(3,10,0.01,2));
-	// sc.set(\speed, m.rrateMass.linlin(3,10,0.01,2));
 
 	sa.set(\splay, m.rrateMass.linlin(3,10,0.01,1));
 	sb.set(\splay, m.rrateMass.linlin(3,10,0.01,1));
-	// sc.set(\splay, m.rrateMass.linlin(3,10,0.01,1));
 
 	sa.set(\amp, amp * 0.6);
 	sb.set(\amp, amp * 0.6);
-	// sc.set(\amp, amp * 0.6);
 };
 
-~nextMidiOut = {|d|
-};
-
-//------------------------------------------------------------
-// plot with min and max
 //------------------------------------------------------------
 ~plotMin = -1;
 ~plotMax = 1;
-
 ~plot = { |d,p|
 	[m.rrateMass * 0.1, m.rrateMassFiltered * 0.1];
 	// [m.accelMass * 0.3, m.accelMassFiltered * 0.5];
@@ -92,11 +71,3 @@ SynthDef(\pullstretchMono, {|out, amp = 0.8, buffer = 0, envbuf = -1, pch = 1.0,
 
 
 };
-
-// (
-// var a = 1.0.linrand;
-// var b = Array.linrand(1,0.0,1.0-a);
-// var c = 1.0 - b - a;
-// [a,b,c].flat
-// )
-//

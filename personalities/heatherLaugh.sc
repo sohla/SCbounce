@@ -61,7 +61,7 @@ SynthDef(\monoSampler, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=
 	var amp = m.accelMass.linlin(0,1,0,6);
 
 	if(amp < 0.15, {amp = 0});
-	Pdef(m.ptn).set(\amp, amp);
+	Pdef(m.ptn).set(\amp, amp * 0.3);
 	Pdef(m.ptn).set(\start, start.linlin(0,1,0,0.9));
 
 };

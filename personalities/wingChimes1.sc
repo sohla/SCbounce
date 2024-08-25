@@ -1,7 +1,7 @@
 var m = ~model;
 
 	SynthDef(\wingChimes1, {
-		|freq = 1000, pulseFreq = 10, amp = 0.1, rq = 0.001, att = 0.03, dec = 1.3, sus = 0, rel = 2, gate = 1, numHarms = 200|
+		|freq = 1000, pulseFreq = 10, amp = 0, rq = 0.001, att = 0.03, dec = 1.3, sus = 0, rel = 2, gate = 1, numHarms = 200|
 		var snd, env;
 		env = EnvGen.kr(Env.adsr(att, dec, sus, rel), gate: gate, doneAction: 2);
 		snd = BPF.ar(

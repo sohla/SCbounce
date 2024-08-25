@@ -32,22 +32,6 @@ SynthDef("woiworung1", {|out,freq = 1000, amp = 0.5, att = 2.02, dec = 0.3, sus 
 };
 
 //------------------------------------------------------------
-// triggers
-//------------------------------------------------------------
-
-// example feeding the community
-~onEvent = {|e|
-	m.com.root = e.root;
-	m.com.dur = e.dur;
-
-};
-
-~onHit = {|state|
-};
-
-//------------------------------------------------------------
-// do all the work(logic) taking data in and playing pattern/synth
-//------------------------------------------------------------
 ~next = {|d|
 
 	var a = m.accelMassFiltered * 0.25;
@@ -56,7 +40,7 @@ SynthDef("woiworung1", {|out,freq = 1000, amp = 0.5, att = 2.02, dec = 0.3, sus 
 	// var i = (d.sensors.gyroEvent.y.abs / pi) * (pchs.size);
 	if(a<0.1,{a=0});
 	if(a>0.9,{a=1.0});
-	synth.set(\amp, a * 0.4);
+	synth.set(\amp, a * 0.35);
 	synth.set(\ch, ch);
 
 	a = m.accelMassFiltered * 0.1;
@@ -75,11 +59,8 @@ SynthDef("woiworung1", {|out,freq = 1000, amp = 0.5, att = 2.02, dec = 0.3, sus 
 };
 
 //------------------------------------------------------------
-// plot with min and max
-//------------------------------------------------------------
 ~plotMin = -1;
 ~plotMax = 1;
-
 ~plot = { |d,p|
 	// [d.sensors.quatEvent.x, d.sensors.quatEvent.y, d.sensors.quatEvent.z];
 	// [m.accelMassFiltered * 0.1, d.sensors.gyroEvent.x * 0.1];

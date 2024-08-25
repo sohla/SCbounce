@@ -59,7 +59,7 @@ SynthDef(\pullstretchMono, {|out, amp = 0.8, buffer = 0, envbuf = -1, pch = 1.0,
 //------------------------------------------------------------
 ~next = {|d|
 
-	var amp = m.accelMassFiltered.linlin(0,1,0.07,0.4);
+	var amp = m.accelMassFiltered.linlin(0,1,0.07,0.8);
 	var speed= m.accelMassFiltered.linlin(0,1,0.001,0.3);
 	var rate = (d.sensors.gyroEvent.y / pi).linlin(-1,1,0.7,1.3);
 

@@ -42,7 +42,7 @@ SynthDef(\synth2211, { |out=0, gate=1, freq=100, rel=0.1, amp=0.1, shp= 0.09|
 	var amp = m.accelMassFiltered.linexp(0.0,1.0,0.05,0.6);
 	if(dur < 0.1, { dur = 0.18});
 
-	Pdef(m.ptn).set(\da, amp);
+	Pdef(m.ptn).set(\da, amp * 0.5);
 	Pdef(m.ptn).set(\dur, 0.25);
 
 	if(m.accelMass > 0.1,{

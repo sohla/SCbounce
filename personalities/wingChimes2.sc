@@ -1,7 +1,7 @@
 var m = ~model;
 
 
-	SynthDef(\wingChimes2, {|freq = 1000, pulseFreq = 10, amp = 0.1, rq = 0.001, att = 0.23, dec = 1.3, sus = 0, rel = 3, gate = 1, numHarms = 200|
+	SynthDef(\wingChimes2, {|freq = 1000, pulseFreq = 10, amp = 0, rq = 0.001, att = 0.23, dec = 1.3, sus = 0, rel = 3, gate = 1, numHarms = 200|
 		var snd, env;
 		env = EnvGen.kr(Env.adsr(att, dec, sus, rel), gate: gate, doneAction: 2);
 		snd = BPF.ar(
@@ -23,10 +23,10 @@ var m = ~model;
 	Pdef(m.ptn,
 		Pbind(
 			\instrument, \wingChimes2,
-			\note, Prand([-0.1], inf),
-			\octave, Pseq([2,4], inf),
+			\note, Prand([-1], inf),
+			\octave, Pseq([3,4,2], inf),
 			\pulseFreq, Pwhite(1, 3),
-			\numHarms, 10,
+			\numHarms, 40,
 			\func, Pfunc({|e| ~onEvent.(e)}),
 			\args, #[],
 		);
@@ -52,7 +52,7 @@ var m = ~model;
 
 	Pdef(m.ptn).set(\dur, dur);
 	Pdef(m.ptn).set(\rq, rq);
-	Pdef(m.ptn).set(\amp, [amp * 2, amp] * 0.7);
+	Pdef(m.ptn).set(\amp, [amp * 2, amp] * 1.5);
 
 	if(m.accelMass > 0.15,{
 		if( Pdef(m.ptn).isPlaying.not,{
