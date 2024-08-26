@@ -3,11 +3,11 @@ var synth;
 
 //------------------------------------------------------------
 SynthDef(\sheet1, { |out, frq=111, gate=0, amp = 0, pchx=0|
-	var env = EnvGen.ar(Env.asr(0.3,1.0,2.0), gate, doneAction:Done.freeSelf);
-	var follow = Amplitude.kr(amp, 0.0001, 0.1);
+	var env = EnvGen.ar(Env.asr(0.3,1.0,8.0), gate, doneAction:Done.freeSelf);
+	var follow = Amplitude.kr(amp, 0.3, 0.1);
 	// var sig = Saw.ar(frq.lag(2),0.3 * env * amp.lag(1));
 	var trig = PinkNoise.ar(0.01) * env * follow;
-	var sig =  DynKlank.ar(`[[30,37,42,46,49].midicps + pchx.lag(0.1).midicps, nil, [2, 1, 1, 1]], trig);
+	var sig =  DynKlank.ar(`[[30,37,42,46,49].midicps + pchx.lag(5).midicps, nil, [2, 1, 1, 1]], trig);
 	var dly = DelayC.ar(sig,0.03,[0.02,0.027]);
 	Out.ar(out, dly);
 }).add;
