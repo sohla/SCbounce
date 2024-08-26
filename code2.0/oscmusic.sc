@@ -1,8 +1,8 @@
 (
 
 // Global config
-// var personalityDir = "~/Develop/SuperCollider/Projects/scbounce/personalities/";
-var personalityDir = "~/Develop/SuperCollider/oscMusic/personalities/";
+var personalityDir = "~/Develop/SuperCollider/Projects/scbounce/personalities/";
+// var personalityDir = "~/Develop/SuperCollider/oscMusic/personalities/";
 var defaultPersonality = "wingChimes1";
 var defaultList = "list_yourDNA.sc";
 var oscMessageTag  = "CombinedDataPacket";
@@ -277,7 +277,7 @@ removeDevice = {|d|
 
 	d.env.use{ ~deinit.() };
 
-		d.listeners.airware.free;
+	d.listeners.airware.free;
 };
 
 addDevice = { |ip,port, id|
@@ -377,74 +377,74 @@ addDeviceView = { |view, d|
 
 	var removeDeviceButton = {|view|
 		Button(view)
-			.minWidth_(80)
-			.states_([
-				["x",Color.red(0.5)],
-			])
-			.action_({|b|
-				header.remove();
-				stackView.remove();
-				removeDevice.(d);
-				devices.removeAt(d.port);
-			})
+		.minWidth_(80)
+		.states_([
+			["x",Color.red(0.5)],
+		])
+		.action_({|b|
+			header.remove();
+			stackView.remove();
+			removeDevice.(d);
+			devices.removeAt(d.port);
+		})
 	};
 
 	var infoView = {|view|
 		StaticText(view)
-			.stringColor_(Color.white)
-			.font_(Font(size:12))
-			.minWidth_(100)
+		.stringColor_(Color.white)
+		.font_(Font(size:12))
+		.minWidth_(100)
 		.string_("ID: "+d.did+" OSC: ["++d.ip+", "+d.port++"]")
 	};
 	var muteButtonLocal;
 	var muteButton = {|view|
 		muteButtonLocal = Button()
-			.enabled_(false) //broken
-			.maxWidth_(80)
-			.states_([["mute"],["mute",Color.red(0.5)]])
-			.action_({|b|
-				d.enabled = b.value.asBoolean;
+		.enabled_(false) //broken
+		.maxWidth_(80)
+		.states_([["mute"],["mute",Color.red(0.5)]])
+		.action_({|b|
+			d.enabled = b.value.asBoolean;
 
-				if(d.enabled == true,{
-					d.env.use{~stop.()};
-				},{
-					d.env.use{~play.()};
-				});
-			})
+			if(d.enabled == true,{
+				d.env.use{~stop.()};
+			},{
+				d.env.use{~play.()};
+			});
+		})
 	};
 
 	var reloadButton = {|view|
 		Button(view)
-			.minWidth_(80)
-			.states_([
-				["reload"],
-			])
-			.action_({|b|
-				{
-					reloadPersonality.(d);
-				}.defer(0.1);
-			})
+		.minWidth_(80)
+		.states_([
+			["reload"],
+		])
+		.action_({|b|
+			{
+				reloadPersonality.(d);
+			}.defer(0.1);
+		})
 	};
 
 	var personalityMenu = {|view|
 		PopUpMenu(view)
-			.minWidth_(220)
-			.items_(names)
-			.valueAction_(names.find([d.name]))
-			.action_({|b|
-				d.name = names.at(b.value);
+		.minWidth_(220)
+		.items_(names)
+		.valueAction_(names.find([d.name]))
+		.action_({|b|
+			d.name = names.at(b.value);
 			{reloadPersonality.(d)}.defer(0.1);
-			})
+		})
 	};
 
 	var dataSizeMenu = {|view|
 		PopUpMenu(view)
-			.maxWidth_(80)
-			.items_(dataSizeOptions.collect{|v| v+"pnts"})
-			.action_({|b|
-				d.dataSize = dataSizeOptions.at(b.value);
-			})
-			.valueAction_(1)
+		.maxWidth_(80)
+		.items_(dataSizeOptions.collect{|v| v+"pnts"})
+		.action_({|b|
+			d.dataSize = dataSizeOptions.at(b.value);
+		})
+		.valueAction_(1)
 	};
 
 
@@ -561,9 +561,9 @@ createThreeDeeCanvas = { |view, data|
 	.distance_(3.5);
 
 	graph1.add(cube = Canvas3DItem.cube()
-			.color_(Color.white.alpha_(0.4))
-			.width_(2)
-			.transform(Canvas3D.mScale(0.4,0.5,1))
+		.color_(Color.white.alpha_(0.4))
+		.width_(2)
+		.transform(Canvas3D.mScale(0.4,0.5,1))
 	);
 
 	graph1.add(accelX = Canvas3DItem.regPrism()
@@ -749,18 +749,18 @@ createWindowView = {|view|
 	wifiAddress = wifiAddress[0..wifiAddress.size-2];
 
 	wifiInfoView = StaticText(view)
-		.stringColor_(Color.gray(0.5))
-		.align_(\right)
-		.font_(Font(size:12))
-		.minHeight_(30)
-		.minWidth_(windowWidth)
-		.string_("OSC: ["++wifiAddress++", "+NetAddr.localAddr.port++"] ");
+	.stringColor_(Color.gray(0.5))
+	.align_(\right)
+	.font_(Font(size:12))
+	.minHeight_(30)
+	.minWidth_(windowWidth)
+	.string_("OSC: ["++wifiAddress++", "+NetAddr.localAddr.port++"] ");
 
 	cpuInfo = UserView(view)
-		.maxWidth_(80)
-		.maxHeight_(30)
-		.animate_(true)
-		.drawFunc_({|uv|
+	.maxWidth_(80)
+	.maxHeight_(30)
+	.animate_(true)
+	.drawFunc_({|uv|
 		(s.peakCPU.asStringPrec(2)++"%").drawAtPoint(8@8, Font.default, Color.yellow);
 	});
 	// view.layout_( HLayout(cpuInfo,wifiInfoView));
