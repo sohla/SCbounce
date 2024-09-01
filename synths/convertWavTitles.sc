@@ -14,7 +14,9 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, start=0, pan=0, freq=
 (
 	var result;
 	var folder = PathName("/Library/Application\ Support/GarageBand/Instrument\ Library/Sampler/Sampler\ Files/Harp/Harp_ES_mf");
-	var noteToMidi = { |noteName|
+// var folder = PathName("/Library/Application\ Support/GarageBand/Instrument\ Library/Sampler/Sampler\ Files/Violas/Violas_pizz_f");
+
+var noteToMidi = { |noteName|
 	    var pattern = "([A-G](#|b)?)([0-9])";
 	    var noteNames = "C C# D D# E F F# G G# A A# B";
 	    var parts, note, octave, noteIndex;
@@ -34,7 +36,6 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, start=0, pan=0, freq=
 		var buffer = Buffer.read(s, path.fullPath, action:{ |buf|
 		});
 		(name: path.fileNameWithoutExtension, buffer: buffer, midiNote: noteToMidi.(note))
-
 	});
 
 	var findSampleBuffer = {|note|
@@ -69,6 +70,7 @@ Pdef(\tester,
 		\legato, 3,
 		// \note, Pn(Pseries(60,2, 20), inf),
 		// \root, Pseq([0,-1].stutter(20), inf),
+		\octave, 5,
 		\root, Pseq([0,3,-6,-3].stutter(60)-2, inf),
 	    \note, Pseq([-5,0,4,-5,0,4,-5,0,4,-5,0,4,-3,2,6,-3,2,6,-3,2,6,-3,2,6,-3,2,6,-3,2,6]+72, inf),
 		\release,1,
