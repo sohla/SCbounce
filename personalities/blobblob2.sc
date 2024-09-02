@@ -39,10 +39,10 @@ SynthDef(\monoSampler, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=44
 				if(bi >= (buffers.size-1),{bi=0});
 				buffers[bi];
 			},
-			\dur, 0.25,
+			\dur, 0.125,
 			\octave, Pxrand([3], inf),
 			// \rate, Pseq([0,-12,-5,-2,4,7,12].midiratio, inf),
-			\rate, Pseq([0,-12,0].midiratio, inf),
+			\rate, Pseq([0,12,0].midiratio, inf),
 			\legato, 0.5,
 			\start, Pwhite(0, 0.1),
 			\note, Pseq([33], inf),
