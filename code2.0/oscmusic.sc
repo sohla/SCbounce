@@ -252,17 +252,22 @@ startup = {
 shutdown = {
 
 	stopOSCListening.();
+	Routine{
+		// everything called in the correct order but leaves synths hanging!?!
+		s.sync;
+		devices.keysValuesDo({|k,d|
+			removeDevice.(d);
+		});
+		s.sync;
+		Pdef.clear;
+		s.sync;
+		Server.freeAll;
+		s.sync;
+		s.queryAllNodes;
+		s.sync;
+		s.quit;
+	}.play;
 
-	devices.keysValuesDo({|k,d|
-		removeDevice.(d);
-	});
-
-	Pdef.clear;
-	Server.freeAll;
-
-	s.queryAllNodes;
-
-	s.quit;
 
 };
 //------------------------------------------------------------
@@ -275,7 +280,9 @@ removeDevice = {|d|
 
 	d.procRout.free;
 
-	d.env.use{ ~deinit.() };
+	d.env.use{
+		~deinit.();
+	};
 
 	d.listeners.airware.free;
 };
@@ -772,11 +779,19 @@ createWindowView = {|view|
 //------------------------------------------------------------
 //
 //------------------------------------------------------------
+//[ Built-in Microph, Built-in Output, Soundflower (2ch), Soundflower (64ch), ZoomAudioD, Zoomy, SF Record ]
+
+Server.local.options.outDevice = ServerOptions.devices[
+	ServerOptions.devices.indexOfEqual("Soundflower (2ch)")];
+
+//Server.local.options.outDevice = ServerOptions.devices[
+//	ServerOptions.devices.indexOfEqual("Built-in Output")];
 
 s.waitForBoot({
 	startup.();
 	buildUI.();
 	startOSCListening.();
 });
+s.plotTree;
 
 )
