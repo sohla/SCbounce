@@ -7,7 +7,7 @@ m.rrateMassFilteredDecay = 0.2;
 
 //------------------------------------------------------------
 SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=440,
-    attack=0.01, decay=0.1, sustain=0.3, release=0.2, gate=1,cutoff=20000, rq=0.3|
+    attack=0.01, decay=0.1, sustain=0.3, release=0.2, gate=1, ts=1, cutoff=20000, rq=0.3|
 	var lr = rate * BufRateScale.kr(bufnum) * (freq/440.0);
     var env = EnvGen.kr(Env.adsr(attack, decay, sustain, release), gate, timeScale: 1, doneAction: 2);
 	var sig = PlayBuf.ar(2, bufnum, rate: [lr, lr * 1.003], startPos: start * BufFrames.kr(bufnum), loop: 0);
@@ -34,7 +34,8 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, fre
 				\start, Pseq([0.04,0.1,0.28,0.525,0.7,0.75,0.86,0.9], inf),
 				\note, Pseq([33,35,31,31].stutter(64*2), inf),
 				\attack, 0.07,
-				\release,0.2,
+				\release, 0.2,
+				\legato, 0.5,
 				\args, #[],
 			)
 		);
@@ -44,6 +45,7 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, fre
 };
 
 ~deinit = ~deinit <> {
+	Pdef(m.ptn).stop;
 	Pdef(m.ptn).remove;
 	postf("buffer dealloc [%] \n", buffer);
 	buffer.free;
@@ -52,7 +54,8 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, fre
 //------------------------------------------------------------
 ~next = {|d|
 
-	var dur = m.accelMassFiltered.linlin(0,1,0.8,0.04).lag(2);
+	var dur = m.accelMassFiltered.linlin(0,1,0.12,0.04).lag(2);
+	var leg= m.accelMassFiltered.linlin(0,1,0.5,1);
 	var start = m.accelMass.linlin(0,0.5,0.5,0.8);
 	var amp = m.accelMass.linlin(0,1,0,3);
 	var co = (d.sensors.gyroEvent.y / pi).linexp(-1,1,140,14000);
@@ -60,6 +63,7 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, fre
 	Pdef(m.ptn).set(\amp, amp);
 	Pdef(m.ptn).set(\dur, dur);
 	Pdef(m.ptn).set(\cutoff, co);
+	Pdef(m.ptn).set(\ts, leg);
 };
 
 //------------------------------------------------------------
