@@ -1,5 +1,7 @@
 (
 	[
+		"heatherLaugh2",
+		"heatherLaugh",
 		"wingChimes1",
 		"wingChimes2",
 

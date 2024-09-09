@@ -28,11 +28,11 @@ SynthDef(\pullstretchMono, {|out, amp = 0.8, buffer = 0, envbuf = -1, pch = 1.0,
 
 
 	sp = Splay.arFill(12,
-			{ |i| Warp1.ar(1, buffer, lfo, pch,splay, envbuf, 8, 0.1, 2)  },
+		{ |i| Warp1.ar(1, buffer, lfo, pch.lag(2),splay, envbuf, 8, 0.1, 2)  },
 			1,
 			1,
 			0
-	) * amp;
+	) * amp.lag(1);
 
 	mas = HPF.ar(sp,245);
 
@@ -40,8 +40,9 @@ SynthDef(\pullstretchMono, {|out, amp = 0.8, buffer = 0, envbuf = -1, pch = 1.0,
 }).add;
 //------------------------------------------------------------
 ~init = ~init <> {
+	var path = PathName("~/Downloads/yourDNASamples/HK laughing2-glued.wav");
 
-	var path = PathName("~/Downloads/yourDNASamples/HK lots of teddies.wav");
+	// var path = PathName("~/Downloads/yourDNASamples/HK lots of teddies.wav");
 	postf("loading sample : % \n", path.fileName);
 
 	buffer = Buffer.read(s, path.fullPath, action:{ |buf|
@@ -58,10 +59,11 @@ SynthDef(\pullstretchMono, {|out, amp = 0.8, buffer = 0, envbuf = -1, pch = 1.0,
 
 //------------------------------------------------------------
 ~next = {|d|
+	var amp = m.accelMass.linlin(0,1,0.00001,0.8);
+	var speed= m.accelMassFiltered.linlin(0,1,0.25,0.35);
+	var rate = m.accelMassFiltered.linlin(0,1,0.9,1.6);
 
-	var amp = m.accelMassFiltered.linlin(0,1,0.07,0.8);
-	var speed= m.accelMassFiltered.linlin(0,1,0.001,0.3);
-	var rate = (d.sensors.gyroEvent.y / pi).linlin(-1,1,0.7,1.3);
+	if(amp < 0.1, {amp = 0});
 
 	synth.set(\pch, rate);
 	synth.set(\speed, speed);

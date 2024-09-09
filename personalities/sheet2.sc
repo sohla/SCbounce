@@ -7,7 +7,7 @@ SynthDef(\sheet2, { |out, frq=111, gate=0, amp = 0, pchx=0|
 	var follow = Amplitude.kr(amp, 0.5, 0.5);
 	// var sig = Saw.ar(frq.lag(2),0.3 * env * amp.lag(1));
 	var trig = PinkNoise.ar(0.01) * env * follow;
-	var sig =  DynKlank.ar(`[[30,32,40,46,60].midicps + pchx.lag(5).midicps, nil, [3, 2, 1, 1]], trig);
+	var sig =  DynKlank.ar(`[[30,32,40,46,60].midicps + pchx.lag(9).midicps, nil, [3, 2, 1, 1]], trig);
 	var dly = DelayC.ar(sig,0.03,[0.02,0.027]);
 	Out.ar(out, dly);
 }).add;
@@ -28,7 +28,7 @@ SynthDef(\sheet2, { |out, frq=111, gate=0, amp = 0, pchx=0|
 	var pchs = [60,64,68,72] - 12;
 	var i = (d.sensors.gyroEvent.y.abs / pi) * (pchs.size);
 	// pchs[i.floor].postln;
-	if(a<0.02,{a=0});
+	if(a<0.03,{a=0});
 	if(a>0.9,{a=0.9});
 	synth.set(\amp, a * 0.3);
 	synth.set(\pchx,pchs[i.floor]);
