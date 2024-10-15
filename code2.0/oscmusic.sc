@@ -781,11 +781,11 @@ createWindowView = {|view|
 //------------------------------------------------------------
 //[ Built-in Microph, Built-in Output, Soundflower (2ch), Soundflower (64ch), ZoomAudioD, Zoomy, SF Record ]
 
-Server.local.options.outDevice = ServerOptions.devices[
-	ServerOptions.devices.indexOfEqual("Soundflower (2ch)")];
+// Server.local.options.outDevice = ServerOptions.devices[
+// ServerOptions.devices.indexOfEqual("Soundflower (2ch)")];
 
-//Server.local.options.outDevice = ServerOptions.devices[
-	//ServerOptions.devices.indexOfEqual("Built-in Output")];
+Server.local.options.outDevice = ServerOptions.devices[
+	ServerOptions.devices.indexOfEqual("Built-in Output")];
 
 s.waitForBoot({
 	startup.();
