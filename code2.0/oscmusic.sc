@@ -1,8 +1,8 @@
 (
 
 // Global config
-// var personalityDir = "~/Develop/SuperCollider/Projects/SCbounce/personalities/";
-var personalityDir = "~/Develop/SuperCollider/oscMusic/personalities/";
+ var personalityDir = "~/Develop/SuperCollider/Projects/SCbounce/personalities/";
+//var personalityDir = "~/Develop/SuperCollider/oscMusic/personalities/";
 var defaultPersonality = "wingChimes1";
 var defaultList = "list_yourDNA.sc";
 var oscMessageTag  = "CombinedDataPacket";
@@ -787,8 +787,8 @@ createWindowView = {|view|
 // Server.local.options.outDevice = ServerOptions.devices[
 // ServerOptions.devices.indexOfEqual("Built-in Output")];
 
-Server.local.options.outDevice = ServerOptions.devices[
-	ServerOptions.devices.indexOfEqual("SERIES 208i")];
+//Server.local.options.outDevice = ServerOptions.devices[
+//	ServerOptions.devices.indexOfEqual("SERIES 208i")];
 
 s.waitForBoot({
 	startup.();
