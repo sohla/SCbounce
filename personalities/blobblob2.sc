@@ -2,7 +2,6 @@ var m = ~model;
 var bi = 0;
 var buffers;
 
-//------------------------------------------------------------
 SynthDef(\monoSampler, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
     attack=0.01, decay=0.1, sustain=0.3, release=0.2, gate=1,cutoff=20000, rq=1|
 
@@ -16,9 +15,11 @@ SynthDef(\monoSampler, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=44
 }).add;
 
 //------------------------------------------------------------
+// intial state
+//------------------------------------------------------------
 ~init = ~init <> {
 
-	var folder  = PathName("~/Downloads/yourDNASamples/robt");
+	var folder  = PathName("~/Downloads/yourDNASamples/blobblob");
 	postf("loading samples : % \n", folder);
 
 	buffers = folder.entries.collect({ |path,i|
@@ -38,14 +39,16 @@ SynthDef(\monoSampler, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=44
 				if(bi >= (buffers.size-1),{bi=0});
 				buffers[bi];
 			},
+			\dur, 0.125,
 			\octave, Pxrand([3], inf),
-			\rate, Pseq([0,-3,-5,4,7,9,12,-12].midiratio, inf),
-			\start, 0,
+			// \rate, Pseq([0,-12,-5,-2,4,7,12].midiratio, inf),
+			\rate, Pseq([0,12,0].midiratio, inf),
+			\legato, 0.5,
+			\start, Pwhite(0, 0.1),
 			\note, Pseq([33], inf),
-			// \dur, 0.3,
-			\amp, 0.3,
+			\amp, 1,
 			\attack, 0.07,
-			\release,0.2,
+			\release,0.07,
 			\args, #[],
 		)
 	);
@@ -62,18 +65,14 @@ SynthDef(\monoSampler, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=44
 	});
 };
 
-
 //------------------------------------------------------------
 ~next = {|d|
 
-	var dur = m.accelMassFiltered.linlin(0,1,2.4,0.15);
-	var amp = m.accelMass.linlin(0,1,0,1);
+	var dur = m.accelMassFiltered.linlin(0,1,0.3,0.15);
 
-	if(amp < 0.2, {amp = 0});
-	Pdef(m.ptn).set(\amp, amp);
-	Pdef(m.ptn).set(\dur, dur);
+	// Pdef(m.ptn).set(\dur, dur);
 
-	if(m.accelMass > 0.09,{
+	if(m.accelMass > 0.13,{
 		if( Pdef(~model.ptn).isPlaying.not,{
 			Pdef(~model.ptn).resume(quant:0.25);
 		});

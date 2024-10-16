@@ -66,16 +66,7 @@ SynthDef(\warmRichSynth, {
 ~init = ~init <> {
 };
 
-~play =  {
-	// synth.set(\gate,1);
-};
-
-~stop = {
-	// synth.set(\gate,0);
-};
-
 ~deinit = ~deinit <> {
-	synth.free;
 };
 
 //------------------------------------------------------------

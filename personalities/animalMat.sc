@@ -1,13 +1,15 @@
 var m = ~model;
-m.midiChannel = 1;
+var buffer;
 
+//------------------------------------------------------------
 m.rrateMassFilteredAttack = 0.8;
 m.rrateMassFilteredDecay = 0.2;
 
+//------------------------------------------------------------
 SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=440,
-    attack=0.01, decay=0.1, sustain=0.3, release=0.2, gate=1,cutoff=20000, rq=1|
+    attack=0.01, decay=0.1, sustain=0.3, release=0.2, gate=1, ts=1, cutoff=20000, rq=0.3|
 	var lr = rate * BufRateScale.kr(bufnum) * (freq/440.0);
-    var env = EnvGen.kr(Env.adsr(attack, decay, sustain, release), gate, timeScale: 1, doneAction: 2);
+    var env = EnvGen.kr(Env.adsr(attack, decay, sustain, release), gate, timeScale: ts, doneAction: 2);
 	var sig = PlayBuf.ar(2, bufnum, rate: [lr, lr * 1.003], startPos: start * BufFrames.kr(bufnum), loop: 0);
     sig = RLPF.ar(sig, cutoff, rq);
     sig = Balance2.ar(sig[0], sig[1], pan, amp * env);
@@ -15,61 +17,55 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, fre
 }).add;
 
 //------------------------------------------------------------
-// intial state
-//------------------------------------------------------------
 ~init = ~init <> {
 
-	~sampleFolderB = PathName("/Users/soh_la/Downloads/Voice recordings Music in Motion 2July2025/converted");
-	~sampleFolderB.entries.do({ |path,i|
+	var path = PathName("~/Downloads/yourDNASamples/STE-1004.wav");
+	postf("loading sample : % \n", path.fileName);
 
-		if(path.fileName.contains("STE-1004.wav"),{
+	buffer = Buffer.read(s, path.fullPath, action:{ |buf|
+		postf("buffer alloc [%] \n", buf);
 
-			postf("loading [%]: % \n", i, path.fileName);
-
-			Buffer.read(s, path.fullPath, action:{ |buf|
-
-				Pdef(m.ptn,
-					Pbind(
-						\instrument, \stereoSampler,
-						\bufnum, buf,
-						// \octave, Pxrand([3], inf),
-						\rate, Pseq([0,12,-5,7].stutter(8).midiratio, inf),
-						\start, Pseq([0.04,0.1,0.28,0.525,0.7,0.75,0.86,0.9], inf),
-						\note, Pseq([33], inf),
-						\attack, 0.07,
-						\release,0.2,
-						\args, #[],
-					)
-				);
-
-				Pdef(m.ptn).play(quant:0.25);
-
-			});
-		});
+		Pdef(m.ptn,
+			Pbind(
+				\instrument, \stereoSampler,
+				\bufnum, buf,
+				\octave, Pxrand([3], inf),
+				\rate, Pseq([0,12,-5,7].stutter(8).midiratio, inf),
+				\start, Pseq([0.04,0.1,0.28,0.525,0.7,0.75,0.86,0.9], inf),
+				\note, Pseq([33,35,31,31].stutter(64*2), inf),
+				\attack, 0.07,
+				\release, 0.2,
+				\legato, 0.5,
+				\args, #[],
+			)
+		);
+		Pdef(m.ptn).play(quant:0.04);
 	});
 
 };
 
-//------------------------------------------------------------
-// do all the work(logic) taking data in and playing pattern/synth
-//------------------------------------------------------------
-// (0..10).lincurve(0, 10, 0, 10,-3).plot;
-
-~next = {|d|
-
-	var dur = m.accelMassFiltered.linlin(0,1,1.2,0.04).lag(5);
-	var start = m.accelMass.linlin(0,0.5,0.5,0.8);
-	var amp = m.accelMass.linlin(0,1,0,3).lag(6);
-	var oct = (d.sensors.gyroEvent.y / pi).linlin(-1,1,2,6).floor;
-	if(amp < 0.07, {amp = 0});
-	Pdef(m.ptn).set(\amp, amp);
-	Pdef(m.ptn).set(\dur, dur);
-	Pdef(m.ptn).set(\octave, oct);
+~deinit = ~deinit <> {
+	Pdef(m.ptn).stop;
+	Pdef(m.ptn).remove;
+	postf("buffer dealloc [%] \n", buffer);
+	buffer.free;
 };
 
-
 //------------------------------------------------------------
-// plot with min and max
+~next = {|d|
+
+	var dur = m.accelMassFiltered.linlin(0,1,0.12,0.04).lag(2);
+	var leg= m.accelMassFiltered.linlin(0,1,0.5,1);
+	var start = m.accelMass.linlin(0,0.5,0.5,0.8);
+	var amp = m.accelMass.linlin(0,1,0,3);
+	var co = (d.sensors.gyroEvent.y / pi).linexp(-1,1,140,14000);
+	if(amp < 0.06, {amp = 0}, { amp = 3 });
+	Pdef(m.ptn).set(\amp, amp);
+	Pdef(m.ptn).set(\dur, dur);
+	Pdef(m.ptn).set(\cutoff, co);
+	Pdef(m.ptn).set(\ts, leg);
+};
+
 //------------------------------------------------------------
 ~plotMin = -1;
 ~plotMax = 1;
@@ -82,5 +78,4 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, fre
 	[d.sensors.gyroEvent.x / pi, d.sensors.gyroEvent.y / pi, d.sensors.gyroEvent.z / pi];
 	// [d.sensors.rrateEvent.x, d.sensors.rrateEvent.y, d.sensors.rrateEvent.z];
 	// [d.sensors.accelEvent.x, d.sensors.accelEvent.y, d.sensors.accelEvent.z];
-
 };

@@ -1,14 +1,11 @@
 var m = ~model;
 var isPlaying = false;
 var synth;
-var notes = 60 + [9,11,2,9,6,11,9,2,11,13] - 24;
+var notes = 24 + [9,11,2,9,6,11,9,2,11,13];
 m.accelMassFilteredAttack = 0.5;
 m.accelMassFilteredDecay = 0.9;
 
 //------------------------------------------------------------
-// intial state
-//------------------------------------------------------------
-
 SynthDef("woiworung2", {|out,freq = 1000, amp = 0.5, att = 2.02, dec = 0.3, sus = 1, rel = 1, gate = 1, fb = 1.2, ch=10|
 	var snd, env;
 	env = EnvGen.kr(Env.adsr(att, dec, sus, rel), gate: gate, doneAction: 2);
@@ -25,28 +22,14 @@ SynthDef("woiworung2", {|out,freq = 1000, amp = 0.5, att = 2.02, dec = 0.3, sus 
 }).add;
 
 ~init = ~init <> {
-	synth = Synth(\woiworung2, [\freq, (60+4).midicps, \gate, 1, \amp, 0]);
+	synth = Synth(\woiworung2, [\freq, notes[0].midicps, \gate, 1, \amp, 0]);
 };
-~stop = ~stop <> {
+
+~deinit = ~deinit <> {
 	synth.set(\gate,0);
-};
-//------------------------------------------------------------
-// triggers
-//------------------------------------------------------------
-
-// example feeding the community
-~onEvent = {|e|
-	m.com.root = e.root;
-	m.com.dur = e.dur;
-
+	synth.free; // for now
 };
 
-~onHit = {|state|
-};
-
-
-//------------------------------------------------------------
-// do all the work(logic) taking data in and playing pattern/synth
 //------------------------------------------------------------
 ~next = {|d|
 
@@ -56,11 +39,11 @@ SynthDef("woiworung2", {|out,freq = 1000, amp = 0.5, att = 2.02, dec = 0.3, sus 
 	// var i = (d.sensors.gyroEvent.y.abs / pi) * (pchs.size);
 	if(a<0.01,{a=0});
 	if(a>0.9,{a=1.0});
-	synth.set(\amp, a * 0.6);
+	synth.set(\amp, a * 0.85);
 	synth.set(\ch, ch);
 
 	a = m.accelMassFiltered * 0.1;
-	if(a < 0.001, {
+	if(a < 0.004, {
 		if(isPlaying.not,{
 			isPlaying = true;
 			notes = notes.rotate(-1);
@@ -75,16 +58,9 @@ SynthDef("woiworung2", {|out,freq = 1000, amp = 0.5, att = 2.02, dec = 0.3, sus 
 
 };
 
-~nextMidiOut = {|d|
-	// m.midiOut.control(m.midiChannel, 0, m.accelMassFiltered * 64 );
-};
-
-//------------------------------------------------------------
-// plot with min and max
 //------------------------------------------------------------
 ~plotMin = -1;
 ~plotMax = 1;
-
 ~plot = { |d,p|
 	// [d.sensors.quatEvent.x, d.sensors.quatEvent.y, d.sensors.quatEvent.z];
 	// [m.accelMassFiltered * 0.1, d.sensors.gyroEvent.x * 0.1];
@@ -96,22 +72,3 @@ SynthDef("woiworung2", {|out,freq = 1000, amp = 0.5, att = 2.02, dec = 0.3, sus 
 
 
 };
-// { Klank.ar(`[[300,600,900,1200], nil, [1, 1, 1, 1]], Impulse.ar(MouseX.kr(3,300), 0, 0.01)) }.play;
-
-// (
-// {
-// 	var my = MouseY.kr(0.1, 20, 1);
-// 	var mx = MouseX.kr(0.00001, 0.1, 1);
-// 	var tempo = 8;
-// 	var seq = Dseq([30,42,37].stutter(4), inf);
-// 	var trig = Impulse.ar(tempo);
-// 	var inforce = Trig.ar(trig, tempo.reciprocal);
-// 	var outforce = Spring.ar(inforce, my, mx);
-// 	var root = Demand.ar(trig, 0, seq);
-// 	var freq = (outforce * 54.midicps) + root.midicps;
-// 	var env = EnvGen.ar(Env.adsr(0.01,0.3,0.8,1.0),inforce);
-// 	SinOsc.ar([freq, freq + (freq*0.03)], 0, 0.5 * env)
-// }.play;
-// )
-
-

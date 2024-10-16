@@ -1,9 +1,16 @@
 (
 
 // Global config
+<<<<<<< HEAD
  var personalityDir = "~/Develop/SuperCollider/Projects/SCbounce/personalities/";
 //var personalityDir = "~/Develop/SuperCollider/oscMusic/personalities/";
 var defaultPersonality = "wingChimes1";
+=======
+var personalityDir = "~/Develop/SuperCollider/Projects/scbounce/personalities/";
+// var personalityDir = "~/Develop/SuperCollider/oscMusic/personalities/";
+var defaultPersonality = "heatherLaugh2";
+var defaultList = "list_yourDNA.sc";
+>>>>>>> 46c6497b5fe890d75448e35012438846dbf80880
 var oscMessageTag  = "CombinedDataPacket";
 // var oscMessageTag  = "IMUFusedData";
 var renderRate = 30;
@@ -84,7 +91,7 @@ var deviceProto = (
 
 loadPersonalityList = {
 
-	var path = PathName.new(personalityDir++"list.sc");
+	var path = PathName.new(personalityDir++defaultList);
 	var file = File.new(path.asAbsolutePath,"r");
 	var str = file.readAllString;
 
@@ -168,8 +175,6 @@ interpretPersonality = {|d|
 		//------------------------------------------------------------
 		~deinit = {
 			postf("deinit : % [%] \n",~model.name, ~model.ptn);
-			Pdef(~model.ptn).remove;
-
 		};
 
 		//------------------------------------------------------------
@@ -253,17 +258,22 @@ startup = {
 shutdown = {
 
 	stopOSCListening.();
+	Routine{
+		// everything called in the correct order but leaves synths hanging!?!
+		s.sync;
+		devices.keysValuesDo({|k,d|
+			removeDevice.(d);
+		});
+		s.sync;
+		Pdef.clear;
+		s.sync;
+		Server.freeAll;
+		s.sync;
+		s.queryAllNodes;
+		s.sync;
+		s.quit;
+	}.play;
 
-	devices.keysValuesDo({|k,d|
-		removeDevice.(d);
-	});
-
-	Pdef.clear;
-	Server.freeAll;
-
-	s.queryAllNodes;
-
-	s.quit;
 
 };
 //------------------------------------------------------------
@@ -276,9 +286,11 @@ removeDevice = {|d|
 
 	d.procRout.free;
 
-	d.env.use{ ~deinit.() };
+	d.env.use{
+		~deinit.();
+	};
 
-		d.listeners.airware.free;
+	d.listeners.airware.free;
 };
 
 addDevice = { |ip,port, id|
@@ -305,7 +317,13 @@ reloadPersonality = { |d|
 	d.procRout.stop;
 	d.procRout.free;
 
-	if(d.env != nil,{ d.env.use{ ~deinit.() }});
+	if(d.env != nil,{ d.env.use{
+		Routine{
+			s.sync;
+			~deinit.();
+			s.sync;
+		}.play;
+	}});
 
 	d.env = interpretPersonality.(d);
 	d.env.use{
@@ -372,74 +390,74 @@ addDeviceView = { |view, d|
 
 	var removeDeviceButton = {|view|
 		Button(view)
-			.minWidth_(80)
-			.states_([
-				["x",Color.red(0.5)],
-			])
-			.action_({|b|
-				header.remove();
-				stackView.remove();
-				removeDevice.(d);
-				devices.removeAt(d.port);
-			})
+		.minWidth_(80)
+		.states_([
+			["x",Color.red(0.5)],
+		])
+		.action_({|b|
+			header.remove();
+			stackView.remove();
+			removeDevice.(d);
+			devices.removeAt(d.port);
+		})
 	};
 
 	var infoView = {|view|
 		StaticText(view)
-			.stringColor_(Color.white)
-			.font_(Font(size:12))
-			.minWidth_(100)
+		.stringColor_(Color.white)
+		.font_(Font(size:12))
+		.minWidth_(100)
 		.string_("ID: "+d.did+" OSC: ["++d.ip+", "+d.port++"]")
 	};
 	var muteButtonLocal;
 	var muteButton = {|view|
 		muteButtonLocal = Button()
-			.enabled_(false) //broken
-			.maxWidth_(80)
-			.states_([["mute"],["mute",Color.red(0.5)]])
-			.action_({|b|
-				d.enabled = b.value.asBoolean;
+		.enabled_(false) //broken
+		.maxWidth_(80)
+		.states_([["mute"],["mute",Color.red(0.5)]])
+		.action_({|b|
+			d.enabled = b.value.asBoolean;
 
-				if(d.enabled == true,{
-					d.env.use{~stop.()};
-				},{
-					d.env.use{~play.()};
-				});
-			})
+			if(d.enabled == true,{
+				d.env.use{~stop.()};
+			},{
+				d.env.use{~play.()};
+			});
+		})
 	};
 
 	var reloadButton = {|view|
 		Button(view)
-			.minWidth_(80)
-			.states_([
-				["reload"],
-			])
-			.action_({|b|
-				{
-					reloadPersonality.(d);
-				}.defer(0.1);
-			})
+		.minWidth_(80)
+		.states_([
+			["reload"],
+		])
+		.action_({|b|
+			{
+				reloadPersonality.(d);
+			}.defer(0.1);
+		})
 	};
 
 	var personalityMenu = {|view|
 		PopUpMenu(view)
-			.minWidth_(220)
-			.items_(names)
-			.valueAction_(names.find([d.name]))
-			.action_({|b|
-				d.name = names.at(b.value);
-				reloadPersonality.(d);
-			})
+		.minWidth_(220)
+		.items_(names)
+		.valueAction_(names.find([d.name]))
+		.action_({|b|
+			d.name = names.at(b.value);
+			{reloadPersonality.(d)}.defer(0.1);
+		})
 	};
 
 	var dataSizeMenu = {|view|
 		PopUpMenu(view)
-			.maxWidth_(80)
-			.items_(dataSizeOptions.collect{|v| v+"pnts"})
-			.action_({|b|
-				d.dataSize = dataSizeOptions.at(b.value);
-			})
-			.valueAction_(1)
+		.maxWidth_(80)
+		.items_(dataSizeOptions.collect{|v| v+"pnts"})
+		.action_({|b|
+			d.dataSize = dataSizeOptions.at(b.value);
+		})
+		.valueAction_(1)
 	};
 
 
@@ -556,9 +574,9 @@ createThreeDeeCanvas = { |view, data|
 	.distance_(3.5);
 
 	graph1.add(cube = Canvas3DItem.cube()
-			.color_(Color.white.alpha_(0.4))
-			.width_(2)
-			.transform(Canvas3D.mScale(0.4,0.5,1))
+		.color_(Color.white.alpha_(0.4))
+		.width_(2)
+		.transform(Canvas3D.mScale(0.4,0.5,1))
 	);
 
 	graph1.add(accelX = Canvas3DItem.regPrism()
@@ -744,19 +762,27 @@ createWindowView = {|view|
 	wifiAddress = wifiAddress[0..wifiAddress.size-2];
 
 	wifiInfoView = StaticText(view)
-		.stringColor_(Color.gray(0.5))
-		.align_(\right)
-		.font_(Font(size:12))
-		.minHeight_(30)
-		.minWidth_(windowWidth)
-		.string_("OSC: ["++wifiAddress++", "+NetAddr.localAddr.port++"] ");
+	.stringColor_(Color.gray(0.5))
+	.align_(\right)
+	.font_(Font(size:12))
+	.minHeight_(30)
+	.minWidth_(windowWidth)
+	.string_("OSC: ["++wifiAddress++", "+NetAddr.localAddr.port++"] ");
 
 	cpuInfo = UserView(view)
+<<<<<<< HEAD
 		.maxWidth_(80)
 		.maxHeight_(30)
 		.animate_(true)
 		.drawFunc_({|uv|
 		(s.peakCPU.asStringPrec(2)++"%").drawAtPoint(8@8, Font.default, Color.yellow;
+=======
+	.maxWidth_(80)
+	.maxHeight_(30)
+	.animate_(true)
+	.drawFunc_({|uv|
+		(s.peakCPU.asStringPrec(2)++"%").drawAtPoint(8@8, Font.default, Color.yellow);
+>>>>>>> 46c6497b5fe890d75448e35012438846dbf80880
 	});
 	// view.layout_( HLayout(cpuInfo,wifiInfoView));
 	contentView.layout_(VLayout());
@@ -767,11 +793,19 @@ createWindowView = {|view|
 //------------------------------------------------------------
 //
 //------------------------------------------------------------
+//[ Built-in Microph, Built-in Output, Soundflower (2ch), Soundflower (64ch), ZoomAudioD, Zoomy, SF Record ]
+
+// Server.local.options.outDevice = ServerOptions.devices[
+// ServerOptions.devices.indexOfEqual("Soundflower (2ch)")];
+
+Server.local.options.outDevice = ServerOptions.devices[
+	ServerOptions.devices.indexOfEqual("Built-in Output")];
 
 s.waitForBoot({
 	startup.();
 	buildUI.();
 	startOSCListening.();
 });
+// s.plotTree;
 
 )

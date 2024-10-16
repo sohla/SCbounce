@@ -1,7 +1,7 @@
 var m = ~model;
 
 	SynthDef(\wingChimes1, {
-		|freq = 1000, pulseFreq = 10, amp = 0.1, rq = 0.001, att = 0.03, dec = 1.3, sus = 0, rel = 2, gate = 1, numHarms = 200|
+		|freq = 1000, pulseFreq = 10, amp = 0, rq = 0.001, att = 0.03, dec = 1.3, sus = 0, rel = 2, gate = 1, numHarms = 200|
 		var snd, env;
 		env = EnvGen.kr(Env.adsr(att, dec, sus, rel), gate: gate, doneAction: 2);
 		snd = BPF.ar(
@@ -19,40 +19,33 @@ var m = ~model;
 	}).add;
 
 //------------------------------------------------------------
-// intial state
-//------------------------------------------------------------
 
 ~init = ~init <> {
-	var pat1 = Pbind(
-		\instrument, \wingChimes1,
-		\note, Prand([0,4,7,11], inf),
-		\octave, Pwhite(3,6),
-		\root, Pseq([0,7,3,0,7,4].stutter(48* 2),inf),
-		\pulseFreq, Pwhite(3, 7),
-		\numHarms, 30,
-		\func, Pfunc({|e| ~onEvent.(e)}),
-		\args, #[],
-	);
 
-	Pdef(m.ptn,pat1);
+	Pdef(m.ptn,
+		Pbind(
+			\instrument, \wingChimes1,
+			\note, Prand([0,4,7,11], inf),
+			\octave, Pwhite(3,6),
+			\root, Pseq([0,7,3,0,7,4].stutter(48* 2),inf),
+			\pulseFreq, Pwhite(3, 7),
+			\numHarms, 30,
+			\func, Pfunc({|e| ~onEvent.(e)}),
+			\args, #[],
+		);
+	);
 	Pdef(m.ptn).play(quant:[0.1]);
 };
 
-//------------------------------------------------------------
-// triggers
-//------------------------------------------------------------
+~deinit = ~deinit <> {
+	Pdef(m.ptn).remove;
+};
 
-// example feeding the community
+//------------------------------------------------------------
 ~onEvent = {|e|
 	m.com.root = e.root;
 	m.com.dur = e.dur;
 };
-
-~onHit = {|state|
-};
-
-//------------------------------------------------------------
-// do all the work(logic) taking data in and playing pattern/synth
 //------------------------------------------------------------
 ~next = {|d|
 
@@ -65,12 +58,12 @@ var m = ~model;
 	Pdef(m.ptn).set(\amp, amp);
 
 	if(m.accelMass > 0.15,{
-		if( Pdef(~model.ptn).isPlaying.not,{
-			Pdef(~model.ptn).resume(quant:[0.1,0,0,0]);
+		if( Pdef(m.ptn).isPlaying.not,{
+			Pdef(m.ptn).resume(quant:[0.1,0,0,0]);
 		});
 	},{
-		if( Pdef(~model.ptn).isPlaying,{
-			Pdef(~model.ptn).pause();
+		if( Pdef(m.ptn).isPlaying,{
+			Pdef(m.ptn).pause();
 		});
 	});
 };
@@ -87,10 +80,10 @@ var m = ~model;
 ~plot = { |d,p|
 	// [d.sensors.rrateEvent.x, m.rrateMass * 0.1, m.accelMassFiltered * 0.5];
 	// [m.accelMass * 0.1, m.accelMassFiltered * 0.1];
-	// [m.rrateMass * 0.1, m.rrateMassThreshold];
+	[m.rrateMass * 0.1, m.rrateMassThreshold];
 	// [m.rrateMassFiltered, m.rrateMassThreshold, m.accelMassAmp];
 	// [d.sensors.gyroEvent.x, d.sensors.gyroEvent.y, d.sensors.gyroEvent.z];
-	[d.sensors.rrateEvent.x, d.sensors.rrateEvent.y, d.sensors.rrateEvent.z];
+	// [d.sensors.rrateEvent.x, d.sensors.rrateEvent.y, d.sensors.rrateEvent.z];
 	// [d.sensors.accelEvent.x, d.sensors.accelEvent.y, d.sensors.accelEvent.z];
 };
 

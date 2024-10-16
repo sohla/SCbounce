@@ -1,7 +1,10 @@
 var m = ~model;
+var buffer;
+
 m.accelMassFilteredAttack = 0.7;
 m.accelMassFilteredDecay = 0.9;
 
+//------------------------------------------------------------
 SynthDef(\monoSampler, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=440,
     attack=0.01, decay=0.1, sustain=0.3, release=0.2, gate=1,cutoff=20000, rq=1|
 
@@ -14,64 +17,43 @@ SynthDef(\monoSampler, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=
 }).add;
 
 //------------------------------------------------------------
-// intial state
-//------------------------------------------------------------
 ~init = ~init <> {
+	var path = PathName("~/Downloads/yourDNASamples/HK laughing2-glued.wav");
+	postf("loading sample : % \n", path.fileName);
 
-	~sampleFolderB = PathName("/Users/soh_la/Downloads/VoiceEdits");
-	~sampleFolderB.entries.do({ |path,i|
+	buffer = Buffer.read(s, path.fullPath, action:{ |buf|
+		postf("buffer alloc [%] \n", buf);
 
-		if(path.fileName.contains("HK laughing2-glued.wav"),{
+		Pdef(m.ptn,
+			Pbind(
+				\instrument, \monoSampler,
+				\bufnum, buf,
+				\octave, Pxrand([3,3,3,3,3,3,3,3], inf),
+				\rate, 1,
+				\legato, 1,
+				\note, Pseq([33], inf),
+				\attack, 0.07,
+				\sustain,0.4,
+				\decay, 0.01,
+				\release,0.0,
+				\dur, Pseq([0.6] , inf),
+				\amp,4,
+				\args, #[],
+			)
+		);
+		Pdef(m.ptn).play(quant:0.25);
 
-			postf("loading [%]: % \n", i, path.fileName);
-
-			Buffer.read(s, path.fullPath, action:{ |buf|
-
-				Pdef(m.ptn,
-					Pbind(
-						\instrument, \monoSampler,
-						\bufnum, buf,
-						\octave, Pxrand([3,4,3,3,3,4,3,3], inf),
-						\rate, 1,
-						\legato, 0.1,
-						\note, Pseq([33], inf),
-						\attack, 0.07,
-						\sustain,0.4,
-						\decay, 0.01,
-						\release,0.0,
-						\dur, Pseq([0.3] , inf),
-						\args, #[],
-					)
-				);
-
-				Pdef(m.ptn).play(quant:0.25);
-
-			});
-		});
 	});
-	Pdef(m.ptn).play(quant:0.125);
 };
 
 
-
-//------------------------------------------------------------
-// triggers
-//------------------------------------------------------------
-
-// example feeding the community
-~onEvent = {|e|
-	// m.com.root = e.root;
-	// m.com.dur = e.dur;
-
-	// m.com.root.postln;
-	// Pdef(m.ptn).set(\root, m.com.root);
+~deinit = ~deinit <> {
+	Pdef(m.ptn).remove;
+	postf("buffer dealloc [%] \n", buffer);
+	buffer.free;
 };
 
-~onHit = {|state|
-};
 
-//------------------------------------------------------------
-// do all the work(logic) taking data in and playing pattern/synth
 //------------------------------------------------------------
 ~next = {|d|
 
@@ -79,23 +61,23 @@ SynthDef(\monoSampler, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=
 	var start = (d.sensors.gyroEvent.y / 2pi) + 0.5;
 	var amp = m.accelMass.linlin(0,1,0,6);
 
-	if(amp < 0.15, {amp = 0});
-
-
-	Pdef(m.ptn).set(\amp, amp);
-	Pdef(m.ptn).set(\start, start.linlin(0,1,0,0.9));
-
+	// if(amp < 0.15, {amp = 0});
+	// Pdef(m.ptn).set(\amp, amp * 0.3);
+	if(m.accelMassFiltered > 0.15,{
+		if( Pdef(m.ptn).isPlaying.not,{
+			Pdef(m.ptn).resume(quant:0.5/3);
+			Pdef(m.ptn).set(\start, start.linlin(0,1,0,0.9));
+		});
+	},{
+		if( Pdef(m.ptn).isPlaying,{
+			Pdef(m.ptn).pause();
+		});
+	});
 };
 
-~nextMidiOut = {|d|
-};
-
-//------------------------------------------------------------
-// plot with min and max
 //------------------------------------------------------------
 ~plotMin = -1;
 ~plotMax = 1;
-
 ~plot = { |d,p|
 	[m.rrateMass * 0.1, m.rrateMassFiltered * 0.1];
 	// [m.accelMass * 0.3, m.accelMassFiltered * 0.5];

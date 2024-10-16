@@ -1,5 +1,12 @@
 (
 o = OSCFunc({ |msg, time, addr, recvPort|
+	msg.postln;
+},'/60:01:E2:E2:27:48/Battery');
+)
+o.free;
+
+(
+o = OSCFunc({ |msg, time, addr, recvPort|
 	// [msg, time, addr, recvPort].postln;
 	msg[8].postln;
 },'/60:01:E2:E2:27:48/I2C');
