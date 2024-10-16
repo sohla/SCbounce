@@ -1,16 +1,10 @@
 (
 
 // Global config
-<<<<<<< HEAD
- var personalityDir = "~/Develop/SuperCollider/Projects/SCbounce/personalities/";
-//var personalityDir = "~/Develop/SuperCollider/oscMusic/personalities/";
+// var personalityDir = "~/Develop/SuperCollider/Projects/SCbounce/personalities/";
+var personalityDir = "~/Develop/SuperCollider/oscMusic/personalities/";
 var defaultPersonality = "wingChimes1";
-=======
-var personalityDir = "~/Develop/SuperCollider/Projects/scbounce/personalities/";
-// var personalityDir = "~/Develop/SuperCollider/oscMusic/personalities/";
-var defaultPersonality = "heatherLaugh2";
 var defaultList = "list_yourDNA.sc";
->>>>>>> 46c6497b5fe890d75448e35012438846dbf80880
 var oscMessageTag  = "CombinedDataPacket";
 // var oscMessageTag  = "IMUFusedData";
 var renderRate = 30;
@@ -770,19 +764,11 @@ createWindowView = {|view|
 	.string_("OSC: ["++wifiAddress++", "+NetAddr.localAddr.port++"] ");
 
 	cpuInfo = UserView(view)
-<<<<<<< HEAD
 		.maxWidth_(80)
 		.maxHeight_(30)
 		.animate_(true)
 		.drawFunc_({|uv|
-		(s.peakCPU.asStringPrec(2)++"%").drawAtPoint(8@8, Font.default, Color.yellow;
-=======
-	.maxWidth_(80)
-	.maxHeight_(30)
-	.animate_(true)
-	.drawFunc_({|uv|
 		(s.peakCPU.asStringPrec(2)++"%").drawAtPoint(8@8, Font.default, Color.yellow);
->>>>>>> 46c6497b5fe890d75448e35012438846dbf80880
 	});
 	// view.layout_( HLayout(cpuInfo,wifiInfoView));
 	contentView.layout_(VLayout());
@@ -798,8 +784,11 @@ createWindowView = {|view|
 // Server.local.options.outDevice = ServerOptions.devices[
 // ServerOptions.devices.indexOfEqual("Soundflower (2ch)")];
 
+// Server.local.options.outDevice = ServerOptions.devices[
+// ServerOptions.devices.indexOfEqual("Built-in Output")];
+
 Server.local.options.outDevice = ServerOptions.devices[
-	ServerOptions.devices.indexOfEqual("Built-in Output")];
+	ServerOptions.devices.indexOfEqual("SERIES 208i")];
 
 s.waitForBoot({
 	startup.();
