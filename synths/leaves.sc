@@ -1,4 +1,4 @@
-(// Synthetic Multi-Channel Granular Leaf Synth
+(
 SynthDef(\syntheticLeaf, {
     |out=0, pan=0, amp=0.1, grainDur=0.05, grainRate=20,
      filterFreq=9000, filterRQ=1, dustiness=0.2, leafType=0, gate=1|
@@ -22,29 +22,30 @@ SynthDef(\syntheticLeaf, {
     );
 
     // Add some dust for additional texture
-    dust = Dust.ar(100 * dustiness) * 0.1;
+    dust = Dust.ar(200 * dustiness) * 0.5;
     sig = sig + dust;
 
     // Moving filter
-    filterEnv = SinOsc.kr(0.1).range(7000, 11000);
+    filterEnv = SinOsc.kr(1,pi).range(7000, 11000);
     sig = BPF.ar(sig, filterEnv, filterRQ);
 
     // Envelope
-    env = EnvGen.kr(Env.asr(0.1, 1, 0.1), gate, doneAction: 2);
+    env = EnvGen.kr(Env.asr(1.9, 1, 2.3), gate, doneAction: 2);
 
     // Output
     Out.ar(out, Pan2.ar(sig * env * amp, pan));
 }).add;
 )
-// Pbindef for leaf rustling
-(Pbindef(\leafPattern,
+
+(
+Pbindef(\leafPattern,
     \instrument, \syntheticLeaf,
-    \dur, 0.1,  // Control rate
+    \dur, Pexprand(0.2, 2, inf),
     \amp, Pgauss(0.1, 0.02, inf).clip(0.05, 0.2),
-    \grainDur, Pwhite(0.03, 0.07, inf),
-    \grainRate, Pwhite(15, 25, inf),
+    \grainDur, Pwhite(0.04, 0.07, inf),
+    \grainRate, Pwhite(40, 65, inf),
     \filterRQ, Pwhite(0.8, 1.2, inf),
     \dustiness, Pwhite(0.1, 0.3, inf),
-    \leafType, Pwhite(0, 2, inf)  // Randomly select leaf type
+    \leafType, 0//Pwhite(0, 2, inf)  // Randomly select leaf type
 ).play;
 )

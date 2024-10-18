@@ -1,4 +1,4 @@
-(// Improved Frog Synth Definition
+(
 SynthDef(\improvedFrog, {
     |out=0, freq=100, filterStartFreq=1000, filterEndFreq=200, filterDur=0.1,
      distance=1, pan=0, amp=0.3, roomSize=0.8, revAmount=0.5, gate=1, atk=0.02, dcy=02|
@@ -7,7 +7,7 @@ SynthDef(\improvedFrog, {
 
     // Basic frog sound
     env = EnvGen.kr(Env.perc(atk, dcy, curve: -4));
-    sig = LPF.ar(WhiteNoise.ar(0.1) + SinOsc.ar(freq, 0, 0.5), 2000);
+    sig = LPF.ar(WhiteNoise.ar(0.2) + SinOsc.ar(freq, 0, 1), 2000);
     sig = sig * env;
 
     // Envelope filter for timbre shaping
@@ -38,38 +38,24 @@ SynthDef(\improvedFrog, {
     DetectSilence.ar(sig, amp: 0.0001, time: 0.5, doneAction: 2);
 }).add;
 )
-// Pattern to play the frog sound occasionally
+
 (
-Pdef(\frogPattern,
-    Pbind(
+Pbindef(\frogPattern,
         \instrument, \improvedFrog,
-        \dur, Pexprand(0.3, 3, inf),  // Long pauses between calls
-        \freq, Pwhite(200, 230, inf),  // Random base frequency
+        \dur, 0.1 * 1,//Pexprand(0.1, 0.2, inf),  // Long pauses between calls
+        \freq, Pwhite(50, 230, inf),  // Random base frequency
         \filterStartFreq, Pexprand(1000, 2000, inf),  // Start frequency of envelope filter
         \filterEndFreq, Pexprand(200, 400, inf),  // End frequency of envelope filter
         \filterDur, Pwhite(0.005, 0.015, inf),  // Duration of filter envelope
-        \distance, Pwhite(0.1, 1.0, inf),  // Random distance (0.1 = close, 1.0 = far)
-        \pan, Pwhite(-0.7, 0.7, inf),  // Random panning
-        \amp, Pexprand(0.6, 0.8, inf),  // Random amplitude
+        \distance, Pwhite(0.1, 0.99, inf),  // Random distance (0.1 = close, 1.0 = far)
+        \pan, Pwhite(-0.5, 0.5, inf),  // Random panning
+        \amp, Pexprand(0.8, 1, inf),  // Random amplitude
         \roomSize, Pwhite(0.3, 0.5, inf),  // Random room size for reverb
         \revAmount, Pwhite(0.2, 0.4, inf),  // Random reverb amount
-        \gate, 1,
 		\atk, Pwhite(0.005,0.01, inf),
 		\dcy, Pwhite(0.06,0.23, inf),
 
-    )
 ).play;
 )
-// Function to start the frog sound
-~startFrog = {
-    ~frogPattern.play;
-};
 
-// Function to stop the frog sound
-~stopFrog = {
-    ~frogPattern.stop;
-};
 
-// Example usage:
-// ~startFrog.();  // Start the occasional frog calls
-// ~stopFrog.();   // Stop the frog calls
