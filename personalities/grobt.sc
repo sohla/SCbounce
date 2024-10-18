@@ -28,7 +28,6 @@ SynthDef(\monoSampler, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=44
 				"samples loaded".postln;
 			});
 		});
-		// s.sync;
 	});
 
 	Pdef(m.ptn,
