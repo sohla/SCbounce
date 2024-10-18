@@ -38,6 +38,7 @@ SynthDef(\pullstretchMono, {|out, amp = 0.8, buffer = 0, envbuf = -1, pch = 1.0,
 ~deinit = ~deinit <> {
 	sa.free;
 	sb.free;
+	postf("buffer dealloc [%] \n", buffer);
 	buffer.free;
 
 };
