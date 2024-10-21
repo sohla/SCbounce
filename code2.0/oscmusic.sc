@@ -362,7 +362,7 @@ buildUI = {
 
 addDeviceView = { |view, d|
 
-	var header;
+	var header, dataView;
 	var va,vb,vc;
 	var stackView, stackLayout;
 	var popup;
@@ -383,6 +383,19 @@ addDeviceView = { |view, d|
 		va.children[2].remove;
 	};
 
+	var makeDataView = {|view|
+		UserView(view)
+		.background_(col)
+		.minHeight_(20)
+		.minWidth_(200)
+		.drawFunc_({
+			d.sensors.accelEvent.asString.drawAtPoint(10@0, Font(size:7));
+			d.sensors.gyroEvent.asString.drawAtPoint(10@10, Font(size:7));
+		})
+		.animate_(true)
+
+	};
+
 	var removeDeviceButton = {|view|
 		Button(view)
 		.minWidth_(80)
@@ -390,6 +403,7 @@ addDeviceView = { |view, d|
 			["x",Color.red(0.5)],
 		])
 		.action_({|b|
+			dataView.remove();
 			header.remove();
 			stackView.remove();
 			removeDevice.(d);
@@ -455,7 +469,6 @@ addDeviceView = { |view, d|
 		.valueAction_(1)
 	};
 
-
 	// build layout
 	header = View(view).background_(col).maxHeight_(100).layout_( GridLayout.rows( [
 		removeDeviceButton.(view),
@@ -466,17 +479,17 @@ addDeviceView = { |view, d|
 		personalityMenu.(view),
 		dataSizeMenu.(view)
 	]));
-
-	view.layout.add(stackView = View()
-		.background_(col)
-		.layout_(
-			stackLayout = HLayout(
-				vc = View().background_(col),
-				vb = View().background_(col),
-		)).minHeight_(250)
-	);
-	createPlotterGroup.(vb,d);
-	createThreeDeeCanvas.(vc,d);
+	dataView = makeDataView.(view);
+	// view.layout.add(stackView = View()
+	// 	.background_(col)
+	// 	.layout_(
+	// 		stackLayout = HLayout(
+	// 			vc = UserView().background_(col),
+	// 			vb = UserView().background_(col),
+	// 	)).minHeight_(250)
+	// );
+	// createPlotterGroup.(vb,d);
+	// createThreeDeeCanvas.(vc,d);
 
 	contentView.layout.add(nil);
 };

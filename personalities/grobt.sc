@@ -1,6 +1,6 @@
 var m = ~model;
 var bi = 0;
-var buffers;
+~buffers;
 
 //------------------------------------------------------------
 SynthDef(\monoSampler, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
@@ -21,7 +21,7 @@ SynthDef(\monoSampler, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=44
 	var folder  = PathName("~/Downloads/yourDNASamples/robt");
 	postf("loading samples : % \n", folder);
 
-	buffers = folder.entries.collect({ |path,i|
+	~buffers = folder.entries.collect({ |path,i|
 		Buffer.read(s, path.fullPath, action:{|buf|
 			postf("buffer alloc [%] \n", buf);
 			if(folder.entries.size - 1 == i,{
@@ -35,8 +35,8 @@ SynthDef(\monoSampler, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=44
 			\instrument, \monoSampler,
 			\bufnum, Pfunc{
 				bi = bi + 1;
-				if(bi >= (buffers.size-1),{bi=0});
-				buffers[bi];
+				if(bi >= (~buffers.size-1),{bi=0});
+				~buffers[bi];
 			},
 			\octave, Pxrand([3], inf),
 			\rate, Pseq([0,-3,-5,4,7,9,12,-12].midiratio, inf),
@@ -56,8 +56,9 @@ SynthDef(\monoSampler, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=44
 ~deinit = ~deinit <> {
 	Pdef(m.ptn).remove;
 
-	buffers.do({|buf|
+	~buffers.do({|buf|
 		buf.free;
+		s.sync;
 		postf("buffer dealloc [%] \n", buf);
 	});
 };
@@ -98,3 +99,4 @@ SynthDef(\monoSampler, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=44
 
 
 };
+Buffer.cachedBuffersDo(s, {|b|b.postln})

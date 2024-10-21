@@ -1,7 +1,5 @@
 (
 	[
-		"heatherLaugh2",
-		"heatherLaugh",
 		"wingChimes1",
 		"wingChimes2",
 
@@ -29,6 +27,8 @@
 		"pluck1",
 		"pluck2",
 
+		"heatherLaugh2",
+		"heatherLaugh",
 
 		"percTexture1",
 		"percTexture2",
