@@ -2,7 +2,7 @@
 {
 	var strike, env, noise, pitch, delayTime, detune, sig;
 	strike = Impulse.ar(0.01);
-	pitch = (36 + 54.rand);
+	pitch = (36 + 24.rand);
 	env = Decay2.ar(strike, 0.001, 0.02, BrownNoise.ar(3).tanh);
 
 
@@ -19,10 +19,10 @@
 					delayTime,			// actual delay time
 					2,
 				1,
-				SinOsc.ar(pitch.midicps*0.25,0, Decay2.ar(strike,0.03,pitch.linlin(36,100,1,0.1)));
+				SinOsc.ar(pitch.midicps*0.5,0, Decay2.ar(strike,0.03,pitch.linlin(36,100,1,0.1)));
 			) 				// decay time of string
 			})),
-			(pitch - 36)/27 - 1 // pan position: lo notes left, hi notes right
+			(pitch - 23)/24 - 1 // pan position: lo notes left, hi notes right
 		,0.2
 		);
 	DetectSilence.ar(sig, doneAction: Done.freeSelf);

@@ -36,7 +36,7 @@ SynthDef(\metalCrash, {
 	sig = RLPF.ar(sig, filterFreq * filterEnv, filterQ);
 
     // Apply main envelope and output
-    sig = sig * env * amp;
+    sig = sig * env * amp * 0.5;
 	Out.ar(out, Pan2.ar(sig,pan));
 }).add;
 )
@@ -47,15 +47,21 @@ SynthDef(\metalCrash, {
 ~ringBus = Bus.control(s, 8);
 )
 
+    ~freqBus.setn([1, 4, 10.7, 17.2, 24.2, 31.7, 39.1, 48.2] * 200);
+    ~ampBus.setn([1, 0.7, 0.5, 0.3, 0.2, 0.1, 0.05, 0.03]);
+
 (
 ~updateMetalBuses = {
-    ~freqBus.setn({exprand(50, 90)}!8);
-    ~ampBus.setn({exprand(0.1, 1.0)}!8);
-    ~ringBus.setn({exprand(0.1, 2.0)}!8);
+    ~freqBus.setn([1, 3.984, 9.355, 16.69, 24.46, 34.47, 46.25, 60.01]* 200);
+    ~ampBus.setn([1, 0.05, 0.02, 0.01, 0.005, 0.003, 0.002, 0.001]);
+    ~ringBus.setn({exprand(0.1, 2)}!8);
+
+	~freqBus.getn(8).postln;
 };
 )
 
 (
+
 Pbindef(\metalCrashPattern,
     \instrument, \metalCrash,
     \freqBus, ~freqBus.index,
@@ -65,7 +71,7 @@ Pbindef(\metalCrashPattern,
     \amp, Pexprand(0.4, 0.8, inf),
     \att, Pwhite(0.001, 0.01, inf),
     \rel, Pwhite(2.0, 5.0, inf),
-    \freqScale, Pexprand(0.7, 1.3, inf),
+    \freqScale, 0.5,//Pexprand(0.7, 1.3, inf),
     \decayScale, Pwhite(0.8, 1.2, inf),
     \filterFreq, Pexprand(2000, 8000, inf),
     \filterQ, Pwhite(0.3, 0.7, inf),
@@ -79,3 +85,6 @@ Pbindef(\metalCrashPattern,
 )
 
 FreqScope.new(1400, 200, 0, server: s);
+
+
+

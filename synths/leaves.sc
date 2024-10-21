@@ -26,11 +26,11 @@ SynthDef(\syntheticLeaf, {
     sig = sig + dust;
 
     // Moving filter
-    filterEnv = SinOsc.kr(1,pi).range(7000, 11000);
+    filterEnv = SinOsc.kr(0.3,pi).range(7000, 11000);
     sig = BPF.ar(sig, filterEnv, filterRQ);
 
     // Envelope
-    env = EnvGen.kr(Env.asr(1.9, 1, 2.3), gate, doneAction: 2);
+    env = EnvGen.kr(Env.asr(1.3, 1, 2.3, \welch), gate, doneAction: 2);
 
     // Output
     Out.ar(out, Pan2.ar(sig * env * amp, pan));
@@ -40,7 +40,7 @@ SynthDef(\syntheticLeaf, {
 (
 Pbindef(\leafPattern,
     \instrument, \syntheticLeaf,
-    \dur, Pexprand(0.2, 2, inf),
+    \dur, Pexprand(2.5, 4, inf),
     \amp, Pgauss(0.1, 0.02, inf).clip(0.05, 0.2),
     \grainDur, Pwhite(0.04, 0.07, inf),
     \grainRate, Pwhite(40, 65, inf),

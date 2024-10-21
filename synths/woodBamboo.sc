@@ -23,7 +23,7 @@ SynthDef(\woodBamboo, {
     output = (resonator * ringMix) + (noiseSig * noiseMix);
 
     // Apply amplitude envelope
-    output = output * EnvGen.ar(Env.perc(0.001, ringTime * 2), doneAction: 2);
+    output = output * EnvGen.ar(Env.perc(0.01, ringTime * 2), doneAction: 2);
 
     // Output
     Out.ar(out, Pan2.ar(output, 0, amp));
@@ -36,13 +36,13 @@ Synth(\woodBamboo, [\freq, 45.midicps, \ringTime, 1.7, \ringMix, 0.7, \noiseMix,
 
 
 (
-Pbind(
+Pbindef(\wb,
     \instrument, \woodBamboo,
-    \dur, Pseq([0.25, 0.25, 0.5, 0.25, 0.25, 0.5] * 0.5, inf),
-    \freq, Prand([200, 250, 300, 350, 400], inf),
-    \ringTime, Pwhite(0.05, 0.2),
+    \dur, Pseq([0.25, 0.25, 0.25, 0.25, 0.25, 0.5] * 0.5, inf),
+    \freq, Prand([200, 250, 300, 350, 400] * 0.4 , inf),
+    \ringTime, Pwhite(0.5, 0.9),
     \ringMix, Pwhite(0.3, 0.7),
-    \noiseMix, Pwhite(0.3, 0.7),
+    \noiseMix, Pwhite(0.2, 0.3),
     \amp, Pwhite(0.3, 0.6)
 ).play;
 )
