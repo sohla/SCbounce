@@ -2,12 +2,13 @@
 
 // Global config
 
-var personalityDir = "~/Develop/SuperCollider/Projects/SCbounce/personalities/";
+// var personalityDir = "~/Develop/SuperCollider/Projects/SCbounce/personalities/";
+var personalityDir = "~/Develop/SuperCollider/Projects/scbounce/personalities/";
 //var personalityDir = "~/Develop/SuperCollider/oscMusic/personalities/";
 var defaultPersonality = "wingChimes1";
 var defaultList = "list_yourDNA.sc";
-var oscMessageTag  = "CombinedDataPacket";
-// var oscMessageTag  = "IMUFusedData";
+// var oscMessageTag  = "CombinedDataPacket";
+var oscMessageTag  = "IMUFusedData";
 var renderRate = 30;
 
 // UI config
@@ -72,6 +73,7 @@ var deviceProto = (
 	\ip: "127.0.0.1",
 	\port: 57120,
 	\did: "nil",
+	\color: Color.red,
 	\enabled: true, // are we running
 	\dataSize: dataSizeOptions[0],
 	\listeners: Event.new(proto:listenersProto),
@@ -291,6 +293,12 @@ removeDevice = {|d|
 addDevice = { |ip,port, id|
 
 	var d = Event.new(proto:deviceProto);
+	var configPattern = "/%/Config".format(id);
+	var configListener = OSCFunc({ |msg2, time2, addr2, recvPort2|
+		"CONFIG %".format(id).postln;
+		d.color = Color.fromArray(msg2.at([15,16,17,18]));
+		{addDeviceView.(contentView, d)}.defer;
+	}, configPattern).oneShot;
 
 	d.listeners = Event.new(proto:listenersProto);
 	d.sensors =  Event.new(proto:sensorsProto);
@@ -298,9 +306,11 @@ addDevice = { |ip,port, id|
 	d.port = port;
 	d.did = id;
 
+
+
 	devices.put(port,d);
 	reloadPersonality.(d);
-	addDeviceView.(contentView, d);
+	NetAddr.new(ip,port-id+1).sendMsg("/Config/GetConfig");
 	addOSCDeviceListeners.(d);
 
 	d // return the device
@@ -366,7 +376,7 @@ addDeviceView = { |view, d|
 	var va,vb,vc;
 	var stackView, stackLayout;
 	var popup;
-	var col = Color.rand(0.1,0.9).alpha_(0.75);
+	var col = d.color.alpha_(0.1);
 
 	var createGraphs = {
 		createPlotterGroup.(va, Rect(250,5,400,240), col,
@@ -389,8 +399,9 @@ addDeviceView = { |view, d|
 		.minHeight_(20)
 		.minWidth_(200)
 		.drawFunc_({
-			d.sensors.accelEvent.asString.drawAtPoint(10@0, Font(size:7));
-			d.sensors.gyroEvent.asString.drawAtPoint(10@10, Font(size:7));
+
+			d.sensors.accelEvent.asString.drawAtPoint(10@0, Font(size:7), Color.white);
+			d.sensors.gyroEvent.asString.drawAtPoint(10@10, Font(size:7), Color.white);
 		})
 		.animate_(true)
 
@@ -480,16 +491,16 @@ addDeviceView = { |view, d|
 		dataSizeMenu.(view)
 	]));
 	dataView = makeDataView.(view);
-	// view.layout.add(stackView = View()
-	// 	.background_(col)
-	// 	.layout_(
-	// 		stackLayout = HLayout(
-	// 			vc = UserView().background_(col),
-	// 			vb = UserView().background_(col),
-	// 	)).minHeight_(250)
-	// );
-	// createPlotterGroup.(vb,d);
-	// createThreeDeeCanvas.(vc,d);
+	view.layout.add(stackView = View()
+		.background_(col)
+		.layout_(
+			stackLayout = HLayout(
+				vc = UserView().background_(col),
+				vb = UserView().background_(col),
+		)).minHeight_(250)
+	);
+	createPlotterGroup.(vb,d);
+	createThreeDeeCanvas.(vc,d);
 
 	contentView.layout.add(nil);
 };
@@ -582,7 +593,7 @@ createThreeDeeCanvas = { |view, data|
 	.distance_(3.5);
 
 	graph1.add(cube = Canvas3DItem.cube()
-		.color_(Color.white.alpha_(0.4))
+		.color_(data.color.alpha_(1))
 		.width_(2)
 		.transform(Canvas3D.mScale(0.4,0.5,1))
 	);
@@ -657,6 +668,7 @@ addOSCDeviceListeners = {|d|
 		var address = NetAddr.new(d.ip, d.port - i);
 		var pattern = patternBase.format(i+1);
 		// var pattern = patternBase.format("/60:01:E2:E2:27:48/");
+		// var pattern = patternBase.format("48:27:E2:E2:01:60");
 		var prev = fourCh;
 		var angVel = threeCh;
 		var rx,ry,rz,ox=0,oy=0,oz=0;
@@ -731,7 +743,7 @@ startOSCListening = {
 	// listen for data and if found, add airware virtual device and stop listening
 	numAirwareVirtualDevices.do({|i|
 		var pattern = patternBase.format(i+1);
-		// var pattern = patternBase.format("60:01:E2:E2:27:48");
+		// var pattern = patternBase.format("48:27:E2:E2:01:60");
 
 		airstickListeners = airstickListeners.add( OSCFunc({ |msg, time, addr, recvPort|
 			{
@@ -778,10 +790,10 @@ createWindowView = {|view|
 	.string_("OSC: ["++wifiAddress++", "+NetAddr.localAddr.port++"] ");
 
 	cpuInfo = UserView(view)
-		.maxWidth_(80)
-		.maxHeight_(30)
-		.animate_(true)
-		.drawFunc_({|uv|
+	.maxWidth_(80)
+	.maxHeight_(30)
+	.animate_(true)
+	.drawFunc_({|uv|
 		(s.peakCPU.asStringPrec(2)++"%").drawAtPoint(8@8, Font.default, Color.yellow);
 	});
 	// view.layout_( HLayout(cpuInfo,wifiInfoView));
