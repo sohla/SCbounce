@@ -7,8 +7,8 @@ var personalityDir = "~/Develop/SuperCollider/Projects/scbounce/personalities/";
 //var personalityDir = "~/Develop/SuperCollider/oscMusic/personalities/";
 var defaultPersonality = "wingChimes1";
 var defaultList = "list_yourDNA.sc";
-// var oscMessageTag  = "CombinedDataPacket";
-var oscMessageTag  = "IMUFusedData";
+var oscMessageTag  = "CombinedDataPacket";
+// var oscMessageTag  = "IMUFusedData";
 var renderRate = 30;
 
 // UI config
@@ -310,7 +310,8 @@ addDevice = { |ip,port, id|
 
 	devices.put(port,d);
 	reloadPersonality.(d);
-	NetAddr.new(ip,port-id+1).sendMsg("/Config/GetConfig");
+	// NetAddr.new(ip,port-id+1).sendMsg("/Config/GetConfig");
+	addDeviceView.(contentView, d);
 	addOSCDeviceListeners.(d);
 
 	d // return the device
@@ -594,7 +595,7 @@ createThreeDeeCanvas = { |view, data|
 
 	graph1.add(cube = Canvas3DItem.cube()
 		.color_(data.color.alpha_(1))
-		.width_(2)
+		.width_(1)
 		.transform(Canvas3D.mScale(0.4,0.5,1))
 	);
 
@@ -739,12 +740,12 @@ addOSCDeviceListeners = {|d|
 startOSCListening = {
 
 	var patternBase = "/%/" ++ oscMessageTag;
-
+	var addr = NetAddr.new("127.0.0.1", 54544);
 	// listen for data and if found, add airware virtual device and stop listening
 	numAirwareVirtualDevices.do({|i|
 		var pattern = patternBase.format(i+1);
 		// var pattern = patternBase.format("48:27:E2:E2:01:60");
-
+pattern.postln;
 		airstickListeners = airstickListeners.add( OSCFunc({ |msg, time, addr, recvPort|
 			{
 				if(devices.at(addr.port+i) == nil,{
@@ -807,8 +808,9 @@ createWindowView = {|view|
 //------------------------------------------------------------
 //[ Built-in Microph, Built-in Output, Soundflower (2ch), Soundflower (64ch), ZoomAudioD, Zoomy, SF Record ]
 
-// Server.local.options.outDevice = ServerOptions.devices[
-// ServerOptions.devices.indexOfEqual("Soundflower (2ch)")];
+// Server.local.options.outDevice = ServerOptions.devices[ServerOptions.devices.indexOfEqual("Soundflower (2ch)")];
+// Server.local.options.outDevice = ServerOptions.devices[ServerOptions.devices.indexOfEqual("BlackHole 16ch")];
+// Server.local.options.outDevice = ServerOptions.devices[ServerOptions.devices.indexOfEqual("External Headphones")];
 
 // Server.local.options.outDevice = ServerOptions.devices[
 // ServerOptions.devices.indexOfEqual("Built-in Output")];
