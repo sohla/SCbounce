@@ -7,7 +7,7 @@ SynthDef(\improvedFrog, {
 
     // Basic frog sound
     env = EnvGen.kr(Env.perc(atk, dcy, curve: -4));
-    sig = LPF.ar(WhiteNoise.ar(0.2) + SinOsc.ar(freq, 0, 1), 2000);
+    sig = LPF.ar(WhiteNoise.ar(0.2) + SinOsc.ar(freq, 0, 1.1), 2000);
     sig = sig * env;
 
     // Envelope filter for timbre shaping
@@ -43,7 +43,7 @@ SynthDef(\improvedFrog, {
 Pbindef(\frogPattern,
         \instrument, \improvedFrog,
         \dur, 0.1 * 1,//Pexprand(0.1, 0.2, inf),  // Long pauses between calls
-        \freq, Pwhite(52, 230, inf),  // Random base frequency
+        \freq, Pwhite(152, 230, inf),  // Random base frequency
         \filterStartFreq, Pexprand(1000, 2000, inf),  // Start frequency of envelope filter
         \filterEndFreq, Pexprand(200, 400, inf),  // End frequency of envelope filter
         \filterDur, Pwhite(0.005, 0.015, inf),  // Duration of filter envelope
@@ -56,6 +56,13 @@ Pbindef(\frogPattern,
 		\dcy, Pwhite(0.06,0.23, inf),
 
 ).play;
+)
+
+
+(
+Pbindef(\frogPattern,
+        \freq, Pwhite(52, 230, inf)
+);
 )
 
 

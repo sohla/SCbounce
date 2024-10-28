@@ -9,7 +9,7 @@ SynthDef(\woodBamboo, {
     // Resonator: two resonant filters for a more complex tone
     resonator = Klank.ar(
         `[
-            [freq, freq*1.5, freq*2.3], // Resonant frequencies
+            [freq, freq*2.06, freq*4.09], // Resonant frequencies
             [1, 0.6, 0.3],             // Amplitudes
             [ringTime, ringTime*0.9, ringTime*0.8]  // Decay times
         ],
@@ -17,7 +17,7 @@ SynthDef(\woodBamboo, {
     );
 
     // Noise component for the "click" sound
-    noiseSig = LPF.ar(WhiteNoise.ar, 7000) * EnvGen.ar(Env.perc(0.001, 0.01));
+    noiseSig = LPF.ar(PinkNoise.ar,3400) * EnvGen.ar(Env.perc(0.001, 0.01));
 
     // Mix resonator and noise
     output = (resonator * ringMix) + (noiseSig * noiseMix);
