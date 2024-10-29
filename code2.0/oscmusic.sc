@@ -799,8 +799,8 @@ createWindowView = {|view|
 // Server.local.options.outDevice = ServerOptions.devices[
 // ServerOptions.devices.indexOfEqual("Soundflower (2ch)")];
 
-// Server.local.options.outDevice = ServerOptions.devices[
-// ServerOptions.devices.indexOfEqual("Built-in Output")];
+Server.local.options.outDevice = ServerOptions.devices[
+ServerOptions.devices.indexOfEqual("Built-in Output")];
 
 //Server.local.options.outDevice = ServerOptions.devices[
 //	ServerOptions.devices.indexOfEqual("SERIES 208i")];

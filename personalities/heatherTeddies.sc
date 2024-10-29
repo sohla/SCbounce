@@ -60,12 +60,12 @@ SynthDef(\pullstretchMono, {|out, amp = 0.8, buffer = 0, envbuf = -1, pch = 1.0,
 //------------------------------------------------------------
 ~next = {|d|
 	var amp = m.accelMass.linlin(0,1,0.00001,0.8);
-	var speed= m.accelMassFiltered.linlin(0,1,0.25,0.35);
+	var speed= m.accelMassFiltered.linlin(0,1,0.01,0.1);
 	var rate = m.accelMassFiltered.linlin(0,1,0.9,1.6);
 
 	if(amp < 0.1, {amp = 0});
-
-	synth.set(\pch, rate);
+	//
+	// synth.set(\pch, rate);
 	synth.set(\speed, speed);
 	synth.set(\amp, amp);
 };

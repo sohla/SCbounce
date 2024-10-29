@@ -37,7 +37,7 @@ SynthDef(\monoSampler, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=
 				\decay, 0.01,
 				\release,0.0,
 				\dur, Pseq([0.6] , inf),
-				\amp,4,
+				\amp,1,
 				\args, #[],
 			)
 		);
