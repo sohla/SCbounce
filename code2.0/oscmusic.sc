@@ -366,7 +366,7 @@ addDeviceView = { |view, d|
 	var header, dataView;
 	var va,vb,vc;
 	var stackView, stackLayout;
-	var popup;
+	var popup,personalityMenu;
 	var col = Color.rand(0.1,0.9).alpha_(0.75);
 
 	var createGraphs = {
@@ -449,9 +449,11 @@ addDeviceView = { |view, d|
 		})
 	};
 
-	var personalityMenu = {|view|
-		PopUpMenu(view)
+	var personalityMenuView = {|view|
+		personalityMenu = PopUpMenu(view)
+		.font_(Font(size:16))
 		.minWidth_(220)
+		.minHeight_(40)
 		.items_(names)
 		.valueAction_(names.find([d.name]))
 		.action_({|b|
@@ -476,21 +478,49 @@ addDeviceView = { |view, d|
 		infoView.(view),
 		reloadButton.(view)
 	],[
-		muteButton.(view),
-		personalityMenu.(view),
-		dataSizeMenu.(view)
-	]));
+		Button(view)
+		.minHeight_(40)
+		.font_(Font(size:16))
+		.states_([["-"]])
+		.action_({|b|
+			if(personalityMenu.value == 0,
+				{personalityMenu.value = personalityMenu.items.size - 1},
+				{personalityMenu.value = personalityMenu.value - 1}
+			);
+			{personalityMenu.valueAction = personalityMenu.value}.defer;
+		}),
+
+		personalityMenuView.(view),
+		Button(view)
+		.minHeight_(40)
+		.font_(Font(size:16))
+		.states_([["+"]])
+		.action_({|b|
+			if(personalityMenu.value == (personalityMenu.items.size - 1),
+				{personalityMenu.value = 0},
+				{personalityMenu.value = personalityMenu.value + 1}
+			);
+			{personalityMenu.valueAction = personalityMenu.value}.defer;
+		}),
+	]
+		// ,[
+		// 	muteButton.(view),
+		// 	UserView(view),
+		// 	dataSizeMenu.(view)
+		// ]
+	 ));
 	dataView = makeDataView.(view);
-	// view.layout.add(stackView = View()
-	// 	.background_(col)
-	// 	.layout_(
-	// 		stackLayout = HLayout(
-	// 			vc = UserView().background_(col),
-	// 			vb = UserView().background_(col),
-	// 	)).minHeight_(250)
-	// );
-	// createPlotterGroup.(vb,d);
-	// createThreeDeeCanvas.(vc,d);
+
+	view.layout.add(stackView = View()
+		.background_(col)
+		.layout_(
+			stackLayout = HLayout(
+				vc = UserView().background_(col),
+				vb = UserView().background_(col),
+		)).minHeight_(250)
+	);
+	createPlotterGroup.(vb,d);
+	createThreeDeeCanvas.(vc,d);
 
 	contentView.layout.add(nil);
 };
@@ -799,8 +829,8 @@ createWindowView = {|view|
 // Server.local.options.outDevice = ServerOptions.devices[
 // ServerOptions.devices.indexOfEqual("Soundflower (2ch)")];
 
-Server.local.options.outDevice = ServerOptions.devices[
-ServerOptions.devices.indexOfEqual("Built-in Output")];
+// Server.local.options.outDevice = ServerOptions.devices[
+// ServerOptions.devices.indexOfEqual("Built-in Output")];
 
 //Server.local.options.outDevice = ServerOptions.devices[
 //	ServerOptions.devices.indexOfEqual("SERIES 208i")];
