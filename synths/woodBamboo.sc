@@ -2,33 +2,31 @@
 SynthDef(\woodBamboo, {
     |out=0, freq=1000, ringTime=0.1, ringMix=0.5, noiseMix=0.5, amp=0.5|
     var exciter, resonator, noiseSig, output;
+var freqs, amps, times;
+	~makeBambooArrays = { |freq = 440|
+    var freqs, amps, times;
+    freqs = freq * [1.0, 3.93, 4.97, 6.23, 9.11];
+    amps = [1.0, 0.5, 0.35, 0.18, 0.12];
+    times = [1.8, 0.9, 0.7, 0.4, 0.2];
+    [freqs, amps, times]
+};
 
-    // Exciter: short impulse
+	#freq, amps, times = ~makeBambooArrays.(freq);
     exciter = Impulse.ar(0);
-
-    // Resonator: two resonant filters for a more complex tone
     resonator = Klank.ar(
-        `[
-            [freq, freq*2.06, freq*4.09], // Resonant frequencies
-            [1, 0.6, 0.3],             // Amplitudes
-            [ringTime, ringTime*0.9, ringTime*0.8]  // Decay times
-        ],
+       `[freq, amps, times],
         exciter
     );
-
-    // Noise component for the "click" sound
     noiseSig = LPF.ar(PinkNoise.ar,3400) * EnvGen.ar(Env.perc(0.001, 0.01));
-
-    // Mix resonator and noise
     output = (resonator * ringMix) + (noiseSig * noiseMix);
-
-    // Apply amplitude envelope
     output = output * EnvGen.ar(Env.perc(0.01, ringTime * 2), doneAction: 2);
-
-    // Output
     Out.ar(out, Pan2.ar(output, 0, amp));
 }).add;
 )
+
+
+
+
 // Example usage:
 Synth(\woodBamboo, [\freq, 1200, \ringTime, 0.1, \ringMix, 0.7, \noiseMix, 0.1, \amp, 0.5]);
 Synth(\woodBamboo, [\freq, 800, \ringTime, 0.2, \ringMix, 0.8, \noiseMix, 0.2, \amp, 0.5]);

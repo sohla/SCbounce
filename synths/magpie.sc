@@ -25,7 +25,7 @@ SynthDef(\magpie, {
     sig = (warble + noise) * chirp;
 
     // Apply overall envelope and panning
-    sig = sig * EnvGen.kr(Env.asr(0.1, 1, 0.05), gate, doneAction:2);
+    sig = sig * EnvGen.kr(Env.asr(0.17, 1, 0.05), gate, doneAction:2);
     sig = Pan2.ar(sig, pan);
 
     sig * amp;
@@ -37,9 +37,9 @@ SynthDef(\magpie, {
 Pbindef(\magpiePattern,
     \instrument, \magpie,
     \dur, 1,
-    \freq, Pexprand(1400, 900, inf),
+    \freq, Pexprand(740, 900, inf),
     \amp, Pexprand(0.05, 0.15, inf),  // Random amplitude
     \pan, Pwhite(-1.0, 1.0, inf),    // Random panning
-	\chirpRate, 0.8
+	\chirpRate, 0.1
 ).play;
 )
