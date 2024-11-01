@@ -57,6 +57,7 @@ var listenersProto = (
 	\airware:nil,
 );
 
+
 var sensorsProto = (
 	\gyroEvent: threeCh,
 	\gyroMass: 0,
@@ -79,8 +80,24 @@ var deviceProto = (
 	\env: nil,	// Environment for injected code
 	\procRout: nil,	// Routine calls ~next every ~fps
 	\sensors: Event.new(proto:sensorsProto),
+	\sensorBus: Bus.control(s,7);
 );
 
+/*
+
+Sensor ControlBus
+
+accel.x
+accel.y
+accel.z
+quant.x
+quant.y
+quant.z
+quant.w
+
+
+
+*/
 //------------------------------------------------------------
 //
 //------------------------------------------------------------
@@ -277,7 +294,7 @@ shutdown = {
 //------------------------------------------------------------
 removeDevice = {|d|
 
-
+	"removing device...".postln;
 	d.procRout.stop();
 
 	d.procRout.free;
@@ -286,7 +303,7 @@ removeDevice = {|d|
 		~deinit.();
 	};
 
-	d.listeners.airware.free;
+	d.listeners.airware.free; //?
 };
 
 addDevice = { |ip,port, id|
@@ -691,7 +708,6 @@ addOSCDeviceListeners = {|d|
 		var prev = fourCh;
 		var angVel = threeCh;
 		var rx,ry,rz,ox=0,oy=0,oz=0;
-
 		d.listeners.airware = OSCFunc({ |msg, time, addr, recvPort|
 			var sx,sy,sz,qe,q,ss,r, rq, rr, rtr;
 			var tr;
@@ -699,6 +715,19 @@ addOSCDeviceListeners = {|d|
 
 			if(devices.at(addr.port+i) != nil,{
 				var oq = devices.at(addr.port+i).sensors.quatEvent;
+				var bus = devices.at(addr.port+i).sensorBus;
+
+
+				bus.setn([
+					msg[1].asFloat * 0.1,
+					msg[2].asFloat * 0.1,
+					msg[3].asFloat * 0.1,
+					msg[7].asFloat, //w
+					msg[4].asFloat, //x
+					msg[5].asFloat, //y
+					msg[6].asFloat, //z
+				]);
+				// bus.getn(7).postln;testing
 
 				devices.at(addr.port+i).sensors.accelEvent = (
 					\x:msg[1].asFloat * 0.1,
@@ -713,6 +742,9 @@ addOSCDeviceListeners = {|d|
 					\z:msg[6].asFloat
 				);
 
+
+				//
+				// Calculate others
 				// take quaternion and convert to ueler angles
 				qe = devices.at(addr.port+i).sensors.quatEvent;
 				q = Quaternion.new(qe.w,qe.x,qe.y,qe.z);
