@@ -34,14 +34,14 @@ Synth(\woodBamboo, [\freq, 45.midicps, \ringTime, 1.7, \ringMix, 0.7, \noiseMix,
 
 
 (
-Pbindef(\wb,
+Pbindef(\wba,
     \instrument, \woodBamboo,
     \dur, Pseq([0.25, 0.25, 0.25, 0.25, 0.25, 0.5] * 0.5, inf),
-    \freq, Prand([200, 250, 300, 350, 400] * 0.4 , inf),
-    \ringTime, Pwhite(0.5, 0.9),
-    \ringMix, Pwhite(0.3, 0.7),
-    \noiseMix, Pwhite(0.2, 0.3),
-    \amp, Pwhite(0.3, 0.6)
+    \note, Prand([0,-12,-24,4,9,14,19] * 1 , inf),
+    \ringTime, Pwhite(0.1, 1.2),
+    \ringMix, Pwhite(0.6, 0.8),
+    \noiseMix, Pwhite(0.02, 0.09),
+    \amp, Pwhite(0.7, 0.9)
 ).play;
 )
 

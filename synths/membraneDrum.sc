@@ -191,6 +191,11 @@ Synth(\membraneDrum, [
 );
 
 // Pattern examples with adjusted levels
+
+Pbindef(\tomPattern,\freq,50)
+
+
+
 (
 Pbindef(\tomPattern,
     \instrument, \membraneDrum,

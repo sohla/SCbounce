@@ -175,15 +175,15 @@ Synth(\largeGong, [
 // Gong crescendo
 (
 Routine({
-    var numStrikes = 5;
-    var baseTime = 3.0;
+    var numStrikes = 50;
+    var baseTime = 1.0;
 
     numStrikes.do { |i|
         var force = 0.3 + (i * 0.15);
         var time = baseTime - (i * 0.4);
 
         Synth(\largeGong, [
-            \freq, 40,
+            \freq, 55,
             \strikeForce, force,
             \shimmerAmount, 0.5 + (i * 0.1),
             \metallic, 0.9,

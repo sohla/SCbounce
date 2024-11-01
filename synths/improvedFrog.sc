@@ -41,7 +41,7 @@ SynthDef(\improvedFrog, {
 (
 Pbindef(\frogPattern,
         \instrument, \improvedFrog,
-        \dur, 0.1 * 1,//Pexprand(0.1, 0.2, inf),  // Long pauses between calls
+		\dur, Prand([0.1,0.104,0.108,0.0993], inf) * 1,//Pexprand(0.1, 0.2, inf),  // Long pauses between calls
         \freq, Pwhite(40, 260, inf),  // Random base frequency
         \filterStartFreq, Pexprand(1000, 2000, inf),  // Start frequency of envelope filter
         \filterEndFreq, Pexprand(200, 400, inf),  // End frequency of envelope filter
