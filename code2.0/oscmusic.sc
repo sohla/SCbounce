@@ -7,8 +7,8 @@ var personalityDir = "~/Develop/SuperCollider/Projects/scbounce/personalities/";
 //var personalityDir = "~/Develop/SuperCollider/oscMusic/personalities/";
 var defaultPersonality = "wingChimes1";
 var defaultList = "list_yourDNA.sc";
-var oscMessageTag  = "CombinedDataPacket";
-// var oscMessageTag  = "IMUFusedData";
+// var oscMessageTag  = "CombinedDataPacket";
+var oscMessageTag  = "IMUFusedData";
 var renderRate = 30;
 
 // UI config
@@ -745,7 +745,7 @@ startOSCListening = {
 	numAirwareVirtualDevices.do({|i|
 		var pattern = patternBase.format(i+1);
 		// var pattern = patternBase.format("48:27:E2:E2:01:60");
-pattern.postln;
+		pattern.postln;
 		airstickListeners = airstickListeners.add( OSCFunc({ |msg, time, addr, recvPort|
 			{
 				if(devices.at(addr.port+i) == nil,{
