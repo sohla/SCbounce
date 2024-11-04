@@ -17,7 +17,7 @@ SynthDef(\monoSampler, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=
     Out.ar(out, sig);
 }).add;
 
-SynthDef(\pullstretchMono, {|out, amp = 0.8, buffer = 0, envbuf = -1, pch = 1.0, div=1, speed = 0.01, splay = 0.5|
+SynthDef(\pullstretchMono, {|out, amp = 1, buffer = 0, envbuf = -1, pch = 1.0, div=1, speed = 0.01, splay = 0.4|
 	var pos;
 	// var mx,my;
 	var sp;
@@ -27,7 +27,7 @@ SynthDef(\pullstretchMono, {|out, amp = 0.8, buffer = 0, envbuf = -1, pch = 1.0,
 	// my = MouseY.kr(0.01,1,1.0);//splay
 
 
-	sp = Splay.arFill(12,
+	sp = Splay.arFill(4,
 		{ |i| Warp1.ar(1, buffer, lfo, pch.lag(2),splay, envbuf, 8, 0.1, 2)  },
 			1,
 			1,
@@ -60,14 +60,14 @@ SynthDef(\pullstretchMono, {|out, amp = 0.8, buffer = 0, envbuf = -1, pch = 1.0,
 //------------------------------------------------------------
 ~next = {|d|
 	var amp = m.accelMass.linlin(0,1,0.00001,0.8);
-	var speed= m.accelMassFiltered.linlin(0,1,0.25,0.35);
-	var rate = m.accelMassFiltered.linlin(0,1,0.9,1.6);
+	var speed= m.accelMassFiltered.linlin(0,1,0.05,0.35);
+	var rate = m.accelMassFiltered.linlin(0,1,0.9,1.4);
 
 	if(amp < 0.1, {amp = 0});
 
 	synth.set(\pch, rate);
 	synth.set(\speed, speed);
-	synth.set(\amp, amp*0.2);
+	synth.set(\amp, amp*0.6);
 };
 //------------------------------------------------------------
 ~plotMin = -1;

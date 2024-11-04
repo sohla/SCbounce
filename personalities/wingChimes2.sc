@@ -23,8 +23,8 @@ var m = ~model;
 	Pdef(m.ptn,
 		Pbind(
 			\instrument, \wingChimes2,
-			\note, Prand([-1], inf),
-			\octave, Pseq([3,4,2], inf),
+			\note, Prand([-1.1], inf),
+			\octave, Pseq([3,4], inf),
 			\pulseFreq, Pwhite(1, 3),
 			\numHarms, 40,
 			\func, Pfunc({|e| ~onEvent.(e)}),
@@ -46,7 +46,7 @@ var m = ~model;
 //------------------------------------------------------------
 ~next = {|d|
 
-	var dur = 0.4 * 2.pow(m.accelMassFiltered.linlin(0,4,0,4).floor).reciprocal;
+	var dur = 0.3;// * 2.pow(m.accelMassFiltered.linlin(0,4,0,4).floor).reciprocal;
 	var rq = m.accelMassFiltered.linexp(0,4,0.01,0.0001);
 	var amp = m.accelMassFiltered.linexp(0,4,1,30);
 
