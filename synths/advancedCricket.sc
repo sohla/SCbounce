@@ -28,7 +28,7 @@ SynthDef(\advancedCricket, {
 }).add;
 )
 
-(
+(1
 	Pbindef(\cricketPattern,
         \instrument, \advancedCricket,
 		\dur, Pexprand(0.3, 3, inf),  // Pattern runs continuously

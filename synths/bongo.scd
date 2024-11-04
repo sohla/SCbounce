@@ -71,7 +71,8 @@ Pbindef(\bongoPatternA,
     \tension, Pwhite(0.7, 1),
 	\damp, Pwhite(0.3,0.7),
     \pos, Pwhite(0.1, 0.9),
-    \pan, Pwhite(-0.3, 0.3)
+    \pan, Pwhite(-0.3, 0.3),
+	\latency,0.2  // changing this shifts things
 );
 
 Pbindef(\bongoPatternB,
@@ -82,13 +83,14 @@ Pbindef(\bongoPatternB,
     \tension, Pwhite(0.7, 1),
 	\damp, Pwhite(0.3,0.7),
     \pos, Pwhite(0.1, 0.9),
-    \pan, Pwhite(-0.3, 0.3)
+    \pan, Pwhite(-0.3, 0.3),
+	\latency,0.2 + (0.25 * 0.333 * 0)// changing this shifts things
 );
 
 Pbindef(\bongoPatternC,
     \instrument, \bongo,
 	\dur, Pseq([Rest(0.5), 0.25,Rest(0.25)], inf),
-    \freq, Prand([400], inf),
+	\freq, Prand([400], inf),
     \amp, Pseq([0.6, 0.4, 0.5], inf),
     \tension, Pwhite(0.7, 1),
 	\damp, Pwhite(0.3,0.7),
@@ -108,10 +110,10 @@ Pbindef(\bongoPatternD,
 );
 )
 (
-Pbindef(\bongoPatternA).play(quant:[0.1,0.0]);
-Pbindef(\bongoPatternB).play(quant:[0.1,0.0]);
-Pbindef(\bongoPatternC).play(quant:[0.1,0.0]);
-Pbindef(\bongoPatternD).play(quant:[0.1,0.0]);
+Pbindef(\bongoPatternA).play(quant:[0.25,0.0]);
+Pbindef(\bongoPatternB).play(quant:[0.25,0.0]);
+Pbindef(\bongoPatternC).play(quant:[0.25,0.0]);
+Pbindef(\bongoPatternD).play(quant:[0.25,0.0]);
 )
 
-TempoClock.default.tempo = 1
+Tempo.default.tempo = 1.0 * 1.0 
