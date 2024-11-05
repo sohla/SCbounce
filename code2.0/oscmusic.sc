@@ -18,7 +18,7 @@ var dataSizeOptions = [100,200,300,400];
 // Device managment
 var devices = Dictionary();
 var names;
-var airstickListeners = [], numAirwareVirtualDevices = 4;
+var airstickListeners = [], numAirwareVirtualDevices = 6;
 
 // UI elements
 var contentView = UserView().background_(Color.grey(0.2));
@@ -812,8 +812,8 @@ createWindowView = {|view|
 // Server.local.options.outDevice = ServerOptions.devices[ServerOptions.devices.indexOfEqual("BlackHole 16ch")];
 // Server.local.options.outDevice = ServerOptions.devices[ServerOptions.devices.indexOfEqual("External Headphones")];
 
-// Server.local.options.outDevice = ServerOptions.devices[
-// ServerOptions.devices.indexOfEqual("Built-in Output")];
+Server.local.options.outDevice = ServerOptions.devices[
+ServerOptions.devices.indexOfEqual("Built-in Output")];
 
 //Server.local.options.outDevice = ServerOptions.devices[
 //	ServerOptions.devices.indexOfEqual("SERIES 208i")];
