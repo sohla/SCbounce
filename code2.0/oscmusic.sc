@@ -4,11 +4,11 @@
 
 // var personalityDir = "~/Develop/SuperCollider/Projects/SCbounce/personalities/";
 var personalityDir = "~/Develop/SuperCollider/Projects/scbounce/personalities/";
-//var personalityDir = "~/Develop/SuperCollider/oscMusic/personalities/";
+// var personalityDir = "~/Develop/SuperCollider/oscMusic/personalities/";
 var defaultPersonality = "wingChimes1";
 var defaultList = "list_yourDNA.sc";
-// var oscMessageTag  = "CombinedDataPacket";
-var oscMessageTag  = "IMUFusedData";
+var oscMessageTag  = "CombinedDataPacket";
+// var oscMessageTag  = "IMUFusedData";
 var renderRate = 30;
 
 // UI config
@@ -18,7 +18,7 @@ var dataSizeOptions = [100,200,300,400];
 // Device managment
 var devices = Dictionary();
 var names;
-var airstickListeners = [], numAirwareVirtualDevices = 6;
+var airstickListeners = [], numAirwareVirtualDevices = 4;
 
 // UI elements
 var contentView = UserView().background_(Color.grey(0.2));
@@ -57,6 +57,7 @@ var listenersProto = (
 	\airware:nil,
 );
 
+
 var sensorsProto = (
 	\gyroEvent: threeCh,
 	\gyroMass: 0,
@@ -73,15 +74,30 @@ var deviceProto = (
 	\ip: "127.0.0.1",
 	\port: 57120,
 	\did: "nil",
-	\color: Color.red,
 	\enabled: true, // are we running
 	\dataSize: dataSizeOptions[0],
 	\listeners: Event.new(proto:listenersProto),
 	\env: nil,	// Environment for injected code
 	\procRout: nil,	// Routine calls ~next every ~fps
 	\sensors: Event.new(proto:sensorsProto),
+	\sensorBus: Bus.control(s,7);
 );
 
+/*
+
+Sensor ControlBus
+
+accel.x
+accel.y
+accel.z
+quant.x
+quant.y
+quant.z
+quant.w
+
+
+
+*/
 //------------------------------------------------------------
 //
 //------------------------------------------------------------
@@ -278,7 +294,7 @@ shutdown = {
 //------------------------------------------------------------
 removeDevice = {|d|
 
-
+	"removing device...".postln;
 	d.procRout.stop();
 
 	d.procRout.free;
@@ -287,18 +303,12 @@ removeDevice = {|d|
 		~deinit.();
 	};
 
-	d.listeners.airware.free;
+	d.listeners.airware.free; //?
 };
 
 addDevice = { |ip,port, id|
 
 	var d = Event.new(proto:deviceProto);
-	var configPattern = "/%/Config".format(id);
-	var configListener = OSCFunc({ |msg2, time2, addr2, recvPort2|
-		"CONFIG %".format(id).postln;
-		d.color = Color.fromArray(msg2.at([15,16,17,18]));
-		{addDeviceView.(contentView, d)}.defer;
-	}, configPattern).oneShot;
 
 	d.listeners = Event.new(proto:listenersProto);
 	d.sensors =  Event.new(proto:sensorsProto);
@@ -306,11 +316,8 @@ addDevice = { |ip,port, id|
 	d.port = port;
 	d.did = id;
 
-
-
 	devices.put(port,d);
 	reloadPersonality.(d);
-	// NetAddr.new(ip,port-id+1).sendMsg("/Config/GetConfig");
 	addDeviceView.(contentView, d);
 	addOSCDeviceListeners.(d);
 
@@ -376,8 +383,8 @@ addDeviceView = { |view, d|
 	var header, dataView;
 	var va,vb,vc;
 	var stackView, stackLayout;
-	var popup;
-	var col = d.color.alpha_(0.1);
+	var popup,personalityMenu;
+	var col = Color.rand(0.1,0.9).alpha_(0.75);
 
 	var createGraphs = {
 		createPlotterGroup.(va, Rect(250,5,400,240), col,
@@ -400,9 +407,8 @@ addDeviceView = { |view, d|
 		.minHeight_(20)
 		.minWidth_(200)
 		.drawFunc_({
-
-			d.sensors.accelEvent.asString.drawAtPoint(10@0, Font(size:7), Color.white);
-			d.sensors.gyroEvent.asString.drawAtPoint(10@10, Font(size:7), Color.white);
+			d.sensors.accelEvent.asString.drawAtPoint(10@0, Font(size:7));
+			d.sensors.gyroEvent.asString.drawAtPoint(10@10, Font(size:7));
 		})
 		.animate_(true)
 
@@ -460,9 +466,11 @@ addDeviceView = { |view, d|
 		})
 	};
 
-	var personalityMenu = {|view|
-		PopUpMenu(view)
+	var personalityMenuView = {|view|
+		personalityMenu = PopUpMenu(view)
+		.font_(Font(size:16))
 		.minWidth_(220)
+		.minHeight_(40)
 		.items_(names)
 		.valueAction_(names.find([d.name]))
 		.action_({|b|
@@ -487,11 +495,39 @@ addDeviceView = { |view, d|
 		infoView.(view),
 		reloadButton.(view)
 	],[
-		muteButton.(view),
-		personalityMenu.(view),
-		dataSizeMenu.(view)
-	]));
+		Button(view)
+		.minHeight_(40)
+		.font_(Font(size:16))
+		.states_([["-"]])
+		.action_({|b|
+			if(personalityMenu.value == 0,
+				{personalityMenu.value = personalityMenu.items.size - 1},
+				{personalityMenu.value = personalityMenu.value - 1}
+			);
+			{personalityMenu.valueAction = personalityMenu.value}.defer;
+		}),
+
+		personalityMenuView.(view),
+		Button(view)
+		.minHeight_(40)
+		.font_(Font(size:16))
+		.states_([["+"]])
+		.action_({|b|
+			if(personalityMenu.value == (personalityMenu.items.size - 1),
+				{personalityMenu.value = 0},
+				{personalityMenu.value = personalityMenu.value + 1}
+			);
+			{personalityMenu.valueAction = personalityMenu.value}.defer;
+		}),
+	]
+		// ,[
+		// 	muteButton.(view),
+		// 	UserView(view),
+		// 	dataSizeMenu.(view)
+		// ]
+	 ));
 	dataView = makeDataView.(view);
+
 	view.layout.add(stackView = View()
 		.background_(col)
 		.layout_(
@@ -594,8 +630,8 @@ createThreeDeeCanvas = { |view, data|
 	.distance_(3.5);
 
 	graph1.add(cube = Canvas3DItem.cube()
-		.color_(data.color.alpha_(1))
-		.width_(1)
+		.color_(Color.white.alpha_(0.4))
+		.width_(2)
 		.transform(Canvas3D.mScale(0.4,0.5,1))
 	);
 
@@ -669,11 +705,9 @@ addOSCDeviceListeners = {|d|
 		var address = NetAddr.new(d.ip, d.port - i);
 		var pattern = patternBase.format(i+1);
 		// var pattern = patternBase.format("/60:01:E2:E2:27:48/");
-		// var pattern = patternBase.format("48:27:E2:E2:01:60");
 		var prev = fourCh;
 		var angVel = threeCh;
 		var rx,ry,rz,ox=0,oy=0,oz=0;
-
 		d.listeners.airware = OSCFunc({ |msg, time, addr, recvPort|
 			var sx,sy,sz,qe,q,ss,r, rq, rr, rtr;
 			var tr;
@@ -681,6 +715,19 @@ addOSCDeviceListeners = {|d|
 
 			if(devices.at(addr.port+i) != nil,{
 				var oq = devices.at(addr.port+i).sensors.quatEvent;
+				var bus = devices.at(addr.port+i).sensorBus;
+
+
+				bus.setn([
+					msg[1].asFloat * 0.1,
+					msg[2].asFloat * 0.1,
+					msg[3].asFloat * 0.1,
+					msg[7].asFloat, //w
+					msg[4].asFloat, //x
+					msg[5].asFloat, //y
+					msg[6].asFloat, //z
+				]);
+				// bus.getn(7).postln;testing
 
 				devices.at(addr.port+i).sensors.accelEvent = (
 					\x:msg[1].asFloat * 0.1,
@@ -695,6 +742,9 @@ addOSCDeviceListeners = {|d|
 					\z:msg[6].asFloat
 				);
 
+
+				//
+				// Calculate others
 				// take quaternion and convert to ueler angles
 				qe = devices.at(addr.port+i).sensors.quatEvent;
 				q = Quaternion.new(qe.w,qe.x,qe.y,qe.z);
@@ -740,12 +790,12 @@ addOSCDeviceListeners = {|d|
 startOSCListening = {
 
 	var patternBase = "/%/" ++ oscMessageTag;
-	var addr = NetAddr.new("127.0.0.1", 54544);
+
 	// listen for data and if found, add airware virtual device and stop listening
 	numAirwareVirtualDevices.do({|i|
 		var pattern = patternBase.format(i+1);
-		// var pattern = patternBase.format("48:27:E2:E2:01:60");
-		pattern.postln;
+		// var pattern = patternBase.format("60:01:E2:E2:27:48");
+
 		airstickListeners = airstickListeners.add( OSCFunc({ |msg, time, addr, recvPort|
 			{
 				if(devices.at(addr.port+i) == nil,{
@@ -791,10 +841,10 @@ createWindowView = {|view|
 	.string_("OSC: ["++wifiAddress++", "+NetAddr.localAddr.port++"] ");
 
 	cpuInfo = UserView(view)
-	.maxWidth_(80)
-	.maxHeight_(30)
-	.animate_(true)
-	.drawFunc_({|uv|
+		.maxWidth_(80)
+		.maxHeight_(30)
+		.animate_(true)
+		.drawFunc_({|uv|
 		(s.peakCPU.asStringPrec(2)++"%").drawAtPoint(8@8, Font.default, Color.yellow);
 	});
 	// view.layout_( HLayout(cpuInfo,wifiInfoView));
@@ -808,12 +858,11 @@ createWindowView = {|view|
 //------------------------------------------------------------
 //[ Built-in Microph, Built-in Output, Soundflower (2ch), Soundflower (64ch), ZoomAudioD, Zoomy, SF Record ]
 
-// Server.local.options.outDevice = ServerOptions.devices[ServerOptions.devices.indexOfEqual("Soundflower (2ch)")];
-// Server.local.options.outDevice = ServerOptions.devices[ServerOptions.devices.indexOfEqual("BlackHole 16ch")];
-// Server.local.options.outDevice = ServerOptions.devices[ServerOptions.devices.indexOfEqual("External Headphones")];
+// Server.local.options.outDevice = ServerOptions.devices[
+// ServerOptions.devices.indexOfEqual("Soundflower (2ch)")];
 
-Server.local.options.outDevice = ServerOptions.devices[
-ServerOptions.devices.indexOfEqual("Built-in Output")];
+// Server.local.options.outDevice = ServerOptions.devices[
+// ServerOptions.devices.indexOfEqual("Built-in Output")];
 
 //Server.local.options.outDevice = ServerOptions.devices[
 //	ServerOptions.devices.indexOfEqual("SERIES 208i")];
