@@ -3,8 +3,8 @@
 // Global config
 
 // var personalityDir = "~/Develop/SuperCollider/Projects/SCbounce/personalities/";
-// var personalityDir = "~/Develop/SuperCollider/Projects/scbounce/personalities/";
-var personalityDir = "~/Develop/SuperCollider/oscMusic/personalities/";
+var personalityDir = "~/Develop/SuperCollider/Projects/scbounce/personalities/";
+// var personalityDir = "~/Develop/SuperCollider/oscMusic/personalities/";
 var defaultPersonality = "wingChimes1";
 var defaultList = "list_yourDNA.sc";
 var oscMessageTag  = "CombinedDataPacket";
