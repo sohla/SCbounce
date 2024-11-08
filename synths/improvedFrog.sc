@@ -7,14 +7,14 @@ SynthDef(\improvedFrog, {
 
     // Basic frog sound
     env = EnvGen.kr(Env.perc(atk, dcy, curve: -4));
-    sig = LPF.ar(WhiteNoise.ar(0.2) + SinOsc.ar(freq, 0, 1), 2000);
+    sig = LPF.ar(WhiteNoise.ar(0.3) + SinOsc.ar(freq, 0, 2).tanh, 9000);
     sig = sig * env;
 
     // Envelope filter for timbre shaping
     filterEnv = EnvGen.kr(
         Env([filterStartFreq, filterEndFreq], [filterDur], \exp)
     );
-    filteredSig = RLPF.ar(sig, filterEnv, 0.5);
+	filteredSig = RLPF.ar(sig, filterEnv, 0.5);
 
     // Simulate distance
     distanceAmp = (1 - distance).squared;  // Inverse square law for amplitude
@@ -42,20 +42,26 @@ SynthDef(\improvedFrog, {
 (
 Pbindef(\frogPattern,
         \instrument, \improvedFrog,
-        \dur, 0.1 * 1,//Pexprand(0.1, 0.2, inf),  // Long pauses between calls
-        \freq, Pwhite(52, 230, inf),  // Random base frequency
-        \filterStartFreq, Pexprand(1000, 2000, inf),  // Start frequency of envelope filter
-        \filterEndFreq, Pexprand(200, 400, inf),  // End frequency of envelope filter
-        \filterDur, Pwhite(0.005, 0.015, inf),  // Duration of filter envelope
-        \distance, Pwhite(0.1, 0.99, inf),  // Random distance (0.1 = close, 1.0 = far)
-        \pan, Pwhite(-0.5, 0.5, inf),  // Random panning
-        \amp, Pexprand(0.8, 1, inf),  // Random amplitude
-        \roomSize, Pwhite(0.3, 0.5, inf),  // Random room size for reverb
-        \revAmount, Pwhite(0.2, 0.4, inf),  // Random reverb amount
+		\dur, Prand([0.1,0.104,0.108,0.0993], inf) * 1,
+        \freq, Pwhite(240, 260, inf),
+        \filterStartFreq, Pexprand(1000, 2000, inf),
+        \filterEndFreq, Pexprand(200, 400, inf),
+        \filterDur, Pwhite(0.005, 0.015, inf),
+        \distance, Pwhite(0.1, 0.6, inf),
+        \pan, Pwhite(-0.5, 0.5, inf),
+        \amp, Pexprand(0.9, 1, inf),
+        \roomSize, Pwhite(0.3, 0.5, inf),
+        \revAmount, Pwhite(0.2, 0.4, inf),
 		\atk, Pwhite(0.005,0.01, inf),
 		\dcy, Pwhite(0.06,0.23, inf),
 
 ).play;
 )
 
+
+Pbindef(\frogPattern, \freq, Pwhite(40, 260, inf));
+Pbindef(\frogPattern, \freq, Pwhite(240, 260, inf));
+Pbindef(\frogPattern, \filterDur, Pwhite(0.0003, 0.001, inf));
+Pbindef(\frogPattern, \filterStartFreq, 16550);
+Pbindef(\frogPattern, \filterEndFreq, 14240);
 

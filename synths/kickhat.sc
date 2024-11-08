@@ -25,6 +25,6 @@ SynthDef(\kickhat, {
 }).add;
 )
 // Example usage:
-x = Synth(\kickhat, [\tempo, 8, \subFreq, 35, \subDecay, 0.6, \hatDecay, 0.05, \amp, 0.7]);
+x = Synth(\kickhat, [\tempo, 8, \subFreq, 45, \subDecay, 0.3, \hatDecay, 0.04, \amp, 0.7]);
 x.set(\tempo, 8); // change tempo
 // x.free; // stop the synth
