@@ -7,8 +7,8 @@ var personalityDir = "~/Develop/SuperCollider/Projects/scbounce/personalities/";
 // var personalityDir = "~/Develop/SuperCollider/oscMusic/personalities/";
 var defaultPersonality = "wingChimes1";
 var defaultList = "list_yourDNA.sc";
-var oscMessageTag  = "CombinedDataPacket";
-// var oscMessageTag  = "IMUFusedData";
+// var oscMessageTag  = "CombinedDataPacket";
+var oscMessageTag  = "IMUFusedData";
 var renderRate = 30;
 
 // UI config
@@ -18,7 +18,7 @@ var dataSizeOptions = [100,200,300,400];
 // Device managment
 var devices = Dictionary();
 var names;
-var airstickListeners = [], numAirwareVirtualDevices = 4;
+var airstickListeners = [], numAirwareVirtualDevices = 8;
 
 // UI elements
 var contentView = UserView().background_(Color.grey(0.2));
