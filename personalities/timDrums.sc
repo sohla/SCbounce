@@ -87,7 +87,7 @@ SynthDef(\monoSampler, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=
 	var div = d.sensors.gyroEvent.x.linlin(-1,1,1,2);
 	var rels = [3,0.1];
 
-	if(amp < 0.09, {amp = 0}, { amp = 0.5 });
+	if(amp < 0.15, {amp = 0}, { amp = 0.5 });
 
 	Pdef(pa).set(\amp, amp);
 	Pdef(pb).set(\amp, amp);

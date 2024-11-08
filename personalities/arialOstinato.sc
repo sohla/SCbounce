@@ -109,7 +109,7 @@ SynthDef(\warmRichSynth, {
 	// var dur = 0.5 - m.accelMassFiltered.squared.linlin(0,3,0,0.43);
 	// Pdef(m.ptn).set(\dur, dur);
 
-	if(m.accelMassFiltered > 0.3,{
+	if(m.accelMassFiltered > 0.1,{
 		if( Pdef(m.ptn).isPlaying.not,{
 			Pdef(m.ptn).resume(quant:0.5/3);
 		});

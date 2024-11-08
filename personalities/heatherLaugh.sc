@@ -36,8 +36,8 @@ SynthDef(\monoSampler, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=
 				\sustain,0.4,
 				\decay, 0.01,
 				\release,0.0,
-				\dur, Pseq([0.6] , inf),
-				\amp,4,
+				// \dur, Pseq([0.3] , inf),
+				\amp,2,
 				\args, #[],
 			)
 		);
@@ -57,16 +57,18 @@ SynthDef(\monoSampler, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=
 //------------------------------------------------------------
 ~next = {|d|
 
-	var dur = m.accelMassFiltered.linlin(0,1,0.5,0.04);
+	var dur = m.accelMassFiltered.linlin(0,1,0.6,0.3);
 	var start = (d.sensors.gyroEvent.y / 2pi) + 0.5;
 	var amp = m.accelMass.linlin(0,1,0,6);
+	Pdef(m.ptn).set(\dur, dur);
+	Pdef(m.ptn).set(\start, start.linlin(0,1,0,0.9));
 
 	// if(amp < 0.15, {amp = 0});
 	// Pdef(m.ptn).set(\amp, amp * 0.3);
 	if(m.accelMassFiltered > 0.15,{
 		if( Pdef(m.ptn).isPlaying.not,{
 			Pdef(m.ptn).resume(quant:0.5/3);
-			Pdef(m.ptn).set(\start, start.linlin(0,1,0,0.9));
+			// Pdef(m.ptn).set(\start, start.linlin(0,1,0,0.9));
 		});
 	},{
 		if( Pdef(m.ptn).isPlaying,{
