@@ -5,8 +5,8 @@
 // var personalityDir = "~/Develop/SuperCollider/Projects/SCbounce/personalities/";
 // var personalityDir = "~/Develop/SuperCollider/Projects/scbounce/personalities/";
 var personalityDir = "~/Develop/SuperCollider/oscMusic/personalities/";
-var defaultPersonality = "wingChimes1";
-var defaultList = "list_yourDNA.sc";
+var defaultPersonality = "footGong";
+var defaultList = "list_brenton.sc";
 var oscMessageTag  = "CombinedDataPacket";
 // var oscMessageTag  = "IMUFusedData";
 var renderRate = 30;

@@ -1,5 +1,11 @@
 (
 	[
+	"footGong",
+	"footGong2",
+	"sheet3",
+	"bells",
+	"bongo1",
+	"bongo2",
 	"wingChimes1",
 	"wingChimes2",
 	"rope1",

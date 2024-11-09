@@ -84,7 +84,7 @@ Pbindef(\bongoPatternB,
 	\damp, Pwhite(0.3,0.7),
     \pos, Pwhite(0.1, 0.9),
     \pan, Pwhite(-0.3, 0.3),
-	\latency,0.2 + (0.25 * 0.333 * 0)// changing this shifts things
+	\latency,0.2 + (0.125)// changing this shifts things
 );
 
 Pbindef(\bongoPatternC,
@@ -115,5 +115,4 @@ Pbindef(\bongoPatternB).play(quant:[0.25,0.0]);
 Pbindef(\bongoPatternC).play(quant:[0.25,0.0]);
 Pbindef(\bongoPatternD).play(quant:[0.25,0.0]);
 )
-
 Tempo.default.tempo = 1.0 * 1.0 

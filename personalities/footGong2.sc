@@ -1,5 +1,16 @@
-(
-SynthDef(\largeGong, {
+var m = ~model;
+var synth;
+var lastTime=0;
+var notes = [0];
+var roots = [0,3].dupEach(12);
+// var notes = [0,1,4,5,7,8,11,12,14] + 24;
+// var roots = [0].dupEach(18);
+var currentNote = notes[0];
+var currentRoot = roots[0];
+m.accelMassFilteredAttack = 0.5;
+m.accelMassFilteredDecay = 0.9;
+
+SynthDef(\largeGong2, {
     arg
     // Basic parameters
     out=0, freq=70, amp=0.5, pan=0,
@@ -16,7 +27,7 @@ SynthDef(\largeGong, {
     mix=0.5;
 
     var strike, partials, gongSound, shimmer, env, output;
-    var numPartials = 12;
+    var numPartials = 4;
     var baseFreq = freq;
 
     // Complex frequency ratios for large gong
@@ -24,7 +35,7 @@ SynthDef(\largeGong, {
         1,      // Fundamental
         1.36,   // Major third overtone
         1.97,   // Dominant overtone
-        2.43,   // Characteristic gong partial
+        2.83,   // Characteristic gong partial
         3.24,   // Upper partial
         4.16,   // High partial
         5.61,   // Shimmer frequency 1
@@ -126,75 +137,60 @@ SynthDef(\largeGong, {
 
     Out.ar(out, output);
 }).add;
-);
 
-// Example uses and variations
-(
-// Large ceremonial gong
-Synth(\largeGong, [
-    \freq, 80,
-    \strikeForce, 0.8,
-    \shimmerAmount, 0.7,
-    \metallic, 0.7,
-    \size, 0.9,
-    \decayTime, 15.0,
-    \roomSize, 0.9,
-    \mix, 0.5,
-    \amp, 0.3
-]);
-);
+~init = ~init <> {
+};
 
-(
-// Smaller, brighter gong
-Synth(\largeGong, [
-    \freq, 55*3,
-    \strikeForce, 0.6,
-    \shimmerAmount, 0.5,
-    \metallic, 0.8,
-    \size, 0.6,
-    \decayTime, 18.0,
-    \roomSize, 0.7,
-    \mix, 0.8,
-    \amp, 0.4
-]);
-);
+~deinit = ~deinit <> {
+};
 
-(
-// Huge temple gong
-Synth(\largeGong, [
-    \freq, 55,
-    \strikeForce, 0.9,
-    \shimmerAmount, 0.8,
-    \metallic, 0.6,
-    \size, 1.0,
-    \decayTime, 20.0,
-    \roomSize, 0.95,
-    \mix, 0.6,
-    \amp, 0.3
-]);
-);
+//------------------------------------------------------------
+~onEvent = {|e|
+	m.com.root = e.root;
+	m.com.dur = e.dur;
+};
+//------------------------------------------------------------
+~next = {|d|
 
-// Gong crescendo
-(
-Routine({
-    var numStrikes = 50;
-    var baseTime = 1.0;
+	var move = m.accelMassFiltered.linlin(0,3,0,1);
+	var metal = m.accelMassFiltered.linlin(0,2.5,0.0001,4);
+	var size = m.accelMassFiltered.linlin(0,2.5,0.1,1);
+	var att = m.accelMassFiltered.linexp(0,2.5,0.1,0.0001);
 
-    numStrikes.do { |i|
-        var force = 0.3 + (i * 0.15);
-        var time = baseTime - (i * 0.4);
+	if(move > 0.22, {
+		if(TempoClock.beats > (lastTime + 0.35),{
+			lastTime = TempoClock.beats;
+			notes = notes.rotate(-1);
+			currentNote = notes[0];
+			roots = roots.rotate(-1);
+			currentRoot = roots[0];
+			m.com.root = currentRoot;
+			synth = Synth(\largeGong2, [
+				\freq, (52 + roots[0]).midicps,
+				\gate, 1,
+				\amp, 0.1,
+				\attackTime,att,
+    			\strikeForce, size,    // Impact intensity
+    			\shimmerAmount, 0.1,  // Amount of characteristic gong wobble
+				\metallic, metal,       // Metallic character
+    			\size, size,          // Size affect harmonics and decay
 
-        Synth(\largeGong, [
-            \freq, 55,
-            \strikeForce, force,
-            \shimmerAmount, 0.5 + (i * 0.1),
-            \metallic, 0.9,
-            \size, 0.9,
-            \decayTime, 1.0,
-            \amp, 0.3 + (i * 0.05)
-        ]);
+			]);
+			synth.server.sendBundle(0.3,[\n_set, synth.nodeID, \gate, 0]);
+		});
+	});
+};
+//------------------------------------------------------------
+~plotMin = -1;
+~plotMax = 1;
+~plot = { |d,p|
+	// [d.sensors.rrateEvent.x, m.rrateMass * 0.1, m.accelMassFiltered * 0.5];
+	[m.accelMass * 0.1, m.accelMassFiltered.linlin(0,3,0,1)];
+	// [m.rrateMassFiltered, m.rrateMassThreshold];
+	// [m.rrateMassFiltered, m.rrateMassThreshold, m.accelMassAmp];
+	// [d.sensors.gyroEvent.x, d.sensors.gyroEvent.y, d.sensors.gyroEvent.z];
+	// [d.sensors.rrateEvent.x, d.sensors.rrateEvent.y, d.sensors.rrateEvent.z];
+	// [d.sensors.accelEvent.x, d.sensors.accelEvent.y, d.sensors.accelEvent.z];
 
-        time.wait;
-    };
-}).play;
-)
+
+};
