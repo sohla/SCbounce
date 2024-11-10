@@ -8,7 +8,7 @@ var roots = [0,9,8].dupEach(12);
 var currentNote = notes[0];
 var currentRoot = roots[0];
 m.accelMassFilteredAttack = 0.5;
-m.accelMassFilteredDecay = 0.9;
+m.accelMassFilteredDecay = 0.999;
 
 
 SynthDef(\bambooComplex, {
@@ -140,21 +140,23 @@ SynthDef(\bambooComplex, {
 
 	var move = m.accelMassFiltered.linlin(0,3,0,1);
 	var att = m.accelMassFiltered.linexp(0,2.5,0.8,0.001);
-	var amp = m.accelMassFiltered.linexp(0,2.5,0.1,1);
-
+	var amp = m.accelMassFiltered.linexp(0,2.5,0.08,1);
+	var noteIndex = m.accelMassFiltered.linlin(0,2,0.0001,notes.size).floor;
+	var space = m.accelMassFiltered.linlin(0,2.5,0.25,0.08);
+	if(noteIndex>=notes.size,{noteIndex=notes.size-1});
 	if(move > 0.22, {
-		if(TempoClock.beats > (lastTime + 0.15),{
+		if(TempoClock.beats > (lastTime + space),{
 			lastTime = TempoClock.beats;
-			notes = notes.rotate(-1);
+			// notes = notes.rotate(-1);
 			currentNote = notes[0];
 			roots = roots.rotate(-1);
 			currentRoot = roots[0];
 			m.com.root = currentRoot;
 			synth = Synth(\bambooComplex, [
-				\freq, (30 + currentNote + currentRoot).midicps,
+				\freq, (30 + notes[noteIndex] + currentRoot).midicps,
 				\gate, 1,
 				\att, att,
-				\amp, 0.2 * amp,
+				\amp, 0.15 * amp,
 				\strikePos, 1.0.rand, // Position of strike (affects resonance)
 				\resonance, 1.0.rand, // Amount of resonant body sound
 				\bambooMoisture, 1.0.rand, // Affects damping and resonance

@@ -27,7 +27,7 @@ var m = ~model;
 			\instrument, \wingChimes1,
 			\note, Prand([0,7,11], inf),
 			\octave, Pwhite(5,6),
-			\root, Pseq([0,3,-4,0].stutter(24),inf),
+			\root, Pseq([0,3,-4, -1, 3].stutter(24),inf),
 			\pulseFreq, Pwhite(3, 7),
 			\numHarms, 30,
 			\func, Pfunc({|e| ~onEvent.(e)}),
@@ -51,11 +51,16 @@ var m = ~model;
 
 	var dur = 0.3;// * 2.pow(m.accelMassFiltered.linlin(0,4,0,4).floor).reciprocal;
 	var rq = m.accelMassFiltered.linexp(0,4,0.1,0.0005);
-	var amp = m.accelMassFiltered.linexp(0,4,0.1,10);
+	var amp = m.accelMassFiltered.linexp(0,4,0.05,8);
+//	var part = m.accelMassFiltered.linlin(0,3,0,2).floor.asInteger;
 
 	Pdef(m.ptn).set(\dur, dur);
 	Pdef(m.ptn).set(\rq, rq);
 	Pdef(m.ptn).set(\amp, amp);
+
+	// if(part == 0, { Pdef(m.ptn).set(\note, Prand([0], inf)) });
+	// if(part == 1, { Pdef(m.ptn).set(\note, Prand([0,7], inf)) });
+	// if(part == 2, { Pdef(m.ptn).set(\note, Prand([0,7,11], inf)) });
 
 	if(m.accelMass > 0.15,{
 		if( Pdef(m.ptn).isPlaying.not,{

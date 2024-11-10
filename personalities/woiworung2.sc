@@ -2,11 +2,11 @@ var m = ~model;
 var isPlaying = false;
 var synth;
 var notes = 24 + [9,11,2,9,6,11,9,2,11,13];
-m.accelMassFilteredAttack = 0.5;
+m.accelMassFilteredAttack = 0.99;
 m.accelMassFilteredDecay = 0.9;
 
 //------------------------------------------------------------
-SynthDef("woiworung2", {|out,freq = 1000, amp = 0.5, att = 2.02, dec = 0.3, sus = 1, rel = 1, gate = 1, fb = 1.2, ch=10|
+SynthDef("woiworung2", {|out,freq = 1000, amp = 0.5, att = 0.02, dec = 0.3, sus = 1, rel = 1, gate = 1, fb = 1.2, ch=10|
 	var snd, env;
 	env = EnvGen.kr(Env.adsr(att, dec, sus, rel), gate: gate, doneAction: 2);
 
