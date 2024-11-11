@@ -21,7 +21,7 @@ SynthDef(\largeGong, {
     size=0.8,          // Size affect harmonics and decay
     // Time and space
     attackTime=0.002,
-    decayTime=12.0,     // Long decay for large gong
+    decayTime=5.0,     // Long decay for large gong
     roomSize=0.9,
     damping=0.3,
     mix=0.5;

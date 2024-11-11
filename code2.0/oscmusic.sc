@@ -3,12 +3,12 @@
 // Global config
 
 // var personalityDir = "~/Develop/SuperCollider/Projects/SCbounce/personalities/";
-// var personalityDir = "~/Develop/SuperCollider/Projects/scbounce/personalities/";
-var personalityDir = "~/Develop/SuperCollider/oscMusic/personalities/";
+var personalityDir = "~/Develop/SuperCollider/Projects/scbounce/personalities/";
+// var personalityDir = "~/Develop/SuperCollider/oscMusic/personalities/";
 var defaultPersonality = "footGong";
 var defaultList = "list_brenton.sc";
-var oscMessageTag  = "CombinedDataPacket";
-// var oscMessageTag  = "IMUFusedData";
+// var oscMessageTag  = "CombinedDataPacket";
+var oscMessageTag  = "IMUFusedData";
 var renderRate = 30;
 
 // UI config
