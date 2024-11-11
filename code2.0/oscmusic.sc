@@ -3,10 +3,10 @@
 // Global config
 
 // var personalityDir = "~/Develop/SuperCollider/Projects/SCbounce/personalities/";
-var personalityDir = "~/Develop/SuperCollider/Projects/scbounce/personalities/";
-// var personalityDir = "~/Develop/SuperCollider/oscMusic/personalities/";
-var defaultPersonality = "footGong";
-var defaultList = "list_brenton.sc";
+var personalityDir = "~/Develop/SuperCollider/Projects/scbounce/personalities/"; // rpi
+// var personalityDir = "~/Develop/SuperCollider/oscMusic/personalities/"; //mac mini cabin
+var defaultPersonality = "wingChimes1";
+var defaultList = "list_yourDNA.sc";
 // var oscMessageTag  = "CombinedDataPacket";
 var oscMessageTag  = "IMUFusedData";
 var renderRate = 30;
