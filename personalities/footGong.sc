@@ -165,7 +165,7 @@ SynthDef(\largeGong, {
 			currentRoot = roots[0];
 			m.com.root = currentRoot;
 			synth = Synth(\largeGong, [
-				\freq, 33.midicps,
+				\freq, 45.midicps,
 				\gate, 1,
 				\amp, 0.3,
     			\strikeForce, size,    // Impact intensity

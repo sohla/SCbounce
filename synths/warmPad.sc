@@ -56,20 +56,20 @@ SynthDef(\warmPad, {
 );
 
 
-
+// come and have a look at us
 
 
 (
 Pbindef(\warmPadPattern,
     \instrument, \warmPad,
-    \dur, Pseq([0.2,0.2,0.2], inf),
+    \dur, Pseq([1.5], inf),
 	\legato, 0.5,
-    \degree, Pseq([0, 11,7], inf),
-	\root, Pseq([0,3,2,-2,-5,2].stutter(8), inf),
+	\note, Pseq([0,-3,-10,-5].stutter(4), inf),//12,11,7,5,0
+	\root, Pseq([-3.01].stutter(8), inf),
     \scale, Scale.minor,
-    \octave, 3,
-    \atk, 0.02,
-    \rel, 0.8,
+	\octave, [4],
+    \atk, 1.02,
+    \rel, 1.8,
     \filtMin, 200,
     \filtMax, 2000,
     \filtSpeed, 0.001,
@@ -77,5 +77,26 @@ Pbindef(\warmPadPattern,
     \chorusDepth, 0.1,
 	\detuneAmount, Pseg(Pseq([0.0001,0.001], inf), 4, \linear),
     \amp, 0.4
-).play;
+).play(quant:0.1);
+);
+
+(
+Pbindef(\warmPadPattern2,
+    \instrument, \warmPad,
+    \dur, Pseq([1.5/8], inf),
+	\legato, 0.5,
+   \note, Pseq([12,11,7,5,0], inf),//12,11,7,5,0
+	\root, Pseq([-3.01].stutter(8), inf),
+    \scale, Scale.minor,
+	\octave, [6,8],
+    \atk, 0.02,
+    \rel, 1.8,
+    \filtMin, 200,
+    \filtMax, 2000,
+    \filtSpeed, 0.001,
+    \chorusRate, 0.005,
+    \chorusDepth, 0.1,
+	\detuneAmount, Pseg(Pseq([0.0001,0.001], inf), 4, \linear),
+	\amp, [0.1,0.05] * 0.2
+).play(quant:0.1);
 );

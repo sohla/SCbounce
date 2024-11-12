@@ -162,7 +162,7 @@ Synth(\largeGong, [
 (
 // Huge temple gong
 Synth(\largeGong, [
-    \freq, 55,
+    \freq, 45.midicps,
     \strikeForce, 0.9,
     \shimmerAmount, 0.8,
     \metallic, 0.6,
