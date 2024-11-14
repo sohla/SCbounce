@@ -144,7 +144,7 @@ SynthDef(\bambooComplex, {
 	var noteIndex = m.accelMassFiltered.linlin(0,2,0.0001,notes.size).floor;
 	var space = m.accelMassFiltered.linlin(0,2.5,0.25,0.08);
 	if(noteIndex>=notes.size,{noteIndex=notes.size-1});
-	if(move > 0.07, {
+	if(move > 0.22, {
 		if(TempoClock.beats > (lastTime + space),{
 			lastTime = TempoClock.beats;
 			// notes = notes.rotate(-1);

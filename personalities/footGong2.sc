@@ -2,7 +2,7 @@ var m = ~model;
 var synth;
 var lastTime=0;
 var notes = [0];
-var roots = [0,7].dupEach(2);
+var roots = [0,3].dupEach(12);
 // var notes = [0,1,4,5,7,8,11,12,14] + 24;
 // var roots = [0].dupEach(18);
 var currentNote = notes[0];

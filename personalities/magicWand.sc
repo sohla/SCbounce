@@ -56,7 +56,7 @@ SynthDef(\glockenspiel, {
 	Pdef(m.ptn).set(\octave, 4 + oct);
 	Pdef(m.ptn).set(\amp, oct.linlin(2,5,0.1,0.2));
 
-	if(dur < 0.1,{
+	if(dur < 0.48,{
 		if( Pdef(m.ptn).isPlaying.not,{
 			Pdef(m.ptn).resume(quant:0);
 		});

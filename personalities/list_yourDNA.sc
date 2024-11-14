@@ -26,12 +26,11 @@
 		"heatherLaugh2",
 		"heatherLaugh",
 
-	"footGong",
-	"footGong2",
+
 
 		"bee",
 		"heatherTeddies",
-	"bells",
+
 		"bongo1",
 		"bongo2",
 
