@@ -1,5 +1,7 @@
 (
 	[
+		"metal1",
+		"metal2",
 	"footGong",
 	"footGong2",
 	"sheet3",

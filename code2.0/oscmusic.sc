@@ -5,10 +5,16 @@
 	 var personalityDir = "~/Develop/SuperCollider/Projects/SCbounce/personalities/";
 	//var personalityDir = "~/Develop/SuperCollider/Projects/scbounce/personalities/"; // rpi & laptop
 	// var personalityDir = "~/Develop/SuperCollider/oscMusic/personalities/"; //mac mini cabin
-	var defaultPersonality = "wingChimes1";
-	var defaultList = "list_yourDNA.sc";
+	
+	// var defaultPersonality = "wingChimes1";
+	// var defaultList = "list_yourDNA.sc";
+	
+	var defaultPersonality = "metal1";
+	var defaultList = "list_brenton.sc";
+	
 	// var oscMessageTag  = "CombinedDataPacket";
 	var oscMessageTag  = "IMUFusedData";
+	
 	var renderRate = 30;
 	
 	// UI config
@@ -871,6 +877,8 @@
 		startup.();
 		buildUI.();
 		startOSCListening.();
+
+		s.meter;
 	});
 	// s.plotTree;
 	
