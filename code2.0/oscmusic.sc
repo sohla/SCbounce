@@ -80,6 +80,7 @@
 		\ip: "127.0.0.1",
 		\port: 57120,
 		\did: "nil",
+		\color: Color.red,
 		\enabled: true, // are we running
 		\dataSize: dataSizeOptions[0],
 		\listeners: Event.new(proto:listenersProto),
@@ -316,6 +317,13 @@
 	
 		var d = Event.new(proto:deviceProto);
 	
+		var configPattern = "/%/Config".format(id);
+		var configListener = OSCFunc({ |msg2, time2, addr2, recvPort2|
+			d.color = Color.fromArray(msg2.at([15,16,17,255]));
+			"CONFIG % %".format(id,d.color).postln;
+			{addDeviceView.(contentView, d)}.defer;
+		}, configPattern).oneShot;
+
 		d.listeners = Event.new(proto:listenersProto);
 		d.sensors =  Event.new(proto:sensorsProto);
 		d.ip = ip;
@@ -324,7 +332,8 @@
 	
 		devices.put(port,d);
 		reloadPersonality.(d);
-		addDeviceView.(contentView, d);
+		//addDeviceView.(contentView, d);
+		NetAddr.new(ip,port-id+1).sendMsg("/Config/GetConfig", 57120);
 		addOSCDeviceListeners.(d);
 	
 		d // return the device
@@ -390,7 +399,7 @@
 		var va,vb,vc;
 		var stackView, stackLayout;
 		var popup,personalityMenu;
-		var col = Color.rand(0.1,0.9).alpha_(0.75);
+		var col = Color.gray(0.35);
 	
 		var createGraphs = {
 			createPlotterGroup.(va, Rect(250,5,400,240), col,
@@ -636,7 +645,7 @@
 		.distance_(3.5);
 	
 		graph1.add(cube = Canvas3DItem.cube()
-			.color_(Color.white.alpha_(0.4))
+			.color_(data.color.alpha_(1))
 			.width_(2)
 			.transform(Canvas3D.mScale(0.4,0.5,1))
 		);
