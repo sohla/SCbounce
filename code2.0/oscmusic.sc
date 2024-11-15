@@ -861,7 +861,7 @@
 		.align_(\right)
 		.font_(Font(size:12))
 		.minHeight_(30)
-		.minWidth_(Window.screenBounds.width)
+		.minWidth_(Window.screenBounds.width-20)
 		.string_("OSC: ["++wifiAddress++", "+NetAddr.localAddr.port++"] ");
 
 		cpuInfo = UserView(view)
@@ -872,9 +872,11 @@
 			(s.peakCPU.asStringPrec(2)++"%").drawAtPoint(8@8, Font.default, Color.yellow);
 		});
 		// view.layout_( HLayout(cpuInfo,wifiInfoView));
+
 		contentView.layout_(VLayout());
 		contentView.maxHeight_(5000);
 		scroll.canvas = contentView;
+		View(contentView).minHeight_(30);
 
 	};
 	//------------------------------------------------------------
