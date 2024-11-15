@@ -2,9 +2,9 @@
 
 	// Global config
 
-	//var personalityDir = "~/Develop/SuperCollider/Projects/SCbounce/personalities/";//RPI
+	var personalityDir = "~/Develop/SuperCollider/Projects/SCbounce/personalities/";//RPI
 	// var personalityDir = "~/Develop/SuperCollider/Projects/scbounce/personalities/"; //laptop
-	var personalityDir = "~/Develop/SuperCollider/oscMusic/personalities/"; //mac mini cabin
+	//var personalityDir = "~/Develop/SuperCollider/oscMusic/personalities/"; //mac mini cabin
 
 	// var defaultPersonality = "wingChimes1";
 	// var defaultList = "list_yourDNA.sc";
@@ -12,8 +12,8 @@
 	var defaultPersonality = "metal1";
 	var defaultList = "list_brenton.sc";
 
-var oscMessageTag  = "CombinedDataPacket";
-// var oscMessageTag  = "IMUFusedData";
+	//var oscMessageTag  = "CombinedDataPacket";
+	var oscMessageTag  = "IMUFusedData";
 
 	var renderRate = 30;
 
@@ -321,7 +321,7 @@ var oscMessageTag  = "CombinedDataPacket";
 		var configListener = OSCFunc({ |msg2, time2, addr2, recvPort2|
 			d.color = Color.fromArray(msg2.at([15,16,17,255]));
 			"CONFIG % %".format(id,d.color).postln;
-		// {addDeviceView.(contentView, d)}.defer;
+			{addDeviceView.(contentView, d)}.defer;
 		}, configPattern).oneShot;
 
 		d.listeners = Event.new(proto:listenersProto);
@@ -332,8 +332,8 @@ var oscMessageTag  = "CombinedDataPacket";
 
 		devices.put(port,d);
 		reloadPersonality.(d);
-	addDeviceView.(contentView, d);
-	// NetAddr.new(ip,port-id+1).sendMsg("/Config/GetConfig", 57120);
+		//addDeviceView.(contentView, d);
+		NetAddr.new(ip,port-id+1).sendMsg("/Config/GetConfig", 57120);
 		addOSCDeviceListeners.(d);
 
 		d // return the device
