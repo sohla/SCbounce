@@ -423,7 +423,7 @@
 			UserView(view)
 			.background_(col)
 			.maxHeight_(40)
-			.minWidth_(200)
+			.maxWidth_(180)
 			.drawFunc_({
 				d.sensors.accelEvent.asString.drawAtPoint(10@0, Font(size:7));
 				d.sensors.gyroEvent.asString.drawAtPoint(10@10, Font(size:7));
@@ -434,7 +434,8 @@
 
 		var removeDeviceButton = {|view|
 			Button(view)
-			.minWidth_(80)
+			.maxWidth_(60)
+			.maxHeight_(60)
 			.states_([
 				["x",Color.red(0.5)],
 			])
@@ -458,7 +459,8 @@
 		var muteButton = {|view|
 			muteButtonLocal = Button()
 			.enabled_(false) //broken
-			.maxWidth_(80)
+			.maxWidth_(60)
+			.maxHeight_(60)
 			.states_([["mute"],["mute",Color.red(0.5)]])
 			.action_({|b|
 				d.enabled = b.value.asBoolean;
@@ -473,7 +475,8 @@
 
 		var reloadButton = {|view|
 			Button(view)
-			.minWidth_(80)
+			.maxWidth_(60)
+			.maxHeight_(60)
 			.states_([
 				["reload"],
 			])
@@ -486,9 +489,9 @@
 
 		var personalityMenuView = {|view|
 			personalityMenu = PopUpMenu(view)
-			.font_(Font(size:16))
-			.minWidth_(220)
-			.minHeight_(40)
+			.font_(Font(size:20))
+			.maxWidth_(160)
+			.minHeight_(60)
 			.items_(names)
 			.valueAction_(names.find([d.name]))
 			.action_({|b|
@@ -511,14 +514,15 @@
 		header = View(wrapView)
 					.background_(col)
 					.maxHeight_(240)
-					.maxWidth_(420)
+					.maxWidth_(320)
 					.layout_( GridLayout.rows( [
 			removeDeviceButton.(wrapView),
 			infoView.(wrapView),
 			reloadButton.(wrapView)
 		],[
 			Button(wrapView)
-			.minHeight_(40)
+			.minHeight_(60)
+			.maxWidth_(60)
 			.font_(Font(size:16))
 			.states_([["-"]])
 			.action_({|b|
@@ -531,7 +535,8 @@
 
 			personalityMenuView.(wrapView),
 			Button(wrapView)
-			.minHeight_(40)
+			.minHeight_(60)
+			.maxWidth_(60)
 			.font_(Font(size:16))
 			.states_([["+"]])
 			.action_({|b|
@@ -570,7 +575,7 @@
 	createPlotterGroup = {|view, data|
 
 		var col = [Color.yellow,Color.magenta,Color.cyan,Color.red,Color.green,Color.blue];
-		var bounds = Rect(0,0,570/2 - 20,200);
+		var bounds = Rect(0,0,200,200);
 		var pw = bounds.width;
 		var ph = bounds.height;
 		var plotterView = UserView(view,bounds).animate_(true);
@@ -645,7 +650,7 @@
 		.scale_(160)
 		.background_(Color.gray(0.25))
 		.perspective_(0)
-		.transforms_([Canvas3D.mTranslate(0,0,0)])
+		.transforms_([Canvas3D.mTranslate(-0.6,0,0)])
 		.distance_(3.5);
 
 		graph1.add(cube = Canvas3DItem.cube()
