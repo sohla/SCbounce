@@ -62,7 +62,7 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, fre
 
 	Pdef(m.ptn).set(\amp, amp);
 	Pdef(m.ptn).set(\start, start.linlin(0,1,0,1));
-	Pdef(m.ptn).set(\rate, rate.linlin(0,2,0.25,1));
+	Pdef(m.ptn).set(\rate, rate.linexp(0,2,0.25,5));
 
 };
 

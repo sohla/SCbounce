@@ -12,11 +12,11 @@ SynthDef(\monoSampler, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=
     attack=0.01, decay=0.1, sustain=0.3, release=0.2, gate=1,cutoff=20000, rq=1|
 
 	var lr = rate * BufRateScale.kr(bufnum) * (freq/440.0);
-    var env = EnvGen.kr(Env.adsr(attack, decay, sustain, release), gate, doneAction: 2);
-	var sig = PlayBuf.ar(1, bufnum, rate: [lr, lr * 1.003], startPos: start * BufFrames.kr(bufnum), loop: 0);
-    sig = RLPF.ar(sig, cutoff, rq);
-    sig = Balance2.ar(sig[0], sig[1], pan, amp * env);
-    Out.ar(out, sig);
+  var env = EnvGen.kr(Env.adsr(attack, decay, sustain, release), gate, doneAction:2);
+	var sig = PlayBuf.ar(1, bufnum, rate: [lr, lr * 1.003], startPos: start * BufFrames.kr(bufnum), loop: 0)[0];
+  sig = RLPF.ar(sig, cutoff, rq);
+  sig = Pan2.ar(sig, pan);
+    Out.ar(out, sig * amp * env);
 }).add;
 
 
@@ -37,7 +37,8 @@ SynthDef(\monoSampler, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=
 				\root, Pseq([0,5,4,-5].stutter(24), inf),
 				\note, Pseq([33+7], inf),
 				\attack, 0.07,
-				\decay,0.1,
+				\decay, 1.4,
+				\pan, Pseq([-1,1], inf),
 				\sustain,0.04,
 				\args, #[],
 			)
@@ -50,6 +51,7 @@ SynthDef(\monoSampler, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=
 				\rate, 1,
 				\root, Pseq([0,-2,2,0].stutter(24), inf),
 				\note, Pseq([33-12+7], inf),
+				\pan, Pseq([1,-1], inf),
 				\attack, 0.07,
 				\sustain,0.03,
 				\args, #[],
@@ -87,7 +89,7 @@ SynthDef(\monoSampler, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=
 	var div = d.sensors.gyroEvent.x.linlin(-1,1,1,2);
 	var rels = [3,0.1];
 
-	if(amp < 0.15, {amp = 0}, { amp = 0.5 });
+	if(amp < 0.15, {amp = 0}, { amp = 1 });
 
 	Pdef(pa).set(\amp, amp);
 	Pdef(pb).set(\amp, amp);

@@ -6,11 +6,11 @@
 	// var personalityDir = "~/Develop/SuperCollider/Projects/scbounce/personalities/"; //laptop
 	//var personalityDir = "~/Develop/SuperCollider/oscMusic/personalities/"; //mac mini cabin
 
-	// var defaultPersonality = "wingChimes1";
-	// var defaultList = "list_yourDNA.sc";
+	var defaultPersonality = "wingChimes1";
+	var defaultList = "list_yourDNA.sc";
 
-	var defaultPersonality = "metal1";
-	var defaultList = "list_brenton.sc";
+	// var defaultPersonality = "metal1";
+	// var defaultList = "list_brenton.sc";
 
 	//var oscMessageTag  = "CombinedDataPacket";
 	var oscMessageTag  = "IMUFusedData";
@@ -860,16 +860,16 @@
 		.stringColor_(Color.gray(0.5))
 		.align_(\right)
 		.font_(Font(size:12))
-		.minHeight_(30)
+		.minHeight_(50)
 		.minWidth_(Window.screenBounds.width-20)
 		.string_("OSC: ["++wifiAddress++", "+NetAddr.localAddr.port++"] ");
 
 		cpuInfo = UserView(view)
-			.maxWidth_(80)
-			.maxHeight_(30)
+			.maxWidth_(180)
+			.maxHeight_(40)
 			.animate_(true)
 			.drawFunc_({|uv|
-			(s.peakCPU.asStringPrec(2)++"%").drawAtPoint(8@8, Font.default, Color.yellow);
+			("CPU: "++s.peakCPU.asStringPrec(2)++"%").drawAtPoint(100@16, Font.default, Color.yellow);
 		});
 		// view.layout_( HLayout(cpuInfo,wifiInfoView));
 
@@ -877,6 +877,12 @@
 		contentView.maxHeight_(5000);
 		scroll.canvas = contentView;
 		View(contentView).minHeight_(30);
+		Button(view, Rect(20,10,60,30))
+			.states_([["Network",Color.gray(0.5),Color.gray(0.25)]])
+			.action_({
+					("sudo systemctl restart NetworkManager").unixCmdGetStdOut();
+			});
+			
 
 	};
 	//------------------------------------------------------------
