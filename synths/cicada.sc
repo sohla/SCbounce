@@ -1,7 +1,7 @@
 (
 Ndef(\cicada, {
-    |out=0, freq=3600, amp=0.1, pan=0, gate=1,
-    filterFreq=900, filterQ=0.6,
+    |out=0, freq=6000, amp=0.1, pan=0, gate=1,
+    filterFreq=3000, filterQ=0.6,
     reverbMix=0.6, reverbRoom=0.5, reverbDamp=0.5|
 
     var sig, env, filtered, reverbed;
@@ -10,7 +10,7 @@ Ndef(\cicada, {
     sig = SinOsc.ar(freq) * SinOsc.ar(freq * 0.5) * SinOsc.ar(freq * 0.5) ;
 
     // Amplitude modulation for the characteristic pulsing
-	sig = sig * LFTri.ar(55+ LFNoise2.kr([1,2], 10), 0, 3, 1);
+	sig = sig * LFTri.ar(55+ LFNoise2.kr([1,2], 10), 0, MouseX.kr(1,10), 1);
 
     // Envelope
     env = EnvGen.kr(Env.asr(0.02, 1, 0.1), gate, doneAction: 2);

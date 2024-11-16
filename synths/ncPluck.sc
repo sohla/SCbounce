@@ -19,7 +19,7 @@
 					delayTime,			// actual delay time
 					2,
 				1,
-				SinOsc.ar(pitch.midicps*0.5,0, Decay2.ar(strike,0.03,pitch.linlin(36,100,1,0.1)));
+				SinOsc.ar(pitch.midicps*0.5,0, Decay2.ar(strike,0.03,pitch.linexp(36,100,1,0.1))*0.5);
 			) 				// decay time of string
 			})),
 			(pitch - 23)/24 - 1 // pan position: lo notes left, hi notes right

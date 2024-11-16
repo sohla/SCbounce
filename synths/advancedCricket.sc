@@ -28,12 +28,13 @@ SynthDef(\advancedCricket, {
 }).add;
 )
 
-(Pbindef(\cricketPattern,
+(1
+	Pbindef(\cricketPattern,
         \instrument, \advancedCricket,
 		\dur, Pexprand(0.3, 3, inf),  // Pattern runs continuously
         \freq, Pwhite(8000, 11000, inf),  // Random frequency for each cricket
         \chirpSpeed, Pwhite(7, 23, inf),  // Random chirp speed
-        \filterFreq, Pexprand(14000, 18000, inf),  // Random filter frequency
+        \filterFreq, Pexprand(10000, 14000, inf),  // Random filter frequency
         \filterQ, Pwhite(0.3, 0.7, inf),  // Random filter Q
         \delayTime, Pwhite(0.1, 0.3, inf),  // Random delay time
         \delayFeedback, Pwhite(0.2, 0.4, inf),  // Random delay feedback
