@@ -106,7 +106,7 @@ Pbindef(\thunderPattern,
     \instrument, \arpThunder,
     \dur, Pwhite(1.0, 5.0, inf),  // Random timing between events
     \amp, Pwhite(0.5, 0.7, inf),
-    \freq, Pexprand(4 0, 130, inf),  // Varying base frequency for different thunder characteristics
+    \freq, Pexprand(4, 130, inf),  // Varying base frequency for different thunder characteristics
     \filterMod, 0.9,  // Keep consistent with original spec
     \keyFollow, Pwhite(0.3, 0.7, inf),  // Varying key following for different characters
     \filterRelease, 4.65,
@@ -125,7 +125,7 @@ Pbindef(\thunderPattern,
 (
 Synth(\arpThunder, [
     \amp, 0.7,
-    \freq, 52,
+    \freq, 92,
     \filterMod, 0.53,
     \keyFollow, 0.5,
     \filterRelease, 4.65,
