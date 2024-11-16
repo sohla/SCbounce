@@ -32,7 +32,7 @@ SynthDef(\versatilePerc, {
 }).add;
 )
 // Example usage:
-Synth(\versatilePerc, [\freq, 28.midicps, \tension, 5.1, \decay, 0.4, \clickLevel, 0.4, \amp, 0.8]);
+Synth(\versatilePerc, [\freq, 28.rrand(36).midicps, \tension, 5.1, \decay, 0.4, \clickLevel, 0.4, \amp, 0.8]);
 Synth(\versatilePerc, [\freq, 90, \tension, 0.05, \decay, 0.2, \clickLevel, 0.3, \amp, 0.7]);
 Synth(\versatilePerc, [\freq, 120, \tension, 0.03, \decay, 0.15, \clickLevel, 0.4, \amp, 0.7]);
 Synth(\versatilePerc, [\freq, 180, \tension, 0.02, \decay, 0.1, \clickLevel, 0.6, \amp, 0.6]);

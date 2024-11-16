@@ -1,11 +1,23 @@
-(
+var m = ~model;
+var synth;
+var lastTime=0;
+var notes = [0,8,3,9,5,6,14,2,8,4,9,11,3,6,2] * 6;
+var roots = [0,9,8].dupEach(12);
+// var notes = [0,1,4,5,7,8,11,12,14] + 24;
+// var roots = [0].dupEach(18);
+var currentNote = notes[0];
+var currentRoot = roots[0];
+m.accelMassFilteredAttack = 0.5;
+m.accelMassFilteredDecay = 0.999;
+
+
 SynthDef(\bambooComplex, {
-    arg out=0, freq=440, pan=0, amp=0.5,
+    arg out=0, freq=440, pan=0, amp=0.1,
         att=0.001, rel=3.0,
-        strikePos=0.3, // Position of strike (affects resonance)
-        resonance=0.7, // Amount of resonant body sound
-        bambooMoisture=0.5, // Affects damping and resonance
-        model=0, // Model selector
+        strikePos=0.1, // Position of strike (affects resonance)
+        resonance=0.9, // Amount of resonant body sound
+        bambooMoisture=0.1, // Affects damping and resonance
+        model=0, // Model selecto
         width=0.8; // Stereo width
 
     var exciter, klank, env, noiseSig, bodyResonance;
@@ -110,69 +122,63 @@ SynthDef(\bambooComplex, {
 
     Out.ar(out, output);
 }).add;
-);
-
-// Example patterns with more bamboo-like settings
-(
-Pbindef(\bambooPattern,
-    \instrument, \bambooComplex,
-    \scale, Scale.major,
-    \degree, Pseq([0, 2, 4, 7, 9, 7, 4, 2], inf),
-    \octave, Prand([2,3,4, 5], inf),
-    \dur, Pwhite(0.1, 0.3),
-    \amp, Pwhite(0.4, 0.6),
-    \pan, Pwhite(-0.6, 0.6),
-    \model, Prand([0, 1, 2,3,4,5,6], inf),
-    \strikePos, Pwhite(0.1, 0.9),
-    \resonance, Pwhite(0.1, 0.9),
-	\bambooMoisture, Pwhite(0.1,0.9),
-    \rel, Pkey(\dur) * 3
-).play;
-);
-
-// Different bamboo characteristics
-(
-// Large, resonant bamboo
-Synth(\bambooComplex, [
-    \freq, 220,
-    \model, 1,
-    \resonance, 0.8,
-    \bambooMoisture, 0.7,
-    \rel, 4.0,
-    \amp, 0.6
-]);
-);
-
-(
-// Small, dry bamboo
-Synth(\bambooComplex, [
-    \freq, 440,
-    \model, 2,
-    \resonance, 0.6,
-    \bambooMoisture, 0.3,
-    \rel, 2.0,
-    \amp, 0.5
-]);
-);
-
-(
-// Multiple bamboo hits in sequence
-Routine({
-    var baseFreq = 220;
-
-    [0, 4, 7, 9].do { |interval|
-        var freq = baseFreq * (interval * 0.1 + 1);
-        Synth(\bambooComplex, [
-            \freq, freq,
-            \model, [0,1,2,3,4,5,6].choose,
-            \strikePos, 0.5,//rrand(0.2, 0.4),
-            \resonance, 0.5,//rrand(0.6, 0.8),
-            \bambooMoisture, 0.01,
-            \amp, 0.5
-        ]);
-        0.2.wait;
-    };
-}).play;
-)
 
 
+~init = ~init <> {
+};
+
+~deinit = ~deinit <> {
+};
+
+//------------------------------------------------------------
+~onEvent = {|e|
+	m.com.root = e.root;
+	m.com.dur = e.dur;
+};
+//------------------------------------------------------------
+~next = {|d|
+
+	var move = m.accelMassFiltered.linlin(0,3,0,1);
+	var att = m.accelMassFiltered.linexp(0,2.5,0.8,0.001);
+	var amp = m.accelMassFiltered.linexp(0,2.5,0.08,1);
+	var noteIndex = m.accelMassFiltered.linlin(0,2,0.0001,notes.size).floor;
+	var space = m.accelMassFiltered.linlin(0,2.5,0.25,0.08);
+	if(noteIndex>=notes.size,{noteIndex=notes.size-1});
+	if(move > 0.22, {
+		if(TempoClock.beats > (lastTime + space),{
+			lastTime = TempoClock.beats;
+			// notes = notes.rotate(-1);
+			currentNote = notes[0];
+			roots = roots.rotate(-1);
+			currentRoot = roots[0];
+			m.com.root = currentRoot;
+			synth = Synth(\bambooComplex, [
+				\freq, (30 + notes[noteIndex] + currentRoot).midicps,
+				\gate, 1,
+				\att, att,
+				\amp, 0.15 * amp,
+				\strikePos, 1.0.rand, // Position of strike (affects resonance)
+				\resonance, 1.0.rand, // Amount of resonant body sound
+				\bambooMoisture, 1.0.rand, // Affects damping and resonance
+				\model, 6.rand.floor, // Model selecto
+
+			]);
+			synth.server.sendBundle(0.3,[\n_set, synth.nodeID, \gate, 0]);
+		});
+	});
+};
+
+//------------------------------------------------------------
+~plotMin = -1;
+~plotMax = 1;
+~plot = { |d,p|
+	// [d.sensors.rrateEvent.x, m.rrateMass * 0.1, m.accelMassFiltered * 0.5];
+	[m.accelMass * 0.1, m.accelMassFiltered.linlin(0,3,0,1)];
+	// [m.rrateMassFiltered, m.rrateMassThreshold];
+	// [m.rrateMassFiltered, m.rrateMassThreshold, m.accelMassAmp];
+	// [d.sensors.gyroEvent.x, d.sensors.gyroEvent.y, d.sensors.gyroEvent.z];
+	// [d.sensors.rrateEvent.x, d.sensors.rrateEvent.y, d.sensors.rrateEvent.z];
+	// [d.sensors.accelEvent.x, d.sensors.accelEvent.y, d.sensors.accelEvent.z];
+
+
+};

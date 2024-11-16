@@ -8,7 +8,7 @@ SynthDef(\pullstretchMono, {|out, amp = 0.8, buffer = 0, envbuf = -1, pch = 1.0,
 	var sp;
 	var mas;
 	var len = BufDur.kr(buffer) / div;
-	var lfo = LFSaw.kr( (1.0/len) * speed ,1,0.5,0.5);
+	var lfo = LFSaw.kr( (1.0/len) * speed * 0.5,1,0.5,0.5);
 
 	sp = Splay.arFill(12,
 			{ |i| Warp1.ar(1, buffer, lfo, pch,splay, envbuf, 8, 0.1, 2)  },
@@ -25,13 +25,13 @@ SynthDef(\pullstretchMono, {|out, amp = 0.8, buffer = 0, envbuf = -1, pch = 1.0,
 //------------------------------------------------------------
 ~init = ~init <> {
 
-	var path = PathName("~/Downloads/yourDNASamples/Copy of Jam1 25June2024.wav");
+	var path = PathName("~/Downloads/yourDNASamples/found.wav");
 	postf("loading sample : % \n", path.fileName);
 
 	buffer = Buffer.read(s, path.fullPath, action:{ |buf|
 		postf("buffer alloc [%] \n", buf);
-		sa = Synth(\pullstretchMono,[\buffer,buf,\pch,0.midiratio, \amp,0.0, \div, 4]);
-		sb = Synth(\pullstretchMono,[\buffer,buf,\pch,3.midiratio, \amp,0.0, \div, 4]);
+		sa = Synth(\pullstretchMono,[\buffer,buf,\pch,0.midiratio, \amp,1, \div, 4]);
+		sb = Synth(\pullstretchMono,[\buffer,buf,\pch,-12.midiratio, \amp,1, \div, 4]);
 	});
 };
 
@@ -46,16 +46,16 @@ SynthDef(\pullstretchMono, {|out, amp = 0.8, buffer = 0, envbuf = -1, pch = 1.0,
 //------------------------------------------------------------
 ~next = {|d|
 
-	var amp = m.accelMass.linlin(0,1,0,0.5);
-	if(amp < 0.03, {amp = 0});
-	sa.set(\speed, m.rrateMass.linlin(3,10,0.01,2));
-	sb.set(\speed, m.rrateMass.linlin(3,10,0.01,2));
-
+	var amp = m.accelMass.linlin(0,2,0,1);
+	if(amp < 0.1, {amp = 0});
+	sa.set(\speed, m.accelMass.linlin(0,2.5,0.001,1));
+	sb.set(\speed, m.accelMass.linlin(0,2.5,0.001,1));
+	//
 	sa.set(\splay, m.rrateMass.linlin(3,10,0.01,1));
 	sb.set(\splay, m.rrateMass.linlin(3,10,0.01,1));
 
-	sa.set(\amp, amp * 0.6);
-	sb.set(\amp, amp * 0.6);
+	sa.set(\amp, amp * 2);
+	sb.set(\amp, amp * 2);
 };
 
 //------------------------------------------------------------

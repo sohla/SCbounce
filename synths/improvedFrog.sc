@@ -62,6 +62,6 @@ Pbindef(\frogPattern,
 Pbindef(\frogPattern, \freq, Pwhite(40, 260, inf));
 Pbindef(\frogPattern, \freq, Pwhite(240, 260, inf));
 Pbindef(\frogPattern, \filterDur, Pwhite(0.0003, 0.001, inf));
-Pbindef(\frogPattern, \filterStartFreq, 16550);
-Pbindef(\frogPattern, \filterEndFreq, 14240);
+Pbindef(\frogPattern, \filterStartFreq, 4950);
+Pbindef(\frogPattern, \filterEndFreq, 540);
 
