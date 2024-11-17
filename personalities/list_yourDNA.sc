@@ -1,5 +1,8 @@
 (
 	[
+		"rain",
+		"thunder",
+		
 		"wingChimes1",
 		"wingChimes2",
 

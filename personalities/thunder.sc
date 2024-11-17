@@ -1,16 +1,19 @@
 var m = ~model;
 var buffers;
-var synths=[];
+var synth;
 var lastTime=0;
+var index = 0;
 
-m.accelMassFilteredAttack = 0.01;
-m.accelMassFilteredDecay = 0.03;
+m.accelMassFilteredAttack = 0.5;
+m.accelMassFilteredDecay = 0.9;
 
-SynthDef(\rainSampler, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0,
+SynthDef(\thunderSampler, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0,
     attack=0.01, decay=0.1, sustain=0.3, release=0.2, gate=1,cutoff=20000, rq=1|
 
-	  var env = EnvGen.kr(Env.adsr(attack, decay, sustain, release), gate, timeScale: 1, doneAction: 2);
-	var sig = PlayBuf.ar(2, bufnum, rate: rate, startPos: start * BufFrames.kr(bufnum), loop: 1);
+	var lr = rate * BufRateScale.kr(bufnum);
+	var cd = BufDur.kr(bufnum);
+    var env = EnvGen.kr(Env.adsr(attack, decay, sustain, release), gate, timeScale: cd * 2, doneAction: 2);
+	var sig = PlayBuf.ar(2, bufnum, rate: lr, startPos: start * BufFrames.kr(bufnum), loop: 0);
     sig = RLPF.ar(sig, cutoff, rq);
     sig = Pan2.ar(sig, pan, amp * env);
     Out.ar(out, sig);
@@ -21,19 +24,12 @@ SynthDef(\rainSampler, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0,
 //------------------------------------------------------------
 ~init = ~init <> {
 
-	var folder  = PathName("~/Downloads/yourDNASamples/rain");
+	var folder  = PathName("~/Downloads/yourDNASamples/thunder");
 	postf("loading samples : % \n", folder);
 
 	buffers = folder.entries.collect({ |path,i|
 		Buffer.read(s, path.fullPath, action:{|buf|
 			postf("buffer alloc [%] \n", buf);
-			synths = synths.add(Synth(\rainSampler, [
-				\rate, 1,
-				\gate, 1,
-				\amp, 0,
-        \bufnum, buf
-			]);
-			);
 			if(folder.entries.size - 1 == i,{
 				"samples loaded".postln;
 			});
@@ -43,10 +39,6 @@ SynthDef(\rainSampler, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0,
 };
 
 ~deinit = ~deinit <> {
-
-	synths.do({|synth|
-		synth.set(\gate, 0);
-	});
 
 	buffers.do({|buf|
 		buf.free;
@@ -58,17 +50,24 @@ SynthDef(\rainSampler, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0,
 //------------------------------------------------------------
 ~next = {|d|
 
-	var levels = [	
-		m.accelMassFiltered.clip2(0.5).linlin(0,0.5,0,1),
-		m.accelMassFiltered.clip2(1.0).linlin(0.5,1.0,0,1),
-		m.accelMassFiltered.clip2(2.0).linlin(1.0,2.0,0,1),
-		m.accelMassFiltered.clip2(3.0).linlin(2.0,3.0,0,1)];
+	var move = m.accelMassFiltered.linlin(0,3,0,1);
+	var metal = m.accelMassFiltered.linlin(0,2.5,0.01,2);
+	var size = m.accelMassFiltered.linlin(0,2.5,0.1,1);
 
-	var mix = [1,1,1,1.5];
-	synths.do({|synth, i|
-		synth.set(\amp, levels[i] * mix[i]);
+	if(move > 0.22, {
+		if(TempoClock.beats > (lastTime + 0.35),{
+			lastTime = TempoClock.beats;
+			synth = Synth(\thunderSampler, [
+				\rate, 1,
+				\gate, 1,
+				\amp, 0.8,
+        \bufnum, buffers[index]
+			]);
+			synth.server.sendBundle(0.3,[\n_set, synth.nodeID, \gate, 0]);
+			index = index + 1;
+      if(index >= buffers.size,{ index = 3});
+		});
 	});
-	
 };
 
 //------------------------------------------------------------
@@ -85,7 +84,3 @@ SynthDef(\rainSampler, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0,
 
 
 };
-
-
-
-
