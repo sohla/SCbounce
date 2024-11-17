@@ -27,10 +27,12 @@ SynthDef(\rainSampler, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0,
 	buffers = folder.entries.collect({ |path,i|
 		Buffer.read(s, path.fullPath, action:{|buf|
 			postf("buffer alloc [%] \n", buf);
+			// postf("buffer alloc [%] \n", buf.path.basename.splitext[0]);
 			synths = synths.add(Synth(\rainSampler, [
 				\rate, 1,
 				\gate, 1,
 				\amp, 0,
+				\release, 10,
         \bufnum, buf
 			]);
 			);
@@ -44,15 +46,27 @@ SynthDef(\rainSampler, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0,
 
 ~deinit = ~deinit <> {
 
-	synths.do({|synth|
-		synth.set(\gate, 0);
+	synths.do({|synth, i|
+		synth.onFree({
+			if(i >= 3,{
+				"all synths on free".postln;
+				buffers.do({|buf|
+					{
+						postf("buffer dealloc [%] \n", buf);
+						buf.free;
+						s.sync;
+					}.fork;
+				});
+			});
+		});
+		synth.set(\gate, 0);	
 	});
 
-	buffers.do({|buf|
-		buf.free;
-		s.sync;
-		postf("buffer dealloc [%] \n", buf);
-	});
+	// buffers.do({|buf|
+	// 	buf.free;
+	// 	s.sync;
+	// 	postf("buffer dealloc [%] \n", buf);
+	// });
 };
 
 //------------------------------------------------------------

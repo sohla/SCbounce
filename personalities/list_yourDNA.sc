@@ -1,5 +1,6 @@
 (
 	[
+		"ndefTest1",
 		"rain",
 		"thunder",
 		
