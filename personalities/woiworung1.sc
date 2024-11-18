@@ -1,8 +1,8 @@
 var m = ~model;
 var isPlaying = false;
 var synth;
-var notes = 60 + [4,-10,4,8-12,-10,6-12,4,8-12];
-
+var notes = 60 + [4,-10,4,8-12,-10,6-12,4];
+var lastTime=0;
 m.accelMassFilteredAttack = 0.5;
 m.accelMassFilteredDecay = 0.9;
 
@@ -14,7 +14,7 @@ SynthDef("woiworung1", {|out,freq = 1000, amp = 0.5, att = 2.02, dec = 0.3, sus 
 
 	snd = SinOsc.ar(freq,
 		LocalIn.ar(2) * LFNoise1.ar(0.1,2),
-		LFNoise1.ar(ch.lag(0.3),6)
+		LFNoise2.ar(ch.lag(0.3),9)
 	).tanh * amp.lag(0.3);
 	2.do{
 		snd = AllpassL.ar(snd,0.3,{0.1.rand+0.03}!2,5)
@@ -34,8 +34,8 @@ SynthDef("woiworung1", {|out,freq = 1000, amp = 0.5, att = 2.02, dec = 0.3, sus 
 //------------------------------------------------------------
 ~next = {|d|
 
-	var a = m.accelMassFiltered * 0.25;
-	var ch = (m.accelMassFiltered * 0.25).linlin(0.0,1.0,0.2,19);
+	var a = m.accelMassFiltered.linlin(0,1,0.0,0.15);
+	var ch = (m.accelMassFiltered * 0.25).linlin(0.0,1.0,0.2,49);
 	// var pchs = [0,12,24,36,48];
 	// var i = (d.sensors.gyroEvent.y.abs / pi) * (pchs.size);
 	if(a<0.1,{a=0});
@@ -47,13 +47,13 @@ SynthDef("woiworung1", {|out,freq = 1000, amp = 0.5, att = 2.02, dec = 0.3, sus 
 	if(a < 0.004, {
 		if(isPlaying.not,{
 			isPlaying = true;
-			notes = notes.rotate(-1);
 			// notes[0].postln;
-			synth.set(\freq,notes[0].midicps);
 		})
 	},{
 		if(isPlaying,{
 			isPlaying = false;
+			notes = notes.rotate(-1);
+			synth.set(\freq,notes[0].midicps);
 		});
 	});
 };
