@@ -9,10 +9,17 @@ SynthDef(\monoSampler, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=44
 	var lr = rate * BufRateScale.kr(bufnum) * (freq/440.0);
 	var cd = BufDur.kr(bufnum);
     var env = EnvGen.kr(Env.adsr(attack, decay, sustain, release), gate, timeScale: cd * 2, doneAction: 2);
-	var sig = PlayBuf.ar(1, bufnum, rate: [lr, lr * 1.003], startPos: start * BufFrames.kr(bufnum), loop: 0);
+	var sig = PlayBuf.ar(1, bufnum, rate: [lr, lr * 1.007], startPos: start * BufFrames.kr(bufnum), loop: 0);
     sig = RLPF.ar(sig, cutoff, rq);
-    sig = Balance2.ar(sig[0], sig[0], pan, amp * env);
-    Out.ar(out, sig);
+    sig = Pan2.ar(sig, pan);
+		sig = Compander.ar(sig, sig,
+        thresh: -45.dbamp,
+        slopeBelow: 1,
+        slopeAbove: 0.5,
+        clampTime:  0.01,
+        relaxTime:  0.01
+		);
+    Out.ar(out, sig * amp * env);
 }).add;
 
 //------------------------------------------------------------
@@ -41,9 +48,9 @@ SynthDef(\monoSampler, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=44
 			\octave, Pxrand([3], inf),
 			\rate, Pseq([0,-3,-5,4,7,9,12,-12].midiratio, inf),
 			\start, 0,
+			\amp, 1,
 			\note, Pseq([33], inf),
 			// \dur, 0.3,
-			\amp, 0.3,
 			\attack, 0.07,
 			\release,0.2,
 			\args, #[],
@@ -68,10 +75,10 @@ SynthDef(\monoSampler, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=44
 ~next = {|d|
 
 	var dur = m.accelMassFiltered.linlin(0,1,2.4,0.15);
-	var amp = m.accelMass.linlin(0,1,0,1);
+	// var amp = m.accelMass.linlin(0,1,0,1);
 
-	if(amp < 0.2, {amp = 0});
-	Pdef(m.ptn).set(\amp, amp);
+	// if(amp < 0.2, {amp = 0});
+	// Pdef(m.ptn).set(\amp, amp * 1);
 	Pdef(m.ptn).set(\dur, dur);
 
 	if(m.accelMass > 0.09,{
