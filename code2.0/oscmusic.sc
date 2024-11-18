@@ -865,7 +865,7 @@
 		.string_("OSC: ["++wifiAddress++", "+NetAddr.localAddr.port++"] ");
 
 		cpuInfo = UserView(view)
-			.maxWidth_(180)
+			.minWidth_(200)
 			.maxHeight_(40)
 			.animate_(true)
 			.drawFunc_({|uv|

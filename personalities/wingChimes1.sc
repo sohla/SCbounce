@@ -27,7 +27,7 @@ var m = ~model;
 			\instrument, \wingChimes1,
 			\note, Prand([0,7,11], inf),
 			\octave, Pwhite(5,6),
-			\root, Pseq([0,3,-4, -1, 3].stutter(24),inf),
+			\root, Pseq([0,3,-4, -1, 3].stutter(48),inf),
 			\pulseFreq, Pwhite(3, 7),
 			\numHarms, 30,
 			\func, Pfunc({|e| ~onEvent.(e)}),
