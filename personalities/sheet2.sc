@@ -1,10 +1,13 @@
 var m = ~model;
 var synth;
 
+m.accelMassFilteredAttack = 0.5;
+m.accelMassFilteredDecay = 0.9;
+
 //------------------------------------------------------------
 SynthDef(\sheet2, { |out, frq=111, gate=0, amp = 0, pchx=0|
 	var env = EnvGen.ar(Env.asr(0.3,1.0,12.0), gate, doneAction:Done.freeSelf);
-	var follow = Amplitude.kr(amp, 0.5, 0.5);
+	var follow = Amplitude.kr(amp, 0.5, 0.99);
 	// var sig = Saw.ar(frq.lag(2),0.3 * env * amp.lag(1));
 	var trig = PinkNoise.ar(0.01) * env * follow;
 	var sig =  DynKlank.ar(`[[30,32,40,46,60].midicps + pchx.lag(9).midicps, nil, [3, 2, 1, 1]], trig);
@@ -13,7 +16,7 @@ SynthDef(\sheet2, { |out, frq=111, gate=0, amp = 0, pchx=0|
 }).add;
 
 ~init = ~init <> {
-	synth = Synth(\sheet2, [\frq, 140.rrand(80), \gate, 1]);
+	synth = Synth(\sheet2, [\pchx, 48, \gate, 1]);
 };
 
 ~deinit = ~deinit <> {
@@ -23,12 +26,12 @@ SynthDef(\sheet2, { |out, frq=111, gate=0, amp = 0, pchx=0|
 //------------------------------------------------------------
 ~next = {|d|
 
-	var a = m.accelMass * 0.5;
+	var a = m.accelMassFiltered * 0.5;
 	var f = 50 + (m.accelMassFiltered * 100);
 	var pchs = [60,64,68,72] - 12;
 	var i = (d.sensors.gyroEvent.y.abs / pi) * (pchs.size);
 	// pchs[i.floor].postln;
-	if(a<0.03,{a=0});
+	if(a<0.01,{a=0});
 	if(a>0.9,{a=0.9});
 	synth.set(\amp, a * 0.3);
 	synth.set(\pchx,pchs[i.floor]);

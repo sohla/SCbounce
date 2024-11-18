@@ -26,7 +26,7 @@ SynthDef(\sheet1, { |out, frq=111, gate=0, amp = 0, pchx=0|
 //------------------------------------------------------------
 ~next = {|d|
 
-	var a = m.accelMass * 0.5;
+	var a = m.accelMassFiltered * 0.5;
 	var f = 50 + (m.accelMassFiltered * 100);
 	var pchs = [0,12,24,36,48];
 	var i = (d.sensors.gyroEvent.y.abs / pi) * (pchs.size);

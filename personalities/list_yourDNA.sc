@@ -1,5 +1,6 @@
 (
 	[
+		"timWind1",
 		"treeWind",
 		"ndefTest1",
 		"rain",
