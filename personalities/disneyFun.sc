@@ -27,7 +27,7 @@ SynthDef(\monoSampler, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=
 				\instrument, \monoSampler,
 				\bufnum, buf,
 				\octave, Pxrand([3], inf),
-				\rate, 1,
+				\rate, 1.05,
 				\note, Pseq([33,37,33-5,33-12], inf),
 				\attack, 0.07,
 				\sustain,0.4,

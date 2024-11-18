@@ -27,7 +27,7 @@ Pbindef(\rainPattern,
     \instrument, \raindrop,
     \dur, Pexprand(0.13, 0.05, inf) * 8,  // Time between droplets
     \freq, Pexprand(1400, 700, inf),  // Random frequency for each droplet
-    \amp, Pexprand(0.8, 0.9, inf),  // Random amplitude
+    \amp, Pexprand(0.05, 0.15, inf),  // Random amplitude
     \pan, Pwhite(-1.0, 1.0, inf),    // Random panning
     \attackTime, 0.001,
     \decayTime, Pexprand(0.11, 0.04, inf),  // Varied decay time
@@ -35,4 +35,6 @@ Pbindef(\rainPattern,
     \filterRQ, Pwhite(0.5, 1.5, inf),
 	\wobble, Pwhite(3,7,inf)
 ).play;
+
 )
+meter

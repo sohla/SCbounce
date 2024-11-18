@@ -1,112 +1,104 @@
 var m = ~model;
+var buffers;
+var synths=[];
+var lastTime=0;
 
-var notes = [58,59,60,61,62,63];
-var thunder = [57,60,63,59,62];
+m.accelMassFilteredAttack = 0.01;
+m.accelMassFilteredDecay = 0.03;
 
-var slow =0;
-m.midiChannel = 12;
+SynthDef(\rainSampler, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0,
+    attack=0.01, decay=0.1, sustain=0.3, release=0.2, gate=1,cutoff=20000, rq=1|
 
-//------------------------------------------------------------	
+	  var env = EnvGen.kr(Env.adsr(attack, decay, sustain, release), gate, timeScale: 1, doneAction: 2);
+	var sig = PlayBuf.ar(2, bufnum, rate: rate, startPos: start * BufFrames.kr(bufnum), loop: 1);
+    sig = RLPF.ar(sig, cutoff, rq);
+    sig = Pan2.ar(sig, pan, amp * env);
+    Out.ar(out, sig);
+}).add;
+
+//------------------------------------------------------------
 // intial state
-//------------------------------------------------------------	
+//------------------------------------------------------------
+~init = ~init <> {
 
-~init = ~init <> { 
+	var folder  = PathName("~/Downloads/yourDNASamples/rain");
+	postf("loading samples : % \n", folder);
 
-		m.midiOut.noteOn(m.midiChannel, notes[0] , 100);
-	// Pdef(m.ptn,
-	// 	Pbind(
-	// 		\note, Pseq([0],inf),
-	// 		// \root, Pseq([0,5,-2,3,-4,1,-5].stutter(16),inf),
-	// 		// \func, Pfunc({|e| ~onEvent.(e)}),
-	// 		\args, #[],
-	// 	);
-	// );
-
-	// Pdef(m.ptn).set(\dur,0.5);
-	// Pdef(m.ptn).set(\octave,5);
-	// Pdef(m.ptn).set(\amp,0.8);
-};
-
-
-//------------------------------------------------------------	
-// triggers
-//------------------------------------------------------------	
-
-~onEvent = {|e|
-	m.com.root = e.root;
-	m.com.dur = e.dur;
-};
-
-~onHit = {|state|
-
-	var vel = 60;
-
-	if(state == true,{
-		thunder = thunder.rotate(-1);
-		m.midiOut.noteOn(m.midiChannel + 1 , thunder[0] , vel);
-		{
-			m.midiOut.noteOff(m.midiChannel + 1, thunder[0] , vel);
-		}.defer(0.07)
-	},{
+	buffers = folder.entries.collect({ |path,i|
+		Buffer.read(s, path.fullPath, action:{|buf|
+			postf("buffer alloc [%] \n", buf);
+			// postf("buffer alloc [%] \n", buf.path.basename.splitext[0]);
+			synths = synths.add(Synth(\rainSampler, [
+				\rate, 1,
+				\gate, 1,
+				\amp, 0,
+				\release, 10,
+        \bufnum, buf
+			]);
+			);
+			if(folder.entries.size - 1 == i,{
+				"samples loaded".postln;
+			});
+		});
 	});
+
 };
 
-~onMoving = {|state|
+~deinit = ~deinit <> {
 
-	if(state == true,{
-		notes = notes.rotate(-1);
-		notes[0].postln;
-		m.midiOut.noteOff(m.midiChannel, notes[0] , 0);
-		m.midiOut.noteOn(m.midiChannel, notes[0] , 100);
-		// Pdef(m.ptn).resume();
-	},{
-		m.midiOut.noteOff(m.midiChannel, notes[0] , 0);
-		// Pdef(m.ptn).pause();
+	synths.do({|synth, i|
+		synth.onFree({
+			if(i >= 3,{
+				"all synths on free".postln;
+				buffers.do({|buf|
+					{
+						postf("buffer dealloc [%] \n", buf);
+						buf.free;
+						s.sync;
+					}.fork;
+				});
+			});
+		});
+		synth.set(\gate, 0);	
 	});
+
+	// buffers.do({|buf|
+	// 	buf.free;
+	// 	s.sync;
+	// 	postf("buffer dealloc [%] \n", buf);
+	// });
 };
 
+//------------------------------------------------------------
+~next = {|d|
 
-//------------------------------------------------------------	
-// do all the work(logic) taking data in and playing pattern/synth
-//------------------------------------------------------------	
-~next = {|d| 
-	slow = ~tween.(m.accelMassFiltered * 0.2 * m.rrateMassThreshold.reciprocal, slow, 0.02) ;
-	// var oct = ((0.2 + m.rrateMassFiltered.cubed) * 25).mod(3).floor;
+	var levels = [	
+		m.accelMassFiltered.clip2(0.5).linlin(0,0.5,0,1),
+		m.accelMassFiltered.clip2(1.0).linlin(0.5,1.0,0,1),
+		m.accelMassFiltered.clip2(2.0).linlin(1.0,2.0,0,1),
+		m.accelMassFiltered.clip2(3.0).linlin(2.0,3.0,0,1)];
 
-	// Pdef(m.ptn).set(\dur,(m.accelMassFiltered * 8).reciprocal);
-	// Pdef(m.ptn).set(\amp, 0.9);
-	// Pdef(m.ptn).set(\octave, 5 + oct);
-
+	var mix = [1,1,1,1.5];
+	synths.do({|synth, i|
+		synth.set(\amp, levels[i] * mix[i]);
+	});
+	
 };
 
-~nextMidiOut = {|d|
-	m.midiOut.control(m.midiChannel, 13, slow * 127 );
-};			
-
-//------------------------------------------------------------	
-// plot with min and max
-//------------------------------------------------------------	
-
-~plotMin = 0;
-~plotMax = 2.5;
-
+//------------------------------------------------------------
+~plotMin = -1;
+~plotMax = 1;
 ~plot = { |d,p|
-	[m.accelMassAmp,m.accelMassFiltered,slow];
-};
-//------------------------------------------------------------	
-// midi control
-//------------------------------------------------------------	
-~midiControllerValue = {|num,val|
+	[m.rrateMass * 0.1, m.rrateMassFiltered * 0.1];
+	// [m.accelMass * 0.3, m.accelMassFiltered * 0.5];
+	// [m.rrateMassFiltered, m.rrateMassThreshold];
+	// [m.rrateMassFiltered, m.rrateMassThreshold, m.accelMassAmp];
+	// [d.sensors.gyroEvent.x, d.sensors.gyroEvent.y, d.sensors.gyroEvent.z];
+	// [d.sensors.rrateEvent.x, d.sensors.rrateEvent.y, d.sensors.rrateEvent.z];
+	// [d.sensors.accelEvent.x, d.sensors.accelEvent.y, d.sensors.accelEvent.z];
 
-	//[num,val].postln;
-
-	// if(num == 4,{ threshold = 0.01 + (val * 0.99)});
-
-	// threshold = threshold * 2;
-	// midiOut.control(m.midiChannel, num, val * 127 );
 
 };
-
 
 
 

@@ -26,18 +26,19 @@ SynthDef(\distantThunder, {
 
     // Crack component - filtered noise bursts
     crackle = {
-        var crack = WhiteNoise.ar;
+        var crack = BrownNoise.ar;
         var crackEnv = EnvGen.kr(
-            Env.perc(0.001, 0.01), gate
+            Env.perc(0.001, 0.1), gate
         );
         var crackFilter = BPF.ar(
             crack,
-            LFNoise1.kr(0.5).range(12000, 14000),
-            0.1
+            LFNoise1.kr(0.5).range(2800, 8000),
+            0.9
         );
         crackFilter * crackEnv * crackAmount
     }.dup;
 
+	crackle = FreeVerb.ar(crackle, 0.7, 0.99, 0.01).distort.tanh + crackle;
     // Rumble component - filtered noise with resonance
     rumble = {
         var baseFreq = LFNoise1.kr(0.5).range(40, 90);
@@ -107,9 +108,9 @@ Pbindef(\thunderStorm,
 (
 Synth(\distantThunder, [
     \amp, 0.6,
-    \crackAmount, 0.5,
+    \crackAmount, 10.5,
     \rumbleTone, 0.9,
-    \duration, 15.0,
+    \duration, 1.0,
     \spread, 1.0,
     \delayTime, 0.1,
     \decayTime, 4.0,
@@ -118,3 +119,5 @@ Synth(\distantThunder, [
     \gate, 1
 ]);
 )
+
+
