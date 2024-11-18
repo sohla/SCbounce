@@ -20,7 +20,7 @@
 		"rain",
 		"thunder",
 		"blobblob",
-		"blobblob2",		
+		"blobblob2",
 		"sheet1",
 		"jamesCello",
 		"bee",
@@ -32,7 +32,6 @@
 		"thunder",
 		"woiworung1",
 		"woiworung2",
-<<<<<<< HEAD
 
 		"timDrums",
 
@@ -46,15 +45,12 @@
 		"blobblob2",
 
 		// tims list eg
-=======
 		"sheet1",
 		"bee",
 		"arialBass",
-
->>>>>>> 31303b8f67203b0b3dbddc0404b83c39fb149117
 		"heatherLaugh2",
 		"heatherLaugh",
-		
+
 		"wingChimes1",
 		"wingChimes2",
 		"treeWind",
@@ -62,7 +58,7 @@
 
 		"timDrums",
 		"animalMat",
-		
+
 
 		"heatherTeddies",
 
@@ -72,7 +68,7 @@
 		"arialBass",
 		"arialOstinato",
 		"arialMelody",
-		
+
 		"magicWand2",
 		"percTexture1",
 		"percTexture2",
