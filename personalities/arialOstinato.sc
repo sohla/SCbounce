@@ -64,16 +64,19 @@ SynthDef(\warmRichSynth, {
 		Pbind(
 			\instrument, \warmRichSynth,
 			\scale, Scale.major,
-			\octave, Pseq([7,8].stutter(3), inf),
-			\note, Pseq([-5,0,4,-5,0,4,-5,0,4,-5,0,4,-3,2,6,-3,2,6,-3,2,6,-3,2,6,-3,2,6,-3,2,6]-2, inf),
+			// \octave, Pseq([7,8].stutter(3), inf),
+			// \note, Pseq([-5,0,4,-5,0,4,-5,0,4,-5,0,4,-3,2,6,-3,2,6,-3,2,6,-3,2,6,-3,2,6,-3,2,6]-2, inf),
+			\octave, Pseq([7,8,6].stutter(3), inf),
+			\root,-3,
+			\note, Pseq([12,11,7,5,0], inf),
 			\legato, 1,
 			\attackTime, 0.001,
 			\decayTime, 0.2,
 			\sustainLevel, 0.1,
 			\releaseTime, 3,
 			\cutoff, Pseg(Pseq([4000,10000], inf), 0.5 * 12, \sine, inf),
-			\amp, 0.3,
-			\func, Pfunc({|e| ~onEvent.(e)}),
+			\amp, 0.1,
+			// \func, Pfunc({|e| ~onEvent.(e)}),
 			\args, #[]
 		);
 	);
@@ -109,7 +112,7 @@ SynthDef(\warmRichSynth, {
 	// var dur = 0.5 - m.accelMassFiltered.squared.linlin(0,3,0,0.43);
 	// Pdef(m.ptn).set(\dur, dur);
 
-	if(m.accelMassFiltered > 0.1,{
+	if(m.accelMassFiltered > 0.5,{
 		if( Pdef(m.ptn).isPlaying.not,{
 			Pdef(m.ptn).resume(quant:0.5/3);
 		});

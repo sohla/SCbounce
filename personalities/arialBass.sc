@@ -1,7 +1,8 @@
 var m = ~model;
 var synth;
 var lastTime=0;
-var notes = [-24,-36];
+// var notes = [-24,-36];
+var notes = [0,2,5,4,-3,5,7,7,4,9,5,7,-5].stutter(8);
 var currentNote = notes[0];
 var currentRoot = m.com.root;
 m.accelMassFilteredAttack = 0.5;
@@ -86,23 +87,25 @@ SynthDef(\warmRichSynth, {
 ~next = {|d|
 
 	var move = m.accelMassFiltered.linlin(0,3,0,1);
+	var filter = m.accelMassFiltered.linexp(0,3,200,1830);
+	var mix = m.accelMassFiltered.linlin(0,2,0,1);
 
-	if(move > 0.2, {
+	if(move > 0.1, {
 		if(TempoClock.beats > (lastTime + 0.35),{
 			lastTime = TempoClock.beats;
 			notes = notes.rotate(-1);
 			currentNote = notes[0];
-			currentRoot = m.com.root;
+			currentRoot = -3-24;
 			synth = Synth(\warmRichSynth, [
-				\freq, (58 + currentNote + currentRoot).midicps,
+				\freq, (60 + currentNote + currentRoot).midicps,
 				\gate, 1,
 				\detune,0.003,
-				\oscMix, 0.4,
+				\oscMix, 0.5,
 				\subOscLevel, 0.6,
-				\cutoff, 600,
-				\resonance, 0.4,
-				\attackTime, 1,
-				\release, 3,
+				\cutoff, filter,
+				\resonance, 0.2,
+				\attackTime, 0.04,
+				\releaseTime, 0.9,
 			    \amp, 0.9
 			]);
 			synth.server.sendBundle(0.5,[\n_set, synth.nodeID, \gate, 0]);

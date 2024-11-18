@@ -1,40 +1,68 @@
 (
 	[
+		//caz
+		"silence",
+		"rain",
+		"silence",
+		"grobt",
+		"silence",
+		"tramBell",
+		"bee",
+		"silence",
+
+		//tim
+		"silence",
+		"sheet3",
+		"silence",
 		"timWind1",
-		"treeWind",
-		"ndefTest1",
+		"sheet2",
+		"silence",
+		"bee",
+		"sheet1",
+		"silence",
+
+		//james
+		"silence",
 		"rain",
 		"thunder",
-		
-		"wingChimes1",
-		"wingChimes2",
-
-		"sheet3",
-
+		"silence",
+		"blobblob",
+		"silence",
 		"sheet1",
-		"sheet2",
+		"silence",
+		"jamesCello",
+		"silence",
+		"bee",
+		"silence",
 
+		//mat
+		"silence",
+		"rain",
+		"magicWand",
+		"thunder",
+		"silence",
 		"woiworung1",
 		"woiworung2",
-
-		"timDrums",
-
-
-		"animalMat",
-		"mattCello",
-		"disneyFun",
-		"grobt",
-
-		"blobblob",
-		"blobblob2",
-
+		"silence",
+		"sheet1",
+		"silence",
+		"bee",
+		"silence",
+		"arialBass",
+		"silence",
 
 		"heatherLaugh2",
 		"heatherLaugh",
+		
+		"wingChimes1",
+		"wingChimes2",
+		"treeWind",
+		"magicWand",
+		
+		"timDrums",
+		"animalMat",
+		"blobblob2",
 
-
-
-		"bee",
 		"heatherTeddies",
 
 		"bongo1",
@@ -43,7 +71,7 @@
 		"arialBass",
 		"arialOstinato",
 		"arialMelody",
-		"magicWand",
+		
 		"magicWand2",
 		"percTexture1",
 		"percTexture2",
