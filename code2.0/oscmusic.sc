@@ -24,7 +24,7 @@
 	// Device managment
 	var devices = Dictionary();
 	var names;
-	var airstickListeners = [], numAirwareVirtualDevices = 8;
+	var airstickListeners = [], numAirwareVirtualDevices = 4;
 
 	// UI elements
 	var contentView = UserView().background_(Color.grey(0.2));
@@ -61,6 +61,7 @@
 
 	var listenersProto = (
 		\airware:nil,
+		\battery:nil,
 	);
 
 
@@ -81,6 +82,8 @@
 		\port: 57120,
 		\did: "nil",
 		\color: Color.red,
+		\volts: 0,
+		\charge: 0,
 		\enabled: true, // are we running
 		\dataSize: dataSizeOptions[0],
 		\listeners: Event.new(proto:listenersProto),
@@ -311,6 +314,7 @@
 		};
 
 		d.listeners.airware.free; //?
+		d.listeners.battery.free; //?
 	};
 
 	addDevice = { |ip,port, id|
@@ -429,7 +433,6 @@
 				d.sensors.gyroEvent.asString.drawAtPoint(10@10, Font(size:7));
 			})
 			.animate_(true)
-
 		};
 
 		var removeDeviceButton = {|view|
@@ -454,6 +457,24 @@
 			.font_(Font(size:12))
 			.minWidth_(100)
 			.string_("ID: "+d.did+" OSC: ["++d.ip+", "+d.port++"]")
+		};
+
+		var batteryView = {|view|
+			// StaticText(view)
+			// .stringColor_(Color.white)
+			// .font_(Font(size:12))
+			// .minWidth_(100)
+			// .string_("Volts: "+d.volts.asStringPrec(2)+" \nPerc: "++d.charge.asStringPrec(2))
+			UserView(view)
+			.background_(col)
+			.maxHeight_(40)
+			.maxWidth_(180)
+			.drawFunc_({
+				("V : "+d.volts.asStringPrec(2)).drawAtPoint(4@0, Font(size:14));
+				("% : "++d.charge.asStringPrec(2)).drawAtPoint(4@14, Font(size:14));
+			})
+			.frameRate_(1)
+			.animate_(true)
 		};
 		var muteButtonLocal;
 		var muteButton = {|view|
@@ -547,8 +568,8 @@
 				{personalityMenu.valueAction = personalityMenu.value}.defer;
 			}),
 		],[
-			View(wrapView),
-			dataView = makeDataView.(wrapView);
+			batteryView.(wrapView),
+			dataView = makeDataView.(wrapView),
 		]
 		 ));
 
@@ -721,6 +742,7 @@
 
 		var na = NetAddr.new(d.ip, d.port);
 		var patternBase = "/%/" ++ oscMessageTag;
+		var batteryBase = "/%/" ++ "Battery";
 
 		// listen to all the airware that are connected (1 ip/port)
 		numAirwareVirtualDevices.do({|i|
@@ -732,6 +754,13 @@
 			var prev = fourCh;
 			var angVel = threeCh;
 			var rx,ry,rz,ox=0,oy=0,oz=0;
+
+			d.listeners.battery = OSCFunc({ |msg, time, addr, recvPort|
+				d.volts = msg[1].asFloat;
+				d.charge = msg[2].asFloat;
+			}, batteryBase.format(i+1), address);
+
+
 			d.listeners.airware = OSCFunc({ |msg, time, addr, recvPort|
 				var sx,sy,sz,qe,q,ss,r, rq, rr, rtr;
 				var tr;
