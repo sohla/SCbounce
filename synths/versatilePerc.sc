@@ -26,7 +26,7 @@ SynthDef(\versatilePerc, {
         levelScale: clickLevel
     );
 	sig = (drum_osc * drum_env) + (click_osc * click_env);
-	sig = (sig * dist).tanh;
+	sig = (sig * dist).tanh.distort;
     // Mix and output
     Out.ar(out, Pan2.ar(sig,0,amp))
 }).add;

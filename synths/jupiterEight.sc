@@ -107,7 +107,7 @@ Synth(\jupiter8, [
 Synth(\jupiter8, [
     \freq, 330,
     \osc1Waveform, 1, \osc1Level, 1, \osc1PulseWidth, 0.2,
-    \osc2Waveform, 0, \osc2Level, 0.5, \osc2Tune, 0.05,
+    \osc2Waveform, 0, \osc2Level, 0.5, \osc2Tune, 0.01,
     \cutoff, 2000, \resonance, 0.6,
     \attack, 0.001, \decay, 0.1, \sustain, 0.2, \release, 0.2,
     \filterEnvAmount, 4000, \filterAttack, 0.001, \filterDecay, 0.05, \filterSustain, 0.1, \filterRelease, 0.1
@@ -136,9 +136,9 @@ Synth(\jupiter8, [
 
 // 9. Ethereal Atmosphere
 Synth(\jupiter8, [
-    \freq, 110,
+    \freq, 55,
     \osc1Waveform, 0, \osc1Level, 1,
-    \osc2Waveform, 1, \osc2Level, 0.6, \osc2Tune, 0.05, \osc2PulseWidth, 0.8,
+    \osc2Waveform, 1, \osc2Level, 0.6, \osc2Tune, 0.007, \osc2PulseWidth, 0.8,
     \cutoff, 800, \resonance, 0.2,
     \attack, 2.0, \decay, 1.0, \sustain, 0.8, \release, 3.0,
     \lfoRate, 0.2, \lfoFilterMod, 0.3, \lfoPWMod, 0.2,

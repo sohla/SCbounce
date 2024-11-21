@@ -153,7 +153,7 @@ Synth(\arpOdyssey, [
 Synth(\arpOdyssey, [
     \freq, 55,
     \osc1Waveform, 0, \osc1Level, 1,
-    \osc2Waveform, 0, \osc2Level, 1, \osc2Detune, 0.02,
+    \osc2Waveform, 0, \osc2Level, 1, \osc2Detune, 0.01,
     \cutoff, 500, \resonance, 0.7,
     \attack, 0.01, \decay, 0.2, \sustain, 0.6, \release, 0.3,
     \filterEnvAmount, 3000, \filterAttack, 0.01, \filterDecay, 0.3, \filterSustain, 0.4, \filterRelease, 0.2,
