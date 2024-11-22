@@ -14,7 +14,6 @@ SynthDef(\grobt, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 
 	var sig = PlayBuf.ar(1, bufnum, rate: [lr, lr * 1.0], startPos: start * BufFrames.kr(bufnum), loop: 0);
     sig = RHPF.ar(sig, cutoff, rq);
-    sig = Pan2.ar(sig + kick, pan);
 		sig = Compander.ar(sig, sig,
         thresh: -33.dbamp,
         slopeBelow: 1,
@@ -22,6 +21,7 @@ SynthDef(\grobt, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
         clampTime:  0.01,
         relaxTime:  0.01
 		);
+    sig = Pan2.ar(Mix.ar([sig,kick]), pan);
     Out.ar(out, sig * amp * env);
 }).add;
 SynthDef(\treeWind, { |out, frq=111, gate=0, amp = 0, pchx=0|
@@ -60,12 +60,13 @@ SynthDef(\treeWind, { |out, frq=111, gate=0, amp = 0, pchx=0|
 			},
 			\octave, Pseq([3,4].stutter(24), inf),
 			\rate, Pseq([0,-3,-5,4,7,9,12,0].midiratio, inf),
-			\amp, Pseq([1, 2, 2, 0.9,0.7,0.6 ,0.5 ,1], inf),
+			\amp, Pseq([1, 2, 2, 0.9,0.7,0.6 ,0.5 ,1] * 1.5, inf),
 			\subFreq,Pseq([45,55,440,80,45,70], inf),
 			\start, 0,
 			\legato, 0.3,
 			\note, Pseq([33], inf),
 		 \dur, Pseq([0.4],inf),
+		 \pan,Pseq([-1,1],inf),
 			\attack, 0.02,
 			\release,0.2,
 			\args, #[],

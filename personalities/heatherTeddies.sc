@@ -2,8 +2,8 @@ var m = ~model;
 var synth;
 var buffer;
 
-m.accelMassFilteredAttack = 0.3;
-m.accelMassFilteredDecay = 0.07;
+m.accelMassFilteredAttack = 0.9;
+m.accelMassFilteredDecay = 0.9;
 
 //------------------------------------------------------------
 SynthDef(\monoSampler, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=440,
@@ -41,13 +41,14 @@ SynthDef(\pullstretchMono, {|out, amp = 0.8, buffer = 0, envbuf = -1, pch = 1.0,
 //------------------------------------------------------------
 ~init = ~init <> {
 	//var path = PathName("~/Downloads/yourDNASamples/HK laughing2-glued.wav");
-
 	var path = PathName("~/Downloads/yourDNASamples/HK lots of teddies.wav");
+	//var path = PathName("~/Downloads/yourDNASamples/MW talking about voice on my computer.wav");
+	// var path = PathName("~/Downloads/yourDNASamples/found.wav");
 	postf("loading sample : % \n", path.fileName);
 
 	buffer = Buffer.read(s, path.fullPath, action:{ |buf|
 		postf("buffer alloc [%] \n", buf);
-		synth = Synth(\pullstretchMono,[\buffer,buf,\pch,0.midiratio, \amp,0.4, \div, 4]);
+		synth = Synth(\pullstretchMono,[\buffer,buf,\pch,0.midiratio, \amp,0.4, \div, 444]);
 	});
 };
 
@@ -59,13 +60,13 @@ SynthDef(\pullstretchMono, {|out, amp = 0.8, buffer = 0, envbuf = -1, pch = 1.0,
 
 //------------------------------------------------------------
 ~next = {|d|
-	var amp = m.accelMass.linlin(0,1,0.00001,0.8);
+	var amp = m.accelMass.linlin(0,1,0.001,2.8);
 	var speed= m.accelMassFiltered.linlin(0,1,0.01,0.1);
-	var rate = m.accelMassFiltered.linlin(0,1,0.9,1.6);
+	var rate = m.accelMassFiltered.linlin(0,1,0.5,1.6);
 
 	if(amp < 0.1, {amp = 0});
 	//
-	// synth.set(\pch, rate);
+	synth.set(\pch, rate);
 	synth.set(\speed, speed);
 	synth.set(\amp, amp);
 };

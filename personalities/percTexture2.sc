@@ -15,9 +15,9 @@ SynthDef(\pullstretchMono, {|out, amp = 0.8, buffer = 0, envbuf = -1, pch = 1.0,
 			1,
 			1,
 			0
-	) * amp.lag(1);
+	) * amp.lag(0.4);
 
-	mas = HPF.ar(sp,245);
+	mas = BLowShelf.ar(sp,145, db:-20);
 
 	Out.ar(out,mas);
 }).add;
@@ -30,8 +30,8 @@ SynthDef(\pullstretchMono, {|out, amp = 0.8, buffer = 0, envbuf = -1, pch = 1.0,
 
 	buffer = Buffer.read(s, path.fullPath, action:{ |buf|
 		postf("buffer alloc [%] \n", buf);
-		sa = Synth(\pullstretchMono,[\buffer,buf,\pch,0.midiratio, \amp,1, \div, 4]);
-		sb = Synth(\pullstretchMono,[\buffer,buf,\pch,-12.midiratio, \amp,1, \div, 4]);
+		sa = Synth(\pullstretchMono,[\buffer,buf,\pch,0.midiratio, \amp,1, \div, 6]);
+		sb = Synth(\pullstretchMono,[\buffer,buf,\pch,-1.midiratio, \amp,1, \div, 8]);
 	});
 };
 
@@ -46,8 +46,9 @@ SynthDef(\pullstretchMono, {|out, amp = 0.8, buffer = 0, envbuf = -1, pch = 1.0,
 //------------------------------------------------------------
 ~next = {|d|
 
-	var amp = m.accelMass.linlin(0,2,0,1);
-	if(amp < 0.1, {amp = 0});
+	var amp = m.accelMass.linlin(0,2,0,3);
+	var pch = d.sensors.rotateEvent.y.linlin(0,1,0.25,4);
+	if(amp < 0.02, {amp = 0});
 	sa.set(\speed, m.accelMass.linlin(0,2.5,0.001,1));
 	sb.set(\speed, m.accelMass.linlin(0,2.5,0.001,1));
 	//
@@ -56,6 +57,8 @@ SynthDef(\pullstretchMono, {|out, amp = 0.8, buffer = 0, envbuf = -1, pch = 1.0,
 
 	sa.set(\amp, amp * 2);
 	sb.set(\amp, amp * 2);
+	sa.set(\pch, pch);
+	sb.set(\pch, pch);
 };
 
 //------------------------------------------------------------

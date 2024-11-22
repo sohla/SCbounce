@@ -50,7 +50,7 @@ SynthDef(\blobblob2, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 				buffers[bi];
 			},
 			\dur, Pseq([0.2,0.2,0.2,0.2,0.2,0.1,0.1,0.2], inf),
-			\octave, Pseq([1,3].stutter(48), inf),
+			\octave, Pseq([1,1].stutter(48), inf),
 			\rate, Pseq([0,12,0].midiratio, inf),
 			\legato, 0.35,
 			\start, Pwhite(0, 0.1),
