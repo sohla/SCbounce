@@ -7,7 +7,7 @@ m.accelMassFilteredDecay = 0.1;
 //------------------------------------------------------------
 SynthDef(\treeWind, { |out, frq=111, gate=0, amp = 0, pchx=0|
 	var env = EnvGen.ar(Env.asr(1.3,1.0,8.0), gate, doneAction:Done.freeSelf);
-	var follow = Amplitude.kr(amp, 0.3, 0.5).lag(4);
+	var follow = Amplitude.kr(amp, 0.3, 0.5).lag(2);
 	// var sig = Saw.ar(frq.lag(2),0.3 * env * amp.lag(1));
 	var trig = PinkNoise.ar(0.01) * env * follow;
 	var sig =  DynKlank.ar(`[[60 + 7 - 12 + pchx.lag(4)].midicps, nil, [2, 1, 1, 1]], trig);
@@ -32,7 +32,7 @@ SynthDef(\treeWind, { |out, frq=111, gate=0, amp = 0, pchx=0|
 	var i = (d.sensors.gyroEvent.y.abs / pi) * (pchs.size);
 	// pchs[i.floor].postln;
 	if(a<0.02,{a=0});
-	if(a>0.9,{a=0.5});
+	if(a>0.9,{a=0.9});
 	synth.set(\amp, a * 0.4);
 	// synth.set(\pchx,pchs[i.floor]);
   synth.set(\pchx, m.com.root);

@@ -3,9 +3,11 @@ var synth;
 
 var lastTime=0;
 var notes = [0,0,7,0,0,0,7,0,7,5,0,0,0,7,0,0,7,5,0,0,0,-2,7,-2,7,5,-2,-2,7,5,-2,-2,-2,-4,7,5,-4,-4,7,5,-2,-2,7,5,-2,7,5];
-var roots = [0,0,0,0,-12];
+//[1,1,1,2].dup(4).flatten
+var roots = [0,0,0,0,-12];//.dup(8).flatten ++ [12,12,12,12].dup(8).flatten;
 var currentNote = notes[0];
 var currentRoot = roots[0];
+notes.size.postln;
 m.accelMassFilteredAttack = 0.2;
 m.accelMassFilteredDecay = 0.99;
 
@@ -47,7 +49,7 @@ SynthDef(\timWind1, { |out, freq=111, gate=0, amp = 0.3, pchx=0|
 			m.com.root = currentRoot;
       // synth.set(\freq, (36 + currentNote).midicps); 
 			synth = Synth(\timWind1, [
-				\freq, (36 + currentNote).midicps,
+				\freq, (36 + currentNote + currentRoot).midicps,
 				\gate, 1,
 				\amp, 0.3,
 			]);
@@ -61,9 +63,12 @@ SynthDef(\timWind1, { |out, freq=111, gate=0, amp = 0.3, pchx=0|
 ~plotMax = 1;
 ~plot = { |d,p|
 	// [d.sensors.quatEvent.x, d.sensors.quatEvent.y, d.sensors.quatEvent.z];
-	[m.accelMassFiltered * 0.1, d.sensors.gyroEvent.x * 0.1];
+	// [m.accelMassFiltered * 0.1, d.sensors.gyroEvent.x * 0.1];
 	// [m.accelMass + m.rrateMassFiltered, m.accelMassFiltered,m.rrateMassThreshold];
-	// [m.rrateMassFiltered, m.rrateMassThreshold, m.accelMassAmp];
+	// [m.rrateMassFiltered,d.sensors.gyroEvent.y * 0.1];
+	[d.sensors.rotateEvent.y];
+	// [d.sensors.rotateEvent.x, d.sensors.rotateEvent.y, d.sensors.rotateEvent.z];
+	
 	// [d.sensors.gyroEvent.x, d.sensors.gyroEvent.y, d.sensors.gyroEvent.z];
 	// [d.sensors.rrateEvent.x, d.sensors.rrateEvent.y, d.sensors.rrateEvent.z];
 	// [d.sensors.accelEvent.x, d.sensors.accelEvent.y, d.sensors.accelEvent.z];

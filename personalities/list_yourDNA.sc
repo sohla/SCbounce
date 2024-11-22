@@ -3,13 +3,13 @@
 		//caz
 		"silence",
 		"rain",
-		"grobt",
+		"chicken",
 		"tramBell",
 		"bee",
 
 		//tim
 		"silence",
-		"sheet3",
+		"wind1",
 		"timWind1",
 		"sheet2",
 		"bee",
@@ -20,7 +20,7 @@
 		"rain",
 		"thunder",
 		"blobblob",
-		"blobblob2",
+		"frog",
 		"sheet1",
 		"jamesCello",
 		"bee",
@@ -39,10 +39,10 @@
 		"animalMat",
 		"mattCello",
 		"disneyFun",
-		"grobt",
+		"chicken",
 
 		"blobblob",
-		"blobblob2",
+		"frog",
 
 		// tims list eg
 		"sheet1",

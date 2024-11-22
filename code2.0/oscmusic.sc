@@ -74,6 +74,7 @@
 		\accelMass: 1,
 		\quatEvent: fourCh,
 		\ampValue: 0,
+		\rotateEvent: threeCh,
 	);
 
 	var deviceProto = (
@@ -819,7 +820,10 @@
 					if(rz <= 0, { rz = pi - (pi + rz)});
 
 					// rx,ry,rz / pi = 0-1 ie. normalized
-					//•• need to save rx,ry,rz
+					devices.at(addr.port+i).sensors.rotateEvent = (
+						\x:rx/pi,
+						\y:ry/pi,
+						\z:rz/pi);
 
 					// store rate of change
 					devices.at(addr.port+i).sensors.rrateEvent = (

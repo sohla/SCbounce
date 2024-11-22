@@ -47,15 +47,15 @@ SynthDef(\glockenspiel, {
 //------------------------------------------------------------
 ~next = {|d|
 
-	var oct = m.accelMassFiltered.linlin(0,5,2,5).floor;
-	var dur = 0.28 - m.accelMassFiltered.linlin(0,3,0.001,0.17);
-	var hardness = m.accelMassFiltered.linlin(0,2.5,1.1,2.4).clip2(2.41);
-	var amp = m.accelMassFiltered.linexp(0,2.5,1,0.2);
+	var oct = m.accelMassFiltered.linlin(0,5,4,6).floor;
+	var dur = 0.23 - m.accelMassFiltered.linlin(0,2.5,0.001,0.14);
+	var hardness = m.accelMassFiltered.linlin(0,2.5,0.2,0.9).clip2(0.91);
+	var amp = m.accelMassFiltered.linexp(0,2.5,1,0.8);
 	
 	Pdef(m.ptn).set(\dur, dur);
 	Pdef(m.ptn).set(\octave, 3 + oct);
-	Pdef(m.ptn).set(\amp, amp);
-	Pdef(m.ptn).set(\hardness, 2.5 - hardness);
+	Pdef(m.ptn).set(\amp, amp*0.2);
+	Pdef(m.ptn).set(\hardness, 1 - hardness);
 
 	if(m.accelMassFiltered > 0.18,{
 		if( Pdef(m.ptn).isPlaying.not,{
