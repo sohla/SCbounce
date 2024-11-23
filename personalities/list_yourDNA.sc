@@ -41,7 +41,7 @@
 
 
 		"animalMat",
-		"mattCello",
+		"jamesCello",
 		"disneyFun",
 		"chicken",
 

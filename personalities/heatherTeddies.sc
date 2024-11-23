@@ -42,6 +42,7 @@ SynthDef(\pullstretchMono, {|out, amp = 0.8, buffer = 0, envbuf = -1, pch = 1.0,
 ~init = ~init <> {
 	//var path = PathName("~/Downloads/yourDNASamples/HK laughing2-glued.wav");
 	var path = PathName("~/Downloads/yourDNASamples/HK lots of teddies.wav");
+	// var path = PathName("~/Downloads/yourDNASamples/HK lots of teddies.wav");
 	//var path = PathName("~/Downloads/yourDNASamples/MW talking about voice on my computer.wav");
 	// var path = PathName("~/Downloads/yourDNASamples/found.wav");
 	postf("loading sample : % \n", path.fileName);
