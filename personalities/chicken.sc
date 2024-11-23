@@ -21,7 +21,8 @@ SynthDef(\grobt, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
         clampTime:  0.01,
         relaxTime:  0.01
 		);
-    sig = Pan2.ar(Mix.ar([sig,kick]), pan);
+		sig = Mix.ar([sig,kick]);
+    sig = Balance2.ar(sig[0],sig[1], pan);
     Out.ar(out, sig * amp * env);
 }).add;
 SynthDef(\treeWind, { |out, frq=111, gate=0, amp = 0, pchx=0|
@@ -66,7 +67,7 @@ SynthDef(\treeWind, { |out, frq=111, gate=0, amp = 0, pchx=0|
 			\legato, 0.3,
 			\note, Pseq([33], inf),
 		 \dur, Pseq([0.4],inf),
-		 \pan,Pseq([-1,1],inf),
+		 \pan,Pseq([-1],inf),
 			\attack, 0.02,
 			\release,0.2,
 			\args, #[],

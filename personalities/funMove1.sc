@@ -1,8 +1,8 @@
 var m = ~model;
 var synth;
-var note = 43+24;
-m.accelMassFilteredAttack = 0.1;
-m.accelMassFilteredDecay = 0.99;
+var note = 43;
+m.accelMassFilteredAttack = 0.8;
+m.accelMassFilteredDecay = 0.8;
 
 SynthDef(\funBass, {
     |out=0, freq = 440, gate = 1, amp = 0.8, filtFreq = 2000, filtRes = 0.5, envAtk = 0.01, envDec = 0.1, envSus = 0.7, envRel = 0.2, rm = 0.5|
@@ -18,7 +18,7 @@ SynthDef(\funBass, {
     Out.ar(out, filter.softclip);
 }).add;
 
-SynthDef(\warmPad, {
+SynthDef(\warmPadMove1, {
 	|out=0, gate=1, freq=440, amp=0.1,atk=0.03, dec=0.2, sus=0.8, rel=1.0,filtMin=500, filtMax=5000, filtSpeed=0.5,
 	detuneAmount = 0.001,chorusRate=0.5, chorusDepth=0.01,pan=0, spread=0.2, lfoFreq=1|
 
@@ -66,8 +66,8 @@ SynthDef(\warmPad, {
 
     // Output with stereo spread
     sig = Splay.ar(sig, spread);
-		sig = GVerb.ar(sig.tanh * 0.2,4,0.1);
-	Out.ar(out, (sig + sub) * amp.lag(0.3) * env * pulse);
+		sig = GVerb.ar(sig.tanh * 0.2,10,6.1,0.1);
+	Out.ar(out, (sig + sub) * Amplitude.kr(amp,0.1,0.7) * env );
 }).add;
 
 
@@ -107,26 +107,27 @@ SynthDef(\versatilePerc, {
 //------------------------------------------------------------
 ~init = ~init <> {
 
-	Pdef(m.ptn,
-		Pbind(
-			\instrument, \versatilePerc,
-			\note, Pseq([0,2,7,10,5], inf),
-			// \note, Pseq([5,9,4,2], inf),
-			\octave,Pseq([2,3,4].stutter(2),inf),
-			\root, Pseq([0,3,-2,1,-1].stutter(32), inf),
-			\envAtk,0.001,
-			\envDec,0.3,
-			\envSus, 0.0,
-			\envRel,Pkey(\octave).squared * 0.05,
-   		\amp, 0.8,
-   		\filtRes, Pwhite(0.1,0.2),
-			\func, Pfunc({|e| ~onEvent.(e)}),
-			\args, #[],
-		)
-	);
+	// Pdef(m.ptn,
+	// 	Pbind(
+	// 		\instrument, \versatilePerc,
+	// 		\note, Pseq([0,2,7,10,5], inf),
+	// 		// \note, Pseq([5,9,4,2], inf),
+	// 		\octave,Pseq([2,3,4].stutter(2),inf),
+	// 		\root, Pseq([0,3,-2,1,-1].stutter(32), inf),
+	// 		\envAtk,0.001,
+	// 		\envDec,0.3,
+	// 		\envSus, 0.0,
+	// 		\envRel,Pkey(\octave).squared * 0.05,
+  //  		\amp, 0.8,
+  //  		\filtRes, Pwhite(0.1,0.2),
+	// 		\func, Pfunc({|e| ~onEvent.(e)}),
+	// 		\args, #[],
+	// 	)
+	// );
 
-	Pdef(m.ptn).play(quant:0.125);
-	synth = Synth(\warmPad, [
+	// Pdef(m.ptn).play(quant:0.125);
+
+	synth = Synth(\warmPadMove1, [
 		\freq, note.midicps, 
 		\amp, 0.1,
 		\gate, 1,
@@ -146,7 +147,7 @@ SynthDef(\versatilePerc, {
 // triggers
 //------------------------------------------------------------
 ~deinit = ~deinit <> {
-	Pdef(m.ptn).remove;
+	// Pdef(m.ptn).remove;
 	synth.free;
 
 };
@@ -181,18 +182,18 @@ SynthDef(\versatilePerc, {
 	synth.set(\filtSpeed, filtSpeed);
 	synth.set(\lfoFreq, lfoFreq);
 
-	Pdef(m.ptn).set(\filtFreq, m.accelMassFiltered.linexp(0,4,380,4000));
-	Pdef(m.ptn).set(\dur, dur);
+	// Pdef(m.ptn).set(\filtFreq, m.accelMassFiltered.linexp(0,4,380,4000));
+	// Pdef(m.ptn).set(\dur, dur);
 	
-	if(m.accelMassFiltered > 0.1,{
-		if( Pdef(m.ptn).isPlaying.not,{
-			Pdef(m.ptn).resume(quant:0.125);
-		});
-	},{
-		if( Pdef(m.ptn).isPlaying,{
-			Pdef(m.ptn).pause();
-		});
-	});
+	// if(m.accelMassFiltered > 0.1,{
+	// 	if( Pdef(m.ptn).isPlaying.not,{
+	// 		Pdef(m.ptn).resume(quant:0.125);
+	// 	});
+	// },{
+	// 	if( Pdef(m.ptn).isPlaying,{
+	// 		Pdef(m.ptn).pause();
+	// 	});
+	// });
 
 };
 

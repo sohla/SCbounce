@@ -95,6 +95,7 @@ SynthDef(\warmRichSynth, {
 			lastTime = TempoClock.beats;
 			notes = notes.rotate(-1);
 			currentNote = notes[0];
+            m.com.root = currentNote;
 			currentRoot = -3-24;
 			synth = Synth(\warmRichSynth, [
 				\freq, (60 + currentNote + currentRoot).midicps,
