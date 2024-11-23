@@ -158,7 +158,7 @@ SynthDef(\largeGong2, {
 	var att = m.accelMassFiltered.linexp(0,2.5,0.1,0.0001);
 
 	if(move > 0.22, {
-		if(TempoClock.beats > (lastTime + 0.35),{
+		if(TempoClock.beats > (lastTime + 0.2),{
 			lastTime = TempoClock.beats;
 			notes = notes.rotate(-1);
 			currentNote = notes[0];

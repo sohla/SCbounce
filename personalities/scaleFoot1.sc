@@ -1,22 +1,26 @@
 var m = ~model;
 var synth;
-m.accelMassFilteredAttack = 0.9;
-m.accelMassFilteredDecay = 0.19;
+var lastTime=0;
+var notes = [0,2,4,5,9] - 36;
+var octave = [0,12].stutter;
+var currentNote = notes[0];
+var currentRoot = 0;
+m.accelMassFilteredAttack = 0.88;
+m.accelMassFilteredDecay = 0.9;
 
-
-// SynthDef(\scale2, {
+// SynthDef(\scaleFoot1, {
 // 	|freq = 440, amp = 0.5, attack = 0.1, decay = 0.2, sustain = 0.7, release = 0.3, gate = 1, filterFreq = 800, fq=0.5, pan = 0|
 
 //     var env, osc, filt, sig;
 //     env = EnvGen.kr(Env.adsr(attack, decay, sustain, release), gate, doneAction: 2);
-// 	osc = Saw.ar([freq, freq * 1.004],1) + SinOsc.ar([freq-1, freq -1 * 0.005],0,1) + LFTri.ar([freq+1, freq * 1.004],0,1);
+// 	  osc = Saw.ar([freq, freq * 1.004],1) + SinOsc.ar([freq-1, freq -1 * 0.005],0,1) + LFTri.ar([freq+1, freq * 1.004],0,1);
 //     filt = RLPF.ar(osc.tanh, filterFreq, fq).tanh;
 //     sig = filt * env * amp * 0.5;
 //     sig = Pan2.ar(sig, pan);
 //     Out.ar(0, sig.tanh);
 // }).add;
 
-SynthDef(\scale2, {
+SynthDef(\scaleFoot1, {
     |freq = 440, amp = 0.5, attack = 0.1, decay = 0.2, sustain = 0.7, 
     release = 0.3, gate = 1, filterFreq = 800, fq = 0.5, pan = 0|
     
@@ -41,88 +45,50 @@ SynthDef(\scale2, {
 }).add;
 
 ~init = ~init <> {
-	Pdef(m.ptn,
-		Pbind(
-			\instrument, \scale2,
-      \root, Pseq([0,4,8].stutter(240), inf),
-      \note, Pseq([0,5,2,9,4], inf),
-	    \octave, Pseq([2,3].stutter(2) + 4 , inf),
-    	\dur, 0.1,
-      // \amp, 1,
-	    \attack, Pwhite(0.02,0.06),
-      \decay, 0.05,
-      \sustain, 0.1,
-	    \release, Pwhite(1.3,2.4),
-	    // \filterFreq, Pwhite(800,1700),
-	    \fq, 0.15,//Pwhite(0.8,0.9),
-      \pan, Pseq([-0.9, 0.9], inf),
-
-			\func, Pfunc({|e| ~onEvent.(e)}),
-			\args, #[]
-		);
-	);
-
-	Pdef(m.ptn).play(quant:0.1);
 };
+
 ~deinit = ~deinit <> {
-	Pdef(m.ptn).remove;
 };
 
 //------------------------------------------------------------
-// triggers
-//------------------------------------------------------------
-
-// example feeding the community
-~onEvent = {|e|
-  m.com.root = e.root;
-};
-
-
-//------------------------------------------------------------
-// do all the work(logic) taking data in and playing pattern/synth
+// ~onEvent = {|e|
+// 	// m.com.root = e.root;
+// 	// m.com.dur = e.dur;
+// };
 //------------------------------------------------------------
 ~next = {|d|
 
-	var notes = [0,2,4,5,9];
-	var index = (d.sensors.gyroEvent.y / pi).linlin(-1,1,0,notes.size).floor;
-	var note = notes[index];
-	var amp = m.accelMassFiltered.lincurve(0,2.5,0.0001,0.7,-1);
-  var filterFreq = m.accelMassFiltered.lincurve(0,2,100,2000,-1);
+	var move = m.accelMassFiltered.linlin(0,3,0,1);
+  var filterFreq = m.accelMass.lincurve(1,2.5,50,1100,-2);
 
-	Pdef(m.ptn).set(\note, note);
-	Pdef(m.ptn).set(\amp, amp * 0.5);
-  Pdef(m.ptn).set(\filterFreq, filterFreq);
-
-	if(amp > 0.03,{
-		if( Pdef(m.ptn).isPlaying.not,{
-			Pdef(m.ptn).resume(quant:0.1);
-		});
-	},{
-		if( Pdef(m.ptn).isPlaying,{
-			Pdef(m.ptn).pause();
+	if(move > 0.17, {
+		if(TempoClock.beats > (lastTime + 0.4),{
+			lastTime = TempoClock.beats;
+			notes = notes.rotate(-1);
+			octave = octave.rotate(-1);
+			currentNote = notes[0];
+			currentRoot = m.com.root;
+			synth = Synth(\scaleFoot1, [
+				\freq, (60 + currentNote + currentRoot + octave[0]).midicps,
+				\amp, 1,
+        \attack, 0.003,
+        \decay, 0.2,
+        \sustain, 0.7,
+	      \release, 1.7,
+	      \filterFreq, filterFreq,
+	      \fq, 0.5,
+        \pan, -1.0.rrand(1.0)
+			]);
+			synth.server.sendBundle(0.3,[\n_set, synth.nodeID, \gate, 0]);
 		});
 	});
-
 };
-
-~nextMidiOut = {|d|
-	// m.midiOut.control(m.midiChannel, 0, m.accelMassFiltered * 64 );
-};
-
-//------------------------------------------------------------
-// plot with min and max
 //------------------------------------------------------------
 ~plotMin = -1;
 ~plotMax = 1;
-
 ~plot = { |d,p|
-
-	var dur = m.accelMassFiltered.linlin(0,2.5,1,4).floor.reciprocal;
-
-	[dur/4];
-
 	// [d.sensors.rrateEvent.x, m.rrateMass * 0.1, m.accelMassFiltered * 0.5];
-	// [m.accelMass * 0.1, m.accelMassFiltered.linlin(0,3,0,1)];
+	[m.accelMass * 0.1, m.accelMassFiltered.linlin(0,3,0,1)];
 	// [m.rrateMassFiltered, m.rrateMassThreshold];
 	// [m.rrateMassFiltered, m.rrateMassThreshold, m.accelMassAmp];
 	// [d.sensors.gyroEvent.x, d.sensors.gyroEvent.y, d.sensors.gyroEvent.z];
@@ -131,7 +97,3 @@ SynthDef(\scale2, {
 
 
 };
-
-
-
-

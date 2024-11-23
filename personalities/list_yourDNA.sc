@@ -1,5 +1,6 @@
 (
 	[
+		"scaleFoot1",
 		"scale1",
 		"scale2",
 		"gendy1",

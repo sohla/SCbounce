@@ -4,18 +4,41 @@ m.accelMassFilteredAttack = 0.9;
 m.accelMassFilteredDecay = 0.99;
 
 
-SynthDef(\scale1, {
-	|freq = 440, amp = 0.5, attack = 0.1, decay = 0.2, sustain = 0.7, release = 0.3, gate = 1, filterFreq = 800, fq=0.5, pan = 0|
+// SynthDef(\scale1, {
+// 	|freq = 440, amp = 0.5, attack = 0.1, decay = 0.2, sustain = 0.7, release = 0.3, gate = 1, filterFreq = 800, fq=0.5, pan = 0|
 
+//     var env, osc, filt, sig;
+//     env = EnvGen.kr(Env.adsr(attack, decay, sustain, release), gate, doneAction: 2);
+// 		osc = Saw.ar([freq, freq * 1.004],1) + SinOsc.ar([freq-1, freq -1 * 0.005],0,1) + LFTri.ar([freq+1, freq * 1.004],0,1);
+//     filt = RLPF.ar(osc.tanh, filterFreq, fq).tanh;
+//     sig = filt * env * amp * 0.5;
+//     sig = Pan2.ar(sig, pan);
+//     Out.ar(0, sig.tanh);
+// }).add;
+
+SynthDef(\scale1, {
+    |freq = 440, amp = 0.5, attack = 0.1, decay = 0.2, sustain = 0.7, 
+    release = 0.3, gate = 1, filterFreq = 800, fq = 0.5, pan = 0|
+    
     var env, osc, filt, sig;
+    var freqMod = freq * [1, 1.004];  // Calculate frequency modulation once
+    
     env = EnvGen.kr(Env.adsr(attack, decay, sustain, release), gate, doneAction: 2);
-		osc = Saw.ar([freq, freq * 1.004],1) + SinOsc.ar([freq-1, freq -1 * 0.005],0,1) + LFTri.ar([freq+1, freq * 1.004],0,1);
+    
+    // Combine oscillators into single array operation
+    osc = Mix([
+        Saw.ar(freqMod),
+        SinOsc.ar([freq-1, (freq-1) * 0.995]),  // Simplified multiplication
+        LFTri.ar([freq+1, freqMod[1]])
+    ]);
+    
+    // Single tanh operation after mixing
     filt = RLPF.ar(osc.tanh, filterFreq, fq).tanh;
-    sig = filt * env * amp * 0.5;
+    sig = filt * env * amp * 0.25;  // Combined scaling factors
     sig = Pan2.ar(sig, pan);
+    
     Out.ar(0, sig.tanh);
 }).add;
-
 
 ~init = ~init <> {
 	Pdef(m.ptn,
@@ -28,8 +51,8 @@ SynthDef(\scale1, {
 			\attack, Pwhite(0.002,0.03),
     	\decay, 0.2,
     	\sustain, 0.1,
-			\release, Pwhite(0.1,2.4),
-			\filterFreq, Pwhite(100,10000),
+			\release, Pwhite(0.1,0.8),
+			\filterFreq, Pwhite(100,1000),
 			\fq, Pwhite(0.1,0.9),
     	\pan, Pseq([-0.3, 0.3], inf),
 
@@ -62,10 +85,10 @@ SynthDef(\scale1, {
 	var notes = [0,2,4,5,9];
 	var index = (d.sensors.gyroEvent.y / pi).linlin(-1,1,0,notes.size).floor;
 	var note = notes[index];
-	var amp = m.accelMassFiltered.lincurve(0,2.5,0.0001,1,-1);
+	var amp = m.accelMassFiltered.lincurve(0,2.5,0.0001,1.5,-1);
 
 	Pdef(m.ptn).set(\note, note);
-	Pdef(m.ptn).set(\amp, amp);
+	Pdef(m.ptn).set(\amp, amp * 0.7);
 
 	if(amp > 0.07,{
 		if( Pdef(m.ptn).isPlaying.not,{
