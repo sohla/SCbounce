@@ -22,6 +22,7 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, fre
 ~init = ~init <> {
 
 	var path = PathName("~/Downloads/yourDNASamples/STE-002.wav");
+	// var path = PathName("~/Downloads/yourDNASamples/STE-006.wav");
 	postf("loading sample : % \n", path.fileName);
 
 	buffer = Buffer.read(s, path.fullPath, action:{ |buf|
@@ -31,12 +32,11 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, fre
 				\instrument, \stereoSampler,
 				\bufnum, buf,
 				\octave, Pxrand([3], inf),
-				\note, Pwhite(33,36, inf).floor,
-				\attack, 0.07,
+				\note, Pwhite(33,33, inf).floor,
 				\decay, 0.2,
 				\sustain,0.1,
 				\release,0.2,
-				\dur, Pseq([0.125 * 0.5] , inf),
+				\dur, Pseq([0.25], inf),
 				\args, #[],
 			)
 		);
@@ -54,14 +54,14 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, fre
 
 	var dur = m.accelMassFiltered.linlin(0,1,0.5,0.02);
 	var start = (d.sensors.gyroEvent.y / 2pi) + 0.5;
-	var amp = m.accelMassFiltered.linlin(0,1,0,1);
+	var amp = m.rrateMassFiltered.linlin(0,1,0,1);
 	var rate= m.accelMass.linlin(0,1,0,2);
 
 	if(amp < 0.03, {amp = 0}, {amp = 0.5 + (amp * 0.5)});
 
 
-	Pdef(m.ptn).set(\amp, amp);
-	Pdef(m.ptn).set(\start, start.linlin(0,1,0,1));
+	Pdef(m.ptn).set(\amp, 3);
+ Pdef(m.ptn).set(\start, start.linlin(0,1,0,1));
 	Pdef(m.ptn).set(\rate, rate.linexp(0,2,0.25,5));
 
 };

@@ -6,7 +6,7 @@
 	// var personalityDir = "~/Develop/SuperCollider/Projects/scbounce/personalities/"; //laptop
 	//var personalityDir = "~/Develop/SuperCollider/oscMusic/personalities/"; //mac mini cabin
 
-	var defaultPersonality = "arialBass";
+	var defaultPersonality = "insects1";
 	var defaultList = "list_yourDNA.sc";
 
 	// var defaultPersonality = "metal1";
@@ -280,6 +280,7 @@
 	//
 	//------------------------------------------------------------
 	shutdown = {
+		
 
 		stopOSCListening.();
 		Routine{
@@ -937,7 +938,7 @@
 		buildUI.();
 		startOSCListening.();
 
-		s.meter;
+		// s.meter;
 	});
 	// s.plotTree;
 
