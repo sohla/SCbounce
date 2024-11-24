@@ -1,5 +1,6 @@
 var m = ~model;
 var synth;
+var synth2;
 
 var lastTime=0;
 var notes = [0,0,7,0,0,0,7,0,7,5,0,0,0,7,0,0,7,5,0,0,0,-2,7,-2,7,5,-2,-2,7,5,-2,-2,-2,-4,7,5,-4,-4,7,5,-2,-2,7,5,-2,7,5];
@@ -13,7 +14,7 @@ m.accelMassFilteredDecay = 0.99;
 
 //------------------------------------------------------------
 SynthDef(\timWind1, { |out, freq=111, gate=0, amp = 0.3, pchx=0|
-	var env = EnvGen.ar(Env.asr(4,1.0,5.0), gate, doneAction:Done.freeSelf);
+	var env = EnvGen.ar(Env.asr(4,1.0,7.0), gate, doneAction:Done.freeSelf);
 	var follow = Amplitude.kr(amp, 0.3, 0.99);
 	// var sig = Saw.ar(frq.lag(2),0.3 * env * amp.lag(1));
 	var trig = PinkNoise.ar(0.01) * env * follow.lag(2);
@@ -23,8 +24,8 @@ SynthDef(\timWind1, { |out, freq=111, gate=0, amp = 0.3, pchx=0|
 	Out.ar(out, dly);
 }).add;
 
+
 ~init = ~init <> {
-  // synth = Synth(\timWind1, [\freq, (36 + currentNote).midicps, \gate, 1, \amp, 0]);
 };
 
 ~deinit = ~deinit <> {
@@ -34,10 +35,11 @@ SynthDef(\timWind1, { |out, freq=111, gate=0, amp = 0.3, pchx=0|
 //------------------------------------------------------------
 ~next = {|d|
 
-	var move = m.accelMassFiltered.linlin(0,3,0,1);
+	var move = m.accelMassFiltered.linlin(0,3,0,1.5);
   var a = m.accelMassFiltered * 0.5;
-  if(a<0.02,{a=0});
-	if(a>0.9,{a=0.9});
+  
+	if(a<0.02,{a=0});
+	if(a>0.9,{a=1.5});
 	if(move > 0.02, {
     synth.set(\amp, a * 0.4);
   	if(TempoClock.beats > (lastTime + 0.35),{
@@ -51,7 +53,7 @@ SynthDef(\timWind1, { |out, freq=111, gate=0, amp = 0.3, pchx=0|
 			synth = Synth(\timWind1, [
 				\freq, (36 + currentNote + currentRoot).midicps,
 				\gate, 1,
-				\amp, 0.3,
+				\amp, 0.7,
 			]);
 			synth.server.sendBundle(0.3,[\n_set, synth.nodeID, \gate, 0]);
 		});

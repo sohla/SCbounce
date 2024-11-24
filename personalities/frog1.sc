@@ -12,7 +12,7 @@ SynthDef(\blobblob2, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
     var env = EnvGen.kr(Env.adsr(attack, decay, sustain, release), gate, timeScale: cd * 2, doneAction: 2);
 		var hat = HPF.ar(WhiteNoise.ar, 13000) * EnvGen.ar(Env.perc(0.001, 	0.04), gate);
 	var sig = PlayBuf.ar(1, bufnum, rate: [lr, lr * 1.003], startPos: start * BufFrames.kr(bufnum), loop: 0);
-    sig = RHPF.ar(sig + (hat * 0.1), cutoff, rq);
+    sig = RHPF.ar(sig, cutoff, rq);
     sig = Balance2.ar(sig[0], sig[0], pan);
 		sig = Compander.ar(sig, sig,
 						thresh: -20.dbamp,

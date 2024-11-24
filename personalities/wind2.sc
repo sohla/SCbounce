@@ -2,7 +2,7 @@ var m = ~model;
 var synth;
 
 //------------------------------------------------------------
-SynthDef(\sheet3, {
+SynthDef(\sheet4, {
 
 	|out=0, amp=0.5, density=0.5, strength=0.5,
      filterFreq=1000, filterQ=0.5,
@@ -37,7 +37,7 @@ SynthDef(\sheet3, {
 }).add;
 
 ~init = ~init <> {
-	synth = Synth(\sheet3, [\gate, 1]);
+	synth = Synth(\sheet4, [\gate, 1]);
 };
 
 ~deinit = ~deinit <> {
@@ -52,7 +52,7 @@ SynthDef(\sheet3, {
 	var r = m.rrateMassFiltered.linlin(0,1.5,0.8,1.0);
 	var e = (d.sensors.gyroEvent.y / 2pi) + 0.5;
 	e = e.fold(0,0.5) * 2;
-	e = e.linexp(0,1,400,1200);
+	e = e.linexp(0,1,600,1600);
 	if(a<0.03,{a=0});
 	if(a>0.9,{a=0.9});
 	synth.set(\amp, a * 2);

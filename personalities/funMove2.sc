@@ -129,7 +129,7 @@ SynthDef(\versatilePerc, {
 
 	synth = Synth(\warmPadMove2, [
 		\freq, note.midicps, 
-		\amp, 0.1,
+		\amp, 0,
 		\gate, 1,
     \atk, 1.02,
     \rel, 1.8,

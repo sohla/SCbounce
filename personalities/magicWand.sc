@@ -53,8 +53,8 @@ SynthDef(\glockenspiel, {
 	var amp = m.accelMassFiltered.linexp(0,2.5,1,0.8);
 	
 	Pdef(m.ptn).set(\dur, dur);
-	Pdef(m.ptn).set(\octave, 3 + oct);
-	Pdef(m.ptn).set(\amp, amp*0.2);
+	Pdef(m.ptn).set(\octave, 2 + oct);
+	Pdef(m.ptn).set(\amp, amp*0.13);
 	Pdef(m.ptn).set(\hardness, 1 - hardness);
 
 	if(m.accelMassFiltered > 0.18,{

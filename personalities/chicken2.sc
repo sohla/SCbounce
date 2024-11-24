@@ -10,9 +10,9 @@ SynthDef(\grobt, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 	var lr = rate * BufRateScale.kr(bufnum) * (freq/440.0);
 	var cd = BufDur.kr(bufnum);
     var env = EnvGen.kr(Env.adsr(attack, decay, sustain, release), gate, timeScale: cd * 2, doneAction: 2);
-		  var kick = SinOsc.ar(XLine.kr(subFreq*2, subFreq, 0.04),0,0.2) * EnvGen.ar(Env.perc(0.01, 0.3), gate);
+		  var kick = SinOsc.ar(XLine.kr(subFreq*2, subFreq*1, 0.01),0,0.4) * EnvGen.ar(Env.perc(0.01, 0.3), gate);
 
-	var sig = PlayBuf.ar(1, bufnum, rate: [lr, lr * 1.0], startPos: start * BufFrames.kr(bufnum), loop: 0);
+	var sig = PlayBuf.ar(1, bufnum, rate: [lr, lr * 1.0], startPos: start * BufFrames.kr(bufnum), loop: 0) * 1.4;
     sig = RHPF.ar(sig, cutoff, rq);
 		sig = Compander.ar(sig, sig,
         thresh: -33.dbamp,
@@ -62,11 +62,12 @@ SynthDef(\treeWind, { |out, frq=111, gate=0, amp = 0, pchx=0|
 			\octave, Pseq([3,4].stutter(24), inf),
 			\rate, Pseq([0,-3,-5,4,7,9,12,0].midiratio, inf),
 			\amp, Pseq([1, 2, 2, 0.9,0.7,0.6 ,0.5 ,1] * 1.5, inf),
-			\subFreq,Pseq([45,55,440,80,45,70], inf),
+			\subFreq,Pxrand([65,255,440,180,245,100], inf),
 			\start, 0,
-			\legato, 0.3,
+			\legato, Prand([0.3,1.0], inf),
+      \root, Pseq([0,7].stutter(12), inf),
 			\note, Pseq([33], inf),
-		 \dur, Pseq([0.4],inf),
+		 \dur, Pseq([0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4/3,0.4/3,0.4/3],inf),
 		 \pan,Pseq([-1],inf),
 			\attack, 0.02,
 			\release,0.2,
@@ -98,11 +99,11 @@ SynthDef(\treeWind, { |out, frq=111, gate=0, amp = 0, pchx=0|
 
 	if(m.accelMass > 0.07,{
 		if( Pdef(~model.ptn).isPlaying.not,{
-			Pdef(~model.ptn).resume(quant:0.2);
+			Pdef(~model.ptn).play(quant:0.2);
 		});
 	},{
 		if( Pdef(~model.ptn).isPlaying,{
-			Pdef(~model.ptn).pause();
+			Pdef(~model.ptn).stop();
 		});
 	});
 };

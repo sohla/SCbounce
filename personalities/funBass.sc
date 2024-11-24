@@ -72,7 +72,7 @@ SynthDef(\warmPad, {
 
 
 SynthDef(\versatilePerc, {
-    |out=0, freq=50, tension=0.1, decay=0.5, clickLevel=0.5, amp=0.5, dist = 5|
+    |out=0, freq=50, tension=0.1, decay=0.5, clickLevel=0.5, amp=0.5, dist = 5, filtFreq = 2000, filtRes = 0.8|
     var pitch_contour, drum_osc, click_osc, drum_env, click_env, sig, pch;
 
     // Pitch envelope
@@ -99,6 +99,7 @@ SynthDef(\versatilePerc, {
     );
 	sig = (drum_osc * drum_env) + (click_osc * click_env);
 	sig = (sig * dist).tanh.distort;
+	sig = HPF.ar(sig, filtFreq);
     // Mix and output
     Out.ar(out, Pan2.ar(sig,0,amp))
 }).add;
@@ -118,7 +119,7 @@ SynthDef(\versatilePerc, {
 			\envDec,0.3,
 			\envSus, 0.0,
 			\envRel,Pkey(\octave).squared * 0.05,
-   		\amp, 0.8,
+   		\amp, 0.4,
    		\filtRes, Pwhite(0.1,0.2),
 			\func, Pfunc({|e| ~onEvent.(e)}),
 			\args, #[],
@@ -173,6 +174,7 @@ SynthDef(\versatilePerc, {
 	var a = m.accelMassFiltered.lincurve(0,3,0,1,-6);
 	var filtSpeed = m.accelMassFiltered.lincurve(0,2.5,0.1,20,3);
 	var lfoFreq = m.accelMassFiltered.lincurve(0,2.5,0.1,8,-1);
+	var filtFreq = d.sensors.gyroEvent.z.abs.linlin(0.4,1,30,600);
 
 	if(a<0.03,{a=0});
 	if(a>0.9,{a=0.9});
@@ -181,7 +183,7 @@ SynthDef(\versatilePerc, {
 	synth.set(\filtSpeed, filtSpeed);
 	synth.set(\lfoFreq, lfoFreq);
 
-	Pdef(m.ptn).set(\filtFreq, m.accelMassFiltered.linexp(0,4,380,4000));
+	Pdef(m.ptn).set(\filtFreq, filtFreq);
 	Pdef(m.ptn).set(\dur, dur);
 	
 	if(m.accelMassFiltered > 0.1,{
@@ -208,9 +210,9 @@ SynthDef(\versatilePerc, {
 ~plot = { |d,p|
 	// [d.sensors.rrateEvent.x, m.rrateMass * 0.1, m.accelMassFiltered * 0.5];
 	// [m.accelMass * 0.1, m.accelMassFiltered * 0.1];
-	[m.rrateMassFiltered, m.rrateMassThreshold];
+	// [m.rrateMassFiltered, m.rrateMassThreshold];
 	// [m.rrateMassFiltered, m.rrateMassThreshold, m.accelMassAmp];
-	// [d.sensors.gyroEvent.x, d.sensors.gyroEvent.y, d.sensors.gyroEvent.z];
+	[d.sensors.gyroEvent.z];
 	// [d.sensors.rrateEvent.x, d.sensors.rrateEvent.y, d.sensors.rrateEvent.z];
 	// [d.sensors.accelEvent.x, d.sensors.accelEvent.y, d.sensors.accelEvent.z];
 

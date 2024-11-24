@@ -60,7 +60,7 @@ SynthDef(\thunderSampler, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0,
 			synth = Synth(\thunderSampler, [
 				\rate, 1,
 				\gate, 1,
-				\amp, 0.8,
+				\amp, 1,
         \bufnum, buffers[index]
 			]);
 			synth.server.sendBundle(0.3,[\n_set, synth.nodeID, \gate, 0]);

@@ -78,7 +78,7 @@ SynthDef(\rainSampler, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0,
 		m.accelMassFiltered.clip2(2.0).linlin(1.0,2.0,0,1),
 		m.accelMassFiltered.clip2(3.0).linlin(2.0,3.0,0,1)];
 
-	var mix = [1,1,1,1.5];
+	var mix = [1,1,1,1.5] * 2.5;
 	synths.do({|synth, i|
 		synth.set(\amp, levels[i] * mix[i]);
 	});

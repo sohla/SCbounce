@@ -6,7 +6,7 @@
 	// var personalityDir = "~/Develop/SuperCollider/Projects/scbounce/personalities/"; //laptop
 	//var personalityDir = "~/Develop/SuperCollider/oscMusic/personalities/"; //mac mini cabin
 
-	var defaultPersonality = "insects1";
+	var defaultPersonality = "silence";
 	var defaultList = "list_yourDNA.sc";
 
 	// var defaultPersonality = "metal1";

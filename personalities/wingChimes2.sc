@@ -15,6 +15,7 @@ var m = ~model;
 			rq: Lag.kr(rq, 1));
 		snd = snd * env * Lag.kr(amp, 1) * 100;
 		snd = Clip.ar(snd, -0.5, 0.5);
+		snd = BLowShelf.ar(snd,200,1,4);
 		Out.ar(0, snd);
 	}).add;
 
@@ -25,8 +26,8 @@ var m = ~model;
 			\instrument, \wingChimes2,
 			\note, Prand([-1.1], inf),
 			\octave, Pseq([3,4], inf),
-			\pulseFreq, Pwhite(1, 3),
-			\numHarms, 40,
+			\pulseFreq, 0.9,//Pwhite(1, 3),
+			\numHarms, 50,
 			\func, Pfunc({|e| ~onEvent.(e)}),
 			\args, #[],
 		);
@@ -52,7 +53,7 @@ var m = ~model;
 
 	Pdef(m.ptn).set(\dur, dur);
 	Pdef(m.ptn).set(\rq, rq);
-	Pdef(m.ptn).set(\amp, [amp * 2, amp] * 1.5);
+	Pdef(m.ptn).set(\amp, amp * 3);
 
 	if(m.accelMass > 0.15,{
 		if( Pdef(m.ptn).isPlaying.not,{

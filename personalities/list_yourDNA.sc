@@ -8,11 +8,18 @@
 		"magicWand",
 
 		"wind1",
+		"wind2",
 		"rain",
 		"thunder",
 
-		"chicken",
-		"frog",
+		"chicken1",
+		"chicken2",
+		"frog1",
+		"frog2",
+
+		"heatherLaugh1",
+		"quackQuack",
+		"animalMat",
 
 		"timWind1",
 		"sheet2",
@@ -35,7 +42,6 @@
 
 		"arialBass",
 		"arialOstinato",
-		"timDrums",
 		"treeWindEnd",
 
 		"heatherLaugh2",

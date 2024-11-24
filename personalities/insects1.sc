@@ -44,7 +44,7 @@ SynthDef(\insects, {
     reverbed = FreeVerb.ar(filtered, reverbMix, reverbRoom, reverbDamp);
 
     // Final output with panning and envelope
-    Out.ar(out, Pan2.ar(reverbed * env * amp, pan)+mod1);
+    Out.ar(out, Pan2.ar(reverbed * env * amp, pan)+(mod1 *0.8));
 }).add;
 SynthDef(\syntheticLeaf, {
     |out=0, pan=0, amp=0.1, grainDur=0.05, grainRate=50,
@@ -80,11 +80,11 @@ SynthDef(\syntheticLeaf, {
     env = EnvGen.kr(Env.asr(1.3, 1, 2.3, \welch), gate, doneAction: 2);
 
     // Output
-    Out.ar(out, Pan2.ar(sig * env * amp.lag(0.2), pan));
+    Out.ar(out, Pan2.ar(sig * env * amp.lag(0.4), pan));
 }).add;
 
 ~init = ~init <> {
-	synth = Synth(\insects, [\gate, 1]);
+	synth = Synth(\insects, [\gate, 1, \amp, 0.06]);
 	synth2 = Synth(\syntheticLeaf, [\gate, 1]);
 };
 
@@ -96,7 +96,7 @@ SynthDef(\syntheticLeaf, {
 //------------------------------------------------------------
 ~next = {|d|
 
-	var a = m.accelMassFiltered.lincurve(0,3,0.1,1.3,-2);
+	var a = m.accelMassFiltered.lincurve(0,3,0.02,1.3,-2);
 
 	if(a<0.0003,{a=0});
 
