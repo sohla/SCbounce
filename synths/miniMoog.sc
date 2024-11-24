@@ -77,7 +77,8 @@ Pbind(
 ).play(quant:0.1);
 )
 
-
+s.plotTree
 
 s.meter
 
+Saw
