@@ -59,6 +59,8 @@
 		"silence",
 		"heatherLaugh1",
 		"silence",
+		"heatherLaugh1",
+		"silence",
 
 		//8 wind s2
 		"8. Start",
