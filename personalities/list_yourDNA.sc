@@ -26,17 +26,7 @@
 		"arialOstinato",
 		"silence",
 
-		//4 stick
-		"4. Start",
-		"magicWand",
-		"thunder",
-		"silence",
-		"funMove1",
-		"funMelody",
-		"funMove1",
-		"silence",
-		"wind1",
-		"silence",
+		//4 spare
 
 		//5 caz
 		"5. Start",
@@ -67,7 +57,18 @@
 		"bee",
 		"silence",
 
-		//8 spare
+		//8 stick
+		"8. Start",
+		"magicWand",
+		"thunder",
+		"silence",
+		"funMove1",
+		"funMelody",
+		"funMove1",
+		"silence",
+		"wind1",
+		"silence",
+
 
 		//9 Animal 1
 		"9. Start",
