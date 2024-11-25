@@ -16,10 +16,9 @@ m.accelMassFilteredDecay = 0.99;
 SynthDef(\timWind1, { |out, freq=111, gate=0, amp = 0.3, pchx=0|
 	var env = EnvGen.ar(Env.asr(4,1.0,7.0), gate, doneAction:Done.freeSelf);
 	var follow = Amplitude.kr(amp, 0.3, 0.99);
-	// var sig = Saw.ar(frq.lag(2),0.3 * env * amp.lag(1));
 	var trig = PinkNoise.ar(0.01) * env * follow.lag(2);
 	var sig =  DynKlank.ar(`[[freq, freq*2].lag(3), [1,0.4,0.3], [2, 1, 1, 1]], trig);
-  var tone = SinOsc.ar([freq * 4, freq * 0.5], LFNoise2.ar(1,10,10),[0.1,0.5 ]* env);
+  var tone = SinOsc.ar([freq * 4, freq * 0.5], LFNoise2.ar(1,10,10),[0.1,0.7 ]* env);
 	var dly = DelayC.ar(sig + tone,0.03,[0.02,0.027]);
 	Out.ar(out, dly);
 }).add;

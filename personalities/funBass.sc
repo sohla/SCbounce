@@ -119,7 +119,7 @@ SynthDef(\versatilePerc, {
 			\envDec,0.3,
 			\envSus, 0.0,
 			\envRel,Pkey(\octave).squared * 0.05,
-   		\amp, 0.4,
+   		\amp, 0.6,
    		\filtRes, Pwhite(0.1,0.2),
 			\func, Pfunc({|e| ~onEvent.(e)}),
 			\args, #[],
