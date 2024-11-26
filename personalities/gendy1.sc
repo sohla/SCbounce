@@ -10,7 +10,7 @@ SynthDef(\sheet1, { |out=0, frq=111, gate=0, amp = 0, freq=45, detune=0.01, rtim
 	var env = EnvGen.ar(Env.asr(0.3,1.0,8.0), gate, doneAction:Done.freeSelf);
 	var sig = Splay.ar( {Gendy1.ar(1,00, 0.001, 1, freq, freq + (freq * detune), 0, 0.0, mul: 0.1)}!20).softclip;
   var follow = Amplitude.kr(amp, 0.1, 0.4);
-	sig = GVerb.ar(sig * env * follow, 1, rtime);
+	sig = GVerb.ar(sig * env * follow, 1, rtime).distort;
 	BLowShelf.ar(sig,400, db:-8);
 	Out.ar(out, sig);
 }).add;
@@ -20,13 +20,13 @@ SynthDef(\miniMoog, {
     var env, osc, filt, sig;
     env = EnvGen.kr(Env.adsr(attack, decay, sustain, release), gate, doneAction: 2);
 	osc = Saw.ar([freq, freq * 1.004],1) + SinOsc.ar([freq-1, freq -1 * 0.005],0,1) + LFTri.ar([freq+1, freq * 1.004],0,1);
-    filt = RLPF.ar(osc.tanh, filterFreq, fq).tanh;
+    filt = RLPF.ar(osc.tanh, filterFreq, fq);
     sig = filt * env * amp * 0.5;
     sig = Pan2.ar(sig, pan);
     Out.ar(0, sig.tanh);
 }).add;
 ~init = ~init <> {
-	synth = Synth(\sheet1, [\gate, 1]);
+	synth = Synth(\miniMoog, [\gate, 1]);
 };
 
 ~deinit = ~deinit <> {
@@ -38,7 +38,7 @@ SynthDef(\miniMoog, {
 
 	var amp = m.accelMassFiltered.linlin(0,1.5,0.001,1.0);
   var detune = m.accelMassFiltered.linlin(0,2.5,0.1,0.2);
-  var filterFreq = m.rrateMassFiltered.linexp(0,1,400,9.2e4);
+  var filterFreq = m.rrateMassFiltered.linexp(0,1,400,9.2e3);
 	
   var index = d.sensors.rotateEvent.y.linlin(0,1,0,notes.size).floor;
 	var freq = notes[index].midicps;

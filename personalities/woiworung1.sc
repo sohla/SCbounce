@@ -34,13 +34,13 @@ SynthDef("woiworung1", {|out,freq = 1000, amp = 0.5, att = 2.02, dec = 0.3, sus 
 //------------------------------------------------------------
 ~next = {|d|
 
-	var a = m.accelMassFiltered.linlin(0,1,0.0,0.15);
+	var a = m.accelMassFiltered.lincurve(0,1,0.0,0.15,-2);
 	var ch = (m.accelMassFiltered * 0.25).linlin(0.0,1.0,0.2,49);
 	// var pchs = [0,12,24,36,48];
 	// var i = (d.sensors.gyroEvent.y.abs / pi) * (pchs.size);
 	if(a<0.1,{a=0});
 	if(a>0.9,{a=1.0});
-	synth.set(\amp, a * 0.35);
+	synth.set(\amp, a * 0.45);
 	synth.set(\ch, ch);
 
 	a = m.accelMassFiltered * 0.1;

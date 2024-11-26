@@ -72,20 +72,20 @@ SynthDef(\bongo1, {
 	Pdef(m.ptn,
 		Pbind(
 		    \instrument, \bongo1,
-			\dur, Pseq([Pseq([Rest(0.25), 0.25], 5) ,0.125,0.125, 0.25], inf),
+			\dur, Pseq([Pseq([Rest(0.25), 0.25], 5) ,0.125,0.125, 0.25]* 0.8, inf),
 			\octave, 4,
 		    \note, Pseq([0,5,9,2,7,4,3], inf),
 			\amp, Pseq([0.9, 0.6, 0.8], inf),
 		    \tension, Pwhite(0.7, 1),
 			\damp, Pwhite(0.5,2),
-		    \pos, Pwhite(0.1, 0.9),
+		    // \pos, Pwhite(0.1, 0.9),
 		    \pan, Pwhite(-0.3, 0.3),
 			\func, Pfunc({|e| ~onEvent.(e)}),
 			\args, #[]
 		);
 	);
 
-	Pdef(m.ptn).play(quant:0.5);
+	Pdef(m.ptn).play(quant:0.125);
 };
 ~deinit = ~deinit <> {
 	Pdef(m.ptn).remove;
@@ -109,14 +109,14 @@ SynthDef(\bongo1, {
 //------------------------------------------------------------
 ~next = {|d|
 
-	var dur = m.accelMassFiltered.linexp(0,2.5,0.5,0.05);
-	var swing= m.accelMassFiltered.linexp(0,2.0,0.00001,0.125);
-	Pdef(m.ptn).set(\dur, dur);
-	Pdef(m.ptn).set(\latency, 0.2+swing);
+	var dur = m.accelMassFiltered.linexp(0,1.5,0.001,2);
+	// var swing= m.accelMassFiltered.linexp(0,2.0,0.00001,0.125);
+	Pdef(m.ptn).set(\pos, dur);
+	// Pdef(m.ptn).set(\latency, 0.2+swing);
 
 	if(m.accelMassFiltered > 0.08,{
 		if( Pdef(m.ptn).isPlaying.not,{
-			Pdef(m.ptn).resume(quant:0.5);
+			Pdef(m.ptn).resume(quant:0.125);
 		});
 	},{
 		if( Pdef(m.ptn).isPlaying,{
