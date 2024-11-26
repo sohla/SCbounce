@@ -57,6 +57,8 @@ Pdef(\b,
 Pdef(\b).play(quant:[0.15]);
 
 )
+FreeVerb
 
 
-
+GVerb
+33-12+7-2

@@ -5,7 +5,7 @@ a = {
 	var modulator, mod1, mod2, mod3;
 
 	// repeat time is 0.7s: equates to 1.43 Hz.
-	modulator = LFSaw.ar(1.43, 1, 0.5, 0.5);
+	modulator = LFSaw.ar(MouseX.kr(1,2.43), 1, 0.5, 0.5);
 	mod2 = (modulator * 40.6 * 2pi).cos.squared;
 	mod3 = modulator * 3147;
 	mod3 = (mod3 * 2pi).cos + ((mod3 * 2 * 2pi).cos * 0.3);
@@ -166,3 +166,7 @@ Synth(\buzzingHousefly, addAction: \addToHead);
 
 // code also available here:
 // http://en.wikibooks.org/wiki/Designing_Sound_in_SuperCollider/Insects
+
+
+Wapr1
+

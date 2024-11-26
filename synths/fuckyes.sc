@@ -1,9 +1,9 @@
 (
 {
 		var in = LocalIn.ar(2);
-	var frq = MouseY.kr(10, 1e3, \linear);
+	var frq = 900;//MouseY.kr(10, 1e3, \linear);
 	var source = SinOsc.ar(frq,0,0.1);
-	var sig = Pluck.ar(source + (in * 0.1), Dust.ar(MouseX.kr(1,1000, \exponential)), frq.reciprocal, frq.reciprocal, 1,
+	var sig = Pluck.ar(source + (in * 0.1), Dust.ar(900), frq.reciprocal, frq.reciprocal, 1,
         coef:0.5)!2;
 	sig = sig.softclip.distort;
 	sig = HPF.ar(sig, 200);
@@ -19,3 +19,4 @@
 
 
 )
+
