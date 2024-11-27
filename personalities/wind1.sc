@@ -6,7 +6,7 @@ SynthDef(\sheet3, {
 
 	|out=0, amp=0.5, density=0.5, strength=0.5,
      filterFreq=1000, filterQ=0.5,
-     reverbMix=0.5, reverbRoom=0.5, reverbDamp=0.2, gate=0, my=0.5, mx=1x|
+     reverbMix=0.5, reverbRoom=0.5, reverbDamp=0.2, gate=0, my=0.5, mx=1,pan=0|
 
     var wind, filtered, reverbed;
     var densityMod, strengthMod;
@@ -31,6 +31,7 @@ SynthDef(\sheet3, {
     // Apply reverb
     reverbed = FreeVerb.ar(filtered, reverbMix, reverbRoom, reverbDamp);
 
+	reverbed = Balance2.ar(reverbed[0],reverbed[1],pan.lag(3));
 
 	Out.ar(out, reverbed * amp.lag(1) * env);
 
@@ -51,6 +52,8 @@ SynthDef(\sheet3, {
 	var b = m.accelMassFiltered.linexp(0,3,0.1,1);
 	var r = m.rrateMassFiltered.linlin(0,1.5,0.8,1.0);
 	var e = (d.sensors.gyroEvent.y / 2pi) + 0.5;
+	var pan = d.sensors.gyroEvent.z.linlin(-1,1,-1,1);
+
 	e = e.fold(0,0.5) * 2;
 	e = e.linexp(0,1,400,1200);
 	if(a<0.03,{a=0});
@@ -59,6 +62,7 @@ SynthDef(\sheet3, {
 	synth.set(\my, b);
 	synth.set(\mx, r);
 	synth.set(\filterFreq, e);
+	synth.set(\pan, pan);
 };
 
 //------------------------------------------------------------

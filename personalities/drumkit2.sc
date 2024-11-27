@@ -1,10 +1,10 @@
 var m = ~model;
 var bi = 0;
-var dur = 0.14 * 2;
+var dur = 0.14 * 2 ;
 
 ~buffers;
 m.accelMassFilteredAttack = 0.99;
-m.accelMassFilteredDecay = 0.9;
+m.accelMassFilteredDecay = 0.6;
 
 //------------------------------------------------------------
 SynthDef(\drumkit, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
@@ -57,7 +57,7 @@ SynthDef(\drumkit, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 			// \amp, 1,
 			\start, 0,
 			\note, Pseq([40], inf),
-		 \dur, dur,
+		 \dur, Pseq([1,Rest(0.5),0.5,0.5,1,0.5,Rest(0.5),1] * dur, inf),
 		//  \latency, Pwhite(0,0.013),
 		 \pan,Pwhite(-0.1,0.1),
 			\attack, 0.02,
@@ -85,20 +85,24 @@ SynthDef(\drumkit, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 //------------------------------------------------------------
 ~next = {|d|
 
-	var rate = m.rrateMassFiltered.linlin(0,1,1.2,1.6);
+	var rate = m.rrateMassFiltered.linlin(0,1,1.5,2);
 	var amp = m.accelMassFiltered.lincurve(0,2.5,0.3,1, -1);
 	Pdef(m.ptn).set(\amp, amp);
 	Pdef(m.ptn).set(\rate, rate);
 	bi = (d.sensors.gyroEvent.y.abs / pi) * (~buffers.size-1);
 	bi = bi.asInteger;
 
-	if(m.accelMassFiltered > 0.2,{
+
+	if(m.accelMassFiltered > 0.1,{
 		if( Pdef(m.ptn).isPlaying.not,{
-			Pdef(m.ptn).resume(quant:dur);
+			// Pdef(m.ptn).resume(quant:dur);
+			Pdef(m.ptn).play(quant:dur);
 		});
 	},{
 		if( Pdef(m.ptn).isPlaying,{
-			Pdef(m.ptn).pause();
+			// Pdef(m.ptn).pause();
+			Pdef(m.ptn).stop();
+			Pdef(m.ptn).reset();
 		});
 	});
 };
@@ -107,7 +111,8 @@ SynthDef(\drumkit, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 ~plotMin = -1;
 ~plotMax = 1;
 ~plot = { |d,p|
-	[m.rrateMass * 0.1, m.rrateMassFiltered * 0.1];
+	// [m.rrateMass * 0.1, m.rrateMassFiltered * 0.1];
+	[m.accelMassFiltered * 0.15];
 	// [m.accelMass * 0.3, m.accelMassFiltered * 0.5];
 	// [m.rrateMassFiltered, m.rrateMassThreshold];
 	// [m.rrateMassFiltered, m.rrateMassThreshold, m.accelMassAmp];

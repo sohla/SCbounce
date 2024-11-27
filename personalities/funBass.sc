@@ -66,7 +66,7 @@ SynthDef(\warmPad, {
 
     // Output with stereo spread
     sig = Splay.ar(sig, spread);
-		sig = GVerb.ar(sig.tanh * 0.2,4,0.1);
+		// sig = GVerb.ar(sig.tanh * 0.2,4,0.1);
 	Out.ar(out, (sig + sub) * amp.lag(0.3) * env * pulse);
 }).add;
 
@@ -119,7 +119,7 @@ SynthDef(\versatilePerc, {
 			\envDec,0.3,
 			\envSus, 0.0,
 			\envRel,Pkey(\octave).squared * 0.05,
-   		\amp, 0.6,
+   		\amp, 0.2,
    		\filtRes, Pwhite(0.1,0.2),
 			\func, Pfunc({|e| ~onEvent.(e)}),
 			\args, #[],
@@ -129,7 +129,7 @@ SynthDef(\versatilePerc, {
 	Pdef(m.ptn).play(quant:0.125);
 	synth = Synth(\warmPad, [
 		\freq, note.midicps, 
-		\amp, 0.1,
+		\amp, 0.05,
 		\gate, 1,
     \atk, 1.02,
     \rel, 1.8,
@@ -179,7 +179,7 @@ SynthDef(\versatilePerc, {
 	if(a<0.03,{a=0});
 	if(a>0.9,{a=0.9});
 
-	synth.set(\amp, a * 0.5);
+	synth.set(\amp, a * 0.1);
 	synth.set(\filtSpeed, filtSpeed);
 	synth.set(\lfoFreq, lfoFreq);
 

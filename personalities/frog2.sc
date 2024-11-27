@@ -58,7 +58,7 @@ SynthDef(\blobblob2, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 			// \amp, 2,
 			\attack, 0.002,
 			\release,0.17,
-			\pan, 1,//Pseq([-1,1], inf),
+			\pan, 0.8,//Pseq([-1,1], inf),
 			\args, #[],
 		)
 	);

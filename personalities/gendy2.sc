@@ -30,7 +30,8 @@ SynthDef(\miniMoog, {
 };
 
 ~deinit = ~deinit <> {
-	synth.free;
+	synth.set(\release, 5);
+	synth.set(\gate, 0);
 };
 
 //------------------------------------------------------------

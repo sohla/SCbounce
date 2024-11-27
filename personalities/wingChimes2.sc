@@ -11,9 +11,9 @@ var m = ~model;
 					LFPulse.ar(pulseFreq,0,0.5) * 0.01
 				]
 			)),
-			freq: [freq, freq + 5],
+			freq: [freq, freq + 5] + 2,
 			rq: Lag.kr(rq, 1));
-		snd = snd * env * Lag.kr(amp, 1) * 100;
+		snd = snd * env * Lag.kr(amp, 1) * 20;
 		snd = Clip.ar(snd, -0.5, 0.5);
 		snd = BLowShelf.ar(snd,200,1,4);
 		Out.ar(0, snd);
@@ -55,7 +55,7 @@ var m = ~model;
 	Pdef(m.ptn).set(\rq, rq);
 	Pdef(m.ptn).set(\amp, amp * 3);
 
-	if(m.accelMass > 0.15,{
+	if(m.accelMass > 0.1,{
 		if( Pdef(m.ptn).isPlaying.not,{
 			Pdef(m.ptn).play(quant:[0.1,0,0,0]);
 		});

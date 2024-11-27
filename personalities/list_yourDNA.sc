@@ -3,7 +3,7 @@
 
 		//1 wind s1
 		"1. Start",
-		"rain",
+		"rain1",
 		"silence",
 		"timWind1",
 		"silence",
@@ -12,7 +12,7 @@
 
 		//2 wind l
 		"2. Start",
-		"rain",
+		"rain2",
 		"silence",
 		"arialOstinato",
 		"silence",

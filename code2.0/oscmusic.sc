@@ -6,11 +6,11 @@
 	// var personalityDir = "~/Develop/SuperCollider/Projects/scbounce/personalities/"; //laptop
 	//var personalityDir = "~/Develop/SuperCollider/oscMusic/personalities/"; //mac mini cabin
 
-	// var defaultPersonality = "1. Start";
-	// var defaultList = "list_yourDNA.sc";
+	var defaultPersonality = "1. Start";
+	var defaultList = "list_yourDNA.sc";
 
-	var defaultPersonality = "silence";
-	var defaultList = "list_brenton.sc";
+	// var defaultPersonality = "silence";
+	// var defaultList = "list_brenton.sc";
 
 	//var oscMessageTag  = "CombinedDataPacket";
 	var oscMessageTag  = "IMUFusedData";
@@ -382,7 +382,7 @@
 
 		QtGUI.palette = QPalette.dark;
 
-		window = Window("osc music", Window.screenBounds, false).front;
+		window = Window("osc music", Window.screenBounds.insetBy(0,0), false).front;
 		window.view.keyDownAction_({|view,char,mods,uni,code,key|
 			if(uni==114,{//r
 				devices.keysValuesDo({|k,v|
@@ -916,7 +916,9 @@
 			.action_({
 					("sudo systemctl restart NetworkManager").unixCmdGetStdOut();
 			});
-			
+		
+		// s.plotTreeView(parent:contentView);
+	
 
 	};
 	//------------------------------------------------------------
@@ -938,6 +940,8 @@
 		buildUI.();
 		startOSCListening.();
 
+		// s.plotTree;
+   
 		// s.meter;
 	});
 	// s.plotTree;

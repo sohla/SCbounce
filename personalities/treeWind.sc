@@ -33,7 +33,7 @@ SynthDef(\treeWind, { |out, frq=111, gate=0, amp = 0, pchx=0|
 	// pchs[i.floor].postln;
 	if(a<0.02,{a=0});
 	if(a>0.9,{a=0.9});
-	synth.set(\amp, a * 0.4);
+	synth.set(\amp, a * 0.09);
 	// synth.set(\pchx,pchs[i.floor]);
   synth.set(\pchx, m.com.root);
 };

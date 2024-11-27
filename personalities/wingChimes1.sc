@@ -5,15 +5,13 @@ var m = ~model;
 		var snd, env;
 		env = EnvGen.kr(Env.adsr(att, dec, sus, rel), gate: gate, doneAction: 2);
 		snd = BPF.ar(
-			in: WhiteNoise.ar(Select.ar(0,
-				[
-					Blip.ar(pulseFreq, numHarms, 0.5),
-					LFPulse.ar(pulseFreq,0,0.5) * 0.01
-				]
-			)),
+			in: WhiteNoise.ar(
+					Blip.ar(pulseFreq, numHarms, 0.7) + 
+					LFPulse.ar(pulseFreq,0,1,0.2) 
+			),
 			freq: [freq, freq + 5],
 			rq: Lag.kr(rq, 1));
-		snd = snd * env * Lag.kr(amp, 1) * 100;
+		snd = snd * env * Lag.kr(amp, 1) * 20;
 		snd = Clip.ar(snd, -0.5, 0.5);
 		Out.ar(0, snd);
 	}).add;
@@ -29,7 +27,7 @@ var m = ~model;
 			\octave, Pwhite(5,6),
 			\root, Pseq([0,3,-4, -1, 3].stutter(24),inf),
 			\pulseFreq, Pwhite(3, 7),
-			\numHarms, 30,
+			\numHarms, 10,
 			\func, Pfunc({|e| ~onEvent.(e)}),
 			\args, #[],
 		);
@@ -51,7 +49,7 @@ var m = ~model;
 
 	var dur = 0.3;// * 2.pow(m.accelMassFiltered.linlin(0,4,0,4).floor).reciprocal;
 	var rq = m.accelMassFiltered.linexp(0,4,0.1,0.0005);
-	var amp = m.accelMassFiltered.linexp(0,4,0.05,6);
+	var amp = m.accelMassFiltered.linexp(0,4,0.05,1);
 //	var part = m.accelMassFiltered.linlin(0,3,0,2).floor.asInteger;
 
 	Pdef(m.ptn).set(\dur, dur);
@@ -62,7 +60,7 @@ var m = ~model;
 	// if(part == 1, { Pdef(m.ptn).set(\note, Prand([0,7], inf)) });
 	// if(part == 2, { Pdef(m.ptn).set(\note, Prand([0,7,11], inf)) });
 
-	if(m.accelMass > 0.15,{
+	if(m.accelMass > 0.1,{
 		if( Pdef(m.ptn).isPlaying.not,{
 			Pdef(m.ptn).resume(quant:[0.1,0,0,0]);
 		});

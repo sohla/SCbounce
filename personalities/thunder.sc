@@ -51,8 +51,7 @@ SynthDef(\thunderSampler, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0,
 ~next = {|d|
 
 	var move = m.accelMassFiltered.linlin(0,3,0,1);
-	var metal = m.accelMassFiltered.linlin(0,2.5,0.01,2);
-	var size = m.accelMassFiltered.linlin(0,2.5,0.1,1);
+	var amp = m.accelMassFiltered.lincurve(0,2.5,0.05,0.6,-2);
 
 	if(move > 0.22, {
 		if(TempoClock.beats > (lastTime + 0.35),{
@@ -60,7 +59,7 @@ SynthDef(\thunderSampler, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0,
 			synth = Synth(\thunderSampler, [
 				\rate, 1,
 				\gate, 1,
-				\amp, 1,
+				\amp, amp,
         \bufnum, buffers[index]
 			]);
 			synth.server.sendBundle(0.3,[\n_set, synth.nodeID, \gate, 0]);

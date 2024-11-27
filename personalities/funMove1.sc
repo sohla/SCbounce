@@ -178,7 +178,7 @@ SynthDef(\versatilePerc, {
 	if(a<0.03,{a=0});
 	if(a>0.9,{a=0.9});
 
-	synth.set(\amp, a * 0.5);
+	synth.set(\amp, a * 0.1);
 	synth.set(\filtSpeed, filtSpeed);
 	synth.set(\lfoFreq, lfoFreq);
 

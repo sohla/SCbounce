@@ -29,7 +29,7 @@ SynthDef(\funMelody, {
 			\envAtk,0.02,
 			\envDec, Pwhite(0.2, 0.1, inf),
 			\envSus, 0.0,
-			\envRel,Pkey(\octave).squared * 0.05,
+			\envRel,Pkey(\octave).squared * 0.01,
     		\amp, 0.05,
 			\pan, Pseq([-0.3,0.3], inf),
     		\filtRes, 0.4,

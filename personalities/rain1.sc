@@ -7,12 +7,12 @@ m.accelMassFilteredAttack = 0.01;
 m.accelMassFilteredDecay = 0.03;
 
 SynthDef(\rainSampler, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0,
-    attack=0.01, decay=0.1, sustain=0.3, release=0.2, gate=1,cutoff=20000, rq=1|
+    attack=0.01, decay=0.1, sustain=0.3, release=0.2, gate=1,cutoff=20, rq=1|
 
 	  var env = EnvGen.kr(Env.adsr(attack, decay, sustain, release), gate, timeScale: 1, doneAction: 2);
 	var sig = PlayBuf.ar(2, bufnum, rate: rate, startPos: start * BufFrames.kr(bufnum), loop: 1);
-    sig = RLPF.ar(sig, cutoff, rq);
-    sig = Pan2.ar(sig, pan, amp * env);
+    sig = HPF.ar(sig, cutoff);
+    sig = Balance2.ar(sig[0],sig[1], pan.lag(2), amp * env);
     Out.ar(out, sig);
 }).add;
 
@@ -29,9 +29,10 @@ SynthDef(\rainSampler, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0,
 			postf("buffer alloc [%] \n", buf);
 			// postf("buffer alloc [%] \n", buf.path.basename.splitext[0]);
 			synths = synths.add(Synth(\rainSampler, [
-				\rate, 1,
+				\rate, 1.1,
 				\gate, 1,
 				\amp, 0,
+				\pan,-1,
 				\release, 10,
         \bufnum, buf
 			]);
@@ -73,14 +74,19 @@ SynthDef(\rainSampler, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0,
 ~next = {|d|
 
 	var levels = [	
-		m.accelMassFiltered.clip2(0.5).linlin(0,0.5,0,1),
-		m.accelMassFiltered.clip2(1.0).linlin(0.5,1.0,0,1),
-		m.accelMassFiltered.clip2(2.0).linlin(1.0,2.0,0,1),
-		m.accelMassFiltered.clip2(3.0).linlin(2.0,3.0,0,1)];
+		m.accelMassFiltered.clip2(0.4).linlin(0,0.4,0,1),
+		m.accelMassFiltered.clip2(0.8).linlin(0.4,0.8,0,1),
+		m.accelMassFiltered.clip2(1.4).linlin(0.8,1.4,0,1),
+		m.accelMassFiltered.clip2(3.0).linlin(1.4,3.0,0,1)];
 
-	var mix = [1,1,1,1.5] * 2.5;
+	var mix = [0.6,1,1,1.5] * 2;
+	var cutoff = m.accelMassFiltered.lincurve(0,1.5,600,20,-2);
+	var pan = d.sensors.gyroEvent.z.linlin(-1,1,-1,1);
+
 	synths.do({|synth, i|
 		synth.set(\amp, levels[i] * mix[i]);
+		synth.set(\cutoff, cutoff);
+		synth.set(\pan, pan);
 	});
 	
 };

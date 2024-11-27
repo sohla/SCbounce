@@ -12,7 +12,7 @@ SynthDef(\stereoSamplerAM, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, f
     var env = EnvGen.kr(Env.adsr(attack, decay, sustain, release), gate, timeScale: ts, doneAction: 2);
 	var sig = PlayBuf.ar(2, bufnum, rate: [lr, lr * 1.003], startPos: start * BufFrames.kr(bufnum), loop: 0);
     sig = RLPF.ar(sig, cutoff, rq);
-    sig = Balance2.ar(sig[0], sig[1], pan, amp * env);
+    sig = Balance2.ar(sig[0], sig[1], pan.lag(2), amp * env);
     Out.ar(out, sig[0]);
 }).add;
 
@@ -62,7 +62,7 @@ SynthDef(\stereoSamplerAM, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, f
 	var co = (d.sensors.gyroEvent.y / pi).linexp(-1,1,5540,14000);
 	var pan = d.sensors.gyroEvent.z.linlin(-1,1,-1,1);
 
-	if(amp < 0.06, {amp = 0}, { amp = 0.8});
+	if(amp < 0.06, {amp = 0}, { amp = 1.1});
 	Pdef(m.ptn).set(\amp, amp);
 	Pdef(m.ptn).set(\dur, dur);
 	Pdef(m.ptn).set(\cutoff, co);

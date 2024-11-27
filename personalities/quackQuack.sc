@@ -7,13 +7,13 @@ m.accelMassFilteredDecay = 0.9;
 
 //------------------------------------------------------------
 SynthDef(\monoSampler, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=440,
-    attack=0.01, decay=0.1, sustain=0.3, release=0.2, gate=1,cutoff=20000, rq=1|
+    attack=0.01, decay=0.1, sustain=0.0, release=0.2, gate=1,cutoff=20000, rq=1|
 
 	var lr = rate * BufRateScale.kr(bufnum) * (freq/440.0);
     var env = EnvGen.kr(Env.adsr(attack, decay, sustain, release), gate, doneAction: 2);
 	var sig = PlayBuf.ar(1, bufnum, rate: [lr, lr * 1.003], startPos: start * BufFrames.kr(bufnum), loop: 0);
     sig = RLPF.ar(sig, cutoff, rq);
-    sig = Balance2.ar(sig[0], sig[1], pan,  env);
+    sig = Balance2.ar(sig[0], sig[1], pan.lag(2),  env);
 		sig = Compander.ar(sig, sig,
 						thresh: -32.dbamp,
 						slopeBelow: 1,
@@ -41,7 +41,7 @@ SynthDef(\pullstretchMonoQ, {|out, amp = 1, buffer = 0, envbuf = -1, pch = 1.0, 
 			0
 	) * amp.lag(1);
 
-	mas = HPF.ar(sp,245);
+	mas = HPF.ar(sp,445);
 
 	Out.ar(out,Pan2.ar(mas[0],pan));
 }).add;
@@ -67,7 +67,7 @@ SynthDef(\pullstretchMonoQ, {|out, amp = 1, buffer = 0, envbuf = -1, pch = 1.0, 
 
 //------------------------------------------------------------
 ~next = {|d|
-	var amp = m.accelMass.linlin(0,1,0.00001,0.8);
+	var amp = m.accelMass.linlin(0,1,0.00001,1);
 	var speed= m.accelMassFiltered.linlin(0,1,0.25,0.35);
 	var rate = m.accelMassFiltered.linlin(0,1,0.9,1.4);
 	var pan = d.sensors.gyroEvent.z.linlin(-1,1,-1,1);

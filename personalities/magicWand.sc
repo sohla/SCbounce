@@ -5,7 +5,7 @@ SynthDef(\glockenspiel, {
     |freq = 440, amp = 0.5, decay = 1, pan = 0, hardness = 1, mix=0.5, room=0.5|
     var exciter, env, sig;
 		var freqs = [1, 4.08, 10.7, 18.8, 24.5, 31.2] * freq;
-		var tone = SinOsc.ar(freq * 2, LFNoise2.ar(freq/8),0.05);
+		var tone = SinOsc.ar(freq * [2,2.007], LFNoise2.ar(freq * 0.01,10),0.15);
     exciter = WhiteNoise.ar(0.01) * Decay2.ar(Impulse.ar(0, 0, amp), 0.005, 0.02);
     env = EnvGen.ar(Env.perc(0.003, decay), doneAction: Done.freeSelf);
     sig = DynKlank.ar(`[
@@ -26,7 +26,7 @@ SynthDef(\glockenspiel, {
 		Pbind(
 			\instrument, \glockenspiel,
 			\note, Pseq([-5,0,4,7,-12,4],inf),
-			\decay, 3.5,
+			\decay, 2.5,
 			\func, Pfunc({|e| ~onEvent.(e)}),
 			\args, #[],
 		)
@@ -47,17 +47,17 @@ SynthDef(\glockenspiel, {
 //------------------------------------------------------------
 ~next = {|d|
 
-	var oct = m.accelMassFiltered.linlin(0,5,4,6).floor;
+	var oct = m.accelMassFiltered.lincurve(0,3,2,6,-1).floor;
 	var dur = 0.23 - m.accelMassFiltered.linlin(0,2.5,0.001,0.14);
 	var hardness = m.accelMassFiltered.linlin(0,2.5,0.2,0.9).clip2(0.91);
-	var amp = m.accelMassFiltered.linexp(0,2.5,1,0.8);
+	var amp = m.accelMassFiltered.linexp(0,2.5,1,0.6);
 	
 	Pdef(m.ptn).set(\dur, dur);
 	Pdef(m.ptn).set(\octave, 2 + oct);
 	Pdef(m.ptn).set(\amp, amp*0.13);
 	Pdef(m.ptn).set(\hardness, 1 - hardness);
 
-	if(m.accelMassFiltered > 0.18,{
+	if(m.accelMassFiltered > 0.1,{
 		if( Pdef(m.ptn).isPlaying.not,{
 			Pdef(m.ptn).resume(quant:0);
 		});
