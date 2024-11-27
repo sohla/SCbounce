@@ -1,6 +1,7 @@
 var m = ~model;
 var bi = 0;
-var dur = 0.14;
+var dur = 0.14 * 2;
+
 ~buffers;
 m.accelMassFilteredAttack = 0.99;
 m.accelMassFilteredDecay = 0.9;
@@ -84,7 +85,7 @@ SynthDef(\drumkit, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 //------------------------------------------------------------
 ~next = {|d|
 
-	var rate = m.rrateMassFiltered.linlin(0,1,0.6,0.9);
+	var rate = m.rrateMassFiltered.linlin(0,1,1.2,1.6);
 	var amp = m.accelMassFiltered.lincurve(0,2.5,0.3,1, -1);
 	Pdef(m.ptn).set(\amp, amp);
 	Pdef(m.ptn).set(\rate, rate);

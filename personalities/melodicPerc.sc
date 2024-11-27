@@ -42,7 +42,7 @@ SynthDef(\melodicPerc, {
 		Pbind(
 			\instrument, \melodicPerc,
 			\scale, Scale.major,
-			\octave, Pseq([3], inf),
+			\octave, Pseq([4], inf),
 			\note, Pseq([0,1,5,4,-2,5,7,8,4,-2].stutter(23), inf),
 			\legato, 1,
 			\amp, Pwhite(0.1,0.3, inf),

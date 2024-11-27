@@ -9,7 +9,7 @@
 	// var defaultPersonality = "1. Start";
 	// var defaultList = "list_yourDNA.sc";
 
-	var defaultPersonality = "fuckYes";
+	var defaultPersonality = "silence";
 	var defaultList = "list_brenton.sc";
 
 	//var oscMessageTag  = "CombinedDataPacket";

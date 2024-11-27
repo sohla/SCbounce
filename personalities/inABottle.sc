@@ -10,14 +10,15 @@ SynthDef(\inabottle, { |out, frq=111, gate=0, amp = 0, dust=10, tone = 0.8, bits
   var sig = GVerb.ar(
 		PitchShift.ar(
 			Splay.ar({Dust.ar(dust)}!100)
-			,0.2
+			,0.3
 			,bits
 			,mul:4
 			),
-		1.4,
+		2.1,
 		1,
 		tone
 	);
+	sig = 
 	Out.ar(out, sig * amp);
 }).add;
 
@@ -33,8 +34,8 @@ SynthDef(\inabottle, { |out, frq=111, gate=0, amp = 0, dust=10, tone = 0.8, bits
 ~next = {|d|
 
 	var amp = m.accelMassFiltered.lincurve(0,2.5,0.0,1.0,-3);
-  var tone = d.sensors.gyroEvent.z.lincurve(-1,1,0.5,0.91,-3);
-  var bits = m.rrateMassFiltered.lincurve(0,1.5,0.01,0.03,-3);
+  var tone = d.sensors.gyroEvent.z.lincurve(-1,1,0.1,0.91,-3);
+  var bits = m.rrateMassFiltered.lincurve(0,1.5,0.01,0.09,-3);
 
 	synth.set(\amp, amp);
 	synth.set(\tone, tone);

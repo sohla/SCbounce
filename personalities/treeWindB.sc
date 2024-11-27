@@ -30,6 +30,7 @@ SynthDef(\treeWind, { |out, frq=111, gate=0, amp = 0, pchx=0|
 	var f = 50 + (m.accelMassFiltered * 100);
 	var pchs = [0,2,4,6,8];
 	var i = (d.sensors.gyroEvent.y.abs / pi) * (pchs.size);
+	// can we limit this range?
 	// pchs[i.floor].postln;
 	if(a<0.02,{a=0});
 	if(a>0.9,{a=0.9});

@@ -5,7 +5,7 @@ var notes = 60 + [4,-10,4,8-12,-10,6-12,4];
 var lastTime=0;
 m.accelMassFilteredAttack = 0.5;
 m.accelMassFilteredDecay = 0.9;
-
+// smooth
 //------------------------------------------------------------
 
 SynthDef("woiworung1", {|out,freq = 1000, amp = 0.5, att = 2.02, dec = 0.3, sus = 1, rel = 1, gate = 1, fb = 1.2, ch=10|

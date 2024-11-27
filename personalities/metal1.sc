@@ -132,7 +132,7 @@ SynthDef(\sheet2, { |out, frq=111, gate=0, amp = 0, pchx=0|
       \octave, Pseq([3,5], inf),
       \dur, Pseq([0.4,Rest(0.2),0.2], inf),
       \degree, Pseq([0,2,7], inf),
-      \root, Pseq([0,3,-2,0,-5,3,5,2].stutter(18), inf),
+      \root, Pseq([0,3,-2,0,-5,3,5,2].stutter(10), inf),
       \amp, 0.1,
       \pan, Pwhite(-0.6, 0.6),
       \model, 1,//Prand([0, 1, 2,3,4,5,6], inf),

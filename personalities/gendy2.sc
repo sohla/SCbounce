@@ -1,10 +1,10 @@
 var m = ~model;
 var synth;
 // var notes = [30,37,42,46,49,54,56,59,63,66];
-var notes = [30,37,42,46] +5;
+var notes = [30,32,34,35] + 24 + 5;
 m.accelMassFilteredAttack = 0.99;
 m.accelMassFilteredDecay = 0.8;
-// gentle
+
 //------------------------------------------------------------
 SynthDef(\sheet1, { |out=0, frq=111, gate=0, amp = 0, freq=45, detune=0.01, rtime=1|
 	var env = EnvGen.ar(Env.asr(0.3,1.0,8.0), gate, doneAction:Done.freeSelf);
@@ -45,7 +45,7 @@ SynthDef(\miniMoog, {
 
 	if(amp < 0.02, { amp = 0 });
 	if(amp > 0.9, { amp = 0.9 });
-	synth.set(\amp, amp);
+	synth.set(\amp, amp * 0.5);
   synth.set(\filterFreq, filterFreq);
   synth.set(\detune, detune);
   synth.set(\freq, freq);

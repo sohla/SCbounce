@@ -1,9 +1,15 @@
 (
 	[
+		"silence",
+		"quackQuack",
+		"animalMat",
+
+		"drumkit2",
 		"drumkit",
 		"treeWindB",
 		"fuckYes",
 		"gendy1",
+		"gendy2",
 		"melodicPerc",
 		"inABottle",
 		"metal1",
@@ -22,5 +28,9 @@
 	]
 
 )
+
+//sheet1 sheet treeWindB
+// metal2 metal1 inABottle inABottle
+// sound of a rat sqeaking
 
 
