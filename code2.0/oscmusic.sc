@@ -91,24 +91,12 @@
 		\env: nil,	// Environment for injected code
 		\procRout: nil,	// Routine calls ~next every ~fps
 		\sensors: Event.new(proto:sensorsProto),
-		\sensorBus: Bus.control(s,7);
+		\sensorBus: Bus.control(s,7),
+		\incPersonality: {},
+		\decPersonality: {};
+
 	);
 
-	/*
-
-	Sensor ControlBus
-
-	accel.x
-	accel.y
-	accel.z
-	quant.x
-	quant.y
-	quant.z
-	quant.w
-
-
-
-	*/
 	//------------------------------------------------------------
 	//
 	//------------------------------------------------------------
@@ -284,6 +272,7 @@
 
 		stopOSCListening.();
 		Routine{
+			MIDIdef.freeAll;   
 			// everything called in the correct order but leaves synths hanging!?!
 			s.sync;
 			devices.keysValuesDo({|k,d|
@@ -307,6 +296,10 @@
 	removeDevice = {|d|
 
 		"removing device...".postln;
+
+		MIDIdef("incP"++d.did).free;
+		MIDIdef("decP"++d.did).free;
+		
 		d.procRout.stop();
 
 		d.procRout.free;
@@ -336,6 +329,7 @@
 		d.port = port;
 		d.did = id;
 
+		
 		devices.put(port,d);
 		reloadPersonality.(d);
 		//addDeviceView.(contentView, d);
@@ -404,6 +398,7 @@
 		var header, dataView;
 		var va,vb,vc;
 		var stackView, stackLayout;
+		var decButton, incButton;
 		var popup,personalityMenu;
 		var col = Color.gray(0.35);
 		var wrapView = View(view)
@@ -543,7 +538,7 @@
 			infoView.(wrapView),
 			reloadButton.(wrapView)
 		],[
-			Button(wrapView)
+			decButton=Button(wrapView)
 			.minHeight_(60)
 			.maxWidth_(60)
 			.font_(Font(size:16))
@@ -557,7 +552,7 @@
 			}),
 
 			personalityMenuView.(wrapView),
-			Button(wrapView)
+			incButton=Button(wrapView)
 			.minHeight_(60)
 			.maxWidth_(60)
 			.font_(Font(size:16))
@@ -587,6 +582,17 @@
 		createThreeDeeCanvas.(vc,d);
 
 		contentView.layout.add(nil);
+
+
+		// hack in some MIDI foot control
+		if(d.did < 3,{ 
+			MIDIdef.cc("decP"++d.did, {{decButton.valueAction_(1)}.defer}, 1);
+			MIDIdef.cc("incP"++d.did, {{incButton.valueAction_(1)}.defer}, 2);
+		},{
+			MIDIdef.cc("decP"++d.did, {{decButton.valueAction_(1)}.defer}, 3);
+			MIDIdef.cc("incP"++d.did, {{incButton.valueAction_(1)}.defer}, 4);
+		});
+		
 	};
 
 
@@ -939,7 +945,7 @@
 		startup.();
 		buildUI.();
 		startOSCListening.();
-
+		MIDIIn.connectAll;
 		// s.plotTree;
    
 		// s.meter;
