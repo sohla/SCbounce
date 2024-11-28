@@ -13,11 +13,11 @@ m.accelMassFilteredDecay = 0.99;
 
 //------------------------------------------------------------
 SynthDef(\timWind1, { |out, freq=111, gate=0, amp = 0.3, pchx=0|
-	var env = EnvGen.ar(Env.asr(0.01,1.0,5.0), gate, doneAction:Done.freeSelf);
+	var env = EnvGen.ar(Env.asr(0.007,1.0,5.0), gate, doneAction:Done.freeSelf);
 	var follow = Amplitude.kr(amp, 0.03, 0.03);
 	var trig = PinkNoise.ar(0.01) * env * follow.lag(2);
 	var sig =  DynKlank.ar(`[[freq, freq*2].lag(3), [1,0.4,0.3], [2, 1, 1, 1]], trig);
-  var tone = SinOsc.ar([freq * 4, freq * 0.5] * LFNoise2.ar(100,0.02,1), LFNoise2.ar(3,6),[0.1,0.3 ]* env * 1);
+  var tone = SinOsc.ar([freq * 4, freq * 0.5] * LFNoise2.ar(12,0.02,1), LFNoise2.ar(3,6),[0.04,0.4 ]* env * 1);
 	var dly = DelayC.ar(sig + tone,0.03,[0.02,0.027]);
 	Out.ar(out, dly * 1.2 * amp);
 }).add;
@@ -27,7 +27,8 @@ SynthDef(\timWind1, { |out, freq=111, gate=0, amp = 0.3, pchx=0|
 };
 
 ~deinit = ~deinit <> {
-    synth.free;
+  synth.set(\gate,0);
+
 };
 
 //------------------------------------------------------------
@@ -37,8 +38,8 @@ SynthDef(\timWind1, { |out, freq=111, gate=0, amp = 0.3, pchx=0|
   var a = m.accelMassFiltered * 0.5;
   var amp = m.accelMassFiltered.lincurve(0,1.5,0.02,0.3,-5);
   var gap = m.accelMassFiltered.lincurve(0,1.5,0.8,0.1,-5);
-	var oct = d.sensors.gyroEvent.y.linlin(-1,1,1,4).floor * 12;
-
+	var oct = d.sensors.gyroEvent.y.linlin(-1,1,1,5).floor * 12;
+	var av = d.sensors.gyroEvent.y.lincurve(-1,1,1,0.1,-2);
 	if(a<0.02,{a=0});
 	// if(a>0.9,{a=1});
 	if(move > 0.02, {
@@ -54,7 +55,7 @@ SynthDef(\timWind1, { |out, freq=111, gate=0, amp = 0.3, pchx=0|
 			synth = Synth(\timWind1, [
 				\freq, (36 + currentNote + currentRoot).midicps,
 				\gate, 1,
-				\amp, amp,
+				\amp, amp * 1.6 * av,
 			]);
 			synth.server.sendBundle(0.3,[\n_set, synth.nodeID, \gate, 0]);
 		});

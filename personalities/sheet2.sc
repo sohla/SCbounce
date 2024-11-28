@@ -20,7 +20,7 @@ SynthDef(\sheet2, { |out, frq=111, gate=0, amp = 0, pchx=0|
 };
 
 ~deinit = ~deinit <> {
-	synth.free;
+	synth.set(\gate,0);
 };
 
 //------------------------------------------------------------
@@ -31,7 +31,7 @@ SynthDef(\sheet2, { |out, frq=111, gate=0, amp = 0, pchx=0|
 	var pchs = [60,64,68,72] - 12;
 	var i = (d.sensors.gyroEvent.y.abs / pi) * (pchs.size);
 	// pchs[i.floor].postln;
-	if(a<0.01,{a=0});
+	if(a<0.03,{a=0});
 	if(a>0.9,{a=0.9});
 	synth.set(\amp, a * 0.3);
 	synth.set(\pchx,pchs[i.floor]);

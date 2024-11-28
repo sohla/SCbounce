@@ -583,7 +583,6 @@
 
 		contentView.layout.add(nil);
 
-
 		// hack in some MIDI foot control
 		if(d.did < 3,{ 
 			MIDIdef.cc("decP"++d.did, {{decButton.valueAction_(1)}.defer}, 1);
@@ -592,9 +591,7 @@
 			MIDIdef.cc("decP"++d.did, {{decButton.valueAction_(1)}.defer}, 3);
 			MIDIdef.cc("incP"++d.did, {{incButton.valueAction_(1)}.defer}, 4);
 		});
-		
 	};
-
 
 	//------------------------------------------------------------
 	// createPlotterGroup
