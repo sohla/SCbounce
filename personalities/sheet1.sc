@@ -20,7 +20,8 @@ SynthDef(\sheet1, { |out, frq=111, gate=0, amp = 0, pchx=0|
 };
 
 ~deinit = ~deinit <> {
-	synth.free;
+	// synth.free;
+	synth.set(\gate, 0);
 };
 
 //------------------------------------------------------------

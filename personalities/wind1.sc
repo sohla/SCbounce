@@ -5,8 +5,8 @@ var synth;
 SynthDef(\sheet3, {
 
 	|out=0, amp=0.5, density=0.5, strength=0.5,
-     filterFreq=1000, filterQ=0.5,
-     reverbMix=0.5, reverbRoom=0.5, reverbDamp=0.2, gate=0, my=0.5, mx=1,pan=0|
+     filterFreq=100, filterQ=0.5,
+     reverbMix=0.5, reverbRoom=0.5, reverbDamp=0.2, gate=0, my=0.5, mx=0.1,pan=0|
 
     var wind, filtered, reverbed;
     var densityMod, strengthMod;
@@ -42,7 +42,7 @@ SynthDef(\sheet3, {
 };
 
 ~deinit = ~deinit <> {
-	synth.free;
+	synth.set(\gate, 0);
 };
 
 //------------------------------------------------------------

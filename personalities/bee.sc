@@ -24,17 +24,17 @@ SynthDef(\beeSynth1, { |out=0, rr=0.1, amp = 0.0, gate = 1, release = 2, af=264,
 		),
 	ffrq)!2;
 
-	sig = sig * EnvGen.kr(Env.adsr(0.1, 0.1, 1, release), gate: gate, doneAction: Done.freeSelf) * ampa.lag(3);
+	sig = sig * EnvGen.kr(Env.adsr(0.1, 0.1, 7, release), gate: gate, doneAction: Done.freeSelf) * ampa.lag(3);
 	Out.ar(out, sig);
 
 }).add;
 
 ~init = ~init <> {
-	synth = Synth(\beeSynth1, [\af, 340.rrand(380), \bf, 370.rrand(420)]);
+	synth = Synth(\beeSynth1, [\af, 280.rrand(390), \bf, 350.rrand(440)]);
 };
 
 ~deinit = ~deinit <> {
-	synth.free;
+	synth.set(\gate, 0);
 };
 
 //------------------------------------`------------------------
@@ -42,8 +42,8 @@ SynthDef(\beeSynth1, { |out=0, rr=0.1, amp = 0.0, gate = 1, release = 2, af=264,
 
 	var amp = m.accelMassFiltered.linlin(0,1,0,0.4);
 	var rate = m.accelMassFiltered.lincurve(0.0,2.5 * srr,0.3,1.2,4 * srr);
-	var rr = m.rrateMassFiltered.linlin(0,1,1,1.1);
-	synth.set(\amp, amp * 0.2);
+	var rr = m.rrateMassFiltered.linlin(0,1,1,2.1);
+	synth.set(\amp, amp * 0.05);
 	synth.set(\rr, rate * rr);
 };
 

@@ -5,7 +5,7 @@ m.accelMassFilteredAttack = 0.8;
 m.accelMassFilteredDecay = 0.8;
 
 SynthDef(\funBass, {
-    |out=0, freq = 440, gate = 1, amp = 0.8, filtFreq = 2000, filtRes = 0.5, envAtk = 0.01, envDec = 0.1, envSus = 0.7, envRel = 0.2, rm = 0.5|
+    |out=0, freq = 440, gate = 1, amp = 0.8, filtFreq = 2000, filtRes = 0.5, envAtk = 0.01, envDec = 0.1, envSus = 0.7, envRel = 4.2, rm = 0.5|
     var osc1, osc2, osc3, env, filter, output;
 
     env = EnvGen.ar(Env.adsr(envAtk, envDec, envSus, envRel), gate, doneAction: Done.freeSelf);
@@ -148,7 +148,8 @@ SynthDef(\versatilePerc, {
 //------------------------------------------------------------
 ~deinit = ~deinit <> {
 	// Pdef(m.ptn).remove;
-	synth.free;
+	// synth.free;
+    synth.set(\gate, 0);
 
 };
 
@@ -179,7 +180,7 @@ SynthDef(\versatilePerc, {
 	if(a>0.9,{a=0.9});
     
     synth.set(\freq, (note + m.com.root).midicps);
-	synth.set(\amp, a * 0.15);
+	synth.set(\amp, a * 0.11);
 	synth.set(\filtSpeed, filtSpeed);
 	synth.set(\lfoFreq, lfoFreq);
 

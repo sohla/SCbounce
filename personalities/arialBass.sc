@@ -2,8 +2,9 @@ var m = ~model;
 var synth;
 var lastTime=0;
 // var notes = [-24,-36];
-var notes = [0,2,5,4,-3,5,7,7,4,9,5,7,-5].stutter(8);
+var notes = [0,2,5,4,-3,5,7,7,4,9,5,7,-5].stutter(16);
 var currentNote = notes[0];
+var oct = [0,12];
 var currentRoot = m.com.root;
 m.accelMassFilteredAttack = 0.5;
 m.accelMassFilteredDecay = 0.9;
@@ -11,7 +12,7 @@ m.accelMassFilteredDecay = 0.9;
 
 SynthDef(\warmRichSynth, {
     |out=0, freq=440, amp=0.5, gate=1,
-        attackTime=0.1, decayTime=0.3, sustainLevel=0.5, releaseTime=1.0,
+        attackTime=0.1, decayTime=0.2, sustainLevel=0.2, releaseTime=1.0,
         cutoff=1000, resonance=0.5,
         detune=0.003, stereoWidth=0.5,
         oscMix=0.5, subOscLevel=0.3,
@@ -29,8 +30,8 @@ SynthDef(\warmRichSynth, {
     // Main oscillator (slightly detuned saw waves for richness)
     sig = Mix.ar([
         Saw.ar(freq * (1 - detune)),
-        Saw.ar(freq),
-        Saw.ar(freq * (1 + detune))
+        SinOsc.ar(freq),
+        LFTri.ar(freq * (1 + detune))
     ]) * (1 - oscMix) ;
 
     // Add a sine wave oscillator for warmth
@@ -87,7 +88,7 @@ SynthDef(\warmRichSynth, {
 ~next = {|d|
 
 	var move = m.accelMassFiltered.linlin(0,3,0,1);
-	var filter = m.accelMassFiltered.linexp(0,3,200,1830);
+	var filter = m.accelMassFiltered.lincurve(0,2,200,1830,2);
 	var mix = m.accelMassFiltered.linlin(0,2,0,1);
 
 	if(move > 0.1, {
@@ -96,7 +97,8 @@ SynthDef(\warmRichSynth, {
 			notes = notes.rotate(-1);
 			currentNote = notes[0];
             m.com.root = currentNote;
-			currentRoot = -3-24;
+			oct = oct.rotate(-1);
+			currentRoot = -3-24 + oct[0];
 			synth = Synth(\warmRichSynth, [
 				\freq, (60 + currentNote + currentRoot).midicps,
 				\gate, 1,

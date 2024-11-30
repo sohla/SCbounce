@@ -1,21 +1,23 @@
 var m = ~model;
 
+
 SynthDef(\glockenspiel2, {
-    |freq = 440, amp = 0.5, decay = 1, pan = 0, hardness = 1|
-    var exciter, env, output;
-
-    exciter = WhiteNoise.ar(amp) * Decay2.ar(Impulse.ar(0, 0, amp), 0.005, 0.02);
-    env = EnvGen.ar(Env.perc(0.001, decay), doneAction: Done.freeSelf);
-    output = DynKlank.ar(`[
-		[1, 4.08, 10.7, 18.8, 24.5, 31.2],
-        [1, 0.8, 0.6, 0.4, 0.2, 0.1]* 0.5,
+    |freq = 440, amp = 0.5, decay = 1, pan = 0, hardness = 1, mix=0.5, room=0.5|
+    var exciter, env, sig;
+		var freqs = [1, 4.08, 10.7, 18.8, 24.5, 31.2] * freq;
+		var tone = SinOsc.ar(freq * [2,2.007], LFNoise2.ar(freq * 0.01,10),0.15);
+    exciter = WhiteNoise.ar(0.01) * Decay2.ar(Impulse.ar(0, 0, amp), 0.005, 0.02);
+    env = EnvGen.ar(Env.perc(0.03, decay), doneAction: Done.freeSelf);
+    sig = DynKlank.ar(`[
+        freqs,
+        [1, 0.8, 0.6, 0.4, 0.2, 0.1]* 0.5 * LFCub.ar(3,0,0.4,0.5),
         [1, 0.8, 0.6, 0.4, 0.2, 0.1]
-    ], exciter, freq, 0, hardness);
-
-    output = output * env;
-    output = Pan2.ar(output, pan);
-    Out.ar(0, output);
+    ], exciter, 1, 0, hardness);
+    sig = Pan2.ar(sig + tone, pan);
+    sig = sig * env * amp;
+    Out.ar(0, sig);
 }).add;
+
 
 //------------------------------------------------------------
 ~init = ~init <> {
@@ -23,9 +25,8 @@ SynthDef(\glockenspiel2, {
 	Pdef(m.ptn,
 		Pbind(
 			\instrument, \glockenspiel2,
-			\note, Pseq([12,9,7,4,2,0],inf),
-			\decay, 3.5,
-			\hardness, 3.5,
+			\note, Pseq([-5,0,4,7,-12,4],inf),
+			\decay, 2.5,
 			\func, Pfunc({|e| ~onEvent.(e)}),
 			\args, #[],
 		)
@@ -38,30 +39,37 @@ SynthDef(\glockenspiel2, {
 ~deinit = ~deinit <> {
 	Pdef(m.ptn).remove;
 };
-
 //------------------------------------------------------------
 ~onEvent = {|e|
 	Pdef(m.ptn).set(\root, m.com.root);
 };
+
 //------------------------------------------------------------
 ~next = {|d|
 
-	var oct = m.accelMassFiltered.linlin(0,5,3,4).floor;
-	var dur = 0.5 - m.accelMassFiltered.squared.linlin(0,3,0,0.43);
+	var oct = m.accelMassFiltered.lincurve(0,3,2,6,-1).floor;
+	// var dur = 0.23 - m.accelMassFiltered.linlin(0,2.5,0.001,0.14);
+	var hardness = m.accelMassFiltered.linlin(0,2.5,0.2,0.9).clip2(0.91);
+	var amp = m.accelMassFiltered.linexp(0,2.5,0.45,0.2);
+
+	var dur = 0.23 - m.rrateMassFiltered.linlin(0,1.5,0.001,0.14);
+
 
 	Pdef(m.ptn).set(\dur, dur);
 	Pdef(m.ptn).set(\octave, 2 + oct);
-	Pdef(m.ptn).set(\amp, oct.linlin(3,4,0.15,0.3) * 0.8);
+	Pdef(m.ptn).set(\amp, amp*0.13);
+	Pdef(m.ptn).set(\hardness, 1 - hardness);
 
-	if(dur < 0.48,{
-		if( Pdef(~model.ptn).isPlaying.not,{
-			Pdef(~model.ptn).resume(quant:0.1);
+	if(m.accelMassFiltered > 0.1,{
+		if( Pdef(m.ptn).isPlaying.not,{
+			Pdef(m.ptn).resume(quant:0);
 		});
 	},{
-		if( Pdef(~model.ptn).isPlaying,{
-			Pdef(~model.ptn).pause();
+		if( Pdef(m.ptn).isPlaying,{
+			Pdef(m.ptn).pause();
 		});
 	});
+
 };
 
 //------------------------------------------------------------

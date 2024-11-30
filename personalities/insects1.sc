@@ -33,7 +33,7 @@ SynthDef(\insects, {
 	sig = sig * LFTri.ar(55+ LFNoise2.kr([1,2], 10), 0, MouseX.kr(1,10), 1);
 
     // Envelope
-    env = EnvGen.kr(Env.asr(0.02, 1, 0.1), gate, doneAction: 2);
+    env = EnvGen.kr(Env.asr(14, 1, 5.1), gate, doneAction: 2);
 
     // Apply bandpass filter
 	filtered = BPF.ar(sig, filterFreq, [0.5,0.4]);
@@ -77,7 +77,7 @@ SynthDef(\syntheticLeaf, {
     sig = BPF.ar(sig, filterEnv, filterRQ);
 
     // Envelope
-    env = EnvGen.kr(Env.asr(1.3, 1, 2.3, \welch), gate, doneAction: 2);
+    env = EnvGen.kr(Env.asr(4.3, 1, 2.3, \welch), gate, doneAction: 2);
 
     // Output
     Out.ar(out, Pan2.ar(sig * env * amp.lag(0.4), pan));
@@ -89,8 +89,8 @@ SynthDef(\syntheticLeaf, {
 };
 
 ~deinit = ~deinit <> {
-	synth.free;
-	synth2.free;
+	synth.set(\gate, 0);
+	synth2.set(\gate,0);
 };
 
 //------------------------------------------------------------

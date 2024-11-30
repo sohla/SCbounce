@@ -21,7 +21,9 @@
 		"3. Start",
 		"funMove2",
 		"funBass",
-		"funMove2",
+		"funMove3",
+		"silence",
+		"wind1",
 		"silence",
 		"arialBass",
 		"silence",
@@ -32,9 +34,7 @@
 		"silence",
 		"funMove1",
 		"funMelody",
-		"funMove1",
-		"silence",
-		"wind1",
+		"treeWind",
 		"silence",
 
 	
@@ -45,7 +45,6 @@
 		"quackQuack",
 		"silence",
 		"bee",
-		"silence",
 		"treeWind",
 		"silence",
 
@@ -56,7 +55,6 @@
 		"animalMat",
 		"silence",
 		"bee",
-		"silence",
 		"wingChimes3",
 		"silence",
 
@@ -67,11 +65,12 @@
 		"silence",
 		"heatherLaugh1",
 		"silence",
-		"heatherLaugh1",
-		"silence",
 		"bee",
+		"magicWand2",
 		"silence",
-		"wingChimes2",
+		"heatherLaugh1",
+		"quackQuack",
+		"animalMat",
 		"silence",
 
 		//8 wind s2
@@ -97,7 +96,6 @@
 		"frog2",
 		"silence",
 		"sheet1",
-		"silence",
 		"insects1",
 		"silence",
 		"bee",

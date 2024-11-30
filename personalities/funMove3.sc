@@ -5,7 +5,7 @@ m.accelMassFilteredAttack = 0.8;
 m.accelMassFilteredDecay = 0.8;
 
 SynthDef(\funBass, {
-    |out=0, freq = 440, gate = 1, amp = 0.8, filtFreq = 2000, filtRes = 0.5, envAtk = 0.01, envDec = 0.1, envSus = 0.7, envRel = 4.2, rm = 0.5|
+    |out=0, freq = 440, gate = 1, amp = 0.8, filtFreq = 2000, filtRes = 0.5, envAtk = 0.3, envDec = 0.1, envSus = 0.7, envRel = 4.2, rm = 0.5|
     var osc1, osc2, osc3, env, filter, output;
 
     env = EnvGen.ar(Env.adsr(envAtk, envDec, envSus, envRel), gate, doneAction: Done.freeSelf);
@@ -66,7 +66,7 @@ SynthDef(\warmPadMove1, {
 
     // Output with stereo spread
     sig = Splay.ar(sig, spread);
-		sig = GVerb.ar(sig.tanh * 0.2,10,6.1,0.1);
+		sig = GVerb.ar(sig.tanh * 0.2,10,0.1,0.1);
 	Out.ar(out, (sig + sub) * Amplitude.kr(amp,0.1,0.7) * env );
 }).add;
 
@@ -172,9 +172,10 @@ SynthDef(\versatilePerc, {
 ~next = {|d|
 
 	var dur = 0.5 * 2.pow(m.accelMassFiltered.linlin(0,3,0,2).floor).reciprocal;
-	var a = m.accelMassFiltered.lincurve(0,3,0,1,-6);
+	var a = m.accelMassFiltered.lincurve(0,3,0,2,-6);
 	var filtSpeed = m.accelMassFiltered.lincurve(0,2.5,0.1,20,3);
 	var lfoFreq = m.accelMassFiltered.lincurve(0,2.5,0.1,8,-1);
+  var freq = m.rrateMassFiltered.lincurve(0,1,40,60,-1);
 
 	if(a<0.03,{a=0});
 	if(a>0.9,{a=0.9});
@@ -183,6 +184,8 @@ SynthDef(\versatilePerc, {
 	synth.set(\amp, a * 0.11);
 	synth.set(\filtSpeed, filtSpeed);
 	synth.set(\lfoFreq, lfoFreq);
+	// synth.set(\freq, freq);
+
 
 	// Pdef(m.ptn).set(\filtFreq, m.accelMassFiltered.linexp(0,4,380,4000));
 	// Pdef(m.ptn).set(\dur, dur);

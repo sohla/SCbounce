@@ -6,7 +6,7 @@ m.accelMassFilteredDecay = 0.9;
 
 //------------------------------------------------------------
 SynthDef(\sheet2, { |out=0, frq=111, gate=0, amp = 0, pchx=0,root=64|
-	var env = EnvGen.ar(Env.asr(0.3,1.0,12.0), gate, doneAction:Done.freeSelf);
+	var env = EnvGen.ar(Env.asr(0.3,1.0,8.0), gate, doneAction:Done.freeSelf);
 	var follow = Amplitude.kr(amp, 0.5, 2.99);
 	var trig = PinkNoise.ar(0.01) * env * follow;
 	var sig =  DynKlank.ar(`[[30,32,40,46,60].midicps + pchx.lag(19).midicps, nil, [3, 2, 1, 1]], trig) * 0.3;
@@ -20,8 +20,8 @@ SynthDef(\sheet2, { |out=0, frq=111, gate=0, amp = 0, pchx=0,root=64|
 };
 
 ~deinit = ~deinit <> {
-	// synth.set(\gate,0);
-	synth.free;
+	synth.set(\gate,0);
+	// synth.free;
 };
 
 //------------------------------------------------------------
