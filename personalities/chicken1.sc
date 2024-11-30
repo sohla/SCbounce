@@ -1,13 +1,17 @@
 var m = ~model;
 var bi = 0;
-var synth;
+
 ~buffers;
+m.rrateMassFilteredAttack = 0.99;
+m.rrateMassFilteredDecay = 0.2;
+m.accelMassFilteredAttack = 0.99;
+m.accelMassFilteredDecay = 0.9;
 
 //------------------------------------------------------------
 SynthDef(\grobt, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
     attack=0.01, decay=0.1, sustain=0.3, release=0.2, gate=1,cutoff=400, rq=1, subFreq=145|
 
-	var lr = rate * BufRateScale.kr(bufnum) * (freq/440.0);
+	var lr = rate * BufRateScale.kr(bufnum) ;//* (freq/440.0);
 	var cd = BufDur.kr(bufnum);
     var env = EnvGen.kr(Env.adsr(attack, decay, sustain, release), gate, timeScale: cd * 2, doneAction: 2);
 		  var kick = SinOsc.ar(XLine.kr(subFreq*2, subFreq, 0.04),0,0.2) * EnvGen.ar(Env.perc(0.01, 0.3), gate);
@@ -25,16 +29,24 @@ SynthDef(\grobt, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
     sig = Balance2.ar(sig[0],sig[1], pan);
     Out.ar(out, sig * amp * env);
 }).add;
-SynthDef(\treeWind, { |out, frq=111, gate=0, amp = 0, pchx=0|
-	var env = EnvGen.ar(Env.asr(1.3,1.0,8.0), gate, doneAction:Done.freeSelf);
-	var follow = Amplitude.kr(amp, 0.3, 0.5).lag(2);
-	// var sig = Saw.ar(frq.lag(2),0.3 * env * amp.lag(1));
-	var trig = PinkNoise.ar(0.01) * env * follow;
-	var sig =  DynKlank.ar(`[[60 + 7 - 12 + pchx.lag(4)].midicps, nil, [2, 1, 1, 1]], trig);
-	var dly = DelayC.ar(sig,0.03,[0.02,0.027]);
-	Out.ar(out, dly);
-}).add;
 
+SynthDef(\miniMoogModel, { |freq = 440, amp = 0.5, gate = 1, pan = 0,
+	attack = 0.002, decay = 0.1, sustain = 0.2, release = 0.3, detune = 0.005,
+    osc1Mix = 0.33, osc2Mix = 0.13, osc3Mix = 0.93,
+    noiseMix = 0.1, lfoRate = 0.5, lfoAmount = 0.5, filterFreq = 3000, filterRes = 0.5|
+
+    var env, osc1, osc2, osc3, noise, filter, lfo, modulatedSignal, mix;
+    env = EnvGen.kr(Env.adsr(attack, decay, sustain, release), gate, doneAction: 2);
+    osc1 = Saw.ar(freq) * osc1Mix;
+	osc2 = Pulse.ar([freq, freq * (1 + detune)], 0.5) * osc2Mix;
+	osc3 = SinOsc.ar([freq * (1 - detune), freq]) * osc3Mix;
+    noise = WhiteNoise.ar() * noiseMix;
+    mix = (osc1 + osc2 + osc3 + noise) * env;
+    filter = LPF.ar(mix, filterFreq, filterRes);
+    lfo = SinOsc.kr(lfoRate).range(1 - lfoAmount, 1 + lfoAmount);
+    modulatedSignal = filter * lfo;
+    Out.ar(0, Pan2.ar(modulatedSignal * amp, pan));
+}).add;
 
 //------------------------------------------------------------
 ~init = ~init <> {
@@ -66,7 +78,6 @@ SynthDef(\treeWind, { |out, frq=111, gate=0, amp = 0, pchx=0|
 			\start, 0,
 			\legato, 0.3,
 			\note, Pseq([33], inf),
-		 \dur, Pseq([0.4],inf),
 		 \pan,Pseq([-1],inf),
 			\attack, 0.02,
 			\release,0.2,
@@ -75,34 +86,48 @@ SynthDef(\treeWind, { |out, frq=111, gate=0, amp = 0, pchx=0|
 	);
 
 	Pdef(m.ptn).play(quant:0.2);
-	// synth = Synth(\treeWind, [\frq, 40, \gate, 1, \pchx, -2+5]);
+
+	Pdef(\mm,
+		Pbind(
+			\instrument, \miniMoogModel,
+			\octave, Pseq([3,4], inf),
+			\amp, 0.2,
+			\dur, 0.2,
+			\root, Pseq([0,3,-2,-5].stutter(16), inf),
+			\note, Pseq([0,5,4,2].stutter(8), inf),
+			\args, #[],
+		)
+	);
+	// Pdef(\mm).play(quant:0.2);
+
 };
 
 ~deinit = ~deinit <> {
+
 	Pdef(m.ptn).remove;
+	// Pdef(\mm).remove;
 
 	~buffers.do({|buf|
 		buf.free;
 		s.sync;
 		postf("buffer dealloc [%] \n", buf);
 	});
-	// synth.free;
 };
 
 
 //------------------------------------------------------------
 ~next = {|d|
 
-	// var amp = m.rrateMassFiltered.linlin(0,1,0,0.3);
-	// synth.set(\amp, amp);
 
-	if(m.accelMass > 0.07,{
-		if( Pdef(~model.ptn).isPlaying.not,{
-			Pdef(~model.ptn).resume(quant:0.2);
+	var sub = 2.pow(m.rrateMassFiltered.lincurve(0,0.2,0,1,-2).floor).reciprocal;
+	Pdef(m.ptn).set(\dur, 0.4 * sub);
+	if(m.rrateMassFiltered > 0.022,{
+		if( Pdef(m.ptn).isPlaying.not,{
+			Pdef(m.ptn).resume(quant:0.2);
 		});
 	},{
-		if( Pdef(~model.ptn).isPlaying,{
-			Pdef(~model.ptn).pause();
+		if( Pdef(m.ptn).isPlaying,{
+			Pdef(m.ptn).pause();
 		});
 	});
 };
@@ -111,7 +136,7 @@ SynthDef(\treeWind, { |out, frq=111, gate=0, amp = 0, pchx=0|
 ~plotMin = -1;
 ~plotMax = 1;
 ~plot = { |d,p|
-	[m.rrateMass * 0.1, m.rrateMassFiltered * 0.1];
+	[m.rrateMass * 0.1, m.rrateMassFiltered];
 	// [m.accelMass * 0.3, m.accelMassFiltered * 0.5];
 	// [m.rrateMassFiltered, m.rrateMassThreshold];
 	// [m.rrateMassFiltered, m.rrateMassThreshold, m.accelMassAmp];

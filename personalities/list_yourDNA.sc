@@ -44,12 +44,20 @@
 		"silence",
 		"quackQuack",
 		"silence",
+		"bee",
+		"silence",
+		"treeWind",
+		"silence",
 
 		//6 Animal 2
 		"6. Start",
 		"wingChimes1",
 		"silence",
 		"animalMat",
+		"silence",
+		"bee",
+		"silence",
+		"wingChimes3",
 		"silence",
 
 
@@ -60,6 +68,10 @@
 		"heatherLaugh1",
 		"silence",
 		"heatherLaugh1",
+		"silence",
+		"bee",
+		"silence",
+		"wingChimes2",
 		"silence",
 
 		//8 wind s2

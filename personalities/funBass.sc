@@ -72,7 +72,7 @@ SynthDef(\warmPad, {
 
 
 SynthDef(\versatilePerc, {
-    |out=0, freq=50, tension=0.1, decay=0.5, clickLevel=0.5, amp=0.5, dist = 5, filtFreq = 2000, filtRes = 0.8|
+    |out=0, freq=50, tension=0.1, decay=0.5, clickLevel=0.5, amp=0.5, dist = 5, filtFreq = 20, filtRes = 0.8,pan =0|
     var pitch_contour, drum_osc, click_osc, drum_env, click_env, sig, pch;
 
     // Pitch envelope
@@ -101,7 +101,7 @@ SynthDef(\versatilePerc, {
 	sig = (sig * dist).tanh.distort;
 	sig = HPF.ar(sig, filtFreq);
     // Mix and output
-    Out.ar(out, Pan2.ar(sig,0,amp))
+    Out.ar(out, Balance2.ar(sig[0], sig[1],pan,amp))
 }).add;
 //------------------------------------------------------------
 // intial state
@@ -119,8 +119,9 @@ SynthDef(\versatilePerc, {
 			\envDec,0.3,
 			\envSus, 0.0,
 			\envRel,Pkey(\octave).squared * 0.05,
-   		\amp, 0.2,
-   		\filtRes, Pwhite(0.1,0.2),
+   		\amp, 0.4,
+			\pan, Pxrand([-0.5,0.5], inf),
+   		\filtRes, 1,//Pwhite(0.4,0.7),
 			\func, Pfunc({|e| ~onEvent.(e)}),
 			\args, #[],
 		)
@@ -170,16 +171,16 @@ SynthDef(\versatilePerc, {
 //------------------------------------------------------------
 ~next = {|d|
 
-	var dur = 0.5 * 2.pow(m.accelMassFiltered.linlin(0,3,0,2).floor).reciprocal;
-	var a = m.accelMassFiltered.lincurve(0,3,0,1,-6);
+	var dur = 0.5 * 2.pow(m.accelMassFiltered.lincurve(0,2,0,3,-1).floor).reciprocal;
+	var a = m.accelMassFiltered.lincurve(0,3,0,1,-3);
 	var filtSpeed = m.accelMassFiltered.lincurve(0,2.5,0.1,20,3);
 	var lfoFreq = m.accelMassFiltered.lincurve(0,2.5,0.1,8,-1);
-	var filtFreq = d.sensors.gyroEvent.z.abs.linlin(0.4,1,30,600);
+	var filtFreq = m.accelMassFiltered.lincurve(0,3,3,400,3);//d.sensors.gyroEvent.z.abs.linlin(0.3,0.7,30,200);
 
 	if(a<0.03,{a=0});
 	if(a>0.9,{a=0.9});
 
-	synth.set(\amp, a * 0.1);
+	synth.set(\amp, a * 0.2);
 	synth.set(\filtSpeed, filtSpeed);
 	synth.set(\lfoFreq, lfoFreq);
 

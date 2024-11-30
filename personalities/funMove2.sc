@@ -41,7 +41,7 @@ SynthDef(\warmPadMove2, {
     }).sum;
 
     // Filter sweep
-    filt = SinOsc.kr(filtSpeed).range(filtMin, filtMax);
+    filt = SinOsc.kr(filtSpeed.lag(1.5)).range(filtMin, filtMax);
     sig = RLPF.ar(sig, filt, 0.5);
 
     // Chorus effect
@@ -67,7 +67,7 @@ SynthDef(\warmPadMove2, {
     // Output with stereo spread
     sig = Splay.ar(sig, spread);
 		sig = GVerb.ar(sig.tanh * 0.2,4,0.1);
-	Out.ar(out, (sig + sub) * Amplitude.kr(amp,0.1,0.7) * env );
+	Out.ar(out, (sig + sub) * Amplitude.kr(amp,0.2,0.7) * env );
 }).add;
 
 
@@ -177,8 +177,9 @@ SynthDef(\versatilePerc, {
 
 	if(a<0.03,{a=0});
 	if(a>0.9,{a=0.9});
-
-	synth.set(\amp, a * 0.1);
+    
+    synth.set(\freq, (note + m.com.root).midicps);
+	synth.set(\amp, a * 0.15);
 	synth.set(\filtSpeed, filtSpeed);
 	synth.set(\lfoFreq, lfoFreq);
 

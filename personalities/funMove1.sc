@@ -41,8 +41,8 @@ SynthDef(\warmPadMove1, {
     }).sum;
 
     // Filter sweep
-    filt = SinOsc.kr(filtSpeed).range(filtMin, filtMax);
-    sig = RLPF.ar(sig, filt, 0.5);
+    filt = SinOsc.kr(filtSpeed.lag(1)).range(filtMin, filtMax);
+    sig = RLPF.ar(sig, filt, 0.4);
 
     // Chorus effect
     // Anti-aliased chorus using all-pass filter
@@ -178,7 +178,8 @@ SynthDef(\versatilePerc, {
 	if(a<0.03,{a=0});
 	if(a>0.9,{a=0.9});
 
-	synth.set(\amp, a * 0.1);
+    synth.set(\freq, (note + m.com.root).midicps);
+	synth.set(\amp, a * 0.15);
 	synth.set(\filtSpeed, filtSpeed);
 	synth.set(\lfoFreq, lfoFreq);
 

@@ -23,7 +23,24 @@ SynthDef(\blobblob2, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 				);
     Out.ar(out, sig * amp * env);
 }).add;
+SynthDef(\miniMoogModel, { |freq = 440, amp = 0.5, gate = 1, pan = 0,
+	attack = 0.002, decay = 0.1, sustain = 0.2, release = 0.3, detune = 0.005,
+    osc1Mix = 0.33, osc2Mix = 0.13, osc3Mix = 0.93,
+    noiseMix = 0.1, lfoRate = 0.5, lfoAmount = 0.5, filterFreq = 3000, filterRes = 0.5|
 
+    var env, osc1, osc2, osc3, noise, filter, lfo, modulatedSignal, mix;
+		freq = freq * 0.5;
+    env = EnvGen.kr(Env.adsr(attack, decay, sustain, release), gate, doneAction: 2);
+    osc1 = Saw.ar(freq) * osc1Mix;
+	osc2 = Pulse.ar([freq, freq * (1 + detune)], 0.5) * osc2Mix;
+	osc3 = SinOsc.ar([freq * (1 - detune), freq]) * osc3Mix;
+    noise = WhiteNoise.ar() * noiseMix;
+    mix = (osc1 + osc2 + osc3 + noise) * env;
+    filter = LPF.ar(mix, filterFreq, filterRes);
+    lfo = SinOsc.kr(lfoRate).range(1 - lfoAmount, 1 + lfoAmount);
+    modulatedSignal = filter * lfo;
+    Out.ar(0, Pan2.ar(modulatedSignal * amp * 0.15, pan));
+}).add;
 //------------------------------------------------------------
 // intial state
 //------------------------------------------------------------
@@ -43,7 +60,7 @@ SynthDef(\blobblob2, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 
 	Pdef(m.ptn,
 		Pbind(
-			\instrument, \blobblob2,
+			\instrument, Pseq([\blobblob2, \miniMoogModel], inf),
 			\bufnum, Pfunc{
 				bi = bi + 1;
 				if(bi >= (buffers.size-1),{bi=0});

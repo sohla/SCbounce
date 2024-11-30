@@ -4,10 +4,11 @@ var synth2;
 
 var lastTime=0;
 var notes = [0,0,7,0,0,0,7,0,7,5,0,0,0,7,0,0,7,5,0,0,0,-2,7,-2,7,5,-2,-2,7,5,-2,-2,-2,-4,7,5,-4,-4,7,5,-2,-2,7,5,-2,7,5];
-//[1,1,1,2].dup(4).flatten
-var roots = [0];//[0,0,0,0,-12].dup(8).flatten ++ [12,12,12,12].dup(8).flatten;
+var mr = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,-2,-2,-2,-2,-2,-2,-2,-2,-2,-2,-2,-2,-4,-4,-4,-4,-4,-4,-4,-2,-2,-2,-2,-2,-2,-2];
+var roots = [0,3].stutter(47*2);
 var currentNote = notes[0];
 var currentRoot = roots[0];
+
 m.accelMassFilteredAttack = 0.2;
 m.accelMassFilteredDecay = 0.99;
 
@@ -19,7 +20,8 @@ SynthDef(\timWind1, { |out, freq=111, gate=0, amp = 0.3, pchx=0|
 	var sig =  DynKlank.ar(`[[freq, freq*2].lag(3), [1,0.4,0.3], [2, 1, 1, 1]], trig);
   var tone = SinOsc.ar([freq * 4, freq * 0.5] * LFNoise2.ar(12,0.02,1), LFNoise2.ar(3,6),[0.04,0.4 ]* env * 1);
 	var dly = DelayC.ar(sig + tone,0.03,[0.02,0.027]);
-	Out.ar(out, dly * 1.2 * amp);
+	var eq = BLowShelf.ar(dly,600,0.4, -7);
+	Out.ar(out, eq * 1.2 * amp);
 }).add;
 
 
@@ -49,11 +51,12 @@ SynthDef(\timWind1, { |out, freq=111, gate=0, amp = 0.3, pchx=0|
 			notes = notes.rotate(-1);
 			currentNote = notes[0];
 			roots = roots.rotate(-1);
-			currentRoot = roots[0] +oct;
-			m.com.root = currentRoot;
+			mr = mr.rotate(-1);
+			currentRoot = roots[0];
+			m.com.root = currentRoot + mr[0];
       // synth.set(\freq, (36 + currentNote).midicps); 
 			synth = Synth(\timWind1, [
-				\freq, (36 + currentNote + currentRoot).midicps,
+				\freq, (36 + currentNote + currentRoot + oct).midicps,
 				\gate, 1,
 				\amp, amp * 1.6 * av,
 			]);

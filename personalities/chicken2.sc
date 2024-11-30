@@ -1,18 +1,22 @@
 var m = ~model;
 var bi = 0;
-var synth;
 ~buffers;
+
+m.rrateMassFilteredAttack = 0.99;
+m.rrateMassFilteredDecay = 0.2;
+m.accelMassFilteredAttack = 0.99;
+m.accelMassFilteredDecay = 0.9;
 
 //------------------------------------------------------------
 SynthDef(\grobt, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
-    attack=0.01, decay=0.1, sustain=0.3, release=0.2, gate=1,cutoff=400, rq=1, subFreq=145|
+    attack=0.01, decay=0.1, sustain=0.3, release=0.2, gate=1,cutoff=200, rq=0.3, subFreq=145|
 
 	var lr = rate * BufRateScale.kr(bufnum) * (freq/440.0);
 	var cd = BufDur.kr(bufnum);
     var env = EnvGen.kr(Env.adsr(attack, decay, sustain, release), gate, timeScale: cd * 2, doneAction: 2);
-		  var kick = SinOsc.ar(XLine.kr(subFreq*2, subFreq*1, 0.01),0,0.4) * EnvGen.ar(Env.perc(0.01, 0.3), gate);
+		  var kick = SinOsc.ar(XLine.kr(subFreq*2, subFreq*1, 0.01),0,0.4) * EnvGen.ar(Env.perc(0.01, 3.3), gate) * 0.3;
 
-	var sig = PlayBuf.ar(1, bufnum, rate: [lr, lr * 1.0], startPos: start * BufFrames.kr(bufnum), loop: 0) * 1.4;
+	var sig = PlayBuf.ar(1, bufnum, rate: [lr, lr * 1.0], startPos: start * BufFrames.kr(bufnum), loop: 0) * 1.6;
     sig = RHPF.ar(sig, cutoff, rq);
 		sig = Compander.ar(sig, sig,
         thresh: -33.dbamp,
@@ -24,15 +28,6 @@ SynthDef(\grobt, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 		sig = Mix.ar([sig,kick]);
     sig = Balance2.ar(sig[0],sig[1], pan);
     Out.ar(out, sig * amp * env);
-}).add;
-SynthDef(\treeWind, { |out, frq=111, gate=0, amp = 0, pchx=0|
-	var env = EnvGen.ar(Env.asr(1.3,1.0,8.0), gate, doneAction:Done.freeSelf);
-	var follow = Amplitude.kr(amp, 0.3, 0.5).lag(2);
-	// var sig = Saw.ar(frq.lag(2),0.3 * env * amp.lag(1));
-	var trig = PinkNoise.ar(0.01) * env * follow;
-	var sig =  DynKlank.ar(`[[60 + 7 - 12 + pchx.lag(4)].midicps, nil, [2, 1, 1, 1]], trig);
-	var dly = DelayC.ar(sig,0.03,[0.02,0.027]);
-	Out.ar(out, dly);
 }).add;
 
 
@@ -61,13 +56,13 @@ SynthDef(\treeWind, { |out, frq=111, gate=0, amp = 0, pchx=0|
 			},
 			\octave, Pseq([3,4].stutter(24), inf),
 			\rate, Pseq([0,-3,-5,4,7,9,12,0].midiratio, inf),
-			\amp, Pseq([1, 2, 2, 0.9,0.7,0.6 ,0.5 ,1] * 1.15, inf),
-			\subFreq,Pxrand([65,255,440,180,245,100], inf),
+			\amp, Pseq([1, 2, 2, 0.9,0.7,0.6 ,0.5 ,1] * 1.8, inf),
+			\subFreq,Pxrand([65,255,440,180,245,100] , inf),
 			\start, 0,
-			\legato, Prand([0.3,1.0], inf) *3,
+			\legato, Prand([0.1,0.5], inf),
       		\root, Pseq([0,7].stutter(12), inf),
 			\note, Pseq([33], inf),
-		 	\dur, Pseq([0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4/3,0.4/3,0.4/3],inf),
+		 	// \dur, 0.4,//Pseq([0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4/3,0.4/3,0.4/3],inf),
 		 	\pan,Pseq([-0.8],inf),
 			\attack, 0.02,
 			\release,0.2,
@@ -76,7 +71,6 @@ SynthDef(\treeWind, { |out, frq=111, gate=0, amp = 0, pchx=0|
 	);
 
 	Pdef(m.ptn).play(quant:0.2);
-	// synth = Synth(\treeWind, [\frq, 40, \gate, 1, \pchx, -2+5]);
 };
 
 ~deinit = ~deinit <> {
@@ -87,23 +81,22 @@ SynthDef(\treeWind, { |out, frq=111, gate=0, amp = 0, pchx=0|
 		s.sync;
 		postf("buffer dealloc [%] \n", buf);
 	});
-	// synth.free;
 };
 
 
 //------------------------------------------------------------
 ~next = {|d|
 
-	// var amp = m.rrateMassFiltered.linlin(0,1,0,0.3);
-	// synth.set(\amp, amp);
+	var sub = 2.pow(m.rrateMassFiltered.lincurve(0,0.2,0,1,-2).floor).reciprocal;
+	Pdef(m.ptn).set(\dur, 0.4 * sub);
 
-	if(m.accelMass > 0.07,{
-		if( Pdef(~model.ptn).isPlaying.not,{
-			Pdef(~model.ptn).play(quant:0.2);
+	if(m.rrateMassFiltered > 0.022,{
+		if( Pdef(m.ptn).isPlaying.not,{
+			Pdef(m.ptn).resume(quant:0.2);
 		});
 	},{
-		if( Pdef(~model.ptn).isPlaying,{
-			Pdef(~model.ptn).stop();
+		if( Pdef(m.ptn).isPlaying,{
+			Pdef(m.ptn).pause();
 		});
 	});
 };
@@ -122,4 +115,3 @@ SynthDef(\treeWind, { |out, frq=111, gate=0, amp = 0, pchx=0|
 
 
 };
-Buffer.cachedBuffersDo(s, {|b|b.postln})
