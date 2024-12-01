@@ -139,7 +139,7 @@ SynthDef(\bambooComplex, {
 ~next = {|d|
 
 	var move = m.accelMassFiltered.linlin(0,3,0,1);
-	var att = m.accelMassFiltered.linexp(0,2.5,0.8,0.001);
+	var att = m.accelMassFiltered.linexp(0,2.5,0.7,0.001);
 	var amp = m.accelMassFiltered.linexp(0,2.5,0.08,1);
 	var noteIndex = m.accelMassFiltered.linlin(0,2,0.0001,notes.size).floor;
 	var space = m.accelMassFiltered.linlin(0,2.5,0.25,0.08);

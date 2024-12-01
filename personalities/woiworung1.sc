@@ -1,7 +1,7 @@
 var m = ~model;
 var isPlaying = false;
 var synth;
-var notes = 60 + [4,-10,4,8-12,-10,6-12,4];
+var notes = 58 + [4,-10,4,8-12,-10,6-12,4];
 var lastTime=0;
 m.accelMassFilteredAttack = 0.5;
 m.accelMassFilteredDecay = 0.9;
@@ -40,11 +40,11 @@ SynthDef("woiworung1", {|out,freq = 1000, amp = 0.5, att = 2.02, dec = 0.3, sus 
 	// var i = (d.sensors.gyroEvent.y.abs / pi) * (pchs.size);
 	if(a<0.1,{a=0});
 	if(a>0.9,{a=1.0});
-	synth.set(\amp, a * 0.45);
+	synth.set(\amp, a * 0.25);
 	synth.set(\ch, ch);
 
 	a = m.accelMassFiltered * 0.1;
-	if(a < 0.004, {
+	if(a < 0.002, {
 		if(isPlaying.not,{
 			isPlaying = true;
 			// notes[0].postln;

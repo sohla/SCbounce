@@ -7,7 +7,7 @@ m.accelMassFilteredAttack = 0.99;
 m.accelMassFilteredDecay = 0.6;
 
 //------------------------------------------------------------
-SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=440,
+SynthDef(\stereoSampler1, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=440,
     attack=0.01, decay=0.1, sustain=0.3, release=0.2, gate=1,cutoff=20000, rq=1|
 
 	var lr = rate * BufRateScale.kr(bufnum) * (freq/440.0);
@@ -21,16 +21,14 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, fre
 //------------------------------------------------------------
 ~init = ~init <> {
 
-	// var path = PathName("~/Downloads/yourDNASamples/STE-002.wav");
 	var path = PathName("~/Downloads/yourDNASamples/violin/Violin_04.wav");
-	// var path = PathName("~/Downloads/yourDNASamples/STE-006.wav");
 	postf("loading sample : % \n", path.fileName);
 
 	buffer = Buffer.read(s, path.fullPath, action:{ |buf|
 		postf("buffer alloc [%] \n", buf);
 		Pdef(m.ptn,
 			Pbind(
-				\instrument, \stereoSampler,
+				\instrument, \stereoSampler1,
 				\bufnum, buf,
 				\octave, Pxrand([3], inf),
 				\note, Pwhite(33,33, inf).floor,

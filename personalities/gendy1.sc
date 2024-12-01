@@ -15,7 +15,7 @@ SynthDef(\sheet1, { |out=0, frq=111, gate=0, amp = 0, freq=45, detune=0.01, rtim
 	Out.ar(out, sig);
 }).add;
 SynthDef(\miniMoog, {
-	|freq = 440, amp = 0.5, attack = 0.1, decay = 0.2, sustain = 0.7, release = 0.3, gate = 1, filterFreq = 800, fq=0.5, pan = 0|
+	|freq = 440, amp = 0.0, attack = 0.1, decay = 0.2, sustain = 0.7, release = 0.3, gate = 1, filterFreq = 800, fq=0.5, pan = 0|
 
     var env, osc, filt, sig;
     env = EnvGen.kr(Env.adsr(attack, decay, sustain, release), gate, doneAction: 2);
@@ -45,7 +45,7 @@ SynthDef(\miniMoog, {
 	var freq = notes[index].midicps;
 
 	if(amp < 0.02, { amp = 0 });
-	if(amp > 0.9, { amp = 0.9 });
+	if(amp > 0.9, { amp = 0.7 });
 	synth.set(\amp, amp);
   synth.set(\filterFreq, filterFreq);
   synth.set(\detune, detune);

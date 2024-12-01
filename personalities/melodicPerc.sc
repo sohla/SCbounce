@@ -42,11 +42,12 @@ SynthDef(\melodicPerc, {
 		Pbind(
 			\instrument, \melodicPerc,
 			\scale, Scale.major,
-			\octave, Pseq([4], inf),
-			\note, Pseq([0,1,5,4,-2,5,7,8,4,-2].stutter(23), inf),
+			\octave, Pseq([3,4], inf),
+			// \note, Pseq([0,1,5,4,-2,5,7,8,4,-2].stutter(23), inf),
+			\note, Pseq([7,4,4,2,2,0,-1,-1,-3,-5,-5].stutter(16), inf),
 			\legato, 1,
-			\amp, Pwhite(0.1,0.3, inf),
-			\func, Pfunc({|e| ~onEvent.(e)}),
+			\amp, Pwhite(0.1,0.2, inf),
+			// \func, Pfunc({|e| ~onEvent.(e)}),
 			\args, #[]
 		);
 	);

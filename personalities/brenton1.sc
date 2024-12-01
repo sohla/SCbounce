@@ -7,12 +7,12 @@ m.accelMassFilteredAttack = 0.99;
 m.accelMassFilteredDecay = 0.6;
 
 //------------------------------------------------------------
-SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=440,
+SynthDef(\stereoSampler1, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=440,
     attack=0.01, decay=0.1, sustain=0.3, release=0.2, gate=1,cutoff=20000, rq=1|
 
-	var lr = rate * BufRateScale.kr(bufnum) * (freq/440.0);
+	  var lr = rate * BufRateScale.kr(bufnum) * (freq/440.0);
     var env = EnvGen.kr(Env.adsr(attack, decay, sustain, release), gate, timeScale: 2,doneAction: 2);
-	var sig = PlayBuf.ar(2, bufnum, rate: [lr, lr * 1.003], startPos: start * BufFrames.kr(bufnum), loop: 0);
+	  var sig = PlayBuf.ar(2, bufnum, rate: [lr, lr * 1.003], startPos: start * BufFrames.kr(bufnum), loop: 0);
     sig = RLPF.ar(sig, cutoff, rq);
     sig = Balance2.ar(sig[0], sig[1], pan, amp * env);
     Out.ar(out, sig);
@@ -21,23 +21,21 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, fre
 //------------------------------------------------------------
 ~init = ~init <> {
 
-	// var path = PathName("~/Downloads/yourDNASamples/STE-002.wav");
-	var path = PathName("~/Downloads/yourDNASamples/violin/Violin_04.wav");
-	// var path = PathName("~/Downloads/yourDNASamples/STE-006.wav");
+	var path = PathName("~/Downloads/yourDNASamples/brenton/BrentonVoice_02.wav");
 	postf("loading sample : % \n", path.fileName);
 
 	buffer = Buffer.read(s, path.fullPath, action:{ |buf|
 		postf("buffer alloc [%] \n", buf);
 		Pdef(m.ptn,
 			Pbind(
-				\instrument, \stereoSampler,
+				\instrument, \stereoSampler1,
 				\bufnum, buf,
-				\octave, Pxrand([3], inf),
+				\octave, Pxrand([2,3,6.9], inf),
 				\note, Pwhite(33,33, inf).floor,
 				\decay, 0.2,
 				\sustain,0.1,
 				\release,0.2,
-				\rate, 0.midiratio,
+				\rate, Pseq([0,1,4,5,7,8,7,5,4,5,4,1,4,1,0,0].stutter(4).midiratio, inf),
 				// \dur, Pseq([0.25], inf),
 				\args, #[],
 			)
@@ -54,15 +52,15 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, fre
 //------------------------------------------------------------
 ~next = {|d|
 
-	var dur = m.accelMassFiltered.linlin(0,1,0.5,0.03);
-	var start = (d.sensors.gyroEvent.x / 2pi).lincurve(0.0,1.0,0.02,0.4,-2);
-	var amp = m.accelMassFiltered.lincurve(0,2.5,0,1,-2);
+	var dur = m.accelMassFiltered.linlin(0,1,0.5,0.1);
+	var start = (d.sensors.gyroEvent.x / 2pi).lincurve(0.0,1.0,0.2,0.4,-2);
+	var amp = m.accelMassFiltered.lincurve(0,2.5,0,1,-5);
 	var rate= m.accelMass.linlin(0,1,0,2);
 
-	if(amp < 0.03, {amp = 0});
+	if(amp < 0.07, {amp = 0});
 
-	Pdef(m.ptn).set(\dur, dur);
-	Pdef(m.ptn).set(\amp, amp * 2);
+	Pdef(m.ptn).set(\dur, 0.2);
+	Pdef(m.ptn).set(\amp, amp * 0.9);
  	Pdef(m.ptn).set(\start, start.linlin(0,1,0,1));
 
 };

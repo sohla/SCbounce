@@ -7,53 +7,44 @@ m.rrateMassFilteredDecay = 0.9;
 
 
 SynthDef(\fuckYes, {
-    |out=0, gate=1, freq=390, amp=1.0, atk=1.0, dcy=0.6, sus=0.5, rel=4.0|
+    |out=0, gate=1, freq=200, amp=1.0, atk=1.0, dcy=0.6, sus=0.5, rel=4.0, spd=4, idx=0|
 	var env = EnvGen.ar(Env.adsr(atk, dcy, sus, rel), gate, doneAction:2);
 
 	var in = LocalIn.ar(2);
-	var seq = Dseq([1, 3, 2, 5, 4], inf);
-	var trig = Impulse.kr(4);
-	var f = Demand.kr(trig, 0, seq) * 140 + 240;
-	// var source = Saw.ar(freq.lag(0.1),(0.6+amp).distort);
-	var source = SinOsc.ar(f,0,(0.6+amp).distort);
+	var a = Dseq([1, 3, 2, 5, 4], inf);
+	var b = Dseq([0.89, 3, 2, 5.35, 4], inf);
+	var c = Dseq([1.27, 3, 1.27, 6.07, 4.0], inf);
+	var d = Dseq([1.34, 2, 1, 6.7, 4.0], inf);
+	var e = Dseq([1.27, 2, 1, 6.05, 4.0], inf);
+	var f = Dseq([1.27, 3, 1.27, 6.05, 4.0], inf);
+	var g = Dseq([0.89, 3, 2, 5.35, 4], inf);
+
+	var trigL = Impulse.kr(spd/20);
+	var part = Demand.kr(trigL, 0, Dseq([0,0,1,2,3,3,4,5], inf));
+	var seq = Dswitch1([a,b,c,d,f,g], part);
+	var trig = Impulse.kr(spd);
+	var source = SinOsc.ar(freq * Demand.kr(trig, 0, seq) * 0.5, 0,(0.6+amp).distort);
 	var sig = Pluck.ar(source + (in * 0.1), Dust.ar(900), freq.reciprocal, freq.reciprocal, 1,
         coef:0.5)!2;
 	sig = sig.softclip.distort;
 	sig = HPF.ar(sig, 200);
 	sig = LPF.ar(sig, 1.9e4);
 	sig = DelayC.ar(sig,0.3,0.28);
-	// sig = GVerb.ar(sig);
+	// sig = GVerb.ar(sig/3);
 	LocalOut.ar(sig);
 	sig = Mix.ar([sig, source]);
-	 sig = PitchShift.ar(sig,0.2, [0.126,0.125] * Demand.kr(trig, 0, seq));
-	sig = BLowShelf.ar(sig, db:-6) * 3;
-	Out.ar(out, sig * env * amp.lag(0.1));
+	 sig = PitchShift.ar(sig,0.2, [0.252,0.25] * Demand.kr(trig, 0, seq)) ;
+	sig = BLowShelf.ar(sig, db:-6) * 0.7;
+	sig = FreeVerb.ar(sig,0.4,0.9,0.1);
+	Out.ar(out, sig * env * amp.lag(1.8));
 }).add;
 
 
 ~init = ~init <> {
-	// Pdef(m.ptn,
-	// 	Pbind(
-	// 		\instrument, \fuckYes,
-	// 		// \octave, Pseq([5], inf),
-	// 		\root, Pseq([0,-3,2,-1].stutter(60), inf),
-	// 		\note, Pseq([0,-2,-5,-7], inf),
-	// 		\legato, 1,
-	// 		\amp, 1,
-	// 		// \func, Pfunc({|e| ~onEvent.(e)}),
-	// 		\args, #[]
-	// 	);
-	// );
-
-	// Pdef(m.ptn).play(quant:0.1);
-
 		synth = Synth(\fuckYes, [\gate, 1]);
-
 };
 ~deinit = ~deinit <> {
-	// Pdef(m.ptn).remove;
 	synth.set(\gate, 0);
-
 };
 
 //------------------------------------------------------------
@@ -61,13 +52,13 @@ SynthDef(\fuckYes, {
 //------------------------------------------------------------
 
 // example feeding the community
-~onEvent = {|e|
-	if(e.root != m.com.root,{
-		// "key change".postln;
-		Pdef(m.ptn).reset;
-	});
-	Pdef(m.ptn).set(\root, m.com.root);
-};
+// ~onEvent = {|e|
+// 	if(e.root != m.com.root,{
+// 		// "key change".postln;
+// 		Pdef(m.ptn).reset;
+// 	});
+// 	Pdef(m.ptn).set(\root, m.com.root);
+// };
 
 
 //------------------------------------------------------------
@@ -76,26 +67,21 @@ SynthDef(\fuckYes, {
 ~next = {|d|
 
 	var amp = m.accelMassFiltered.lincurve(0,2.5,0.0,1.0,-2);
-	var trans = 1;//(d.sensors.gyroEvent.y.abs / pi).lincurve(0,1,0,2,2);
-	var pchs = [67,75,89,75,61] + (12*trans);
-	var i = (d.sensors.gyroEvent.y.abs / pi) * (pchs.size);
-	synth.set(\amp, amp);
-	// synth.set(\freq, pchs[i.floor].midicps);
+	var spd = m.accelMassFiltered.lincurve(0,2.5,2,9,-2);
+	var idx = (d.sensors.gyroEvent.y.abs / pi) * 3;
 
-  // Pdef(m.ptn).set(\dur, dur);
-	// Pdef(m.ptn).set(\octave, oct);
-	// Pdef(m.ptn).set(\dcy, dcy);
-	// Pdef(m.ptn).set(\dr, dr);
+	var base = [100,200,400];
+	var fdx = (d.sensors.gyroEvent.y.abs / pi) * base.size;
 
-	// if(m.accelMassFiltered > 0.1,{
-	// 	if( Pdef(m.ptn).isPlaying.not,{
-	// 		Pdef(m.ptn).resume(quant:0.1);
-	// 	});
-	// },{
-	// 	if( Pdef(m.ptn).isPlaying,{
-	// 		Pdef(m.ptn).pause();
-	// 	});
-	// });
+	if(amp < 0.1, {amp = 0});
+
+	synth.set(\freq, base[fdx.asInteger]);
+	synth.set(\amp, amp * 0.5);
+	synth.set(\spd, spd);
+	synth.set(\idx, idx.asInteger);
+
+
+
 };
 
 ~nextMidiOut = {|d|
