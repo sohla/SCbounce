@@ -1,13 +1,11 @@
 (
 	[
 		"silence",
-		"quackQuack",
-		"animalMat",
+		"fuckYes",
 
 		"drumkit2",
 		"drumkit",
 		"treeWindB",
-		"fuckYes",
 		"gendy1",
 		"gendy2",
 		"melodicPerc",
@@ -32,5 +30,7 @@
 //sheet1 sheet treeWindB
 // metal2 metal1 inABottle inABottle
 // sound of a rat sqeaking
+// violin mangle
+// distortion
 
 

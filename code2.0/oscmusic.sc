@@ -6,11 +6,11 @@
 	// var personalityDir = "~/Develop/SuperCollider/Projects/scbounce/personalities/"; //laptop
 	//var personalityDir = "~/Develop/SuperCollider/oscMusic/personalities/"; //mac mini cabin
 
-	var defaultPersonality = "1. Start";
-	var defaultList = "list_yourDNA.sc";
+	// var defaultPersonality = "1. Start";
+	// var defaultList = "list_yourDNA.sc";
 
-	// var defaultPersonality = "silence";
-	// var defaultList = "list_brenton.sc";
+	var defaultPersonality = "silence";
+	var defaultList = "list_brenton.sc";
 
 	//var oscMessageTag  = "CombinedDataPacket";
 	var oscMessageTag  = "IMUFusedData";
