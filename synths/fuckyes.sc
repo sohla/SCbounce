@@ -1,7 +1,7 @@
 (
 {
 		var in = LocalIn.ar(2);
-	var frq = 900;//MouseY.kr(10, 1e3, \linear);
+	var frq = MouseY.kr(10, 1e3, \linear).poll;
 	var source = SinOsc.ar(frq,0,0.1);
 	var sig = Pluck.ar(source + (in * 0.1), Dust.ar(900), frq.reciprocal, frq.reciprocal, 1,
         coef:0.5)!2;
@@ -19,10 +19,5 @@
 
 
 )
+// a = [1, 3, 2, 5, 4].dup(3)++ [5,6,7,8].dup(2)
 
-9.2e3
-
-
-
-
-                                                                                                                             /
