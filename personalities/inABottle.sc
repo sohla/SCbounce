@@ -12,14 +12,14 @@ SynthDef(\inabottle, { |out, frq=111, gate=0, amp = 0, dust=10, tone = 0.8, bits
 			Splay.ar({Dust.ar(dust)}!100)
 			,0.3
 			,bits
-			,mul:4
+			,mul:2
 			),
-		2.1,
+		2,
 		1,
 		tone
 	);
 	sig = 
-	Out.ar(out, sig * amp);
+	Out.ar(out, sig * amp * env);
 }).add;
 
 ~init = ~init <> {
@@ -27,7 +27,7 @@ SynthDef(\inabottle, { |out, frq=111, gate=0, amp = 0, dust=10, tone = 0.8, bits
 };
 
 ~deinit = ~deinit <> {
-	synth.free;
+	synth.set(\gate, 0);
 };
 
 //------------------------------------------------------------
@@ -37,7 +37,7 @@ SynthDef(\inabottle, { |out, frq=111, gate=0, amp = 0, dust=10, tone = 0.8, bits
   var tone = d.sensors.gyroEvent.z.lincurve(-1,1,0.1,0.91,-3);
   var bits = m.rrateMassFiltered.lincurve(0,1.5,0.01,0.09,-3);
 
-	synth.set(\amp, amp);
+	synth.set(\amp, amp*0.5);
 	synth.set(\tone, tone);
 	synth.set(\bits, bits);
 };

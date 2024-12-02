@@ -19,23 +19,24 @@ SynthDef(\fuckYes, {
 	var f = Dseq([1.27, 3, 1.27, 6.05, 4.0], inf);
 	var g = Dseq([0.89, 3, 2, 5.35, 4], inf);
 
-	var trigL = Impulse.kr(spd/20);
+	var trigL = Impulse.kr(spd/30);
 	var part = Demand.kr(trigL, 0, Dseq([0,0,1,2,3,3,4,5], inf));
 	var seq = Dswitch1([a,b,c,d,f,g], part);
 	var trig = Impulse.kr(spd);
-	var source = SinOsc.ar(freq * Demand.kr(trig, 0, seq) * 0.5, 0,(0.6+amp).distort);
-	var sig = Pluck.ar(source + (in * 0.1), Dust.ar(900), freq.reciprocal, freq.reciprocal, 1,
+	var source = SinOsc.ar(freq * Demand.kr(trig, 0, seq) * 0.5, 0,(0.2+amp).distort);
+	var sig = Pluck.ar(source + (in * 0.1), Dust.ar(LFCub.ar(1/30,0,2.5).tanh.lag(0.3).linlin(-1,1,1,900)), freq.reciprocal, freq.reciprocal, 1,
         coef:0.5)!2;
 	sig = sig.softclip.distort;
-	sig = HPF.ar(sig, 200);
+	sig = HPF.ar(sig, 100);
 	sig = LPF.ar(sig, 1.9e4);
 	sig = DelayC.ar(sig,0.3,0.28);
 	// sig = GVerb.ar(sig/3);
 	LocalOut.ar(sig);
 	sig = Mix.ar([sig, source]);
 	 sig = PitchShift.ar(sig,0.2, [0.252,0.25] * Demand.kr(trig, 0, seq)) ;
-	sig = BLowShelf.ar(sig, db:-6) * 0.7;
+	sig = BHiShelf.ar(sig, 4000, db:-14) * 0.7;
 	sig = FreeVerb.ar(sig,0.4,0.9,0.1);
+	sig = BRF.ar(sig, 8000,0.9);
 	Out.ar(out, sig * env * amp.lag(1.8));
 }).add;
 

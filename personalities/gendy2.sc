@@ -21,7 +21,7 @@ SynthDef(\miniMoog, {
     env = EnvGen.kr(Env.adsr(attack, decay, sustain, release), gate, doneAction: 2);
 	osc = Saw.ar([freq, freq * 1.004],1) + SinOsc.ar([freq-1, freq -1 * 0.005],0,1) + LFTri.ar([freq+1, freq * 1.004],0,1);
     filt = RLPF.ar(osc.tanh, filterFreq, fq);
-    sig = filt * env * amp * 0.5;
+    sig = filt * env * amp.lag(1) * 0.5;
     sig = Pan2.ar(sig, pan);
     Out.ar(0, sig.tanh);
 }).add;
@@ -44,9 +44,12 @@ SynthDef(\miniMoog, {
   var index = d.sensors.rotateEvent.y.linlin(0,1,0,notes.size).floor;
 	var freq = notes[index].midicps;
 
+	if(filterFreq < 400, { filterFreq = 400 });
+	if(filterFreq > 9.2e3, { filterFreq = 9.2e3 });
+
 	if(amp < 0.02, { amp = 0 });
 	if(amp > 0.9, { amp = 0.9 });
-	synth.set(\amp, amp * 0.4);
+	synth.set(\amp, amp * 0.25);
   synth.set(\filterFreq, filterFreq);
   synth.set(\detune, detune);
   synth.set(\freq, freq);

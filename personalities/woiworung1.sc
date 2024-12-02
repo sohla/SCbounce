@@ -8,7 +8,7 @@ m.accelMassFilteredDecay = 0.9;
 // smooth
 //------------------------------------------------------------
 
-SynthDef("woiworung1", {|out,freq = 1000, amp = 0.5, att = 2.02, dec = 0.3, sus = 1, rel = 1, gate = 1, fb = 1.2, ch=10|
+SynthDef("woiworung1", {|out,freq = 1000, amp = 0.5, att = 2.02, dec = 0.3, sus = 1, rel = 4, gate = 1, fb = 1.2, ch=10|
 	var snd, env;
 	env = EnvGen.kr(Env.adsr(att, dec, sus, rel), gate: gate, doneAction: 2);
 
@@ -19,23 +19,23 @@ SynthDef("woiworung1", {|out,freq = 1000, amp = 0.5, att = 2.02, dec = 0.3, sus 
 	2.do{
 		snd = AllpassL.ar(snd,0.3,{0.1.rand+0.03}!2,5)
 	};
-	Out.ar(out, snd.tanh);
+	Out.ar(out, snd.tanh * env);
 }).add;
 
 ~init = ~init <> {
-	synth = Synth(\woiworung1, [\freq, (60+4).midicps, \gate, 0, \amp, 0]);
+	synth = Synth(\woiworung1, [\freq, (60+4).midicps, \gate,1, \amp, 0]);
 };
 
 ~deinit = ~deinit <> {
 	synth.set(\gate,0);
-	synth.free; // for now
+	// synth.free; // for now
 };
 
 //------------------------------------------------------------
 ~next = {|d|
 
 	var a = m.accelMassFiltered.lincurve(0,1,0.0,0.15,-2);
-	var ch = (m.accelMassFiltered * 0.25).linlin(0.0,1.0,0.2,49);
+	var ch = (m.accelMassFiltered * 0.25).linlin(0.0,1.0,0.1,10);
 	// var pchs = [0,12,24,36,48];
 	// var i = (d.sensors.gyroEvent.y.abs / pi) * (pchs.size);
 	if(a<0.1,{a=0});

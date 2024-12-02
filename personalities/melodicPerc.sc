@@ -9,7 +9,7 @@ SynthDef(\melodicPerc, {
     var pitch_contour, drum_osc, click_osc, drum_env, click_env, sig, pch;
 
     // Pitch envelope
-    pitch_contour = Line.kr(1, 0, 0.02);
+    pitch_contour = Line.kr(1, 0, 0.002);
 
     // Drum oscillator
 
@@ -21,7 +21,7 @@ SynthDef(\melodicPerc, {
 
     // Drum envelope
     drum_env = EnvGen.ar(
-        Env.perc(attackTime: 0.005, releaseTime: decay, curve: -4),
+        Env.perc(attackTime: 0.105, releaseTime: decay, curve: -4),
         doneAction: 2
     );
 
@@ -44,9 +44,9 @@ SynthDef(\melodicPerc, {
 			\scale, Scale.major,
 			\octave, Pseq([3,4], inf),
 			// \note, Pseq([0,1,5,4,-2,5,7,8,4,-2].stutter(23), inf),
-			\note, Pseq([7,4,4,2,2,0,-1,-1,-3,-5,-5].stutter(16), inf),
+			\note, Pseq([7,4,4,2,2,0,-1,-1,-3,-5,-5].stutter(32), inf),
 			\legato, 1,
-			\amp, Pwhite(0.1,0.2, inf),
+			\amp, Pwhite(0.1,0.2, inf)*0.22,
 			// \func, Pfunc({|e| ~onEvent.(e)}),
 			\args, #[]
 		);

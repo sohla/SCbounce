@@ -102,7 +102,7 @@ SynthDef(\bambooComplex, {
     env = EnvGen.kr(
         Env.perc(
             att,
-            rel * bambooMoisture.linlin(0, 1, 0.8, 1.2),
+            rel * bambooMoisture.linlin(0, 1, 0.8, 0.2),
             curve: -4
         ),
         doneAction: 2
@@ -156,14 +156,14 @@ SynthDef(\bambooComplex, {
 				\freq, (30 + notes[noteIndex] + currentRoot).midicps,
 				\gate, 1,
 				\att, att,
-				\amp, 0.15 * amp,
+				\amp, 0.1 * amp,
 				\strikePos, 1.0.rand, // Position of strike (affects resonance)
-				\resonance, 1.0.rand, // Amount of resonant body sound
+				\resonance, 0.2, // Amount of resonant body sound
 				\bambooMoisture, 1.0.rand, // Affects damping and resonance
 				\model, 6.rand.floor, // Model selecto
 
 			]);
-			synth.server.sendBundle(0.3,[\n_set, synth.nodeID, \gate, 0]);
+			synth.server.sendBundle(0.1,[\n_set, synth.nodeID, \gate, 0]);
 		});
 	});
 };

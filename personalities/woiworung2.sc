@@ -6,19 +6,19 @@ m.accelMassFilteredAttack = 0.99;
 m.accelMassFilteredDecay = 0.9;
 
 //------------------------------------------------------------
-SynthDef("woiworung2", {|out,freq = 1000, amp = 0.5, att = 0.02, dec = 0.3, sus = 1, rel = 1, gate = 1, fb = 1.2, ch=10|
+SynthDef("woiworung2", {|out,freq = 1000, amp = 0.5, att = 0.02, dec = 0.3, sus = 1, rel = 5, gate = 1, fb = 1.2, ch=10|
 	var snd, env;
 	env = EnvGen.kr(Env.adsr(att, dec, sus, rel), gate: gate, doneAction: 2);
 
 	snd = SinOsc.ar(freq,
-		LocalIn.ar(2) * LFNoise1.ar(0.1,2),
+		LocalIn.ar(2) * LFNoise1.ar(0.1,1),
 		LFNoise1.ar(ch.lag(0.3),6)
 		// LFNoise1.ar(MouseY.kr(0.2,19),MouseX.kr(0.1,4.1))
 	).tanh * amp.lag(0.3);
 	2.do{
 		snd = AllpassL.ar(snd,0.3,{0.1.rand+0.03}!2,5)
 	};
-	Out.ar(out, snd.tanh );
+	Out.ar(out, snd.tanh * env);
 }).add;
 
 ~init = ~init <> {
@@ -27,7 +27,7 @@ SynthDef("woiworung2", {|out,freq = 1000, amp = 0.5, att = 0.02, dec = 0.3, sus 
 
 ~deinit = ~deinit <> {
 	synth.set(\gate,0);
-	synth.free; // for now
+	// synth.free; // for now
 };
 
 //------------------------------------------------------------
@@ -39,7 +39,7 @@ SynthDef("woiworung2", {|out,freq = 1000, amp = 0.5, att = 0.02, dec = 0.3, sus 
 	// var i = (d.sensors.gyroEvent.y.abs / pi) * (pchs.size);
 	if(a<0.01,{a=0});
 	if(a>0.9,{a=1.0});
-	synth.set(\amp, a * 0.4);
+	synth.set(\amp, a * 0.2);
 	synth.set(\ch, ch);
 
 	a = m.accelMassFiltered * 0.1;

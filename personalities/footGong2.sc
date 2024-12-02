@@ -21,7 +21,7 @@ SynthDef(\largeGong2, {
     size=0.8,          // Size affect harmonics and decay
     // Time and space
     attackTime=0.002,
-    decayTime=12.0,     // Long decay for large gong
+    decayTime=6.0,     // Long decay for large gong
     roomSize=0.9,
     damping=0.3,
     mix=0.5;
@@ -128,8 +128,8 @@ SynthDef(\largeGong2, {
 	// 	roomSize,
 	// 	damping
 	// );
-	output[0]= CombL.ar(output[0], 0.1, [0.0297, 0.0371, 0.0411, 0.0437], 2, roomSize).sum * 0.2;
-	output[1] = CombL.ar(output[1], 0.1, [0.0277, 0.0353, 0.0389, 0.0419], 2, roomSize).sum* 0.2;
+	// output[0]= CombL.ar(output[0], 0.1, [0.0297, 0.0371, 0.0411, 0.0437], 2, roomSize).sum * 0.2;
+	// output[1] = CombL.ar(output[1], 0.1, [0.0277, 0.0353, 0.0389, 0.0419], 2, roomSize).sum* 0.2;
 
     // Final shaping
     output = output * env;
@@ -158,7 +158,7 @@ SynthDef(\largeGong2, {
 	var att = m.accelMassFiltered.linexp(0,2.5,0.1,0.0001);
 
 	if(move > 0.22, {
-		if(TempoClock.beats > (lastTime + 0.2),{
+		if(TempoClock.beats > (lastTime + 0.6),{
 			lastTime = TempoClock.beats;
 			notes = notes.rotate(-1);
 			currentNote = notes[0];
@@ -168,7 +168,7 @@ SynthDef(\largeGong2, {
 			synth = Synth(\largeGong2, [
 				\freq, (52 + roots[0]).midicps,
 				\gate, 1,
-				\amp, 0.1,
+				\amp, 0.03,
 				\attackTime,att,
     			\strikeForce, size,    // Impact intensity
     			\shimmerAmount, 0.1,  // Amount of characteristic gong wobble

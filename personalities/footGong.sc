@@ -128,8 +128,8 @@ SynthDef(\largeGong, {
 	// 	roomSize,
 	// 	damping
 	// );
-	output[0]= CombL.ar(output[0], 0.1, [0.0297, 0.0371, 0.0411, 0.0437], 2, roomSize).sum * 0.2;
-	output[1] = CombL.ar(output[1], 0.1, [0.0277, 0.0353, 0.0389, 0.0419], 2, roomSize).sum* 0.2;
+	// output[0]= CombL.ar(output[0], 0.1, [0.0297, 0.0371, 0.0411, 0.0437], 2, roomSize).sum * 0.2;
+	// output[1] = CombL.ar(output[1], 0.1, [0.0277, 0.0353, 0.0389, 0.0419], 2, roomSize).sum* 0.2;
 
     // Final shaping
     output = output * env;
@@ -157,7 +157,7 @@ SynthDef(\largeGong, {
 	var size = m.accelMassFiltered.linlin(0,2.5,0.1,1);
 
 	if(move > 0.22, {
-		if(TempoClock.beats > (lastTime + 0.35),{
+		if(TempoClock.beats > (lastTime + 0.8),{
 			lastTime = TempoClock.beats;
 			notes = notes.rotate(-1);
 			currentNote = notes[0];
@@ -167,7 +167,7 @@ SynthDef(\largeGong, {
 			synth = Synth(\largeGong, [
 				\freq, 33.midicps,
 				\gate, 1,
-				\amp, 0.3,
+				\amp, 0.07,
     			\strikeForce, size,    // Impact intensity
     			\shimmerAmount, 0.1,  // Amount of characteristic gong wobble
 				\metallic, metal,       // Metallic character
