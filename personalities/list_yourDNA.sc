@@ -44,7 +44,6 @@
 		"silence",
 		"quackQuack",
 		"silence",
-		"bee",
 		"treeWind",
 		"silence",
 
@@ -54,7 +53,6 @@
 		"silence",
 		"animalMat",
 		"silence",
-		"bee",
 		"wingChimes3",
 		"silence",
 

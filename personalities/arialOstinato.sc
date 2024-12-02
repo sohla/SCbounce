@@ -75,7 +75,7 @@ SynthDef(\warmRichSynth, {
 			\sustainLevel, 0.1,
 			\releaseTime, 1.2,
 			\cutoff, Pseg(Pseq([4000,10000], inf), 0.5 * 12, \sine, inf),
-			\amp, 0.1,
+			\amp, 0.05,
 			// \func, Pfunc({|e| ~onEvent.(e)}),
 			\args, #[]
 		);

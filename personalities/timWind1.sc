@@ -38,7 +38,7 @@ SynthDef(\timWind1, { |out, freq=111, gate=0, amp = 0.3, pchx=0|
 
 	var move = m.accelMassFiltered.linlin(0,3,0,1.5);
   var a = m.accelMassFiltered * 0.5;
-  var amp = m.accelMassFiltered.lincurve(0,1.5,0.02,0.3,-5);
+  var amp = m.accelMassFiltered.lincurve(0,1.5,0.02,0.1,-5);
   var gap = m.accelMassFiltered.lincurve(0,1.5,0.8,0.1,-5);
 	var oct = d.sensors.gyroEvent.y.linlin(-1,1,1,5).floor * 12;
 	var av = d.sensors.gyroEvent.y.lincurve(-1,1,1,0.1,-2);

@@ -109,7 +109,7 @@ SynthDef(\warmRichSynth, {
 				\resonance, 0.2,
 				\attackTime, 0.04,
 				\releaseTime, 0.9,
-			    \amp, 0.9
+			    \amp, 0.5
 			]);
 			synth.server.sendBundle(0.5,[\n_set, synth.nodeID, \gate, 0]);
 		});
