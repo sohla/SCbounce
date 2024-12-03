@@ -14,14 +14,14 @@ SynthDef(\melodicPerc, {
     // Drum oscillator
 
 	pch = freq * (1 + (pitch_contour * tension));
-	drum_osc = SinOsc.ar([pch,pch*1.004], LFNoise2.ar([4,5],10,-10),0.5);
+	drum_osc = SinOsc.ar([pch,pch*1.004], LFNoise2.ar([4,5],7,-7),0.5);
 
     // Click oscillator
     click_osc = LPF.ar(WhiteNoise.ar(1), 1500);
 
     // Drum envelope
     drum_env = EnvGen.ar(
-        Env.perc(attackTime: 0.105, releaseTime: decay, curve: -4),
+        Env.perc(attackTime: 0.105, releaseTime: decay * 2, curve: -4),
         doneAction: 2
     );
 
@@ -42,7 +42,7 @@ SynthDef(\melodicPerc, {
 		Pbind(
 			\instrument, \melodicPerc,
 			\scale, Scale.major,
-			\octave, Pseq([3,4], inf),
+			\octave, Pseq([3,4,5], inf),
 			// \note, Pseq([0,1,5,4,-2,5,7,8,4,-2].stutter(23), inf),
 			\note, Pseq([7,4,4,2,2,0,-1,-1,-3,-5,-5].stutter(32), inf),
 			\legato, 1,

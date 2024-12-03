@@ -34,7 +34,7 @@ SynthDef(\sheet2, { |out=0, frq=111, gate=0, amp = 0, pchx=0,root=64|
 	// pchs[i.floor].postln;
 	if(a<0.03,{a=0});
 	if(a>0.9,{a=0.9});
-	synth.set(\amp, a * 0.15);
+	synth.set(\amp, a * 0.05);
 	synth.set(\pchx,pchs[i.floor]);
 	synth.set(\root, (m.com.root + 36 ).midicps);
 };

@@ -7,7 +7,7 @@ m.rrateMassFilteredDecay = 0.9;
 
 
 SynthDef(\fuckYes, {
-    |out=0, gate=1, freq=200, amp=1.0, atk=1.0, dcy=0.6, sus=0.5, rel=4.0, spd=4, idx=0|
+    |out=0, gate=1, freq=200, amp=0.0, atk=1.0, dcy=0.6, sus=0.5, rel=4.0, spd=4, idx=0|
 	var env = EnvGen.ar(Env.adsr(atk, dcy, sus, rel), gate, doneAction:2);
 
 	var in = LocalIn.ar(2);
@@ -24,7 +24,7 @@ SynthDef(\fuckYes, {
 	var seq = Dswitch1([a,b,c,d,f,g], part);
 	var trig = Impulse.kr(spd);
 	var source = SinOsc.ar(freq * Demand.kr(trig, 0, seq) * 0.5, 0,(0.2+amp).distort);
-	var sig = Pluck.ar(source + (in * 0.1), Dust.ar(LFCub.ar(1/30,0,2.5).tanh.lag(0.3).linlin(-1,1,1,900)), freq.reciprocal, freq.reciprocal, 1,
+	var sig = Pluck.ar(source + (in * 0.1), Dust.ar(LFCub.ar(1/60,0,2.5).tanh.lag(0.3).linlin(-1,1,1,900)), freq.reciprocal, freq.reciprocal, 1,
         coef:0.5)!2;
 	sig = sig.softclip.distort;
 	sig = HPF.ar(sig, 100);
@@ -34,7 +34,7 @@ SynthDef(\fuckYes, {
 	LocalOut.ar(sig);
 	sig = Mix.ar([sig, source]);
 	 sig = PitchShift.ar(sig,0.2, [0.252,0.25] * Demand.kr(trig, 0, seq)) ;
-	sig = BHiShelf.ar(sig, 4000, db:-14) * 0.7;
+	sig = BHiShelf.ar(sig, 4000, db:-4) * 0.7;
 	sig = FreeVerb.ar(sig,0.4,0.9,0.1);
 	sig = BRF.ar(sig, 8000,0.9);
 	Out.ar(out, sig * env * amp.lag(1.8));
