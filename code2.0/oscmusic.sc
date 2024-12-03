@@ -272,7 +272,7 @@
 
 		stopOSCListening.();
 		Routine{
-			// MIDIdef.freeAll;   
+			MIDIdef.freeAll;   
 			// everything called in the correct order but leaves synths hanging!?!
 			s.sync;
 			devices.keysValuesDo({|k,d|
@@ -587,15 +587,15 @@
 		contentView.layout.add(nil);
 
 		// hack in some MIDI foot control
-		{
+		// {
 		if(d.did < 3,{ 
-			MIDIFunc.cc({decButton.valueAction_(1)}, 3);
-			MIDIFunc.cc({incButton.valueAction_(1)}, 4);
+			MIDIFunc.cc({{decButton.valueAction_(1)}.defer}, 3);
+			MIDIFunc.cc({{incButton.valueAction_(1)}.defer}, 4);
 		},{
-			MIDIFunc.cc({decButton.valueAction_(1)}, 1);
-			MIDIFunc.cc({incButton.valueAction_(1)}, 2);
+			MIDIFunc.cc({{decButton.valueAction_(1)}.defer}, 1);
+			MIDIFunc.cc({{incButton.valueAction_(1)}.defer}, 2);
 		});
-		}.defer;
+		// }.defer;
 	};
 
 	//------------------------------------------------------------
