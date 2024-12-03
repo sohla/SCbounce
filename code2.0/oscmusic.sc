@@ -312,6 +312,9 @@
 		d.listeners.battery.free; //?
 	};
 
+	//------------------------------------------------------------
+	//
+	//------------------------------------------------------------
 	addDevice = { |ip,port, id|
 
 		var d = Event.new(proto:deviceProto);
@@ -333,8 +336,8 @@
 		devices.put(port,d);
 		reloadPersonality.(d);
 		//addDeviceView.(contentView, d);
-		NetAddr.new(ip,port-id+1).sendMsg("/Config/GetConfig", 57120);
 		addOSCDeviceListeners.(d);
+		NetAddr.new(ip,port-id+1).sendMsg("/Config/GetConfig", 57120);
 
 		d // return the device
 	};
@@ -403,7 +406,7 @@
 		var col = Color.gray(0.35);
 		var wrapView = View(view)
 				.layout_(HLayout())
-						.maxWidth_(1000);
+				.maxWidth_(1000);
 
 		var createGraphs = {
 			createPlotterGroup.(va, Rect(250,5,400,240), col,
@@ -584,13 +587,15 @@
 		contentView.layout.add(nil);
 
 		// hack in some MIDI foot control
+		// {
 		if(d.did < 3,{ 
-			MIDIdef.cc("decP"++d.did, {{decButton.valueAction_(1)}.defer}, 3);
-			MIDIdef.cc("incP"++d.did, {{incButton.valueAction_(1)}.defer}, 4);
+			MIDIFunc.cc({decButton.valueAction_(1)}, 3);
+			MIDIFunc.cc({incButton.valueAction_(1)}, 4);
 		},{
-			MIDIdef.cc("decP"++d.did, {{decButton.valueAction_(1)}.defer}, 1);
-			MIDIdef.cc("incP"++d.did, {{incButton.valueAction_(1)}.defer}, 2);
+			MIDIFunc.cc({decButton.valueAction_(1)}, 1);
+			MIDIFunc.cc({incButton.valueAction_(1)}, 2);
 		});
+		// }.defer;
 	};
 
 	//------------------------------------------------------------
@@ -871,6 +876,7 @@
 		});
 
 
+
 	};
 
 	stopOSCListening = {
@@ -939,15 +945,14 @@
 	//	ServerOptions.devices.indexOfEqual("SERIES 208i")];
 
 	s.waitForBoot({
+		// MIDIClient.init;
+		MIDIIn.connectAll;
 		startup.();
 		buildUI.();
 		startOSCListening.();
-		MIDIIn.connectAll;
 		// s.plotTree;
-   
-		// s.meter;
+  	// s.meter;
 	});
-	// s.plotTree;
-
+	
 	)
 	
