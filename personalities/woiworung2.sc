@@ -12,7 +12,7 @@ SynthDef("woiworung2", {|out,freq = 1000, amp = 0.5, att = 0.02, dec = 0.3, sus 
 
 	snd = SinOsc.ar(freq,
 		LocalIn.ar(2) * LFNoise1.ar(0.1,1),
-		LFNoise1.ar(ch.lag(0.3),4)
+		LFNoise1.ar(ch.lag(0.3),7)
 		// LFNoise1.ar(MouseY.kr(0.2,19),MouseX.kr(0.1,4.1))
 	).tanh * amp.lag(0.3);
 	2.do{
@@ -34,7 +34,7 @@ SynthDef("woiworung2", {|out,freq = 1000, amp = 0.5, att = 0.02, dec = 0.3, sus 
 ~next = {|d|
 
 	var a = m.accelMassFiltered.linlin(0,1,0.0,0.6);
-	var ch = (m.accelMassFiltered * 0.25).linlin(0.0,1.0,0.02,29);
+	var ch = m.accelMassFiltered.linlin(0.0,2.5,0.02,29);
 	// var pchs = [0,12,24,36,48];
 	// var i = (d.sensors.gyroEvent.y.abs / pi) * (pchs.size);
 	if(a<0.01,{a=0});
@@ -43,7 +43,7 @@ SynthDef("woiworung2", {|out,freq = 1000, amp = 0.5, att = 0.02, dec = 0.3, sus 
 	synth.set(\ch, ch);
 
 	a = m.accelMassFiltered * 0.1;
-	if(a < 0.002, {
+	if(a < 0.003, {
 		if(isPlaying.not,{
 			isPlaying = true;
 			notes = notes.rotate(-1);

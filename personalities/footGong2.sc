@@ -152,13 +152,13 @@ SynthDef(\largeGong2, {
 //------------------------------------------------------------
 ~next = {|d|
 
-	var move = m.accelMassFiltered.linlin(0,3,0,1);
+	var move = m.accelMassFiltered.linlin(0,2.5,0,10);
 	var metal = m.accelMassFiltered.linlin(0,2.5,0.0001,4);
 	var size = m.accelMassFiltered.linlin(0,2.5,0.1,1);
 	var att = m.accelMassFiltered.linexp(0,2.5,0.1,0.0001);
 
 	if(move > 0.22, {
-		if(TempoClock.beats > (lastTime + 0.6),{
+		if(TempoClock.beats > (lastTime + 0.4),{
 			lastTime = TempoClock.beats;
 			notes = notes.rotate(-1);
 			currentNote = notes[0];
@@ -168,7 +168,7 @@ SynthDef(\largeGong2, {
 			synth = Synth(\largeGong2, [
 				\freq, (52 + roots[0]).midicps,
 				\gate, 1,
-				\amp, 0.03,
+				\amp, 0.05,
 				\attackTime,att,
     			\strikeForce, size,    // Impact intensity
     			\shimmerAmount, 0.1,  // Amount of characteristic gong wobble

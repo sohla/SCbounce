@@ -6,16 +6,16 @@
 	// var personalityDir = "~/Develop/SuperCollider/Projects/scbounce/personalities/"; //laptop
 	//var personalityDir = "~/Develop/SuperCollider/oscMusic/personalities/"; //mac mini cabin
 
-	var defaultPersonality = "1. Start";
-	var defaultList = "list_yourDNA.sc";
-
 	// var defaultPersonality = "1. Start";
-	// var defaultList = "list_brenton.sc";
+	// var defaultList = "list_yourDNA.sc";
+
+	var defaultPersonality = "1. Start";
+	var defaultList = "list_brenton.sc";
 
 	//var oscMessageTag  = "CombinedDataPacket";
 	var oscMessageTag  = "IMUFusedData";
 
-	var renderRate = 30;
+	var renderRate = 15;
 
 	// UI config
 	var windowWidth = 600, windowHeight = Window.screenBounds.height * 0.9;
@@ -591,31 +591,22 @@
 
 
 		// hack in some MIDI foot control
-		// if(d.did < 3,{ 
-		// 	MIDIFunc.cc({{decButton.valueAction_(1)}.defer}, 3);
-		// 	MIDIFunc.cc({{incButton.valueAction_(1)}.defer}, 4);
-		// },{
-		// 	MIDIFunc.cc({{decButton.valueAction_(1)}.defer}, 1);
-		// 	MIDIFunc.cc({{incButton.valueAction_(1)}.defer}, 2);
-		// });
+		if(d.did < 3,{ 
+			MIDIFunc.cc({{decButton.valueAction_(1)}.defer}, 3);
+			MIDIFunc.cc({{incButton.valueAction_(1)}.defer}, 4);
+		},{
+			MIDIFunc.cc({{decButton.valueAction_(1)}.defer}, 1);
+			MIDIFunc.cc({{incButton.valueAction_(1)}.defer}, 2);
+		});
 
 		// hack in OSC control
-		// [d.ip, d.port].postln;
 		// d.listeners.inc = OSCFunc({ |msg, time, addr, recvPort|
 		// 		var cmd = "192.168." ++ msg[1] ++ "." ++ msg[2];
 		// 		if(cmd == d.ip,{
-		// 			("["++d.ip++"] : inc").postln;
-		// 			{incButton.valueAction_(1)}.defer;
+		// 			("["++d.ip++"] : patch change to "++msg[3]).postln;
+		// 			{personalityMenu.valueAction_(msg[3].asInteger)}.defer;
 		// 		});	
-		// }, "/oscmusic/inc");
-
-		d.listeners.inc = OSCFunc({ |msg, time, addr, recvPort|
-				var cmd = "192.168." ++ msg[1] ++ "." ++ msg[2];
-				if(cmd == d.ip,{
-					("["++d.ip++"] : patch change to "++msg[3]).postln;
-					{personalityMenu.valueAction_(msg[3].asInteger)}.defer;
-				});	
-		}, "/oscmusic/patch");
+		// }, "/oscmusic/patch");
 
 	};
 
@@ -973,7 +964,7 @@
 
 	s.waitForBoot({
 
-		// MIDIIn.connectAll;
+		MIDIIn.connectAll;
 
 		startup.();
 		buildUI.();

@@ -22,7 +22,7 @@ SynthDef(\bambooComplex, {
 
     var exciter, klank, env, noiseSig, bodyResonance;
     var freqs, amps, times;
-    var output, numResonators=5;
+    var output, numResonators=1;
 
     // Initial strike - gentler, more wooden
     noiseSig = Mix([
@@ -87,16 +87,16 @@ SynthDef(\bambooComplex, {
     });
 
     // Additional tube resonance
-    bodyResonance = bodyResonance + (
-        DynKlank.ar(
-            `[
-                freqs * [1, 1.01],  // Slight detuning
-                amps * 0.1,
-                times * 1.2
-            ],
-            exciter * 0.3
-        ).dup
-    );
+    // bodyResonance = bodyResonance + (
+    //     DynKlank.ar(
+    //         `[
+    //             freqs * [1, 1.01],  // Slight detuning
+    //             amps * 0.1,
+    //             times * 1.2
+    //         ],
+    //         exciter * 0.3
+    //     ).dup
+    // );
 
     // Overall envelope
     env = EnvGen.kr(
@@ -117,8 +117,8 @@ SynthDef(\bambooComplex, {
     // Final shaping
     output = LPF.ar(output, 12000); // Remove any harsh highs
     output = output * env * amp;
-    output = LeakDC.ar(output);
-    output = Limiter.ar(output, 0.95);
+    // output = LeakDC.ar(output);
+    // output = Limiter.ar(output, 0.95);
 
     Out.ar(out, output);
 }).add;

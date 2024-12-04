@@ -152,12 +152,12 @@ SynthDef(\largeGong, {
 //------------------------------------------------------------
 ~next = {|d|
 
-	var move = m.accelMassFiltered.linlin(0,3,0,1);
+	var move = m.accelMassFiltered.linlin(0,2.5,0,10);
 	var metal = m.accelMassFiltered.linlin(0,2.5,0.01,2);
-	var size = m.accelMassFiltered.linlin(0,2.5,0.1,1);
+	var size = m.accelMassFiltered.linlin(0,2.5,0.1,3);
 
 	if(move > 0.22, {
-		if(TempoClock.beats > (lastTime + 0.8),{
+		if(TempoClock.beats > (lastTime + 0.5),{
 			lastTime = TempoClock.beats;
 			notes = notes.rotate(-1);
 			currentNote = notes[0];
