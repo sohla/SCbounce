@@ -24,7 +24,7 @@ SynthDef(\monoSampler, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=
     Out.ar(out, sig * amp);
 }).add;
 
-SynthDef(\pullstretchMonoQ, {|out, amp = 1, buffer = 0, envbuf = -1, pch = 1.0, div=1, speed = 0.01, splay = 0.4 ,pan=0|
+SynthDef(\pullstretchMonoQ, {|out, amp = 1, buffer = 0, envbuf = -1, pch = 1.0, div=1, speed = 0.01, splay = 0.4 ,pan=0, rate=1|
 	var pos;
 	// var mx,my;
 	var sp;
@@ -35,7 +35,7 @@ SynthDef(\pullstretchMonoQ, {|out, amp = 1, buffer = 0, envbuf = -1, pch = 1.0, 
 
 
 	sp = Splay.arFill(4,
-		{ |i| Warp1.ar(1, buffer, lfo.linlin(0,1,0.05,0.95), 1,splay, envbuf, 8, 0.3, 4)  },
+		{ |i| Warp1.ar(1, buffer, lfo.linlin(0,1,0.05,0.95), rate,splay, envbuf, 8, 0.3, 4)  },
 			1,
 			1,
 			0
@@ -71,12 +71,12 @@ SynthDef(\pullstretchMonoQ, {|out, amp = 1, buffer = 0, envbuf = -1, pch = 1.0, 
 ~next = {|d|
 	var amp = m.accelMass.linlin(0,2,0.00001,1);
 	var speed= m.accelMassFiltered.lincurve(0.5,2.5,0.01,2,-2);
-	var rate = m.accelMassFiltered.linlin(0,1,0.9,1.4);
+	var rate = d.sensors.gyroEvent.y.linlin(-1,1,1,2).asInteger;
 	var pan = d.sensors.gyroEvent.z.linlin(-1,1,-1,1);
 
 	if(amp < 0.01, {amp = 0});
 
-	// synth.set(\pch, 1);
+	synth.set(\rate, rate);
 	synth.set(\speed, speed);
 	synth.set(\amp, amp * 3);
 	synth.set(\pan, pan);

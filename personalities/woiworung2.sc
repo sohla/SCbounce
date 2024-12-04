@@ -12,7 +12,7 @@ SynthDef("woiworung2", {|out,freq = 1000, amp = 0.5, att = 0.02, dec = 0.3, sus 
 
 	snd = SinOsc.ar(freq,
 		LocalIn.ar(2) * LFNoise1.ar(0.1,1),
-		LFNoise1.ar(ch.lag(0.3),6)
+		LFNoise1.ar(ch.lag(0.3),4)
 		// LFNoise1.ar(MouseY.kr(0.2,19),MouseX.kr(0.1,4.1))
 	).tanh * amp.lag(0.3);
 	2.do{

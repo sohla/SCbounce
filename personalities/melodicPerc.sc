@@ -5,24 +5,25 @@ m.accelMassFilteredDecay = 0.2;
 
 
 SynthDef(\melodicPerc, {
-    |out=0, freq=50, tension=0.1, decay=0.5, clickLevel=0.3, amp=0.5, dist = 5, dr = 0.01|
-    var pitch_contour, drum_osc, click_osc, drum_env, click_env, sig, pch;
+    |out=0, freq=50, tension=0.1, decay=0.5, clickLevel=0.3, amp=0.5, dist = 5, dr = 0.01, gate=1|
+    var pitch_contour, drum_osc, click_osc, drum_env, click_env, sig, pch, sub;
 
     // Pitch envelope
-    pitch_contour = Line.kr(1, 0, 0.002);
+    pitch_contour = Line.kr(10, 0, 0.02);
 
     // Drum oscillator
 
 	pch = freq * (1 + (pitch_contour * tension));
-	drum_osc = SinOsc.ar([pch,pch*1.004], LFNoise2.ar([4,5],7,-7),0.5);
-
+	drum_osc = SinOsc.ar([pch,pch*1.004] + 7, LFNoise2.ar([4,5],7,-7),0.5);
+	sub = SinOsc.ar(freq * 0.125,0,2);
     // Click oscillator
-    click_osc = LPF.ar(WhiteNoise.ar(1), 1500);
+    click_osc = LPF.ar(WhiteNoise.ar(1), 1100);
 
     // Drum envelope
     drum_env = EnvGen.ar(
-        Env.perc(attackTime: 0.105, releaseTime: decay * 2, curve: -4),
-        doneAction: 2
+        Env.perc(attackTime: 0.105, releaseTime: decay * 2.2, curve: -4),
+				gate,
+				doneAction: 2	
     );
 
     // Click envelope
@@ -32,6 +33,8 @@ SynthDef(\melodicPerc, {
     );
 	sig = (drum_osc * drum_env) + (click_osc * click_env);
 	sig = (sig * dist).tanh.distort;
+	sig = sig + (sub * drum_env);
+
     // Mix and output
     Out.ar(out, Pan2.ar(sig,0,amp))
 }).add;
@@ -42,11 +45,14 @@ SynthDef(\melodicPerc, {
 		Pbind(
 			\instrument, \melodicPerc,
 			\scale, Scale.major,
-			\octave, Pseq([3,4,5], inf),
+			\octave, Pxrand([3,4,5,6], inf),
 			// \note, Pseq([0,1,5,4,-2,5,7,8,4,-2].stutter(23), inf),
-			\note, Pseq([7,4,4,2,2,0,-1,-1,-3,-5,-5].stutter(32), inf),
+			\note, Pseq(
+				[7,4,4,2,2,0,-1,-1,-3,-5,-5].stutter(28) ++
+				[7,9,4,4,2,0,-1,0,2,-3,2].stutter(28)
+				, inf),
 			\legato, 1,
-			\amp, Pwhite(0.1,0.2, inf)*0.22,
+			\amp, Pwhite(0.1,0.2, inf)*0.12,
 			// \func, Pfunc({|e| ~onEvent.(e)}),
 			\args, #[]
 		);

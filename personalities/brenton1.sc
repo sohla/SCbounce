@@ -35,7 +35,14 @@ SynthDef(\stereoSampler1, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, fr
 				\decay, 0.2,
 				\sustain,0.1,
 				\release,0.2,
-				\rate, Pseq([0,1,4,5,7,8,7,5,4,5,4,1,4,1,0,0].stutter(4).midiratio, inf),
+				\rate, Pseq(
+					(
+						[0,1,4,5,7,8,7,5,4,5,4,1,4,1,0,0].stutter(4)
+						++ [0,1,4,5,7,8,7,5,4,5,4,1,4,1,0,0].stutter(4)
+						++ [12,10,8,12,10,7,5,4,5,8,7,5,4,1,0,0].stutter(4)
+						++ [12,10,8,12,10,7,5,5,4,1,5,4,1,4,1,0].stutter(4)
+					
+					).midiratio, inf),
 				// \dur, Pseq([0.25], inf),
 				\args, #[],
 			)
@@ -60,7 +67,7 @@ SynthDef(\stereoSampler1, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, fr
 	if(amp < 0.07, {amp = 0});
 
 	Pdef(m.ptn).set(\dur, 0.2);
-	Pdef(m.ptn).set(\amp, amp * 0.8);
+	Pdef(m.ptn).set(\amp, amp * 0.6);
  	Pdef(m.ptn).set(\start, start.linlin(0,1,0,1));
 
 };

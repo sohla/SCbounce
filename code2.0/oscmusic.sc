@@ -943,7 +943,9 @@
 
 	//Server.local.options.outDevice = ServerOptions.devices[
 	//	ServerOptions.devices.indexOfEqual("SERIES 208i")];
-
+	
+	Server.local.options.memSize = 8192 * 2;
+	
 	s.waitForBoot({
 		// MIDIClient.init;
 		MIDIIn.connectAll;

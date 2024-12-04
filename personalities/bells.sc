@@ -102,7 +102,7 @@ SynthDef(\bambooComplex, {
     env = EnvGen.kr(
         Env.perc(
             att,
-            rel * bambooMoisture.linlin(0, 1, 0.8, 0.2),
+            rel * bambooMoisture.linlin(0, 1, 0.8, 1.2),
             curve: -4
         ),
         doneAction: 2
@@ -139,12 +139,12 @@ SynthDef(\bambooComplex, {
 ~next = {|d|
 
 	var move = m.accelMassFiltered.linlin(0,3,0,1);
-	var att = m.accelMassFiltered.linexp(0,2.5,0.7,0.001);
+	var att = m.accelMassFiltered.linexp(0,2.5,0.2,0.001);
 	var amp = m.accelMassFiltered.linexp(0,2.5,0.08,1);
 	var noteIndex = m.accelMassFiltered.linlin(0,2,0.0001,notes.size).floor;
 	var space = m.accelMassFiltered.linlin(0,2.5,0.25,0.08);
 	if(noteIndex>=notes.size,{noteIndex=notes.size-1});
-	if(move > 0.22, {
+	if(move > 0.04, {
 		if(TempoClock.beats > (lastTime + space),{
 			lastTime = TempoClock.beats;
 			// notes = notes.rotate(-1);
