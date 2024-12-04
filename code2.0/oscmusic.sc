@@ -944,8 +944,12 @@
 	//Server.local.options.outDevice = ServerOptions.devices[
 	//	ServerOptions.devices.indexOfEqual("SERIES 208i")];
 	
+	// attempt to imrpove stability
 	Server.local.options.memSize = 8192 * 2;
-	
+	//>: nano ~/.jackdrc
+	//>: /usr/bin/jackd -dalsa -dhw:Device -r44100 -p128 -n3
+
+
 	s.waitForBoot({
 		// MIDIClient.init;
 		MIDIIn.connectAll;
