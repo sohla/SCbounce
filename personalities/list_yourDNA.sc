@@ -11,14 +11,14 @@
 		"silence",
 
 		//2 wind l
-		"2. Start",
+		"2. Start",//7
 		"rain2",
 		"silence",
 		"arialOstinato",
 		"silence",
 
 		//3 matt
-		"3. Start",
+		"3. Start",//12
 		"funMove2",
 		"funBass",
 		"funMove3",
@@ -29,7 +29,7 @@
 		"silence",
 		
 		//4 stick
-		"4. Start",
+		"4. Start",//21
 		"thunder",
 		"silence",
 		"funMove1",
@@ -39,7 +39,7 @@
 
 	
 		//5 Animal 1
-		"5. Start",
+		"5. Start",//28
 		"treeWind",
 		"silence",
 		"quackQuack",
@@ -48,7 +48,7 @@
 		"silence",
 
 		//6 Animal 2
-		"6. Start",
+		"6. Start",//35
 		"wingChimes1",
 		"silence",
 		"animalMat",
@@ -58,7 +58,7 @@
 
 
 		//7 BALL
-		"7. Start",
+		"7. Start",//42
 		"magicWand",
 		"silence",
 		"heatherLaugh1",
@@ -72,7 +72,7 @@
 		"silence",
 
 		//8 wind s2
-		"8. Start",
+		"8. Start",//54
 		"wind1",
 		"silence",
 		"sheet2",
@@ -81,7 +81,7 @@
 		"silence",
 
 		//11 caz
-		"11. Start",
+		"11. Start",//61
 		"chicken1",
 		"chicken2",
 		"silence",
@@ -89,7 +89,7 @@
 		"silence",
 
 		//12 james
-		"12. Start",
+		"12. Start",//67
 		"frog1",
 		"frog2",
 		"silence",
