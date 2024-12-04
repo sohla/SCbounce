@@ -6,11 +6,11 @@
 	// var personalityDir = "~/Develop/SuperCollider/Projects/scbounce/personalities/"; //laptop
 	//var personalityDir = "~/Develop/SuperCollider/oscMusic/personalities/"; //mac mini cabin
 
-	// var defaultPersonality = "1. Start";
-	// var defaultList = "list_yourDNA.sc";
-
 	var defaultPersonality = "1. Start";
-	var defaultList = "list_brenton.sc";
+	var defaultList = "list_yourDNA.sc";
+
+	// var defaultPersonality = "1. Start";
+	// var defaultList = "list_brenton.sc";
 
 	//var oscMessageTag  = "CombinedDataPacket";
 	var oscMessageTag  = "IMUFusedData";
@@ -587,15 +587,13 @@
 		contentView.layout.add(nil);
 
 		// hack in some MIDI foot control
-		// {
-		if(d.did < 3,{ 
-			MIDIFunc.cc({{decButton.valueAction_(1)}.defer}, 3);
-			MIDIFunc.cc({{incButton.valueAction_(1)}.defer}, 4);
-		},{
-			MIDIFunc.cc({{decButton.valueAction_(1)}.defer}, 1);
-			MIDIFunc.cc({{incButton.valueAction_(1)}.defer}, 2);
-		});
-		// }.defer;
+		// if(d.did < 3,{ 
+		// 	MIDIFunc.cc({{decButton.valueAction_(1)}.defer}, 3);
+		// 	MIDIFunc.cc({{incButton.valueAction_(1)}.defer}, 4);
+		// },{
+		// 	MIDIFunc.cc({{decButton.valueAction_(1)}.defer}, 1);
+		// 	MIDIFunc.cc({{incButton.valueAction_(1)}.defer}, 2);
+		// });
 	};
 
 	//------------------------------------------------------------
@@ -951,8 +949,9 @@
 
 
 	s.waitForBoot({
-		// MIDIClient.init;
-		MIDIIn.connectAll;
+
+		// MIDIIn.connectAll;
+
 		startup.();
 		buildUI.();
 		startOSCListening.();
