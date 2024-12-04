@@ -62,6 +62,8 @@
 	var listenersProto = (
 		\airware:nil,
 		\battery:nil,
+		\inc:nil,
+		\dec:nil
 	);
 
 
@@ -398,6 +400,7 @@
 
 	addDeviceView = { |view, d|
 
+		var address = NetAddr.new(d.ip, d.port);
 		var header, dataView;
 		var va,vb,vc;
 		var stackView, stackLayout;
@@ -586,6 +589,7 @@
 
 		contentView.layout.add(nil);
 
+
 		// hack in some MIDI foot control
 		// if(d.did < 3,{ 
 		// 	MIDIFunc.cc({{decButton.valueAction_(1)}.defer}, 3);
@@ -594,6 +598,25 @@
 		// 	MIDIFunc.cc({{decButton.valueAction_(1)}.defer}, 1);
 		// 	MIDIFunc.cc({{incButton.valueAction_(1)}.defer}, 2);
 		// });
+
+		// hack in OSC control
+		// [d.ip, d.port].postln;
+		// d.listeners.inc = OSCFunc({ |msg, time, addr, recvPort|
+		// 		var cmd = "192.168." ++ msg[1] ++ "." ++ msg[2];
+		// 		if(cmd == d.ip,{
+		// 			("["++d.ip++"] : inc").postln;
+		// 			{incButton.valueAction_(1)}.defer;
+		// 		});	
+		// }, "/oscmusic/inc");
+
+		d.listeners.inc = OSCFunc({ |msg, time, addr, recvPort|
+				var cmd = "192.168." ++ msg[1] ++ "." ++ msg[2];
+				if(cmd == d.ip,{
+					("["++d.ip++"] : patch change to "++msg[3]).postln;
+					{personalityMenu.valueAction_(msg[3].asInteger)}.defer;
+				});	
+		}, "/oscmusic/patch");
+
 	};
 
 	//------------------------------------------------------------
