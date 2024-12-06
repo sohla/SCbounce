@@ -11,6 +11,8 @@
 		"metal1",
 		"gendy1",
 		"silence",
+		"pluck1",
+		"silence",
 
 		"2. Start",
 		"melodicPerc",
@@ -23,6 +25,8 @@
 		"metal2",
 		"gendy2",
 		"silence",
+		"pluck2",
+		"silence",
 
 		"3. Start",
 		"sheet1",
@@ -33,7 +37,7 @@
 		"drumkit2",
 		"silence",
 		"inABottle",
-		"silence",
+		"metal2",
 
 		"4. Start",
 		"sheet2",
@@ -44,7 +48,7 @@
 		"drumkit3",
 		"silence",
 		"inABottle",
-		"silence"
+		"metal1",
 
 
 	]

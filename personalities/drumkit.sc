@@ -1,6 +1,6 @@
 var m = ~model;
 var bi = 0;
-var dur = 0.14`;
+var dur = 0.14 ;
 ~buffers;
 m.accelMassFilteredAttack = 0.99;
 m.accelMassFilteredDecay = 0.9;

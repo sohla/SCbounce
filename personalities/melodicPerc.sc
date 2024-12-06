@@ -21,7 +21,7 @@ SynthDef(\melodicPerc, {
 
     // Drum envelope
     drum_env = EnvGen.ar(
-        Env.perc(attackTime: 0.105, releaseTime: decay * 2.2, curve: -4),
+        Env.perc(attackTime: 0.105, releaseTime: decay, curve: -4),
 				gate,
 				doneAction: 2	
     );
@@ -34,7 +34,6 @@ SynthDef(\melodicPerc, {
 	sig = (drum_osc * drum_env) + (click_osc * click_env);
 	sig = (sig * dist).tanh.distort;
 	sig = sig + (sub * drum_env);
-
     // Mix and output
     Out.ar(out, Pan2.ar(sig,0,amp))
 }).add;

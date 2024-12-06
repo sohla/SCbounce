@@ -87,17 +87,6 @@ SynthDef(\bambooComplex, {
     });
 
     // Additional tube resonance
-    // bodyResonance = bodyResonance + (
-    //     DynKlank.ar(
-    //         `[
-    //             freqs * [1, 1.01],  // Slight detuning
-    //             amps * 0.1,
-    //             times * 1.2
-    //         ],
-    //         exciter * 0.3
-    //     ).dup
-    // );
-
     // Overall envelope
     env = EnvGen.kr(
         Env.perc(

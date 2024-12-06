@@ -1,12 +1,13 @@
 var m = ~model;
 var synth;
+var notes = [130,170,210,180,110];
 
 m.accelMassFilteredAttack = 0.5;
 m.accelMassFilteredDecay = 0.9;
 
 //------------------------------------------------------------
 SynthDef(\pluck2, { |out=0, amp=0, pch=30, frq=30, gate=0 |
-	var env = EnvGen.ar(Env.asr(0.1,1.0,0.3), gate, doneAction:0);
+	var env = EnvGen.ar(Env.asr(0.1,1.0,2.3), gate, doneAction:0);
 	var sig = Impulse.ar(pch.linlin(30,300,1,30));
 	var dly = Decay.ar(sig, 0.01, BrownNoise.ar(0.1));
 	var plk = Pluck.ar(WhiteNoise.ar, sig, frq.reciprocal * 0.125, 0.125 * frq.reciprocal, 8, 0.9, 0.7);
@@ -19,21 +20,22 @@ SynthDef(\pluck2, { |out=0, amp=0, pch=30, frq=30, gate=0 |
 };
 
 ~deinit = ~deinit <> {
-	synth.free;
+	synth.set(\gate,0);
 };
 
 //------------------------------------------------------------
 ~next = {|d|
 
-	var pch = 110 + (m.accelMass * 220);
-	var frq= 40 + (m.accelMassFiltered * 50);
+	var pch = notes[0] + (m.accelMass * notes[0] * 0.25);
+	var frq= 1 + (m.accelMassFiltered * 200);
 
 	synth.set(\pch,pch);
 	synth.set(\frq,frq);
-	synth.set(\amp, 0.3);
+	synth.set(\amp, 0.1);
 
-	if(m.accelMass < 0.1,{
+	if(m.accelMass < 0.6,{
 		synth.set(\gate,0)},{
+		notes = notes.rotate(-1);	
 		synth.set(\gate,1)}
 	);
 

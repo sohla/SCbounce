@@ -3,7 +3,7 @@ var synth;
 
 //------------------------------------------------------------
 SynthDef(\pluck1, { |out=0, amp=0, pch=30, frq=30, gate=0 |
-	var env = EnvGen.ar(Env.asr(0.1,1.0,0.3), gate, doneAction:0);
+	var env = EnvGen.ar(Env.asr(0.1,1.0,3.3), gate, doneAction:0);
 	var sig = Impulse.ar(pch.linlin(30,300,1,30));
 	var dly = Decay.ar(sig, 0.01, BrownNoise.ar(0.1));
 	var plk = Pluck.ar(WhiteNoise.ar, sig, frq.reciprocal, frq.reciprocal, 8, 0.9, 0.7);
@@ -17,7 +17,7 @@ SynthDef(\pluck1, { |out=0, amp=0, pch=30, frq=30, gate=0 |
 };
 
 ~deinit = ~deinit <> {
-	synth.free;
+	synth.set(\gate,0);
 };
 
 //------------------------------------------------------------
@@ -28,7 +28,7 @@ SynthDef(\pluck1, { |out=0, amp=0, pch=30, frq=30, gate=0 |
 	synth.set(\pch,pch);
 	synth.set(\frq,frq);
 
-	synth.set(\amp, 0.5);
+	synth.set(\amp, 0.4);
 
 	if(m.accelMass < 0.2,{
 		synth.set(\gate,0);

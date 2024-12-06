@@ -15,7 +15,7 @@
 	//var oscMessageTag  = "CombinedDataPacket";
 	var oscMessageTag  = "IMUFusedData";
 
-	var renderRate = 15;
+	var renderRate = 10;
 
 	// UI config
 	var windowWidth = 600, windowHeight = Window.screenBounds.height * 0.9;
