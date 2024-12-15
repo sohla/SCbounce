@@ -60,7 +60,7 @@ SynthDef(\stereoSampler1, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, fr
 ~next = {|d|
 
 	var dur = m.accelMassFiltered.linlin(0,1,0.5,0.1);
-	var start = (d.sensors.gyroEvent.x / 2pi).lincurve(0.0,1.0,0.2,0.4,-2);
+	var start = (d.sensors.gyroEvent.x / 2pi).lincurve(0.0,1.0,0.1,0.9,0);
 	var amp = m.accelMassFiltered.lincurve(0,2.5,0,1,-5);
 	var rate= m.accelMass.linlin(0,1,0,2);
 

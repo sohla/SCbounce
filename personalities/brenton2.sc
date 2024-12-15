@@ -70,7 +70,7 @@ SynthDef(\pullstretchMonoQ, {|out, amp = 1, buffer = 0, envbuf = -1, pch = 1.0, 
 //------------------------------------------------------------
 ~next = {|d|
 	var amp = m.accelMass.linlin(0,2,0.00001,1);
-	var speed= m.accelMassFiltered.lincurve(0.5,2.5,0.01,2,-2);
+	var speed= m.accelMassFiltered.lincurve(0.5,2.5,0.01,1,-2);
 	var rate = m.accelMassFiltered.linlin(0,1,0.9,1.4);
 	var pan = d.sensors.gyroEvent.z.linlin(-1,1,-1,1);
 	var pch = d.sensors.gyroEvent.x.linlin(-1,1,0,1).asInteger * 5;

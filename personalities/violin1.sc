@@ -32,7 +32,7 @@ SynthDef(\stereoSampler1, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, fr
 				\bufnum, buf,
 				\octave, Pxrand([3], inf),
 				// \note, Pxrand([33,35,37], inf),
-				\note, Pxrand([33,35].stutter(4), inf),
+				\note, Pxrand([33,38].stutter(4), inf),
 				\decay, 0.2,
 				\sustain,0.1,
 				\release,0.2,
