@@ -155,3 +155,36 @@ Synth(\jupiter8, [
     \lfoRate, 8, \lfoFilterMod, 0.4, \lfoPWMod, 0.2,
     \filterEnvAmount, 1000, \filterAttack, 0.01, \filterDecay, 0.1, \filterSustain, 0.3, \filterRelease, 0.1
 ]);
+
+
+
+(
+Pdef(\a,
+Pbind(
+    \instrument, \jupiter8,
+		\dur,0.25,
+		\note, Pseq([0,5,2,9,4], inf),
+		\octave, Pseq([2,3,4,5].stutter(2) + 2, inf),
+		\amp,0.5,
+    \osc1Waveform, 0,
+	\osc1Level, 1,
+		\osc2Waveform, 1,
+	\osc2Level, 1,
+	\osc2Tune, 0.007,
+		\osc2PulseWidth, 0.008,
+    \cutoff, 2198,
+	\resonance, 0.2,
+    \attack, 0.02,
+	\decay, 0.3,
+	\sustain, 0.3,
+	\release, 2.8,
+    \lfoRate, 10.2,
+	\lfoFilterMod, 0.9,
+	\lfoPWMod, 0.01,
+    \chorusLevel, 0.4,
+	\chorusRate, 0.1,
+	\chorusDepth, 0.007
+
+);
+).play(quant:0.1);
+)

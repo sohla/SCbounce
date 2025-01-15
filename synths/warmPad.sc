@@ -25,8 +25,8 @@ SynthDef(\warmPad, {
     }).sum;
 
     // Filter sweep
-    filt = SinOsc.kr(filtSpeed).range(filtMin, filtMax);
-    sig = RLPF.ar(sig, filt, 0.5);
+	filt = SinOsc.kr(filtSpeed).range(filtMin, filtMax);
+	sig = RLPF.ar(sig, filt, 0.5);
 
     // Chorus effect
     // Anti-aliased chorus using all-pass filter
@@ -62,21 +62,23 @@ SynthDef(\warmPad, {
 (
 Pbindef(\warmPadPattern,
     \instrument, \warmPad,
-    \dur, Pseq([1.5], inf),
+    \dur, Pseq([0.125], inf),
 	\legato, 0.5,
-	\note, Pseq([0,-3,-10,-5].stutter(4), inf),//12,11,7,5,0
+	\note, Pseq([0,-3,-10,-5].stutter(8), inf),//12,11,7,5,0
 	\root, Pseq([-3.01].stutter(8), inf),
     \scale, Scale.minor,
-	\octave, [4],
-    \atk, 1.02,
-    \rel, 1.8,
-    \filtMin, 2000,
-    \filtMax, 8000,
-    \filtSpeed, 0.1,
-    \chorusRate, 0.005,
-    \chorusDepth, 0.01,
-	\detuneAmount, Pseg(Pseq([0.0001,0.001], inf), 4, \linear),
-    \amp, 0.4
+	\octave, Pseq([2,3,4,5], inf),
+	\atk, 0.03,
+	\dcy, 0.1,
+	\sus, 0.01,
+    \rel, 0.3,
+	\filtMin, 1000,
+	\filtMax, 16300,
+	\filtSpeed, 0,
+    \chorusRate, 0.2,
+	\chorusDepth, 0.01,
+	\detuneAmount, Pseg(Pseq([0.0001,0.003], inf), 4, \linear),
+    \amp, 0.7
 ).play(quant:0.1);
 );
 
