@@ -1,9 +1,14 @@
+
 var m = ~model;
 var synth;
+
+
 m.accelMassFilteredAttack = 0.7;
 m.accelMassFilteredDecay = 0.2;
+m.rrateMassFilteredAttack = 0.99;
+m.rrateMassFilteredDecay = 0.2;
 
-
+//------------------------------------------------------------
 SynthDef(\template, {
     |out=0, gate=1, freq=111, amp=0.3|
 	var env = EnvGen.ar(Env.perc(0.001,0.2), gate, doneAction:2);
@@ -12,6 +17,7 @@ SynthDef(\template, {
 }).add;
 
 
+//------------------------------------------------------------
 ~init = ~init <> {
 	Pdef(m.ptn,
 		Pbind(
@@ -25,29 +31,21 @@ SynthDef(\template, {
 			\args, #[]
 		);
 	);
-
 	Pdef(m.ptn).play(quant:0.1);
 };
+
+//------------------------------------------------------------
 ~deinit = ~deinit <> {
 	Pdef(m.ptn).remove;
 };
 
 //------------------------------------------------------------
-// triggers
 //------------------------------------------------------------
-
-// example feeding the community
 ~onEvent = {|e|
-	if(e.root != m.com.root,{
-		// "key change".postln;
-		Pdef(m.ptn).reset;
-	});
-	Pdef(m.ptn).set(\root, m.com.root);
+	m.com.root = e.root;
 };
 
 
-//------------------------------------------------------------
-// do all the work(logic) taking data in and playing pattern/synth
 //------------------------------------------------------------
 ~next = {|d|
 
@@ -65,26 +63,16 @@ SynthDef(\template, {
 	});
 };
 
-~nextMidiOut = {|d|
-	// m.midiOut.control(m.midiChannel, 0, m.accelMassFiltered * 64 );
-};
-
-//------------------------------------------------------------
-// plot with min and max
 //------------------------------------------------------------
 ~plotMin = -1;
 ~plotMax = 1;
-
 ~plot = { |d,p|
-	// [d.sensors.rrateEvent.x, m.rrateMass * 0.1, m.accelMassFiltered * 0.5];
 	[m.accelMass * 0.1, m.accelMassFiltered.linlin(0,3,0,1)];
 	// [m.rrateMassFiltered, m.rrateMassThreshold];
 	// [m.rrateMassFiltered, m.rrateMassThreshold, m.accelMassAmp];
 	// [d.sensors.gyroEvent.x, d.sensors.gyroEvent.y, d.sensors.gyroEvent.z];
 	// [d.sensors.rrateEvent.x, d.sensors.rrateEvent.y, d.sensors.rrateEvent.z];
 	// [d.sensors.accelEvent.x, d.sensors.accelEvent.y, d.sensors.accelEvent.z];
-
-
 };
 
 

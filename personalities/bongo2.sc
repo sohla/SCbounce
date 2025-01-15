@@ -1,9 +1,11 @@
 var m = ~model;
 var synth;
+
 m.accelMassFilteredAttack = 0.7;
 m.accelMassFilteredDecay = 0.99;
 
 
+//------------------------------------------------------------
 SynthDef(\bongo2, {
     arg out=0, freq=200, amp=0.5, pan=0,
     tension=0.7,  // affects brightness/pitch bend
@@ -67,6 +69,7 @@ SynthDef(\bongo2, {
     Out.ar(out, sound);
 }).add;
 
+//------------------------------------------------------------
 ~init = ~init <> {
 
 	Pdef(m.ptn,
@@ -88,26 +91,17 @@ SynthDef(\bongo2, {
 
 	Pdef(m.ptn).play(quant:0.5);
 };
+
+//------------------------------------------------------------
 ~deinit = ~deinit <> {
 	Pdef(m.ptn).remove;
 };
 
 //------------------------------------------------------------
-// triggers
-//------------------------------------------------------------
-
-// example feeding the community
 ~onEvent = {|e|
 	m.com.root = e.root;
-	// if(e.root != m.com.root,{
-	// 	// "key change".postln;
-	// 	Pdef(m.ptn).reset;
-	// });
-	// Pdef(m.ptn).set(\root, m.com.root);
 };
 
-//------------------------------------------------------------
-// do all the work(logic) taking data in and playing pattern/synth
 //------------------------------------------------------------
 ~next = {|d|
 
@@ -127,16 +121,9 @@ SynthDef(\bongo2, {
 	});
 };
 
-~nextMidiOut = {|d|
-	// m.midiOut.control(m.midiChannel, 0, m.accelMassFiltered * 64 );
-};
-
-//------------------------------------------------------------
-// plot with min and max
 //------------------------------------------------------------
 ~plotMin = -1;
 ~plotMax = 1;
-
 ~plot = { |d,p|
 	// [d.sensors.rrateEvent.x, m.rrateMass * 0.1, m.accelMassFiltered * 0.5];
 	[m.accelMass * 0.1, m.accelMassFiltered.linlin(0,3,0,1)];

@@ -9,8 +9,11 @@
 	// var defaultPersonality = "1. Start";
 	// var defaultList = "list_yourDNA.sc";
 
-	var defaultPersonality = "1. Start";
-	var defaultList = "list_brenton.sc";
+	// var defaultPersonality = "1. Start";
+	// var defaultList = "list_brenton.sc";
+
+	var defaultPersonality = "template2";
+	var defaultList = "list_workshop1.sc";
 
 	//var oscMessageTag  = "CombinedDataPacket";
 	var oscMessageTag  = "IMUFusedData";
@@ -98,6 +101,64 @@
 		\decPersonality: {};
 
 	);
+/*
+device
+	name
+	ip
+	port
+	enabled
+
+sensor data
+
+IMU
+	accelEvent
+	accelMass
+	rrateEvent
+	rrateMass
+	gyroEvent
+	gyroMass
+	quatEvent
+	ampValue
+	rotateEvent
+
+BUTTON
+	pressEvent
+	pressMass
+	pressValue
+
+ROTARY
+	rotateEvent
+	rotateMass
+	rotateValue
+
+SLIDER
+	slideEvent
+	slideMass
+	slideValue
+
+CAP TOUCH
+	touchEvent
+	touchMass
+	touchValue
+
+BATTERY
+	volts
+	charge
+
+LED
+	color
+	brightness
+
+FLEX
+	flexEvent
+	flexMass
+	flexValue
+
+PRESSURE
+
+
+*/
+
 
 	//------------------------------------------------------------
 	//
@@ -270,11 +331,11 @@
 	//
 	//------------------------------------------------------------
 	shutdown = {
-		
+
 
 		stopOSCListening.();
 		Routine{
-			MIDIdef.freeAll;   
+			MIDIdef.freeAll;
 			// everything called in the correct order but leaves synths hanging!?!
 			s.sync;
 			devices.keysValuesDo({|k,d|
@@ -301,7 +362,7 @@
 
 		MIDIdef("incP"++d.did).free;
 		MIDIdef("decP"++d.did).free;
-		
+
 		d.procRout.stop();
 
 		d.procRout.free;
@@ -334,7 +395,7 @@
 		d.port = port;
 		d.did = id;
 
-		
+
 		devices.put(port,d);
 		reloadPersonality.(d);
 		//addDeviceView.(contentView, d);
@@ -591,7 +652,7 @@
 
 
 		// hack in some MIDI foot control
-		if(d.did < 3,{ 
+		if(d.did < 3,{
 			MIDIFunc.cc({{decButton.valueAction_(1)}.defer}, 3);
 			MIDIFunc.cc({{incButton.valueAction_(1)}.defer}, 4);
 		},{
@@ -605,7 +666,7 @@
 		// 		if(cmd == d.ip,{
 		// 			("["++d.ip++"] : patch change to "++msg[3]).postln;
 		// 			{personalityMenu.valueAction_(msg[3].asInteger)}.defer;
-		// 		});	
+		// 		});
 		// }, "/oscmusic/patch");
 
 	};
@@ -937,9 +998,9 @@
 			.action_({
 					("sudo systemctl restart NetworkManager").unixCmdGetStdOut();
 			});
-		
+
 		// s.plotTreeView(parent:contentView);
-	
+
 
 	};
 	//------------------------------------------------------------
@@ -955,7 +1016,7 @@
 
 	//Server.local.options.outDevice = ServerOptions.devices[
 	//	ServerOptions.devices.indexOfEqual("SERIES 208i")];
-	
+
 	// attempt to imrpove stability
 	Server.local.options.memSize = 8192 * 2;
 	//>: nano ~/.jackdrc
@@ -972,6 +1033,6 @@
 		// s.plotTree;
   	// s.meter;
 	});
-	
+
 	)
 	
