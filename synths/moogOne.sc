@@ -56,20 +56,17 @@ SynthDef(\moogModel1, {
 
 // 1. Classic Bass
 (
-~classicBass = {
     Synth(\moogModel1, [
-        \freq, 55,
+        \freq, 255,
         \osc1Waveform, 1, \osc1Amp, 1,
         \osc2Waveform, 1, \osc2Amp, 0.5, \osc2Detune, 0.01,
         \cutoff, 800, \resonance, 0.3,
         \attack, 0.01, \decay, 0.1, \sustain, 0.8, \release, 0.5,
         \filterEnvAmount, 2000, \filterAttack, 0.01, \filterDecay, 0.1, \filterSustain, 0.2, \filterRelease, 0.3
     ]);
-};
 )
 // 2. Sweeping Lead
 (
-~sweepingLead = {
     Synth(\moogModel1, [
         \freq, 440,
         \osc1Waveform, 2, \osc1Amp, 1,
@@ -78,12 +75,10 @@ SynthDef(\moogModel1, {
         \attack, 0.05, \decay, 0.2, \sustain, 0.6, \release, 0.8,
         \lfoRate, 0.5, \lfoDepth, 1, \lfoDestination, 1
     ]);
-};
 )
 
 // 3. Dirty Growl
 (
-~dirtyGrowl = {
     Synth(\moogModel1, [
         \freq, 110,
         \osc1Waveform, 1, \osc1Amp, 1,
@@ -94,12 +89,10 @@ SynthDef(\moogModel1, {
         \attack, 0.01, \decay, 0.1, \sustain, 0.8, \release, 0.3,
         \filterEnvAmount, 3000, \filterAttack, 0.01, \filterDecay, 0.2, \filterSustain, 0.4, \filterRelease, 0.2
     ]);
-};
 )
 
 // 4. Soft Pad
 (
-~softPad = {
     Synth(\moogModel1, [
         \freq, 220,
         \osc1Waveform, 0, \osc1Amp, 1,
@@ -109,12 +102,10 @@ SynthDef(\moogModel1, {
         \attack, 0.5, \decay, 0.3, \sustain, 0.7, \release, 1.5,
         \lfoRate, 0.2, \lfoDepth, 0.3, \lfoDestination, 1
     ]);
-};
 )
 
 // 5. Percussive Pluck
 (
-~percussivePluck = {
     Synth(\moogModel1, [
         \freq, 330,
         \osc1Waveform, 2, \osc1Amp, 1,
@@ -123,12 +114,10 @@ SynthDef(\moogModel1, {
         \attack, 0.001, \decay, 0.1, \sustain, 0.2, \release, 0.2,
         \filterEnvAmount, 5000, \filterAttack, 0.001, \filterDecay, 0.05, \filterSustain, 0.1, \filterRelease, 0.1
     ]);
-};
 )
 
 // 6. Modulated Texture
 (
-~modulatedTexture = {
     Synth(\moogModel1, [
         \freq, 165,
         \osc1Waveform, 1, \osc1Amp, 1,
@@ -139,12 +128,10 @@ SynthDef(\moogModel1, {
         \lfoRate, 4, \lfoDepth, 0.5, \lfoDestination, 1,
         \filterEnvAmount, 2000, \filterAttack, 0.1, \filterDecay, 0.2, \filterSustain, 0.5, \filterRelease, 0.3
     ]);
-};
 )
 
 // 7. Screaming Lead
 (
-~screamingLead = {
     Synth(\moogModel1, [
         \freq, 660,
         \osc1Waveform, 1, \osc1Amp, 1,
@@ -153,12 +140,10 @@ SynthDef(\moogModel1, {
         \attack, 0.05, \decay, 0.1, \sustain, 0.8, \release, 0.3,
         \filterEnvAmount, 3000, \filterAttack, 0.01, \filterDecay, 0.1, \filterSustain, 0.7, \filterRelease, 0.2
     ]);
-};
 )
 
 // 8. Wobble Bass
 (
-~wobbleBass = {
     Synth(\moogModel1, [
         \freq, 55,
         \osc1Waveform, 1, \osc1Amp, 1,
@@ -168,12 +153,11 @@ SynthDef(\moogModel1, {
         \lfoRate, 5, \lfoDepth, 1, \lfoDestination, 1,
         \filterEnvAmount, 2000, \filterAttack, 0.01, \filterDecay, 0.1, \filterSustain, 0.5, \filterRelease, 0.1
     ]);
-};
+
 )
 
 // 9. Ambient Drone
 (
-~ambientDrone = {
     Synth(\moogModel1, [
         \freq, 110,
         \osc1Waveform, 0, \osc1Amp, 1,
@@ -184,12 +168,10 @@ SynthDef(\moogModel1, {
         \attack, 2, \decay, 1, \sustain, 0.8, \release, 3,
         \lfoRate, 0.1, \lfoDepth, 0.3, \lfoDestination, 1
     ]);
-};
 )
 
 // 10. Noisy FX
 (
-~noisyFX = {
     Synth(\moogModel1, [
         \freq, 220,
         \osc1Waveform, 2, \osc1Amp, 0.5,
@@ -200,5 +182,4 @@ SynthDef(\moogModel1, {
         \lfoRate, 10, \lfoDepth, 1, \lfoDestination, 1,
         \filterEnvAmount, 4000, \filterAttack, 0.01, \filterDecay, 0.1, \filterSustain, 0.3, \filterRelease, 0.2
     ]);
-};
 )

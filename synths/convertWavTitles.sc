@@ -3,7 +3,7 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, start=0, pan=0, freq=
     attack=0.01, decay=0.1, sustain=0.3, release=0.2, gate=1,cutoff=20000, rq=1|
 	var lr = rate * BufRateScale.kr(bufnum);// * (freq/440.0);
     var env = EnvGen.kr(Env.new([0, 1, 1, 0], [attack, sustain, release]), doneAction: 2);
-	var sig = PlayBuf.ar(2, bufnum, rate: [lr, lr * 1.003], startPos: start * BufFrames.kr(bufnum), loop: 0);
+	var sig = PlayBuf.ar(2, bufnum, rate: [lr, lr * 1.0017], startPos: start * BufFrames.kr(bufnum), loop: 0);
 	// sig = RLPF.ar(sig, cutoff, rq);
     sig = Balance2.ar(sig[0], sig[1], pan, amp * env);
     Out.ar(out, sig);
@@ -13,8 +13,10 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, start=0, pan=0, freq=
 
 (
 	var result;
-	var folder = PathName("/Library/Application\ Support/GarageBand/Instrument\ Library/Sampler/Sampler\ Files/Harp/Harp_ES_mf");
-// var folder = PathName("/Library/Application\ Support/GarageBand/Instrument\ Library/Sampler/Sampler\ Files/Violas/Violas_pizz_f");
+var folder = PathName("/Users/soh_la/Downloads/yourDNASamples/harp");
+// var folder = PathName("/Library/Application\ Support/GarageBand/Instrument\ Library/Sampler/Sampler\ Files/Glockenspiel/Violas_pizz_f");
+// var folder = PathName("/Library/Application\ Support/GarageBand/Instrument\ Library/Sampler/Sampler\ Files/Glockenspiel/Glockenspiel_Pla_mf1");
+
 
 var noteToMidi = { |noteName|
 	    var pattern = "([A-G](#|b)?)([0-9])";
@@ -49,7 +51,7 @@ var noteToMidi = { |noteName|
 	};
 
 Event.addEventType(\customEvent, {|e|
-	~note = ~note + ~root;
+	~note = ~note + ~root + (12 * ~octave);
 	if(~note.odd,{
 		~bufnum = findSampleBuffer.(~note-1);
 	    ~rate = 1.midiratio;
@@ -60,6 +62,7 @@ Event.addEventType(\customEvent, {|e|
     ~instrument = \stereoSampler;
     ~type = \note;
     currentEnvironment.play;
+	~bufnum.postln;
 });
 
 Pdef(\tester,
@@ -68,12 +71,10 @@ Pdef(\tester,
 		\instrument, \stereoSampler,
 		\dur, 0.5/3,
 		\legato, 3,
-		// \note, Pn(Pseries(60,2, 20), inf),
-		// \root, Pseq([0,-1].stutter(20), inf),
-		\octave, 5,
-		\root, Pseq([0,3,-6,-3].stutter(60)-2, inf),
-	    \note, Pseq([-5,0,4,-5,0,4,-5,0,4,-5,0,4,-3,2,6,-3,2,6,-3,2,6,-3,2,6,-3,2,6,-3,2,6]+72, inf),
-		\release,1,
+		\root, -14,//Pseq([0,3,-6,-3].stutter(60)-14, inf),
+		\octave, Pseq([6,7,8,9].stutter(2), inf) ,
+		\note, Pseq([-5,0,4,-5,0,4,-5,0,4,-5,0,4,-3,2,6,-3,2,6,-3,2,6,-3,2,6,-3,2,6,-3,2,6], inf),
+		\release,3,
 		)
 	).play;
 )
