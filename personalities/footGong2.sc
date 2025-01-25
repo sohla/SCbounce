@@ -2,7 +2,7 @@ var m = ~model;
 var synth;
 var lastTime=0;
 var notes = [0];
-var roots = [0,3].dupEach(12);
+var roots = [0,3,2,7,-2].dupEach(4);
 // var notes = [0,1,4,5,7,8,11,12,14] + 24;
 // var roots = [0].dupEach(18);
 var currentNote = notes[0];
@@ -158,7 +158,7 @@ SynthDef(\largeGong2, {
 	var att = m.accelMassFiltered.linexp(0,2.5,0.1,0.0001);
 
 	if(move > 0.22, {
-		if(TempoClock.beats > (lastTime + 0.4),{
+		if(TempoClock.beats > (lastTime + 0.2),{
 			lastTime = TempoClock.beats;
 			notes = notes.rotate(-1);
 			currentNote = notes[0];
@@ -168,12 +168,12 @@ SynthDef(\largeGong2, {
 			synth = Synth(\largeGong2, [
 				\freq, (52 + roots[0]).midicps,
 				\gate, 1,
-				\amp, 0.05,
+				\amp, 0.03,
 				\attackTime,att,
-    			\strikeForce, size,    // Impact intensity
+    			\strikeForce, size*10,    // Impact intensity
     			\shimmerAmount, 0.1,  // Amount of characteristic gong wobble
-				\metallic, metal,       // Metallic character
-    			\size, size,          // Size affect harmonics and decay
+				\metallic, metal*4,       // Metallic character
+    			\size, size*5,          // Size affect harmonics and decay
 
 			]);
 			synth.server.sendBundle(0.3,[\n_set, synth.nodeID, \gate, 0]);
