@@ -102,3 +102,6 @@ Pbindef(\warmPadPattern2,
 	\amp, [0.1,0.05] * 0.2
 ).play(quant:0.1);
 );
+
+
+// .min(7).max(3)
