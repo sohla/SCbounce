@@ -37,20 +37,18 @@ ServerMeter.new(s, 24, 24);
 (
 
 ServerOptions.devices
-
 o = Server.local.options;
+// o.inDevice = ServerOptions.devices[ServerOptions.devices.indexOfEqual("Soundflower (2ch)")];
+// o.numInputBusChannels = 2;
 
-o.inDevice = ServerOptions.devices[ServerOptions.devices.indexOfEqual("Soundflower (2ch)")];
-o.numInputBusChannels = 2;
-
-o.outDevice = ServerOptions.devices[ServerOptions.devices.indexOfEqual("MOTU UltraLite")];
+o.outDevice = ServerOptions.devices[ServerOptions.devices.indexOfEqual("Soundflower (2ch)")];
+o.outDevice = ServerOptions.devices[ServerOptions.devices.indexOfEqual("SERIES 208i")];
 o.numOutputBusChannels = 2;
 
 Server.default.options.memSize = 8192;//2 ** 19;
 s.reboot
 s.quit
 s.boot
-
 
 
 )
