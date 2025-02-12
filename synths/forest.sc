@@ -161,11 +161,11 @@ Pbindef(\forestScene).stop;
 (
 // Or create a single instance with specific settings:
 ~forest = Synth(\forestBreeze, [
-    \breezeAmp, 0.3,
-    \leavesAmp, 0.2,
-    \treeAmp, 0.15,
-    \breezeCutoff, 400,
-    \leavesDensity, 1.0,
+    \breezeAmp, 0.2,
+    \leavesAmp, 0.3,
+    \treeAmp, 0.35,
+    \breezeCutoff, 500,
+    \leavesDensity, 0.9,
     \treeSpeed, 0.1
 ]);
 )

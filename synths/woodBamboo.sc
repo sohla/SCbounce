@@ -17,7 +17,7 @@ var freqs, amps, times;
        `[freq, amps, times],
         exciter
     );
-    noiseSig = LPF.ar(PinkNoise.ar,3400) * EnvGen.ar(Env.perc(0.001, 0.01));
+    noiseSig = LPF.ar(PinkNoise.ar,9400) * EnvGen.ar(Env.perc(0.01, 0.01));
     output = (resonator * ringMix) + (noiseSig * noiseMix);
     output = output * EnvGen.ar(Env.perc(0.01, ringTime * 2), doneAction: 2);
     Out.ar(out, Pan2.ar(output, 0, amp));
@@ -38,9 +38,10 @@ Pbindef(\wba,
     \instrument, \woodBamboo,
     \dur, Pseq([0.25, 0.25, 0.25, 0.25, 0.25, 0.5] * 0.5, inf),
     \note, Prand([0,-12,-24,4,9,14,19] * 1 , inf),
+	\root, Pseq([0,3,-4,1].stutter(24), inf),//4
     \ringTime, Pwhite(0.1, 1.2),
     \ringMix, Pwhite(0.6, 0.8),
-    \noiseMix, Pwhite(0.02, 0.09),
+    \noiseMix, Pwhite(0.2, 0.9),
     \amp, Pwhite(0.7, 0.9)
 ).play;
 )

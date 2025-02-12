@@ -77,8 +77,69 @@ Pbind(
 ).play(quant:0.1);
 )
 
-s.plotTree
 
-s.meter
 
-Saw
+
+Synth(\miniMoog, [
+    \freq, 110,  // Low A
+    \amp, 0.6,
+    \attack, 0.2,
+    \decay, 0.3,
+    \sustain, 0.8,
+    \release, 0.5,
+    \filterFreq, 600,
+    \fq, 0.7,
+    \pan, -0.2
+]);
+
+
+Synth(\miniMoog, [
+    \freq, 880,  // High A
+    \amp, 0.4,
+    \attack, 0.05,
+    \decay, 0.1,
+    \sustain, 0.6,
+    \release, 0.2,
+    \filterFreq, 2000,
+    \fq, 0.3,
+    \pan, 0.3
+]);
+
+Synth(\miniMoog, [
+    \freq, 220,  // A3
+    \amp, 0.45,
+    \attack, 0.8,
+    \decay, 0.5,
+    \sustain, 0.9,
+    \release, 1.2,
+    \filterFreq, 1200,
+    \fq, 0.4,
+    \pan, 0
+]);
+
+
+Synth(\miniMoog, [
+    \freq, 440,  // A4
+    \amp, 0.55,
+    \attack, 0.01,
+    \decay, 0.15,
+    \sustain, 0.3,
+    \release, 0.1,
+    \filterFreq, 3000,
+    \fq, 0.6,
+    \pan, -0.4
+]);
+
+
+
+Synth(\miniMoog, [
+    \freq, 55,   // Low A1
+    \amp, 0.7,
+    \attack, 1.5,
+    \decay, 0.8,
+    \sustain, 1.0,
+    \release, 2.0,
+    \filterFreq, 400,
+    \fq, 0.8,
+    \pan, 0.1
+]);
