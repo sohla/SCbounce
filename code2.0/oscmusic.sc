@@ -12,7 +12,7 @@
 	// var defaultPersonality = "1. Start";
 	// var defaultList = "list_brenton.sc";
 
-	var defaultPersonality = "template2";
+	var defaultPersonality = "silence";
 	var defaultList = "list_workshop1.sc";
 
 	//var oscMessageTag  = "CombinedDataPacket";
@@ -754,7 +754,7 @@ PRESSURE
 		.scale_(160)
 		.background_(Color.gray(0.25))
 		.perspective_(0)
-		.transforms_([Canvas3D.mTranslate(-0.6,0,0)])
+		.transforms_([Canvas3D.mRotateZ(pi/2),Canvas3D.mTranslate(-0.6,0,0)])
 		.distance_(3.5);
 
 		graph1.add(cube = Canvas3DItem.cube()
@@ -884,6 +884,11 @@ PRESSURE
 					// take quaternion and convert to ueler angles
 					qe = devices.at(addr.port+i).sensors.quatEvent;
 					q = Quaternion.new(qe.w,qe.x,qe.y,qe.z);
+					// q = Quaternion.new(qe.w,qe.x,qe.z,qe.y);
+					// q = Quaternion.new(qe.w,qe.y,qe.z,qe.x);
+					// q = Quaternion.new(qe.w,qe.y,qe.x,qe.z);
+					// q = Quaternion.new(qe.w,qe.z,qe.x,qe.y);
+					// q = Quaternion.new(qe.w,qe.z,qe.y,qe.y);
 					r = q.asEuler;
 					tr = [r[0],r[1],r[2]];
 
@@ -893,15 +898,15 @@ PRESSURE
 						\z:tr[1].asFloat);
 
 					// normalize gyro from 0 to pi
-					rx = tr[2];
-					ry = tr[0];
-					rz = tr[1] * (pi.half + pi.half.half);
+					rx = tr[2].asFloat;
+					ry = tr[0].asFloat;
+					rz = tr[1].asFloat * (pi.half + pi.half.half);
 
 					if(rx <= 0, { rx = pi - (pi + rx)});
 					if(ry <= 0, { ry = pi - (pi + ry)});
 					if(rz <= 0, { rz = pi - (pi + rz)});
 
-					// rx,ry,rz / pi = 0-1 ie. normalized
+					// rx,ry,rz / pi = 0-1 ie. normalized ?? not sure this works
 					devices.at(addr.port+i).sensors.rotateEvent = (
 						\x:rx/pi,
 						\y:ry/pi,

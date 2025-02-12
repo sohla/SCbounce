@@ -54,7 +54,7 @@ var m = ~model;
 
 	Pdef(m.ptn).set(\dur, dur);
 	Pdef(m.ptn).set(\rq, rq);
-	Pdef(m.ptn).set(\amp, amp);
+	Pdef(m.ptn).set(\amp, amp*4.5);
 
 	// if(part == 0, { Pdef(m.ptn).set(\note, Prand([0], inf)) });
 	// if(part == 1, { Pdef(m.ptn).set(\note, Prand([0,7], inf)) });

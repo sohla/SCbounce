@@ -58,7 +58,7 @@ SynthDef(\sheet3, {
 	e = e.linexp(0,1,400,1200);
 	if(a<0.03,{a=0});
 	if(a>0.9,{a=0.9});
-	synth.set(\amp, a * 2);
+	synth.set(\amp, a * 1.3);
 	synth.set(\my, b);
 	synth.set(\mx, r);
 	synth.set(\filterFreq, e);

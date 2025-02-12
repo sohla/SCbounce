@@ -156,8 +156,8 @@ SynthDef(\largeGong, {
 	var metal = m.accelMassFiltered.linlin(0,2.5,0.01,2);
 	var size = m.accelMassFiltered.linlin(0,2.5,0.1,3);
 
-	if(move > 0.22, {
-		if(TempoClock.beats > (lastTime + 0.5),{
+	if(move > 0.3, {
+		if(TempoClock.beats > (lastTime + 0.4),{
 			lastTime = TempoClock.beats;
 			notes = notes.rotate(-1);
 			currentNote = notes[0];
@@ -165,13 +165,13 @@ SynthDef(\largeGong, {
 			currentRoot = roots[0];
 			m.com.root = currentRoot;
 			synth = Synth(\largeGong, [
-				\freq, 33.midicps,
+				\freq, 43.midicps,
 				\gate, 1,
-				\amp, 0.07,
-    			\strikeForce, size,    // Impact intensity
+				\amp, 0.13,
+    			\strikeForce, size *5,    // Impact intensity
     			\shimmerAmount, 0.1,  // Amount of characteristic gong wobble
-				\metallic, metal,       // Metallic character
-    			\size, size,          // Size affect harmonics and decay
+				\metallic, metal*5,       // Metallic character
+    			\size, size*5,          // Size affect harmonics and decay
 
 			]);
 			synth.server.sendBundle(0.3,[\n_set, synth.nodeID, \gate, 0]);

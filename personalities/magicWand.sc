@@ -1,5 +1,9 @@
 var m = ~model;
 
+m.accelMassFilteredAttack = 0.99;
+m.accelMassFilteredDecay = 0.5;
+m.rrateMassFilteredAttack = 0.9;
+m.rrateMassFilteredDecay = 0.7;
 
 SynthDef(\glockenspiel, {
     |freq = 440, amp = 0.5, decay = 1, pan = 0, hardness = 1, mix=0.5, room=0.5|
@@ -48,7 +52,9 @@ SynthDef(\glockenspiel, {
 ~next = {|d|
 
 	var oct = m.accelMassFiltered.lincurve(0,3,2,6,-1).floor;
-	var dur = 0.23 - m.accelMassFiltered.linlin(0,2.5,0.001,0.14);
+	// var dur = 0.23 - m.accelMassFiltered.linlin(0,2.5,0.001,0.14);
+	var dur = 0.23 - m.rrateMassFiltered.lincurve(0,1.0,0.001,0.14,-3);
+
 	var hardness = m.accelMassFiltered.linlin(0,2.5,0.2,0.9).clip2(0.91);
 	var amp = m.accelMassFiltered.linexp(0,2.5,1,0.6);
 	

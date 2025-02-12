@@ -1,7 +1,7 @@
 
 var m = ~model;
 
-m.accelMassFilteredAttack = 0.7;
+m.accelMassFilteredAttack = 0.99;
 m.accelMassFilteredDecay = 0.2;
 m.rrateMassFilteredAttack = 0.9;
 m.rrateMassFilteredDecay = 0.5;
@@ -21,9 +21,9 @@ SynthDef(\template, {
 		Pbind(
 			\instrument, \template,
 			\scale, Scale.major,
-			\note, Pseq([0,4,7,11], inf),
+            \octave, 4,
+			// \note, Pseq([0,4,7,4,2], inf),
 			\legato, 1,
-			\root, Pseq([0,-2].stutter(8*4), inf),
 			\func, Pfunc({|e| ~onEvent.(e)}),
 			\args, #[]
 		);
@@ -46,24 +46,24 @@ SynthDef(\template, {
 //------------------------------------------------------------
 ~next = {|d|
 
-	var dur = m.rrateMassFiltered.linexp(0,0.3,0.35,0.07);
-
-	var oct = (d.sensors.gyroEvent.x/pi).linlin(-0.5,0.2,8.0,3.0); //up down
-	// var oct = (d.sensors.gyroEvent.y/pi).linlin(-0.4,0.4,3.0,8.0); //left right
-
+	var dur = 0.2;
+    // var cs = [0,2,4,5,7,9,11,12];
+    var cs = [0,4,7,11];
+    var notes = cs ++ (cs + 12);
+	var index = (d.sensors.gyroEvent.x/pi).linlin(-1,0.5,notes.size,0.0); //up down
 	var amp = m.accelMassFiltered.lincurve(0,2.5,-28,-13,-3);
 	var atk = m.accelMassFiltered.lincurve(0,2.5,0.03,0.0001,-3);
 	var rel = m.accelMassFiltered.lincurve(0,2.5,0.2,1.0,-1);
 
 	Pdef(m.ptn).set(\dur, dur);
-	Pdef(m.ptn).set(\octave, oct.round);
+	Pdef(m.ptn).set(\note, notes[index.floor]);
 	Pdef(m.ptn).set(\amp, amp.dbamp);
 	Pdef(m.ptn).set(\atk, atk);
 	Pdef(m.ptn).set(\rel, rel);
 
-	if(m.rrateMassFiltered > 0.01,{
+	if(m.accelMassFiltered > 0.1,{
 		if( Pdef(m.ptn).isPlaying.not,{
-			Pdef(m.ptn).resume(quant:0.35);
+			Pdef(m.ptn).resume(quant:dur);
 		});
 	},{
 		if( Pdef(m.ptn).isPlaying,{
@@ -81,7 +81,7 @@ SynthDef(\template, {
 	// [m.accelMass * 0.1, m.accelMassFiltered.linlin(0,3,0,1)];
 	
 	// ROTATE
-	[m.rrateMass, m.rrateMassFiltered.linlin(0,1,0,1)];
+	// [m.rrateMass, m.rrateMassFiltered.linlin(0,1,0,1)];
 
 	// X axis
 	// [d.sensors.gyroEvent.x/pi]; // norm
@@ -93,7 +93,7 @@ SynthDef(\template, {
 	// [d.sensors.gyroEvent.z/(pi/2)]; // norm
 
 	// device [I• ]
-	// [(d.sensors.gyroEvent.x/pi).linlin(-0.5,0.5,0.9,-0.9)]  //up down
+	[(d.sensors.gyroEvent.x/pi).linlin(-0.8,0.8,0.9,-0.9)]  //up down
 	// [(d.sensors.gyroEvent.y/pi).linlin(-0.4,0.4,0.9,-0.9)]  //left right
 	// [(d.sensors.gyroEvent.z/(pi/2)).linlin(-0.3,1.0,-0.9,0.9)]  //wrist rotate
 
@@ -103,9 +103,3 @@ SynthDef(\template, {
 
 
 
-// •Pitch + Duration 
-// •Pitch + Timbre 
-// •Pitch + Dynamics 
-// Duration + Timbre 
-// Duration + Dynamics 
-// Timbre + Dynamics
