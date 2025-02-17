@@ -70,12 +70,12 @@ view.clearOnRefresh = false;
 view.background = Color.gray(1,0.7);
 view.animate = true;
 view.drawFunc = {|v|
+	v.frame.postln;
 	if(updater == true){
 		updater = false;
 	Pen.fillColor = Color.green;
 	Pen.addRect(Rect(0, window.bounds.height - 50 - (y * 50), view.bounds.width, 50) );
 	Pen.fill;
-	f.postln;
 	}{
 	Pen.fillColor = Color.grey(0.0,  0.1 / f);
 	Pen.addRect(view.bounds.moveBy(-5,-5));
@@ -86,3 +86,7 @@ view.drawFunc = {|v|
 
 )
 
+
+
+a=(\a:2, \b:3, \func:({|v|v.postln}))
+b = Event.new(proto:a)
