@@ -1,47 +1,94 @@
 (
-var func = {|me|
-	var d = Date.getDate.rawSeconds.asInteger.postln;
+var func = {|v|
+	Pen.fillColor = Color.grey(0.0,  0.05);
+	Pen.addRect(Window.screenBounds);
+	Pen.fill;
+
     Pen.use{
         10.do{
-            Color.red(rrand(0.0, 1), rrand(0.0, 0.5)).set;
-            Pen.addArc((400.exprand(2))@(200.rand), rrand(10, 200), 2pi.rand, pi);
+            Color.hsv(rrand(0.0, 0.999), rrand(0.2, 0.7), 1, 1).set;
+			Pen.addArc((Window.screenBounds.width.rand)@(Window.screenBounds.height.rand), 5.exprand(150), 2pi.rand, pi);
             Pen.perform([\stroke, \fill].choose);
         }
     }
 };
 
-var makeButton = {|func|
+var makeButton = {|d|
 	UserView()
 	.background_(Color.black.alpha_(0.8))
-	.mouseDownAction_({|m|func.(); m.backColor_(Color.new255(0, 139, 69))})
-	.mouseUpAction_({|m|func.(); m.backColor_(Color.black.alpha_(0.8))})
-	// .drawFunc_(func)
+	.mouseDownAction_({|m|m.backColor_(Color.new255(0, 139, 69))})
+	.mouseUpAction_({|m|m.backColor_(Color.black.alpha_(0.8))})
+	.drawFunc_({Pen.stringAtPoint(d, 10@10, Font(size:30), Color.new255(0, 139, 69))})
 	.animate_(true)
 	.frameRate_(60)
 };
 
-var spacing = 4;
+var spacing = 2;
 
 var grid = {
 	View().layout_(GridLayout.rows(
 		[
-			makeButton.({"do 0".postln}),
-			makeButton.({"do 1".postln}),
-			makeButton.({"do 2".postln}),
+			makeButton.("left arm"),
+			makeButton.("right arm"),
 		],
 		[
-			makeButton.({"do 3".postln}),
-			makeButton.({"do 4".postln}),
-			makeButton.({"do 5".postln}),
+			makeButton.("left leg"),
+			makeButton.("right leg"),
 		],
-	).hSpacing_(spacing).vSpacing_(spacing))//.margins_([spacing,spacing,spacing,spacing])
+).hSpacing_(spacing).vSpacing_(spacing).margins_([spacing,spacing,spacing,spacing]))
 };
+
+
+var visual = {
+	UserView()
+	.background_(Color.black.alpha_(0.8))
+	.drawFunc_(func)
+	.clearOnRefresh_(false)
+	.animate_(true)
+	.frameRate_(60)
+};
+
+var visuals = {
+	View().layout_(GridLayout.rows(
+		[
+			visual.(),
+			visual.(),
+		],
+		[
+			visual.(),
+			visual.(),
+		],
+).hSpacing_(spacing).vSpacing_(spacing).margins_([spacing,spacing,spacing,spacing]))
+};
+
+
+var device = {|d|
+	UserView()
+		.background_(Color.black.alpha_(0.8))
+		.drawFunc_({
+		Pen.stringAtPoint(d, 10@10, Font(size:30), Color.new255(0, 139, 69))
+	})
+};
+
+var devices = {
+	View().layout_(GridLayout.rows(
+		[
+			device.("device A"),
+			device.("device B"),
+		],
+		[
+			device.("device C"),
+			device.("device D"),
+		],
+	).hSpacing_(spacing).vSpacing_(spacing).margins_([spacing,spacing,spacing,spacing]))
+};
+
 
 var stack =
 	StackLayout(
 		grid.(),
-		TextView().string_("Hello"),
-		TextView().string_("World"),
+		devices.(),
+		visuals.(),
 	);
 
 
@@ -53,19 +100,17 @@ var tabButton = {|title|
 		[title, Color.white, Color.grey],
 		[title, Color.white, Color.new255(0, 139, 69)]
 	])
-	.action_({|but|
-
-		if(but.value == 1,{
-
+	.mouseDownAction_({|but|
+		if(but.value == 0,{
 			but.parent.children.do({|ab,i|
 				if(but != ab, {
-					ab.valueAction_(0)
+					ab.valueAction_(0);
 				},{
 					i.postln;
 					stack.index = i;
 				});
 			});
-		});
+		},{but.valueAction_(0)});
 	})
 };
 
