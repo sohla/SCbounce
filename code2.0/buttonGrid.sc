@@ -13,35 +13,27 @@ var stack = {
 	));
 };
 
-var tabButton = {|title|
-	Button()
-	.minHeight_(100)
-	.font_(Font(size:30))
-	.states_([
-		[title, Color.white, Color.grey],
-		[title, Color.white, Color.new255(0, 139, 69)]
-	])
+var tabButton = {|i|
+	var d = ["🁪", "⚃","※"];
+	UserView()
+	.background_( if(i==0,Color.new255(0, 139, 69),Color.black.alpha_(0.8)))
 	.mouseDownAction_({|but|
-		if(but.value == 0,{
-			but.parent.children.do({|ab,i|
-				if(but != ab, {
-					ab.valueAction_(0);
-				},{
-					staker.index = i;
-				});
+		but.backColor_(Color.new255(0, 139, 69));
+		but.parent.children.do({|ab,i|
+			if(but != ab, {
+				ab.backColor_(Color.black);
+			},{
+				staker.index = i;
 			});
-		},{but.valueAction_(0)});
+		},{});
 	})
-};
+	// .mouseUpAction_({|m|m.backColor_(Color.black.alpha_(0.8))})
+	.drawFunc_({Pen.stringAtPoint(d[i], 200@25, Font(size:30), Color.white)})
+	.animate_(false)
+}!3;
 
-var tab1;
 var tabs = {|t|
-	View().layout_(HLayout(
-		tab1 = tabButton.("🁪"),
-		tabButton.("⚃"),
-		tabButton.("※")
-	).spacing_(0).margins_(0)).maxHeight_(100);
-
+	View().layout_(HLayout(*tabButton.()).spacing_(2).margins_(0)).maxHeight_(100);
 };
 
 var mainView = VLayout(
@@ -49,8 +41,7 @@ var mainView = VLayout(
 		stack.()
 );
 
-w = Window().bounds_(Rect(100,100,1000,700)).layout_(mainView).front;
-tab1.valueAction = 1;
+w = Window().bounds_(Rect(100,100,1000,700)).fullScreen.layout_(mainView).front;
 
 ~loader = {|n|	(PathName(thisProcess.nowExecutingPath).pathOnly++n).load};
 
