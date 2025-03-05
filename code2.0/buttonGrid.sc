@@ -46,3 +46,4 @@ w = Window().bounds_(Rect(100,100,1000,700)).fullScreen.layout_(mainView).front;
 ~loader = {|n|	(PathName(thisProcess.nowExecutingPath).pathOnly++n).load};
 
 )
+Quarks.gui
