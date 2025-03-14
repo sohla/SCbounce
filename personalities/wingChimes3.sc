@@ -47,19 +47,12 @@ var m = ~model;
 //------------------------------------------------------------
 ~next = {|d|
 
-	var dur = 0.3;// * 2.pow(m.accelMassFiltered.linlin(0,4,0,4).floor).reciprocal;
+	var dur = 0.3;
 	var rq = m.accelMassFiltered.linexp(0,4,0.1,0.0005);
 	var amp = m.accelMassFiltered.linexp(0,4,0.05,1);
-//	var part = m.accelMassFiltered.linlin(0,3,0,2).floor.asInteger;
-
 	Pdef(m.ptn).set(\dur, dur);
 	Pdef(m.ptn).set(\rq, rq);
 	Pdef(m.ptn).set(\amp, amp);
-
-	// if(part == 0, { Pdef(m.ptn).set(\note, Prand([0], inf)) });
-	// if(part == 1, { Pdef(m.ptn).set(\note, Prand([0,7], inf)) });
-	// if(part == 2, { Pdef(m.ptn).set(\note, Prand([0,7,11], inf)) });
-
 	if(m.accelMass > 0.1,{
 		if( Pdef(m.ptn).isPlaying.not,{
 			Pdef(m.ptn).resume(quant:[0.1,0,0,0]);
