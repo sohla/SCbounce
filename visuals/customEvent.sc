@@ -1,14 +1,17 @@
 (
 var visualEvents = List.new(20);
-var defaultEnv = Env.asr(0.001,1,1);//Env([0, 1, 1, 0], [0.1, 0.8, 0.1], \sin);
-var window = Window("Visual Synthesizer", Rect(100, 100, 1200, 800))
+var defaultEnv = Env.asr(0.01,1,1);//Env([0, 1, 1, 0], [0.1, 0.8, 0.1], \sin);
+var view;
+var p;
+var window = Window("Visual Synthesizer", Rect(100, 100, 1200, 800)).fullScreen
     .front
-    .alwaysOnTop_(true);
-var view = UserView(window, window.view.bounds)
+    .alwaysOnTop_(true)
+.layout_(VLayout(
+	view = UserView()
     .background_(Color.black)
     .animate_(true)
-    .frameRate_(60);
-
+    .frameRate_(60)
+).margins_(0));
 var addVisual = { |shape, px, py, size, color, rotation, duration, envelope, alphaEnv|
     var event;
 
@@ -21,7 +24,7 @@ var addVisual = { |shape, px, py, size, color, rotation, duration, envelope, alp
     color = color ? Color.white;
     duration = duration ? 5;  // Don't convert yet
     envelope = envelope ? defaultEnv;
-	alphaEnv = alphaEnv ? Env([0,1,0], [0.1,0.9], \sin);
+	alphaEnv = alphaEnv ? Env([0,1,0], [0.0,1], \sin);
 
     // Create the event with safe parameters
     event = (
@@ -39,7 +42,7 @@ var addVisual = { |shape, px, py, size, color, rotation, duration, envelope, alp
 
     // Add to the list
     visualEvents = visualEvents.add(event);
-	//"Event added. List now has % items".format(visualEvents.size).postln;
+	"Event added. List now has % items".format(visualEvents.size).postln;
 };
 
 
@@ -82,7 +85,6 @@ view.drawFunc = {
 
             count = count + 1;
 
-
             // Safe drawing based on shape
             Pen.width = 1; // Reset pen width
 
@@ -99,7 +101,7 @@ view.drawFunc = {
                 },
                 \line, {
                     Pen.strokeColor = col;
-					Pen.width = max(1, size.squared.lincurve(1,3000,1,10,3));
+					Pen.width = max(1, size.squared.lincurve(1,100000,1,10,3));
 					Pen.line(pos - (size@0), pos + (size@0));
 					// Pen.moveTo(pos - (500@0));
 					// Pen.splineCurve(pos - (500@0), pos + (500@0), pos - (250@1500), pos + (250@1500), 100);
@@ -122,13 +124,13 @@ view.drawFunc = {
 
 
     // Draw debug count
-    Pen.fillColor = Color.white;
-    Pen.stringCenteredIn(
-        "Active visuals: " ++ count,
-        Rect(10, 10, 200, 20),
-        Font("Helvetica", 12),
-        Color.white
-    );
+	// Pen.fillColor = Color.white;
+	// Pen.stringCenteredIn(
+	// 	"Active visuals: " ++ count,
+	// 	Rect(10, 10, 200, 20),
+	// 	Font("Helvetica", 12),
+	// 	Color.white
+	// );
 };
 
 Event.addEventType(\customEvent, {
@@ -171,33 +173,39 @@ SynthDef(\versatilePerc, {
 	Out.ar(out, Pan2.ar(sig[0],pan,amp))
 }).add;
 
+SynthDef(\adcverb, {
+	|out = 0|
+	var in = In.ar(out, 2);
+	Out.ar(out, AdCVerb.ar(in * 0.1));
+}).add;
 
-
-Pdef(\tester,
-	Pbind(
+	p = Pbind(
 		\type, \customEvent,
 		\instrument, \versatilePerc,
-		\shape, Prand([\line,\circle,\square], inf),
-		\hue, Pseg(Pseq([0.0,0.999], inf), 30, \linear, inf),
+		\shape, Prand([\line], inf),
+		\hue, Pseg(Pseq([0.0,0.999], inf), 60, \linear, inf),
 		\color, Pfunc({|e|Color.hsv(e.hue,0.7,0.7)}),
-		// \rotation, Pseg(Pseq([0.0,2pi], inf), 5000, \linear, inf),
-		\dur, Pxrand([0.125], inf),
-		\root, Pseq([0,3,-2,7,-4,2].stutter(4*7), inf),
+		\rotation, pi/2,//Pseg(Pseq([-pi/12,pi/12], inf), 4, \linear, inf),
+		\dur, Pxrand([0.125*2], inf),
+		\root, Pseq([0,3,-2,7,-4,2].stutter(4*6), inf),
 		\tension, Pwhite(0.01,0.99),
-		\dist,Pkey(\tension) * 10,
+		 \dist,Pkey(\tension) * 10,
 		\pan, Pseg(Pseq([-1,1], inf), 4, \sine, inf),
-		\decay,Pwhite(0.1,2),
-		\duration, Pkey(\decay) * 1,
-		\size, (Pkey(\tension) * 100) + 20,
-		\octave, Pseq([2,3,4,5,6,7,8].stutter(4).reverse, inf),
+		\decay,Pwhite(0.1,5),
+		\duration, Pkey(\decay) * 2,
+		\size, (Pkey(\tension) * 450) + 20,
+		\octave, Pseq([3,4,5,6,7,8].stutter(4).reverse, inf),
 		\note, Pseq([0,4,7,11].reverse, inf),
-		\px, 600,//\px, 600 + (Pkey(\pan) * 600),
-		\py, 800 - (Pkey(\octave) * 60) - (Pkey(\note) * 5),
-		)
-	).play;
+		\px, 1000 + (Pkey(\pan) * 800),
+		\py, 1600 - (Pkey(\octave) * 180) - (Pkey(\note) * 10),
+		\envelope, Pfunc{Env([1,0.001], [1], \exp)}
+		);
+
+p = Pfx(p,\adcverb);
+p.play;
+
 )
-
-
+// s.queryAllNodes
 // position can also be an envelope
 // Env.new(levels: [0, 1, -1, 0], times: [0.1, 0.5, 1], curve: [-5, 0, -5]).plot;
 // do we describe all paramters as envelopes
