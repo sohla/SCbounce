@@ -5,7 +5,7 @@ var makeButton = {|d|
 	.background_(Color.black.alpha_(0.8))
 	.mouseDownAction_({|m|m.backColor_(Color.new255(0, 139, 69))})
 	.mouseUpAction_({|m|m.backColor_(Color.black.alpha_(0.8))})
-	.drawFunc_({Pen.stringAtPoint(d, 10@10, Font(size:30), Color.new255(0, 139, 69))})
+	.drawFunc_({Pen.stringAtPoint(d, 10@10, Font(size:30), Color.new255(255, 139, 69))})
 	.animate_(true)
 	.frameRate_(60)
 };
