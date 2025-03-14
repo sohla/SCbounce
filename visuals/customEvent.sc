@@ -100,7 +100,7 @@ view.drawFunc = {
                 \line, {
                     Pen.strokeColor = col;
 					Pen.width = max(1, size.squared.lincurve(1,3000,1,10,3));
-					Pen.line(pos - (1000@0), pos + (1000@0));
+					Pen.line(pos - (size@0), pos + (size@0));
 					// Pen.moveTo(pos - (500@0));
 					// Pen.splineCurve(pos - (500@0), pos + (500@0), pos - (250@1500), pos + (250@1500), 100);
                     Pen.stroke;
@@ -177,7 +177,7 @@ Pdef(\tester,
 	Pbind(
 		\type, \customEvent,
 		\instrument, \versatilePerc,
-		\shape, Prand([\line], inf),
+		\shape, Prand([\line,\circle,\square], inf),
 		\hue, Pseg(Pseq([0.0,0.999], inf), 30, \linear, inf),
 		\color, Pfunc({|e|Color.hsv(e.hue,0.7,0.7)}),
 		// \rotation, Pseg(Pseq([0.0,2pi], inf), 5000, \linear, inf),
@@ -196,4 +196,10 @@ Pdef(\tester,
 		)
 	).play;
 )
+
+
+// position can also be an envelope
+// Env.new(levels: [0, 1, -1, 0], times: [0.1, 0.5, 1], curve: [-5, 0, -5]).plot;
+// do we describe all paramters as envelopes
+// or use a control bus
 
