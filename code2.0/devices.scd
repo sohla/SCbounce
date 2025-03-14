@@ -11,12 +11,12 @@ var device = {|d|
 var devices = {
 	View().layout_(GridLayout.rows(
 		[
-			device.("device A"),
-			device.("device B"),
+			device.("device A : NetAddr : Reload : Plots"),
+			device.("device B : NetAddr : Reload : Plots"),
 		],
 		[
-			device.("device C"),
-			device.("device D"),
+			device.("device C : NetAddr : Reload : Plots"),
+			device.("device D : NetAddr : Reload : Plots"),
 		],
 	).hSpacing_(spacing).vSpacing_(spacing).margins_([spacing,spacing,spacing,spacing]))
 };
