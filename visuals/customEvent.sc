@@ -3,50 +3,9 @@ var visualEvents = List.new(20);
 var defaultEnv = Env.asr(0.01,1,1);//Env([0, 1, 1, 0], [0.1, 0.8, 0.1], \sin);
 var view;
 var p;
-var window = Window("Visual Synthesizer", Rect(100, 100, 1200, 800)).fullScreen
-    .front
-    .alwaysOnTop_(true)
-.layout_(VLayout(
-	view = UserView()
-    .background_(Color.black)
-    .animate_(true)
-    .frameRate_(60)
-).margins_(0));
-var addVisual = { |shape, px, py, size, color, rotation, duration, envelope, alphaEnv|
-    var event;
-
-    // Type safety - make sure all values are valid
-    shape = shape ? \circle;
-    px = px ? 10;
-    py = py ? 10;
-    size = size ? 50;  // Don't convert yet
-	rotation = rotation ? 0;
-    color = color ? Color.white;
-    duration = duration ? 5;  // Don't convert yet
-    envelope = envelope ? defaultEnv;
-	alphaEnv = alphaEnv ? Env([0,1,0], [0.0,1], \sin);
-
-    // Create the event with safe parameters
-    event = (
-        \shape: shape,
-        \px: px,
-		\py: py,
-        \size: size,
-        \color: color,
-		\rotation: rotation,
-        \duration: duration,
-        \envelope: envelope,
-		\alphaEnv: alphaEnv,
-        \startTime: thisThread.seconds
-    );
-
-    // Add to the list
-    visualEvents = visualEvents.add(event);
-	"Event added. List now has % items".format(visualEvents.size).postln;
-};
 
 
-view.drawFunc = {
+var updateView= {
     var now = thisThread.seconds;
     var count = 0;
 
@@ -133,6 +92,60 @@ view.drawFunc = {
 	// );
 };
 
+
+
+var makeView = {
+	view = UserView()
+    .background_(Color.black)
+    .animate_(true)
+	.frameRate_(60)
+	.drawFunc_(updateView)
+};
+
+var window = Window("Visual Synthesizer", Rect(100, 100, 1200, 800))//.fullScreen
+    .front
+    .alwaysOnTop_(true)
+.background_(Color.white().alpha_(0.01))
+.layout_(GridLayout.rows(
+	[makeView.(),makeView.()],
+	[makeView.(),makeView.()],
+).margins_(0).hSpacing_(1).vSpacing_(1));
+
+
+var addVisual = { |shape, px, py, size, color, rotation, duration, envelope, alphaEnv|
+    var event;
+
+    // Type safety - make sure all values are valid
+    shape = shape ? \circle;
+    px = px ? 10;
+    py = py ? 10;
+    size = size ? 50;  // Don't convert yet
+	rotation = rotation ? 0;
+    color = color ? Color.white;
+    duration = duration ? 5;  // Don't convert yet
+    envelope = envelope ? defaultEnv;
+	alphaEnv = alphaEnv ? Env([0,1,0], [0.0,1], \sin);
+
+    // Create the event with safe parameters
+    event = (
+        \shape: shape,
+        \px: px,
+		\py: py,
+        \size: size,
+        \color: color,
+		\rotation: rotation,
+        \duration: duration,
+        \envelope: envelope,
+		\alphaEnv: alphaEnv,
+        \startTime: thisThread.seconds
+    );
+
+    // Add to the list
+    visualEvents = visualEvents.add(event);
+	"Event added. List now has % items".format(visualEvents.size).postln;
+};
+
+
 Event.addEventType(\customEvent, {
 	addVisual.(
 	    shape: ~shape ? \circle,
@@ -158,7 +171,7 @@ SynthDef(\versatilePerc, {
     var pitch_contour, drum_osc, click_osc, drum_env, click_env, sig, pch;
     pitch_contour = Line.kr(1, 0, 0.02);
 	pch = freq * (1 + (pitch_contour * tension));
-	drum_osc = SinOsc.ar([pch,pch*1.004], LFNoise2.ar([4,5],10,-10),0.5);
+	drum_osc = SinOsc.ar([pch,pch*1.004], LFNoise2.ar([7,8],4,-4),0.5);
     click_osc = LPF.ar(WhiteNoise.ar(1), 1500);
     drum_env = EnvGen.ar(
         Env.perc(attackTime: 0.005, releaseTime: decay, curve: -4),
@@ -173,11 +186,11 @@ SynthDef(\versatilePerc, {
 	Out.ar(out, Pan2.ar(sig[0],pan,amp))
 }).add;
 
-SynthDef(\adcverb, {
-	|out = 0|
-	var in = In.ar(out, 2);
-	Out.ar(out, AdCVerb.ar(in * 0.1));
-}).add;
+// SynthDef(\adcverb, {
+// 	|out = 0|
+// 	var in = In.ar(out, 2);
+// 	Out.ar(out, AdCVerb.ar(in * 0.1));
+// }).add;
 
 	p = Pbind(
 		\type, \customEvent,
@@ -193,15 +206,15 @@ SynthDef(\adcverb, {
 		\pan, Pseg(Pseq([-1,1], inf), 4, \sine, inf),
 		\decay,Pwhite(0.1,5),
 		\duration, Pkey(\decay) * 2,
-		\size, (Pkey(\tension) * 450) + 20,
+		\size, (Pkey(\tension) * 100) + 20,
 		\octave, Pseq([3,4,5,6,7,8].stutter(4).reverse, inf),
 		\note, Pseq([0,4,7,11].reverse, inf),
-		\px, 1000 + (Pkey(\pan) * 800),
-		\py, 1600 - (Pkey(\octave) * 180) - (Pkey(\note) * 10),
+		\px, 250 + (Pkey(\pan) * 200),
+		\py, 500 - (Pkey(\octave) * 50) - (Pkey(\note) * 5),
 		\envelope, Pfunc{Env([1,0.001], [1], \exp)}
 		);
 
-p = Pfx(p,\adcverb);
+// p = Pfx(p,\adcverb);
 p.play;
 
 )
