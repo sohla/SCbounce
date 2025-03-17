@@ -3,7 +3,7 @@ var visualEvents = List.new(20);
 var defaultEnv = Env.asr(0.01,1,1);//Env([0, 1, 1, 0], [0.1, 0.8, 0.1], \sin);
 var view;
 var p;
-
+var controlBus = Bus.control(s,4);
 
 var updateView= {
     var now = thisThread.seconds;
@@ -19,6 +19,7 @@ var updateView= {
         var pos = 10@10;
         var size = 50.0;
         var col = Color.white;
+		var cbv = controlBus.getSynchronous();
 
         // Get elapsed time
         if(event[\startTime].notNil) {
@@ -32,13 +33,14 @@ var updateView= {
             normTime = 0;
         };
 
+
         // Only draw if not expired
         if(normTime < 1.0) {
 
 			shape = event[\shape];
 			pos = event[\px]@event[\py];
 			envVal = event[\envelope].at(normTime);
-            size = event[\size] * envVal;
+            size = event[\size] * envVal * cbv;
 			col = event[\color];
 			col = col.alpha_(event[\alphaEnv].at(normTime));
 
@@ -67,6 +69,7 @@ var updateView= {
                     Pen.stroke;
                 }
             );
+
 			Pen.rotate(event[\rotation].neg, pos.x, pos.y);
 
 		};
@@ -142,10 +145,12 @@ var addVisual = { |shape, px, py, size, color, rotation, duration, envelope, alp
 
     // Add to the list
     visualEvents = visualEvents.add(event);
-	"Event added. List now has % items".format(visualEvents.size).postln;
+	// "Event added. List now has % items".format(visualEvents.size).postln;
 };
 
-
+Event.addEventType(\customEvent2, {
+currentEnvironment.postln;
+});
 Event.addEventType(\customEvent, {
 	addVisual.(
 	    shape: ~shape ? \circle,
@@ -163,12 +168,16 @@ Event.addEventType(\customEvent, {
     currentEnvironment.play;
 });
 
-CmdPeriod.doOnce({window.close});
+CmdPeriod.doOnce({
+	window.close;
+	controlBus.free;
+});
 
 
 SynthDef(\versatilePerc, {
     |out=0, freq=50, tension=0.1, decay=0.5, clickLevel=0.5, amp=0.5, dist = 5, pan = 0|
     var pitch_contour, drum_osc, click_osc, drum_env, click_env, sig, pch;
+
     pitch_contour = Line.kr(1, 0, 0.02);
 	pch = freq * (1 + (pitch_contour * tension));
 	drum_osc = SinOsc.ar([pch,pch*1.004], LFNoise2.ar([7,8],4,-4),0.5);
@@ -186,6 +195,15 @@ SynthDef(\versatilePerc, {
 	Out.ar(out, Pan2.ar(sig[0],pan,amp))
 }).add;
 
+SynthDef(\controlSynth, {
+	|out=0, cb=0|
+	var in = In.ar(out,2);
+	var sig = LFCub.kr(13,0,0.05,0.3);
+	Out.kr(cb, sig);
+	ReplaceOut.ar(out, in);
+}).add;
+
+
 // SynthDef(\adcverb, {
 // 	|out = 0|
 // 	var in = In.ar(out, 2);
@@ -195,14 +213,15 @@ SynthDef(\versatilePerc, {
 	p = Pbind(
 		\type, \customEvent,
 		\instrument, \versatilePerc,
-		\shape, Prand([\line], inf),
+		\cb, controlBus,
+		\shape, Prand([\circle], inf),
 		\hue, Pseg(Pseq([0.0,0.999], inf), 60, \linear, inf),
 		\color, Pfunc({|e|Color.hsv(e.hue,0.7,0.7)}),
 		\rotation, pi/2,//Pseg(Pseq([-pi/12,pi/12], inf), 4, \linear, inf),
 		\dur, Pxrand([0.125*2], inf),
 		\root, Pseq([0,3,-2,7,-4,2].stutter(4*6), inf),
 		\tension, Pwhite(0.01,0.99),
-		 \dist,Pkey(\tension) * 10,
+		\dist,Pkey(\tension) * 10,
 		\pan, Pseg(Pseq([-1,1], inf), 4, \sine, inf),
 		\decay,Pwhite(0.1,5),
 		\duration, Pkey(\decay) * 2,
@@ -212,15 +231,28 @@ SynthDef(\versatilePerc, {
 		\px, 250 + (Pkey(\pan) * 200),
 		\py, 500 - (Pkey(\octave) * 50) - (Pkey(\note) * 5),
 		\envelope, Pfunc{Env([1,0.001], [1], \exp)}
+
 		);
 
-// p = Pfx(p,\adcverb);
+p = Pfx(p,\controlSynth, \cb, controlBus);
 p.play;
+
+// controlBus.postln;
 
 )
 // s.queryAllNodes
+// s.plotTree
+s.scope(2,24,rate:\control)
+
+
 // position can also be an envelope
 // Env.new(levels: [0, 1, -1, 0], times: [0.1, 0.5, 1], curve: [-5, 0, -5]).plot;
 // do we describe all paramters as envelopes
 // or use a control bus
 
+
+
+
+
+// Env(Signal.sineFill(100, 1.0/[1, 2, 3, 4, 5, 6])).plot
+// Env(levels:Signal.sineFill(100, 1.0/[2, 0.1,0.1]),times:[0.01]).plot
