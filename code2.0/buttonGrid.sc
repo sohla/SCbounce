@@ -43,7 +43,7 @@ var mainView = VLayout(
 );
 
 QtGUI.palette = QPalette.system;
-w = Window().bounds_(Rect(100,100,1000,700)).layout_(mainView).front;//.fullScreen;
+w = Window().bounds_(Rect(100,100,1000,700)).layout_(mainView).front.fullScreen;
 
 ~loader = {|n|	(PathName(thisProcess.nowExecutingPath).pathOnly++n).load};
 

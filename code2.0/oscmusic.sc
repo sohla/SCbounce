@@ -15,8 +15,8 @@
 	var defaultPersonality = "silence";
 	var defaultList = "list_workshop1.sc";
 
-	var oscMessageTag  = "CombinedDataPacket";
-// var oscMessageTag  = "IMUFusedData";
+	// var oscMessageTag  = "CombinedDataPacket";
+	var oscMessageTag  = "IMUFusedData";
 
 	var renderRate = 10;
 
@@ -399,7 +399,7 @@ PRESSURE
 		devices.put(port,d);
 		reloadPersonality.(d);
 
-	addDeviceView.(contentView, d);
+		//addDeviceView.(contentView, d);
 
 		addOSCDeviceListeners.(d);
 		NetAddr.new(ip,port-id+1).sendMsg("/Config/GetConfig", 57120);
@@ -444,7 +444,7 @@ PRESSURE
 
 		QtGUI.palette = QPalette.dark;
 
-		window = Window("osc music", Window.screenBounds.insetBy(1000,0), false).front;
+		window = Window("osc music", Window.screenBounds, false).front;
 		window.view.keyDownAction_({|view,char,mods,uni,code,key|
 			if(uni==114,{//r
 				devices.keysValuesDo({|k,v|
