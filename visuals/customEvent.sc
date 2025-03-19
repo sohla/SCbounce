@@ -19,7 +19,6 @@ var updateView= {
         var pos = 10@10;
         var size = 50.0;
         var col = Color.white;
-		// var cbv = controlBus.get();
 
         // Get elapsed time
         if(event[\startTime].notNil) {
@@ -38,9 +37,9 @@ var updateView= {
         if(normTime < 1.0) {
 
 			shape = event[\shape];
-			pos = event[\px]@event[\py];
 			envVal = event[\envelope].at(normTime);
-            size = event[\size] * envVal ;//* cbv;
+			pos = event[\px] * envVal @ event[\py]* envVal + 200 ;
+            size = event[\size] * envVal;// * cbv;
 			col = event[\color];
 			col = col.alpha_(event[\alphaEnv].at(normTime));
 
@@ -57,15 +56,14 @@ var updateView= {
                     Pen.fillOval(Rect.aboutPoint(pos, size, size));
                 },
                 \square, {
-                    Pen.fillColor = col;
-                    Pen.fillRect(Rect.aboutPoint(pos, size, size));
+                    Pen.strokeColor = col;
+					Pen.width = max(1, size.squared.lincurve(1,100000,1,40,0.1));
+                    Pen.strokeRect(Rect.aboutPoint(pos, size, size));
                 },
                 \line, {
                     Pen.strokeColor = col;
-					Pen.width = max(1, size.squared.lincurve(1,100000,1,200,3));
+					Pen.width = max(1, size.squared.lincurve(1,100000,1,20,0.1));
 					Pen.line(pos - (size@0), pos + (size@0));
-					// Pen.moveTo(pos - (500@0));
-					// Pen.splineCurve(pos - (500@0), pos + (500@0), pos - (250@1500), pos + (250@1500), 100);
                     Pen.stroke;
                 }
             );
@@ -105,11 +103,12 @@ var makeView = {
 	.drawFunc_(updateView)
 };
 
-var window = Window("Visual Synthesizer", Rect(100, 100, 1200, 800)).fullScreen
+var window = Window("Visual Synthesizer", Rect(100, 100, 1200, 800))//.fullScreen
     .front
     .alwaysOnTop_(true)
-.background_(Color.white().alpha_(1))
-.layout_(GridLayout.rows(
+
+	.background_(Color.white().alpha_(1))
+	.layout_(GridLayout.rows(
 	[makeView.(),makeView.()],
 	[makeView.(),makeView.()],
 ).margins_(0).hSpacing_(1).vSpacing_(1));
@@ -148,9 +147,6 @@ var addVisual = { |shape, px, py, size, color, rotation, duration, envelope, alp
 	// "Event added. List now has % items".format(visualEvents.size).postln;
 };
 
-Event.addEventType(\customEvent2, {
-currentEnvironment.postln;
-});
 Event.addEventType(\customEvent, {
 	addVisual.(
 	    shape: ~shape ? \circle,
@@ -165,6 +161,7 @@ Event.addEventType(\customEvent, {
 	);
 
     ~type = \note;
+	// [currentEnvironment.freq,currentEnvironment.noteFreq].postln;
     currentEnvironment.play;
 });
 
@@ -195,14 +192,6 @@ SynthDef(\versatilePerc, {
 	Out.ar(out, Pan2.ar(sig[0],pan,amp))
 }).add;
 
-SynthDef(\controlSynth, {
-	|out=0, cb=0|
-	var in = In.ar(out,2);
-	var sig = LFCub.kr(13,0,0.05,0.3);
-	Out.kr(cb, sig);
-	ReplaceOut.ar(out, in);
-}).add;
-
 
 // SynthDef(\adcverb, {
 // 	|out = 0|
@@ -218,45 +207,50 @@ s.waitForBoot({
 		\type, \customEvent,
 		\instrument, \versatilePerc,
 		\cb, controlBus,
-		\shape, Prand([\line], inf),
+		\shape, Prand([\square], inf),
 		\hue, Pseg(Pseq([0.0,0.999], inf), 60, \linear, inf),
 		\color, Pfunc({|e|Color.hsv(e.hue,1,1)}),
-		\rotation, pi/2,//Pseg(Pseq([-pi/12,pi/12], inf), 4, \linear, inf),
-		\dur, Pxrand([0.125*0.5], inf),
+		\rotation, Pseg(Pseq([-pi/2,pi/2], inf), 16, \linear, inf),
+		\dur, Pxrand([0.125*8], inf),
 		\root, Pseq([0,3,-2,7,-4,2].stutter(4*6), inf),
 		\tension, Pwhite(0.01,0.99),
 		\dist,Pkey(\tension) * 10,
 		\pan, Pseg(Pseq([-1,1], inf), 4, \sine, inf),
-		\decay,Pwhite(0.1,5),
-		\duration, Pkey(\decay) * 2,
-		\size, (Pkey(\tension) * 50) + 120,
-		\octave, Pseq([3,4,5,6,7,8].stutter(4).reverse, inf),
-		\note, Pseq([0,4,7,11].reverse, inf),
-		\px, 250 + (Pkey(\pan) * 200),
-		\py, 500 - (Pkey(\octave) * 50) - (Pkey(\note) * 5),
-		\envelope, Pfunc{Env([1,0.001], [1], \exp)}
+		\decay,Pwhite(0.1,2),
+		\duration, Pkey(\decay),
+		\size, (Pkey(\tension) * 150) + 0,
+		\octave, Pseq([3,4,5,6,7,8].stutter(4), inf),
+		\note, Pseq([0,4,7,11], inf),
+		\px, 0 ,//+ (Pkey(\pan) * 200),
+		\py, 0,//- (Pkey(\octave) * 50) - (Pkey(\note) * 5),
+		\noteFreq, Pfunc{|e| ((e.octave * 12) + (e.note) + (e.root)).midicps}, //make ourselves
+		\envelope, Pfunc{
+Env([0, 1.2, 0.8, 1.1, 0.9, 1.03, 0.97, 1].reverse, [0.3, 0.1, 0.1, 0.1, 0.1, 0.1, 0.2].reverse, [\sine, \sine, \sine, \sine, \sine, \sine, \sine])
+		});
 
-		);
-
-// p = Pfx(p,\controlSynth, \cb, controlBus);
-p.play;
+	p.play;
 });
-// controlBus.postln;
 
 )
 // s.queryAllNodes
 // s.plotTree
 // s.scope(2,24,rate:\control)
 
-
-// position can also be an envelope
-// Env.new(levels: [0, 1, -1, 0], times: [0.1, 0.5, 1], curve: [-5, 0, -5]).plot;
-// do we describe all paramters as envelopes
-// or use a control bus
+// control bus is not great
 
 
 
 
+/*
+sx
+sy
+ex
+ey
+xEnv
+yEnv
 
-// Env(Signal.sineFill(100, 1.0/[1, 2, 3, 4, 5, 6])).plot
-// Env(levels:Signal.sineFill(100, 1.0/[2, 0.1,0.1]),times:[0.01]).plot
+
+
+
+
+*/
