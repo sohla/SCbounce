@@ -15,7 +15,7 @@
 	var defaultPersonality = "silence";
 	var defaultList = "list_workshop1.sc";
 
-	//var oscMessageTag  = "CombinedDataPacket";
+	// var oscMessageTag  = "CombinedDataPacket";
 	var oscMessageTag  = "IMUFusedData";
 
 	var renderRate = 10;
@@ -399,7 +399,7 @@ PRESSURE
 		devices.put(port,d);
 		reloadPersonality.(d);
 
-	addDeviceView.(contentView, d);
+		//addDeviceView.(contentView, d);
 
 		addOSCDeviceListeners.(d);
 		NetAddr.new(ip,port-id+1).sendMsg("/Config/GetConfig", 57120);
@@ -444,7 +444,7 @@ PRESSURE
 
 		QtGUI.palette = QPalette.dark;
 
-		window = Window("osc music", Window.screenBounds.insetBy(0,0), false).front;
+		window = Window("osc music", Window.screenBounds, false).front;
 		window.view.keyDownAction_({|view,char,mods,uni,code,key|
 			if(uni==114,{//r
 				devices.keysValuesDo({|k,v|
@@ -526,18 +526,13 @@ PRESSURE
 		};
 
 		var batteryView = {|view|
-			// StaticText(view)
-			// .stringColor_(Color.white)
-			// .font_(Font(size:12))
-			// .minWidth_(100)
-			// .string_("Volts: "+d.volts.asStringPrec(2)+" \nPerc: "++d.charge.asStringPrec(2))
 			UserView(view)
 			.background_(col)
 			.maxHeight_(40)
 			.maxWidth_(180)
 			.drawFunc_({
-				("V : "+d.volts.asStringPrec(2)).drawAtPoint(4@0, Font(size:14));
-				("% : "++d.charge.asStringPrec(2)).drawAtPoint(4@14, Font(size:14));
+			// ("V : "+d.volts.asStringPrec(2)).drawAtPoint(4@0, Font(size:14));
+			// ("% : "++d.charge.asStringPrec(2)).drawAtPoint(4@14, Font(size:14));
 			})
 			.frameRate_(1)
 			.animate_(true)
@@ -973,7 +968,7 @@ PRESSURE
 
 	createWindowView = {|view|
 
-		var scroll = ScrollView(view, Window.screenBounds);
+	var scroll = ScrollView(view, Window.screenBounds);
 		var d;
 		var wifiAddress = ("ifconfig | grep \"\inet \"\ | grep -v 127.0.0.1 | awk '{print $2}'").unixCmdGetStdOut();
 		var wifiInfoView, cpuInfo;
@@ -1038,9 +1033,9 @@ PRESSURE
 		buildUI.();
 		startOSCListening.();
 
-		a = "/1/"++oscMessageTag;
-		n = NetAddr("127.0.0.1", 57120);
-		n.sendMsg(a, 0,0,0,0,0,0,0,0,0,0,0);
+	// a = "/1/"++oscMessageTag;
+	// n = NetAddr("127.0.0.1", 57120);
+	// n.sendMsg(a, 0,0,0,0,0,0,0,0,0,0,0);
 		// s.plotTree;
 	  	// s.meter;
 	});

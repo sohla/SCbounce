@@ -1,14 +1,15 @@
 (
 
 var staker;
+var oscController = Require("oscController.scd");
 
 var stack = {
-	var visuals = Require("visuals");
+	var visuals = Require("visuals.scd");
 	var devices = Require("devices.scd");
 	var grid = Require("grid.scd");
 	View().layout_(staker =StackLayout(
-		grid.(),
 		devices.(),
+		grid.(),
 		visuals.(),
 	));
 };
@@ -28,8 +29,9 @@ var tabButton = {|i|
 		},{});
 	})
 	// .mouseUpAction_({|m|m.backColor_(Color.black.alpha_(0.8))})
-	.drawFunc_({Pen.stringAtPoint(d[i], 200@25, Font(size:30), Color.white)})
+	.drawFunc_({|v|Pen.stringAtPoint(d[i], (v.bounds.width-15/2)@25, Font(size:30), Color.white)})
 	.animate_(false)
+
 }!3;
 
 var tabs = {|t|
@@ -41,9 +43,30 @@ var mainView = VLayout(
 		stack.()
 );
 
-w = Window().bounds_(Rect(100,100,1000,700)).fullScreen.layout_(mainView).front;
+var shutdown = {
+	s.quit;
+};
 
-~loader = {|n|	(PathName(thisProcess.nowExecutingPath).pathOnly++n).load};
+var initGUI = {
+	QtGUI.palette = QPalette.dark;
+	w = Window().bounds_(Rect(100,100,1000,700)).layout_(mainView).front.fullScreen;
+	w.onClose = {
+		// stopOSCListening.();
+		shutdown.();
+	};
+	CmdPeriod.doOnce({w.close});
+};
+
+
+
+
+s.waitForBoot({
+
+	NetAddr.localAddr.postln;
+	initGUI.();
+	~startOSCListening.();
+	
+});
+
 
 )
-Quarks.gui
