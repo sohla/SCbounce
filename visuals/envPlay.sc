@@ -23,6 +23,8 @@ Env([0, 1.1, 0.9, 1.03, 0.97, 1], [0.5, 0.1, 0.1, 0.1, 0.2], [\sine, \sine, \sin
 
 Env([0, 1], [1], \circleIn).plot;
 
+
+// custom envelopes using Signal 
 (
 var sig = Signal.newClear(100);
 sig.waveFill({ |x| x }, 0, 1);
