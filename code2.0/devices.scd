@@ -11,23 +11,23 @@ var devices = {
 };
 
 
-var threeDeeView = { |view, data|
+var threeDeeView = { |data|
 	var graph1;
 	var cube;
 	var accelX, accelY, accelZ;
-
+	
 	graph1 = Canvas3D()
 		.mouseDownAction_({false})
 		.scale_(160)
-		.background_(Color.gray(0.25))
+		.background_(Color.gray(0.15))
 		.perspective_(0)
-		.transforms_([Canvas3D.mRotateZ(pi/2),Canvas3D.mTranslate(-0.6,0,0)])
+		.transforms_([Canvas3D.mRotateZ(0),Canvas3D.mTranslate(4,-5,0)])
 		.distance_(3.5)
 		.postDrawFunc = {
 			Pen.color_(Color.white);
-			("Title").drawAtPoint(10@10, Font(size:32));
+			("Title").drawAtPoint(10@50, Font(size:64));
 			Pen.color_(Color.white.alpha_(0.4));
-			("ID: "+data.did+" OSC: ["++data.ip+", "+data.port++"]").drawAtPoint(10@280, Font(size:12));
+			("ID: "+data.did+" OSC: ["++data.ip+", "+data.port++"]").drawAtPoint(10@(contentView.bounds.height - 50), Font(size:12));
 		};
 
 	graph1.add(cube = Canvas3DItem.cube()
@@ -90,7 +90,7 @@ var threeDeeView = { |view, data|
 	var view = View()
 		.background_(Color.black)
 		.layout_(HLayout(
-			threeDeeView.(view, d)
+			threeDeeView.(d)
 		))
 		.mouseDownAction_({|but|
 			"Device % clicked".format(i).postln;

@@ -11,7 +11,7 @@ var makeButton = {|d|
 };
 
 var grid = {
-	View().layout_(GridLayout.rows(
+	View().layout_(GridLayout.columns(
 		[
 			makeButton.("left arm"),
 			makeButton.("right arm"),
