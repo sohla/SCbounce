@@ -5,7 +5,7 @@ var view;
 var p;
 var controlBus = Bus.control(s, 4);
 
-var updateView = {
+var updateView = {|v|
     var now = thisThread.seconds;
     var count = 0;
 
@@ -37,29 +37,188 @@ var updateView = {
             col = col.alpha_(event[\alphaEnv].at(normTime));
             count = count + 1;
 
-            Pen.width = 1;
+            Pen.width = max(1, size.squared.lincurve(1, 100000, 1, 20, 0.1));
+            Pen.strokeColor = col;
+            Pen.fillColor = col;
             Pen.rotate(event[\rotation], pos.x, pos.y);
 
-            switch (shape,
+            switch (event[\shape],
                 \circle, {
-                    Pen.fillColor = col;
                     Pen.fillOval(Rect.aboutPoint(pos, size, size));
                 },
                 \square, {
-                    // Pen.strokeColor = col;
-                    // Pen.width = max(1, size.squared.lincurve(1, 100000, 1, 40, 0.1));
-                    // Pen.strokeRect(Rect.aboutPoint(pos, size, size));
-                    Pen.fillColor = col;
                     Pen.fillRect(Rect.aboutPoint(pos, size, size));
                 },
                 \line, {
-                    Pen.strokeColor = col;
-                    Pen.width = max(1, size.squared.lincurve(1, 100000, 1, 20, 0.1));
-                    Pen.line(pos - (size @ 0), pos + (size @ 0));
+                    // Pen.width = max(1, size.squared.lincurve(1, 100000, 1, 20, 0.1));
+                    Pen.moveTo(pos - (size @ 0));
+                    Pen.lineTo(pos + (size @ 0));
                     Pen.stroke;
+                },
+                \triangle, { // Equilateral triangle
+                    var height = size * sqrt(3) / 2;
+                    var points = [
+                        pos + (0 @ (height.neg / 1)), // Top point
+                        pos + ((size.neg / 1) @ (height / 2)), // Bottom-left
+                        pos + ((size / 1) @ (height / 2)) // Bottom-right
+                    ];
+                    Pen.moveTo(points[0]);
+                    Pen.lineTo(points[1]);
+                    Pen.lineTo(points[2]);
+                    Pen.lineTo(points[0]); // Close the triangle
+                    Pen.fill;
+                },
+                \star, { // 5-pointed star
+                    var innerRatio=0.5, rotation=0;
+                    var points = Array.fill(10, { |i|
+                        var angle = (i * pi / 5) + rotation; // Alternate between inner and outer points
+                        var radius = if(i % 2 == 0, { size }, { size * innerRatio });
+                        
+                        // Return a Point with x @ y coordinates
+                        pos + (radius * cos(angle) @ (radius * sin(angle)))
+                    });
+                    
+                    // Move to first point
+                    Pen.moveTo(points[0]);
+                    
+                    // Draw lines to all other points
+                    points.do { |point, i|
+                        if (i > 0) { Pen.lineTo(point) };
+                    };
+                    
+                    // Close the path by connecting back to the first point
+                    Pen.lineTo(points[0]);
+                    Pen.stroke;
+                },
+                \hexagon, { // Regular hexagon
+
+                    // Create array of points for a regular hexagon
+                    var points = Array.fill(6, { |i|
+                        var angle = (i * (2pi / 6)) + 0;
+                        
+                        // Return a Point with x @ y coordinates
+                        pos + ((size * cos(angle)) @ (size * sin(angle)))
+                    });
+                    
+                    // Start at the first vertex, not at the center
+                    Pen.moveTo(points[0]);
+                    
+                    // Draw lines to all other vertices
+                    points[1..].do { |point|
+                        Pen.lineTo(point);
+                    };
+                    
+                    // Close the path by connecting back to the first point
+                    Pen.lineTo(points[0]);
+                    Pen.stroke;
+
+                },
+                \cross, { // Cross shape
+    
+                    // If thickness is not specified, default to size/3
+                    var thickness = thickness ? (size / 3);
+                    var halfThick = thickness / 2;
+                    
+                    // Calculate the eight points of the cross (clockwise from top-left of vertical bar)
+                    var points = [
+                        // Points for vertical bar (top to bottom)
+                        Point(pos.x - halfThick, pos.y - size),
+                        Point(pos.x + halfThick, pos.y - size),
+                        Point(pos.x + halfThick, pos.y - halfThick),
+                        
+                        // Points for horizontal bar (right side)
+                        Point(pos.x + size, pos.y - halfThick),
+                        Point(pos.x + size, pos.y + halfThick),
+                        
+                        // Bottom of vertical bar
+                        Point(pos.x + halfThick, pos.y + halfThick),
+                        Point(pos.x + halfThick, pos.y + size),
+                        Point(pos.x - halfThick, pos.y + size),
+                        Point(pos.x - halfThick, pos.y + halfThick),
+                        
+                        // Left side of horizontal bar
+                        Point(pos.x - size, pos.y + halfThick),
+                        Point(pos.x - size, pos.y - halfThick),
+                        Point(pos.x - halfThick, pos.y - halfThick)
+                    ];
+                    
+                    // Draw the cross
+                    Pen.moveTo(points[0]);
+                    points[1..].do { |point|
+                        Pen.lineTo(point);
+                    };
+                    // Close the path
+                    Pen.lineTo(points[0]);
+                    Pen.fill;
+                },
+                \wave, { // Sine wave
+                    var points = Array.fill(100, { |i|
+                        var x = pos.x + (i / 100 * size * 2) - size; // Map x across the size
+                        var y = pos.y + (sin(i / 100 * 2pi) * (size / 2));
+                        x @ y
+                    });
+                    Pen.moveTo(points[0]);
+                    points.do { |point, i|
+                        if (i > 0) { Pen.lineTo(point) };
+                    };
+                    Pen.stroke;
+                },
+                \leaf,{
+                    var numPoints = 10;
+                    var width = width ? (size / 3);
+                    
+                    var points = Array.fill(numPoints * 2 + 1, { |i|
+                        var t;
+                        var x, y;
+                        
+                        if (i <= numPoints) {
+                            // First half - going from base to tip along right edge
+                            t = i / numPoints;
+                            x = pos.x + (size * t);
+                            // Create curved edge - peak in the middle, tapering at ends
+                            y = pos.y + (width * sin(t * pi) * (0.5 + (sin(t * pi * 0.2) * 0.5)));
+                        } {
+                            // Second half - coming back from tip to base along left edge
+                            t = (numPoints * 2 - i) / numPoints;
+                            x = pos.x + (size * t);
+                            // Mirror the right edge, but with slight asymmetry
+                            y = pos.y - (width * sin(t * pi) * (0.4 + (sin(t * pi * 0.2) * 0.5)));
+                        };
+                        
+                        Point(x, y);
+                    });
+                    
+                    // Draw the leaf outline
+                    Pen.moveTo(points[0]);
+                    points[1..].do { |point|
+                        Pen.lineTo(point);
+                    };
+                    Pen.stroke;                    
+                },
+
+                \spiral, {
+                    var maxRadius = size, turns=3, startRadius=0;
+                    var numPoints = 100 * turns; // More points for smoother spiral
+                    var points = Array.fill(numPoints, { |i|
+                        var progress = i / (numPoints - 1); // 0 to 1
+                        var angle = progress * turns * 2pi; // Angle increases with each point
+                        var radius = startRadius + ((maxRadius - startRadius) * progress); // Radius increases linearly
+                        
+                        // Convert polar coordinates to Cartesian
+                        var x = pos.x + (radius * cos(angle));
+                        var y = pos.y + (radius * sin(angle));
+                        
+                        x @ y
+                    });
+                    
+                    // Draw the spiral
+                    Pen.moveTo(points[0]);
+                    points[1..].do { |point|
+                        Pen.lineTo(point);
+                    };     
+                    Pen.stroke;                                   
                 }
             );
-
             Pen.rotate(event[\rotation].neg, pos.x, pos.y);
         };
     };
@@ -145,7 +304,7 @@ var envLibrary = (
     firstQuarter: {
         Env(
             [0, 1],
-            [1],
+            [0.2],
             \sine 
         )
     },
@@ -260,6 +419,27 @@ CmdPeriod.doOnce({
 });
 
 
+SynthDef(\versatilePerc, {
+    |out=0, freq=50, tension=0.01, decay=0.5, clickLevel=0.5, amp=0.5, dist = 3, pan = 0|
+    var pitch_contour, drum_osc, click_osc, drum_env, click_env, sig, pch;
+
+    pitch_contour = Line.kr(1, 0, 0.02);
+	pch = freq * (0.992 + (pitch_contour * tension));
+	drum_osc = SinOsc.ar([pch,pch*1.004], LFNoise2.ar([7,8],4,-4),0.5);
+    click_osc = LPF.ar(WhiteNoise.ar(1), 1500);
+    drum_env = EnvGen.ar(
+        Env.perc(attackTime: 0.005, releaseTime: decay, curve: -4),
+        doneAction: 2
+    );
+    click_env = EnvGen.ar(
+        Env.perc(attackTime: 0.001, releaseTime: 0.01),
+        levelScale: clickLevel
+    );
+	sig = (drum_osc * drum_env) + (click_osc * click_env);
+	sig = (sig * dist).tanh.distort;
+	Out.ar(out, Pan2.ar(sig[0],pan,amp))
+}).add;
+
 SynthDef(\woodBamboo, {
     |out=0, freq=1000, ringTime=0.1, ringMix=0.5, noiseMix=0.5, amp=0.5|
     var exciter, resonator, noiseSig, output;
@@ -300,58 +480,64 @@ s.waitForBoot({
 		\note, Pseq([0,4,7,11], inf),
         \root, Pseq([0,3,-2,7,-4,2].stutter(4*3), inf),
         \ringTime, 2,
+        \ii, Pseq([0,1,2,3,4,5,6,7,8].stutter(12), inf),
         \midiNote, Pfunc{|e| ((e.octave * 12) + (e.note) + (e.root))}, //make ourselves
         \type, \customEvent,
-        \shape, \circle,
-        \sx, Pfunc{(mx.getSynchronous.linlin(0,1,0,1200))},
+        \shape, Pindex([\triangle,\line,\spiral,\star,\wave,\square,\circle,\cross,\hexagon],0, inf),
+        \sx, 10 + Pkey(\root) * 40,
         \sy, 90 - Pkey(\midiNote) * 10,
-        \ex, Pkey(\sx) + 80,
+        \ex, Pkey(\sx) + (130 * Pseq([1,-1], inf)),
         \ey, 85 - Pkey(\midiNote) * 10,
-        \xEnv, Pfunc { ce.(\ripple) },
+        \xEnv, Pfunc { ce.(\firstQuarter) },
         \yEnv, Pfunc { ce.(\linear) },
-        \startSize, 30,
+        \startSize, 50,
         \endSize, 0,
         \sizeEnv, Pfunc { ce.(\linear) },
-        \hue, Pseg(Pseq([0.5,0.99999], inf), 4, \linear, inf),
+        \hue, Pseg(Pseq([0.0,0.79999], inf), 4, \linear, inf),
         \startColor,  Pfunc({|e|Color.hsv(e.hue,1,1)}),
-        \endColor,  Pfunc({|e|Color.hsv(e.hue - 0.5,1,0)}),
+        \endColor,  Pfunc({|e|Color.hsv(e.hue + 0.2,1,0)}),
         \colorEnv, Pfunc { Env([0, 1], [1], \linear) },
-        \rotation, Pseg(Pseq([-pi, pi], inf), 8, \linear, inf),
+        \rotation, Pseg(Pseq([-pi/2, pi/2], inf), 2, \linear, inf),
         // \dur, Pxrand([0.125 * 1], inf),
-        \dur, Pfunc{(my.getSynchronous.linlin(0,1,1,0.125))},
-		\duration, 4,
+        \dur, 0.125,
+		\duration, 2,
 
     ).play(quant: 0.0);
 
     Pbindef(\pb,
-        \instrument, \woodBamboo,
-        \octave, Pxrand([2,3,4].stutter(7), inf),
+        \instrument, \versatilePerc,
+        \octave, Pxrand([2,3].stutter(7), inf),
 		\note, Pseq([0,12,7], inf),
-        \root, Pseq([0,3,-2,7,-4,2].stutter(3), inf),
-        \amp,0.8,
+        \root, Pseq([0,3,-2,7,-4,2].stutter(4), inf),
+        \amp,0.4,
         \noiseMix, 0.1,
-        \ringTime, 0.2,
+        \decay, Pwhite(0.1, 1.0, inf),
         \midiNote, Pfunc{|e| ((e.octave * 12) + (e.note) + (e.root))}, //make ourselves
         \type, \customEvent,
-        \shape, \square,
-        \sx, 600,
-        \sy, 10 - Pkey(\root) + Pkey(\octave) * 32,
-        \ex, 600,
-        \ey, Pkey(\sy) + 100,
-        \xEnv, Pfunc { ce.(\anticipate) },
-        \yEnv, Pfunc { ce.(\anticipate) },
-        \startSize, 60,
-        \endSize, 0,
-        \sizeEnv, Pfunc { ce.(\linear) },
+        \shape, Pseq([\leaf], inf),
+        \sx, 590,
+        \sy, 140 - Pkey(\midiNote) * 5,
+        \ex, 610,
+        \ey, Pkey(\sy) + 450,
+        \xEnv, Pfunc { ce.(\ripple) },
+        \yEnv, Pfunc { ce.(\linear) },
+        \startSize, 230,
+        \endSize, 23,
+        \sizeEnv, Pfunc { ce.(\firstQuarter) },
         \hue, Pseg(Pseq([0.0,0.49999], inf), 4, \linear, inf),
         \startColor,  Pfunc({|e|Color.hsv(e.hue,1,1)}),
         \endColor,  Pfunc({|e|Color.hsv(e.hue + 0.5,1,0)}),
         \colorEnv, Pfunc { Env([0, 1], [1], \linear) },
-        \rotation, Pseg(Pseq([-pi, pi], inf), 8, \linear, inf),
-        \dur, Pxrand([0.125 * 4], inf),
-		\duration, Pkey(\ringTime) * 3,
+        \rotation, Pseg(Pseq([-pi/2,-pi/2], inf), 8, \linear, inf),
+        \dur, Pseq([0.125 * 4, 0.125 * 2], inf),
+		\duration, 4,
 
     ).play(quant: 0.0);    
+
+    Pbindef(\pa,
+        \shape, Pindex([\triangle,\line,\spiral,\star,\wave,\circle,\cross,\hexagon],Pkey(\ii), inf)
+
+        );
 });
 )
 
@@ -361,3 +547,9 @@ timing of envelopes : this is set by the dif between start and end time and dura
 how do we make an instance fpor each UserView
 
 */
+
+
+
+
+
+

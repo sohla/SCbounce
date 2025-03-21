@@ -42,20 +42,61 @@
                         // Draw the shape
                         Pen.width = 1;
                         Pen.rotate(event[\rotation], pos.x, pos.y);
+                        Pen.fillColor = col;
+                        Pen.strokeColor = col;
         
                         switch (event[\shape],
                             \circle, {
-                                Pen.fillColor = col;
                                 Pen.fillOval(Rect.aboutPoint(pos, size, size));
                             },
                             \square, {
-                                Pen.fillColor = col;
                                 Pen.fillRect(Rect.aboutPoint(pos, size, size));
                             },
                             \line, {
-                                Pen.strokeColor = col;
                                 Pen.width = max(1, size.squared.lincurve(1, 100000, 1, 20, 0.1));
                                 Pen.line(pos - (size @ 0), pos + (size @ 0));
+                                Pen.stroke;
+                            },
+                            \triangle, { // Equilateral triangle
+                                var height = size * sqrt(3) / 2;
+                                var points = [
+                                    pos + (0 @ (height.neg / 2)), // Top point
+                                    pos + ((size.neg / 2) @ (height / 2)), // Bottom-left
+                                    pos + ((size / 2) @ (height / 2)) // Bottom-right
+                                ];
+                                Pen.addPolygon(points);
+                                Pen.fill;
+                            },
+                            \star, { // 5-pointed star
+                                var points = Array.fill(10, { |i|
+                                    var angle = i * pi / 5; // Alternate between inner and outer points
+                                    var radius = if(i % 2 == 0,{size},{(size / 2)});
+                                    pos + (radius * cos(angle) @ radius * sin(angle))
+                                });
+                                Pen.addPolygon(points);
+                                Pen.fill;
+                            },
+                            \hexagon, { // Regular hexagon
+                                var points = Array.fill(6, { |i|
+                                    var angle = i * (2pi / 6);
+                                    pos + (size * cos(angle) @ size * sin(angle))
+                                });
+                                Pen.addPolygon(points);
+                                Pen.fill;
+                            },
+                            \cross, { // Cross shape
+                                var thickness = size / 3;
+                                Pen.fillRect(Rect(pos.x - thickness / 2, pos.y - size / 2, thickness, size)); // Vertical bar
+                                Pen.fillRect(Rect(pos.x - size / 2, pos.y - thickness / 2, size, thickness)); // Horizontal bar
+                            },
+                            \wave, { // Sine wave
+                                var points = Array.fill(100, { |i|
+                                    var x = pos.x + (i / 100 * size * 2) - size; // Map x across the size
+                                    var y = pos.y + (sin(i / 100 * 2pi) * size / 2); // Sine wave for y
+                                    x @ y
+                                });
+                                Pen.width(2);
+                                Pen.addLines(points);
                                 Pen.stroke;
                             }
                         );
