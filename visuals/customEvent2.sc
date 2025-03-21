@@ -32,8 +32,8 @@ var updateView = {|v|
             pos = x @ y;
 
             size = event[\startSize].blend(event[\endSize], event[\sizeEnv].at(normTime));
-            // col = event[\startColor].blend(event[\endColor], event[\colorEnv].at(normTime));
-            col = Color.hsv(event[\startColor].hue.blend(event[\endColor].hue, event[\colorEnv].at(normTime)),1,1);
+            col = event[\startColor].blend(event[\endColor], event[\colorEnv].at(normTime));
+            // col = Color.hsv(event[\startColor].hue.blend(event[\endColor].hue, event[\colorEnv].at(normTime)),1,1);
             col = col.alpha_(event[\alphaEnv].at(normTime));
             count = count + 1;
 
@@ -240,6 +240,7 @@ var makeView = {
 };
 
 var window = Window("Visual Synthesizer", Rect(1000, 100, 1200*2, 800*2))
+    .fullScreen
     .front
     .background_(Color.white().alpha_(1))
     .layout_(GridLayout.rows(
@@ -321,7 +322,7 @@ var envLibrary = (
             1 - sqrt(1 - x.squared)
         }, 0, 1);
         Env.new(sig, 0.01)
-    },
+        },
     ripple: {
         var sig = Signal.newClear(100);
         sig.waveFill({ |x|
@@ -484,13 +485,13 @@ s.waitForBoot({
         \midiNote, Pfunc{|e| ((e.octave * 12) + (e.note) + (e.root))}, //make ourselves
         \type, \customEvent,
         \shape, Pindex([\triangle,\line,\spiral,\star,\wave,\square,\circle,\cross,\hexagon],0, inf),
-        \sx, 10 + Pkey(\root) * 40,
-        \sy, 90 - Pkey(\midiNote) * 10,
-        \ex, Pkey(\sx) + (130 * Pseq([1,-1], inf)),
-        \ey, 85 - Pkey(\midiNote) * 10,
+        \sx, 4 + Pkey(\root) * 40,
+        \sy, 80 - Pkey(\midiNote) * 10,
+        \ex, Pkey(\sx) - 130,
+        \ey, 75 - Pkey(\midiNote) * 10,
         \xEnv, Pfunc { ce.(\firstQuarter) },
         \yEnv, Pfunc { ce.(\linear) },
-        \startSize, 50,
+        \startSize, 30,
         \endSize, 0,
         \sizeEnv, Pfunc { ce.(\linear) },
         \hue, Pseg(Pseq([0.0,0.79999], inf), 4, \linear, inf),
@@ -515,10 +516,10 @@ s.waitForBoot({
         \midiNote, Pfunc{|e| ((e.octave * 12) + (e.note) + (e.root))}, //make ourselves
         \type, \customEvent,
         \shape, Pseq([\leaf], inf),
-        \sx, 590,
-        \sy, 140 - Pkey(\midiNote) * 5,
-        \ex, 610,
-        \ey, Pkey(\sy) + 450,
+        \sx, 390,
+        \sy, 60 - Pkey(\midiNote) * 10,
+        \ex, 400,
+        \ey, 200,
         \xEnv, Pfunc { ce.(\ripple) },
         \yEnv, Pfunc { ce.(\linear) },
         \startSize, 230,
@@ -528,9 +529,9 @@ s.waitForBoot({
         \startColor,  Pfunc({|e|Color.hsv(e.hue,1,1)}),
         \endColor,  Pfunc({|e|Color.hsv(e.hue + 0.5,1,0)}),
         \colorEnv, Pfunc { Env([0, 1], [1], \linear) },
-        \rotation, Pseg(Pseq([-pi/2,-pi/2], inf), 8, \linear, inf),
+        \rotation, Pseg(Pseq([-pi,-pi], inf), 4, \linear, inf),
         \dur, Pseq([0.125 * 4, 0.125 * 2], inf),
-		\duration, 4,
+		\duration, 7,
 
     ).play(quant: 0.0);    
 
