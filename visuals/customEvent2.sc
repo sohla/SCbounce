@@ -24,7 +24,7 @@ var updateView = {|v|
         };
 
         if (normTime < 1.0) {
-            
+
             var x = event[\sx].blend(event[\ex], event[\xEnv].at(normTime));
             var y = event[\sy].blend(event[\ey], event[\yEnv].at(normTime));
             shape = event[\shape];
@@ -73,19 +73,19 @@ var updateView = {|v|
                     var points = Array.fill(10, { |i|
                         var angle = (i * pi / 5) + rotation; // Alternate between inner and outer points
                         var radius = if(i % 2 == 0, { size }, { size * innerRatio });
-                        
+
                         // Return a Point with x @ y coordinates
                         pos + (radius * cos(angle) @ (radius * sin(angle)))
                     });
-                    
+
                     // Move to first point
                     Pen.moveTo(points[0]);
-                    
+
                     // Draw lines to all other points
                     points.do { |point, i|
                         if (i > 0) { Pen.lineTo(point) };
                     };
-                    
+
                     // Close the path by connecting back to the first point
                     Pen.lineTo(points[0]);
                     Pen.stroke;
@@ -95,53 +95,53 @@ var updateView = {|v|
                     // Create array of points for a regular hexagon
                     var points = Array.fill(6, { |i|
                         var angle = (i * (2pi / 6)) + 0;
-                        
+
                         // Return a Point with x @ y coordinates
                         pos + ((size * cos(angle)) @ (size * sin(angle)))
                     });
-                    
+
                     // Start at the first vertex, not at the center
                     Pen.moveTo(points[0]);
-                    
+
                     // Draw lines to all other vertices
                     points[1..].do { |point|
                         Pen.lineTo(point);
                     };
-                    
+
                     // Close the path by connecting back to the first point
                     Pen.lineTo(points[0]);
                     Pen.stroke;
 
                 },
                 \cross, { // Cross shape
-    
+
                     // If thickness is not specified, default to size/3
                     var thickness = thickness ? (size / 3);
                     var halfThick = thickness / 2;
-                    
+
                     // Calculate the eight points of the cross (clockwise from top-left of vertical bar)
                     var points = [
                         // Points for vertical bar (top to bottom)
                         Point(pos.x - halfThick, pos.y - size),
                         Point(pos.x + halfThick, pos.y - size),
                         Point(pos.x + halfThick, pos.y - halfThick),
-                        
+
                         // Points for horizontal bar (right side)
                         Point(pos.x + size, pos.y - halfThick),
                         Point(pos.x + size, pos.y + halfThick),
-                        
+
                         // Bottom of vertical bar
                         Point(pos.x + halfThick, pos.y + halfThick),
                         Point(pos.x + halfThick, pos.y + size),
                         Point(pos.x - halfThick, pos.y + size),
                         Point(pos.x - halfThick, pos.y + halfThick),
-                        
+
                         // Left side of horizontal bar
                         Point(pos.x - size, pos.y + halfThick),
                         Point(pos.x - size, pos.y - halfThick),
                         Point(pos.x - halfThick, pos.y - halfThick)
                     ];
-                    
+
                     // Draw the cross
                     Pen.moveTo(points[0]);
                     points[1..].do { |point|
@@ -166,11 +166,11 @@ var updateView = {|v|
                 \leaf,{
                     var numPoints = 10;
                     var width = width ? (size / 3);
-                    
+
                     var points = Array.fill(numPoints * 2 + 1, { |i|
                         var t;
                         var x, y;
-                        
+
                         if (i <= numPoints) {
                             // First half - going from base to tip along right edge
                             t = i / numPoints;
@@ -184,16 +184,16 @@ var updateView = {|v|
                             // Mirror the right edge, but with slight asymmetry
                             y = pos.y - (width * sin(t * pi) * (0.4 + (sin(t * pi * 0.2) * 0.5)));
                         };
-                        
+
                         Point(x, y);
                     });
-                    
+
                     // Draw the leaf outline
                     Pen.moveTo(points[0]);
                     points[1..].do { |point|
                         Pen.lineTo(point);
                     };
-                    Pen.stroke;                    
+                    Pen.stroke;
                 },
 
                 \spiral, {
@@ -203,20 +203,20 @@ var updateView = {|v|
                         var progress = i / (numPoints - 1); // 0 to 1
                         var angle = progress * turns * 2pi; // Angle increases with each point
                         var radius = startRadius + ((maxRadius - startRadius) * progress); // Radius increases linearly
-                        
+
                         // Convert polar coordinates to Cartesian
                         var x = pos.x + (radius * cos(angle));
                         var y = pos.y + (radius * sin(angle));
-                        
+
                         x @ y
                     });
-                    
+
                     // Draw the spiral
                     Pen.moveTo(points[0]);
                     points[1..].do { |point|
                         Pen.lineTo(point);
-                    };     
-                    Pen.stroke;                                   
+                    };
+                    Pen.stroke;
                 }
             );
             Pen.rotate(event[\rotation].neg, pos.x, pos.y);
@@ -301,19 +301,19 @@ var envLibrary = (
     overshoot: { Env([0, -0.1, 1], [0.2, 0.8], [\sine, 3]) },
     anticipate: { Env([0, -0.2, 1], [0.3, 0.7], [\sine, \sin]) },
     step: { Env([0, 0.2, 0.2, 0.4, 0.4, 0.6, 0.6, 0.8, 0.8, 1], [0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1], [\step, \step, \step, \step, \step, \step, \step, \step, \step]) },
-    
+
     firstQuarter: {
         Env(
             [0, 1],
             [0.2],
-            \sine 
+            \sine
         )
     },
     secondQuarter: {
         Env(
             [1, 0],
             [1],
-            \sine 
+            \sine
         )
     },
     circle: {
@@ -381,7 +381,7 @@ var envLibrary = (
         }, 0, 1);
         Env.new(sig, 0.01)
     }
-    
+
 );
 
 // Function to retrieve a custom envelope by name
@@ -465,6 +465,159 @@ SynthDef(\woodBamboo, {
     Out.ar(out, Pan2.ar(output, 0, amp));
 }).add;
 
+// 1. FM Bell Synth - metallic percussive sounds with frequency modulation
+SynthDef(\fmBell, {
+    |out=0, freq=440, modIndex=3, modRatio=2.2, amp=0.5, att=0.01, rel=2, pan=0|
+    var carrier, modulator, env;
+    modulator = SinOsc.ar(freq * modRatio) * freq * modIndex;
+    carrier = SinOsc.ar(freq + modulator);
+    env = EnvGen.ar(Env.perc(att, rel, curve: -4), doneAction: 2);
+    Out.ar(out, Pan2.ar(carrier * env * amp, pan));
+}).add;
+
+// 2. Ambient Pad - atmospheric sustained sounds with chorus effect
+SynthDef(\ambientPad, {
+    |out=0, freq=440, amp=0.3, att=0.5, decay=0.5, sus=1.0, rel=2.0, cutoff=1200, rq=0.5, pan=0, lfoRate=4, lfoDepth=0.03|
+    var sig, env, chorus;
+    env = EnvGen.ar(Env.adsr(att, decay, sus, rel), doneAction: 2);
+    sig = Mix.ar([
+        Saw.ar(freq * LFNoise2.kr(0.1, 0.01, 1)),
+        Saw.ar(freq * 0.99 * LFNoise2.kr(0.13, 0.01, 1)),
+        Saw.ar(freq * 1.01 * LFNoise2.kr(0.17, 0.01, 1))
+    ]);
+    // Gentle chorus effect
+    chorus = DelayC.ar(sig, 0.05, SinOsc.kr(lfoRate, [0, 2pi]).range(0, lfoDepth) + 0.005);
+    sig = Mix.ar([sig, chorus]) * 0.5;
+    sig = RLPF.ar(sig, cutoff * env.linexp(0, 1, 0.6, 1), rq);
+    Out.ar(out, Pan2.ar(sig * env * amp, pan));
+}).add;
+// 1. FM Bell Synth - metallic percussive sounds with frequency modulation
+SynthDef(\fmBell, {
+    |out=0, freq=440, modIndex=3, modRatio=2.2, amp=0.5, att=0.01, rel=2, pan=0|
+    var carrier, modulator, env;
+    modulator = SinOsc.ar(freq * modRatio) * freq * modIndex;
+    carrier = SinOsc.ar(freq + modulator);
+    env = EnvGen.ar(Env.perc(att, rel, curve: -4), doneAction: 2);
+    Out.ar(out, Pan2.ar(carrier * env * amp, pan));
+}).add;
+
+// 2. Ambient Pad - atmospheric sustained sounds with chorus effect
+SynthDef(\ambientPad, {
+    |out=0, freq=440, amp=0.3, att=0.5, decay=0.5, sus=1.0, rel=2.0, cutoff=1200, rq=0.5, pan=0, lfoRate=4, lfoDepth=0.03|
+    var sig, env, chorus;
+    env = EnvGen.ar(Env.adsr(att, decay, sus, rel), doneAction: 2);
+    sig = Mix.ar([
+        Saw.ar(freq * LFNoise2.kr(0.1, 0.01, 1)),
+        Saw.ar(freq * 0.99 * LFNoise2.kr(0.13, 0.01, 1)),
+        Saw.ar(freq * 1.01 * LFNoise2.kr(0.17, 0.01, 1))
+    ]);
+    // Gentle chorus effect
+    chorus = DelayC.ar(sig, 0.05, SinOsc.kr(lfoRate, [0, 2pi]).range(0, lfoDepth) + 0.005);
+    sig = Mix.ar([sig, chorus]) * 0.5;
+    sig = RLPF.ar(sig, cutoff * env.linexp(0, 1, 0.6, 1), rq);
+    Out.ar(out, Pan2.ar(sig * env * amp, pan));
+}).add;
+
+
+
+// 3. Glitch Percussion - digital, glitchy percussion sounds without Decimator
+SynthDef(\glitchPerc, {
+    |out=0, freq=300, amp=0.5, density=20, decay=0.5, pan=0, ffreq=2000|
+    var sig, env, dust, clickyEnv, noiseAmt;
+    // Use a mix of noise bursts and oscillators for glitchy texture
+    dust = Dust2.ar(density);
+    env = EnvGen.ar(Env.perc(0.001, decay), doneAction: 2);
+    // Create glitchy effect with sample and hold noise, ring modulation
+    clickyEnv = EnvGen.ar(Env.perc(0.0005, 0.01, curve: 0), dust);
+    noiseAmt = LFNoise0.kr(10).range(0.1, 0.9);
+
+    sig = Mix([
+        // Ring modulation for metallic tones
+        SinOsc.ar(freq) * SinOsc.ar(LFNoise0.kr(8).exprange(freq * 0.8, freq * 8)),
+        // Sample & hold noise for digital artifacts
+        LFNoise0.ar(LFNoise0.kr(4).exprange(100, 8000)) * noiseAmt,
+        // Clicky transients
+        WhiteNoise.ar(0.2) * clickyEnv
+    ]);
+
+    // Chaotic filter behavior
+    sig = RLPF.ar(sig,
+        LFNoise1.kr(5).exprange(ffreq * 0.5, ffreq * 2) * env.linexp(0, 1, 0.5, 1),
+        LFNoise1.kr(2).range(0.05, 0.5)
+    );
+
+    sig = (sig * 3).clip(-0.8, 0.8); // Clip for distortion
+    sig = sig * env * amp;
+    Out.ar(out, Pan2.ar(sig, pan));
+}).add;
+
+// 4. Plucked String - physical modeling-inspired string plucks
+SynthDef(\pluck, {
+    |out=0, freq=440, amp=0.5, decay=1, coef=0.1, pan=0|
+    var sig, env;
+    sig = Pluck.ar(
+        WhiteNoise.ar(0.1),
+        1,
+        freq.reciprocal,
+        freq.reciprocal,
+        decay,
+        coef
+    );
+    env = EnvGen.ar(Env.perc(0.001, decay), doneAction: 2);
+    sig = sig * env * amp;
+    Out.ar(out, Pan2.ar(sig, pan));
+}).add;
+
+// 5. Resonant Sweep - filter sweeps with resonance
+SynthDef(\resonantSweep, {
+    |out=0, freq=440, amp=0.4, att=0.01, sus=0, rel=1, ffreq=1000, startRq=1.0, endRq=0.01, pan=0|
+    var sig, env, filterEnv;
+    env = EnvGen.ar(Env.linen(att, sus, rel), doneAction: 2);
+    filterEnv = XLine.kr(startRq, endRq, rel);
+    sig = Mix.ar([
+        LFSaw.ar(freq),
+        LFSaw.ar(freq * 1.01),
+        LFPulse.ar(freq * 0.5, 0, 0.5)
+    ]) * 0.3;
+    sig = RLPF.ar(sig, ffreq, filterEnv);
+    sig = sig * env * amp;
+    Out.ar(out, Pan2.ar(sig, pan));
+}).add;
+
+
+// 4. Plucked String - physical modeling-inspired string plucks
+SynthDef(\pluck, {
+    |out=0, freq=440, amp=0.5, decay=1, coef=0.1, pan=0|
+    var sig, env;
+    sig = Pluck.ar(
+        WhiteNoise.ar(0.1),
+        1,
+        freq.reciprocal,
+        freq.reciprocal,
+        decay,
+        coef
+    );
+    env = EnvGen.ar(Env.perc(0.001, decay), doneAction: 2);
+    sig = sig * env * amp;
+    Out.ar(out, Pan2.ar(sig, pan));
+}).add;
+
+// 5. Resonant Sweep - filter sweeps with resonance
+SynthDef(\resonantSweep, {
+    |out=0, freq=440, amp=0.4, att=0.01, sus=0, rel=1, ffreq=1000, startRq=1.0, endRq=0.01, pan=0|
+    var sig, env, filterEnv;
+    env = EnvGen.ar(Env.linen(att, sus, rel), doneAction: 2);
+    filterEnv = XLine.kr(startRq, endRq, rel);
+    sig = Mix.ar([
+        LFSaw.ar(freq),
+        LFSaw.ar(freq * 1.01),
+        LFPulse.ar(freq * 0.5, 0, 0.5)
+    ]) * 0.3;
+    sig = RLPF.ar(sig, ffreq, filterEnv);
+    sig = sig * env * amp;
+    Out.ar(out, Pan2.ar(sig, pan));
+}).add;
+
 SynthDef(\mouseX, { |bus| Out.kr(bus, MouseX.kr(0,1.0))}).add;
 SynthDef(\mouseY, { |bus| Out.kr(bus, MouseY.kr(0,1.0))}).add;
 
@@ -485,13 +638,13 @@ s.waitForBoot({
         \midiNote, Pfunc{|e| ((e.octave * 12) + (e.note) + (e.root))}, //make ourselves
         \type, \customEvent,
         \shape, Pindex([\triangle,\line,\spiral,\star,\wave,\square,\circle,\cross,\hexagon],0, inf),
-        \sx, 4 + Pkey(\root) * 40,
+        \sx, 11 + Pkey(\root) * 30,
         \sy, 80 - Pkey(\midiNote) * 10,
         \ex, Pkey(\sx) - 130,
         \ey, 75 - Pkey(\midiNote) * 10,
         \xEnv, Pfunc { ce.(\firstQuarter) },
         \yEnv, Pfunc { ce.(\linear) },
-        \startSize, 30,
+        \startSize, 130,
         \endSize, 0,
         \sizeEnv, Pfunc { ce.(\linear) },
         \hue, Pseg(Pseq([0.0,0.79999], inf), 4, \linear, inf),
@@ -533,12 +686,117 @@ s.waitForBoot({
         \dur, Pseq([0.125 * 4, 0.125 * 2], inf),
 		\duration, 7,
 
-    ).play(quant: 0.0);    
+    ).play(quant: 0.0);
 
     Pbindef(\pa,
         \shape, Pindex([\triangle,\line,\spiral,\star,\wave,\circle,\cross,\hexagon],Pkey(\ii), inf)
 
         );
+
+
+
+
+// Pbindef 1: Orbital Patterns with FM Bell synth
+	// Pbindef(\orbital,
+	// 	\instrument, \fmBell,
+	// 	\octave, Prand([4, 5, 6], inf),
+	// 	\degree, Pseq([0, 2, 4, 7, 9], inf),
+	// 	\scale, Scale.minor,
+	// 	\root, Pstutter(8, Pseq([0, 5, 3, -2], inf)),
+	// 	\modIndex, Pseg(Pseq([1, 5], inf), 8, \exp, inf),
+	// 	\modRatio, Pwhite(1.5, 2.5, inf),
+	// 	\amp, 0.25,
+	// 	\pan, Pseg(Pseq([-0.8, 0.8], inf), 16, \sine, inf),
+	// 	\att, 0.01,
+	// 	\rel, Pwhite(0.5, 2.0, inf),
+	// 	// Visual parameters
+	// 	\type, \customEvent,
+	// 	\shape, \circle,
+	// 	\sx, Pfunc({ 300 + (100 * sin(thisThread.seconds * 0.5)) }),
+	// 	\sy, Pfunc({ 200 + (100 * cos(thisThread.seconds * 0.3)) }),
+	// 	\ex, Pkey(\sx) + Pwhite(-50, 50, inf),
+	// 	\ey, Pkey(\sy) + Pwhite(-50, 50, inf),
+	// 	\xEnv, Pfunc { ce.(\ripple) },
+	// 	\yEnv, Pfunc { ce.(\circle) },
+	// 	\startSize, Pkey(\rel) * 10,
+	// 	\endSize, 2,
+	// 	\sizeEnv, Pfunc { ce.(\linear) },
+	// 	\startColor, Pfunc({ |e| Color.hsv((e.degree/12) % 1, 0.8, 1) }),
+	// 	\endColor, Pfunc({ |e| Color.hsv(((e.degree+3)/12) % 1, 1, 0.5) }),
+	// 	\colorEnv, Pfunc { ce.(\butterfly) },
+	// 	\rotation, Pkey(\modIndex) * pi/4,
+	// 	\dur, Pswitch([
+	// 		Pseq([0.125, 0.125, 0.25], 1),
+	// 		Pseq([0.25, 0.25], 1),
+	// 		Pseq([0.125, 0.125, 0.125, 0.125], 1)
+	// 	], Pwhite(0, 2, inf)) * 0.5,
+	// 	\duration, 30
+	// ).play(quant: 0);
+
+
+	// Pbindef 3: Glitchy Digital Rhythm with glitch percussion synth
+	// Pbindef(\glitchRhythm,
+	// 	\instrument, \glitchPerc,
+	// 	\freq, Prand([100, 200, 300, 450, 600], inf),
+	// 	\amp, 0.3,
+	// 	\density, Pwhite(10, 50, inf),
+	// 	\decay, Pwhite(0.05, 0.2, inf),
+	// 	\ffreq, Pwhite(1000, 8000, inf),
+	// 	\pan, Pwhite(-0.7, 0.7, inf),
+	// 	// Visual parameters
+	// 	\type, \customEvent,
+	// 	\shape, Prand([\cross, \star, \triangle], inf),
+	// 	\sx, Pwhite(100, 500, inf),
+	// 	\sy, Pwhite(100, 400, inf),
+	// 	\ex, Pwhite(100, 500, inf),
+	// 	\ey, Pwhite(100, 400, inf),
+	// 	\xEnv, Pfunc { ce.(\linear) },
+	// 	\yEnv, Pfunc { ce.(\linear) },
+	// 	\startSize, Pwhite(50, 150, inf),
+	// 	\endSize, 2,
+	// 	\sizeEnv, Pfunc { ce.(\step) },
+	// 	\startColor, Pfunc({ Color.hsv(0.05, 1, 1) }),
+	// 	\endColor, Pfunc({ Color.hsv(0, 0.9, 1) }),
+	// 	\colorEnv, Pfunc { Env([0, 1], [1], \step) },
+	// 	\rotation, 0,
+	// 	\dur, 0.25,
+	// 	\duration, 1.5
+	// ).play(quant: 0);
+
+	// Pbindef 4: Melodic Plucks with plucked string synth
+	// Pbindef(\melodicPlucks,
+	// 	\instrument, \pluck,
+	// 	\octave, Pseq([4, 5], inf),
+	// 	\degree, Pseq([0, 2, 4, 3, 7, 6, 4, 2], inf),
+	// 	\scale, Scale.harmonicMinor,
+	// 	\root, Pseq([0, 3, 5, -2], inf),
+	// 	\amp, 0.4,
+	// 	\decay, Pwhite(0.3, 1.5, inf),
+	// 	\coef, Pwhite(0.05, 0.2, inf),
+	// 	\pan, Pseg(Pseq([-0.6, 0.6], inf), 4, \sine, inf),
+	// 	// Visual parameters
+	// 	\type, \customEvent,
+	// 	\shape, \square,
+	// 	\sx, 300,
+	// 	\sy, Pfunc({ |e| 300.neg + ((e.degree + (e.octave * 7)) * 15) }),
+	// 	\ex, 300,
+	// 	\ey, Pkey(\sy),
+	// 	\xEnv, Pfunc { ce.(\anticipate) },
+	// 	\yEnv, Pfunc { ce.(\linear) },
+	// 	\startSize, Pkey(\decay) * 40,
+	// 	\endSize, 10,
+	// 	\sizeEnv, Pfunc { ce.(\bounce) },
+	// 	\startColor, Pfunc({ |e| Color.hsv(((e.degree + (e.root * 7))/12) % 1, 0.9, 0.9) }),
+	// 	\endColor, Pfunc({ |e| Color.hsv(((e.degree + (e.root * 7) + 7)/12) % 1, 0.7, 0.6) }),
+	// 	\colorEnv, Pfunc { ce.(\linear) },
+	// 	\rotation, Pwhite(pi.neg,pi),
+	// 	\dur, Pwrand([0.25, 0.5, 0.125], [0.6, 0.3, 0.1], inf),
+	// 	\duration, 2
+	// ).play(quant: 0);
+
+
+
+
 });
 )
 
