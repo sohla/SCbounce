@@ -1,9 +1,9 @@
 (
 	[
 		"silence",
-    "footGong",
-    "footGong2",
-    "ROLL_duration",
+    "bongo1",
+    "miniMoog",
+    "UD_pitchDynamics2",
     "magicWand",
     "drumkit5",
     "drumkit4",
@@ -14,11 +14,6 @@
 		"wind1",
 		"thunder",
 		"wingChimes1",
-		"silence",
-    "UD_pitchDynamics2",
-		"silence",
-    "animalMat",
-    "LR_pitchDynamics2",
 	]
 )
 

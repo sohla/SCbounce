@@ -1,5 +1,6 @@
 
 var m = ~model;
+var synth;
 
 m.accelMassFilteredAttack = 0.7;
 m.accelMassFilteredDecay = 0.2;
@@ -17,7 +18,60 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, start=0, pan=0, freq=
     Out.ar(out, sig);
 }).add;
 
+SynthDef(\warmRichSynth, {
+    arg out=0, freq=440, amp=0.5, gate=1,
+        attackTime=1.1, decayTime=0.3, sustainLevel=0.5, releaseTime=1.0,
+        cutoff=1000, resonance=0.5,
+        detune=0.1, stereoWidth=0.5,
+        oscMix=0.5, subOscLevel=0.3,
+        filterEnvAmount=0.1, filterAttack=0.03, filterDecay=0.1, filterSustain=0.5, filterRelease=0.5;
 
+    var sig, env, filterEnv, subOsc, stereoSig;
+
+    // ADSR envelope
+    env = EnvGen.kr(
+        Env.adsr(attackTime, decayTime, sustainLevel, releaseTime),
+        gate,
+        doneAction: 2
+    );
+
+    // Main oscillator (slightly detuned saw waves for richness)
+    sig = Mix.ar([
+        Saw.ar(freq * (1 - detune)),
+        Saw.ar(freq),
+        Saw.ar(freq * (1 + detune))
+    ]) * (1 - oscMix) ;
+
+    // Add a sine wave oscillator for warmth
+    sig = sig + (SinOsc.ar(freq) * oscMix);
+
+    // Sub oscillator for extra depth
+    subOsc = SinOsc.ar(freq * 0.5) * subOscLevel;
+    sig = sig + subOsc;
+
+    // Stereo widening
+    stereoSig = [sig, sig];
+    stereoSig = stereoSig + LocalIn.ar(2);
+    stereoSig = DelayC.ar(stereoSig, 0.01, SinOsc.kr(0.1, [0, pi]).range(0, 0.01) * stereoWidth);
+    LocalOut.ar(stereoSig * 0.5);
+
+    // Filter envelope
+    filterEnv = EnvGen.kr(
+        Env.adsr(filterAttack, filterDecay, filterSustain, filterRelease),
+        gate
+    );
+
+    // Apply resonant filter
+    sig = RLPF.ar(
+        stereoSig,
+        cutoff.lag(0.9) * (1 + (filterEnv * filterEnvAmount)),
+        resonance.linexp(0, 1, 1, 0.05)
+    );
+
+    // Apply main envelope and output
+    sig = sig * env * amp * 0.33;
+	Out.ar(out, DelayN.ar(sig,0.01,[0.007,0.009]));
+}).add;
 //------------------------------------------------------------
 ~init = ~init <> {
 
@@ -76,17 +130,32 @@ Event.addEventType(\customEvent, {|e|
 		Pbind(
 			\type, \customEvent,
 			\instrument, \stereoSampler,
-			\root, Pseq([0], inf),
-			\dur, Pseq([0.2,0.2,0.4,0.2,0.2], inf),
+			\root, Pseq([0,3,8,4,-2].stutter(32), inf),
+			\dur, Pseq([0.2,0.2,0.4,0.2,0.2] * 0.5, inf),
 			\octave, Pseq([4].stutter(2), inf),
+			\func, Pfunc({|e| ~onEvent.(e)})
 		);
 	);
 	Pdef(m.ptn).play(quant:0.1);
+
+	synth = Synth.new(\warmRichSynth,[
+		\freq, 36.midicps,
+		\detune,0.003,
+		\cutoff, 1111,
+		\subOscLevel,2,
+		\attackTime, 0.3,
+		\decayTime, 0.5,
+		\sustainLevel,0.7,
+		\amp, 0.0
+
+	]);
+
 };
 
 //------------------------------------------------------------
 ~deinit = ~deinit <> {
 	Pdef(m.ptn).remove;
+	synth.set(\gate,0);
 	s.freeAllBuffers;
 
 };
@@ -95,6 +164,7 @@ Event.addEventType(\customEvent, {|e|
 //------------------------------------------------------------
 ~onEvent = {|e|
 	m.com.root = e.root;
+	synth.set(\freq, (36+m.com.root).midicps);
 };
 
 
@@ -102,10 +172,15 @@ Event.addEventType(\customEvent, {|e|
 ~next = {|d|
 
 	var dur = 0.2;
-    var cs = [0,4];
+    var cs = [0,4,7];
     var notes = cs ++ (cs + 12) ++ (cs + 24) ++ (cs + 36);
 	var index = (d.sensors.gyroEvent.x/pi).linlin(-0.5,0.5,notes.size-1,0.0); //up down
-	var amp = m.accelMassFiltered.lincurve(0,2.5,-28,-6,-1);
+	var amp = m.accelMassFiltered.lincurve(0,2.5,-58,-14,-8);
+	var sa = m.accelMassFiltered.lincurve(0,2.5,-50,-12,-8);
+	var sf = m.accelMassFiltered.linexp(0,2.5, 500,5000);
+
+	synth.set(\amp, sa.dbamp);
+	synth.set(\cutoff, sf);
 
 	Pdef(m.ptn).set(\amp, amp.dbamp);
 	Pdef(m.ptn).set(\note, notes[index.floor]);
