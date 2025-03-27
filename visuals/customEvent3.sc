@@ -33,10 +33,11 @@
         
                         // Calculate size, color, and other properties
                         size = event[\startSize].blend(event[\endSize], event[\sizeEnv].at(normTime));
-                        col = Color.hsv(
-                            event[\startColor].hue.blend(event[\endColor].hue, event[\colorEnv].at(normTime)),
-                            1, 1
-                        );
+                        // col = Color.hsv(
+                        //     event[\startColor].hue.blend(event[\endColor].hue, event[\colorEnv].at(normTime)),
+                        //     1, 1
+                        // );
+                        col = event[\startColor].blend(event[\endColor], event[\colorEnv].at(normTime));
                         col = col.alpha_(event[\alphaEnv].at(normTime));
         
                         // Draw the shape
