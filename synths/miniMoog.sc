@@ -17,7 +17,6 @@ SynthDef(\miniMoog, {
 )
 
 (
-
 	var mx = Bus.control(s,1);
 	var my = Bus.control(s,1);
 	Synth(\mouseX, [\bus, mx.index]);
@@ -58,6 +57,7 @@ Pbind(
 );
 ).play(quant:0.1);
 
+
 Pdef(\c,
 Pbind(
     \instrument, \miniMoog,
@@ -75,6 +75,7 @@ Pbind(
     \pan, Pseq([-0.9, 0.9], inf)
 );
 ).play(quant:0.1);
+
 )
 
 

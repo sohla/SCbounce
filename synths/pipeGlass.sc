@@ -56,6 +56,7 @@ SynthDef(\pipeSynth, {
 
     // Output
     Out.ar(out, Pan2.ar(sound, pan));
+    
 }).add;
 
 )
