@@ -8,8 +8,8 @@ Ndef(\interactiveWind, {
     var densityMod, strengthMod;
 
     // Modulate density and strength
-    densityMod = LFNoise2.kr(0.1).range(0.8, 1.2) * MouseX.kr(0, 1);
-    strengthMod = LFNoise2.kr(0.2).range(0.8, 1.2) * MouseY.kr(0, 1);
+    densityMod = LFNoise2.kr(0.1).range(0.8, 1.2) * MouseX.kr(0, 1, lag:2);
+    strengthMod = LFNoise2.kr(0.2).range(0.8, 1.2) * MouseY.kr(0, 1, lag:3);
 
     // Base wind sound
 	wind = [WhiteNoise.ar(1),WhiteNoise.ar(1)];

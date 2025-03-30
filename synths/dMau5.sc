@@ -416,7 +416,7 @@ s.sync; // Wait for synths to be added
     "Track stopped.".postln;
 };
 )
-
+s.record
 // Execute this line to start the track
 ~startTrack.value;
 

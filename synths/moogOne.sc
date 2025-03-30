@@ -183,3 +183,24 @@ SynthDef(\moogModel1, {
         \filterEnvAmount, 4000, \filterAttack, 0.01, \filterDecay, 0.1, \filterSustain, 0.3, \filterRelease, 0.2
     ]);
 )
+
+
+(
+// s.record;
+
+Pdef(\a,
+Pbind(
+    \instrument, \moogModel1,
+		\dur,0.25,
+		\note, Pseq([0,5,2,9,4], inf),
+		\octave, Pseq([2,3,4,5].stutter(2)+1, 4),
+		\amp,0.5,
+
+ \osc1Waveform, 2, \osc1Amp, 1,
+        \osc2Waveform, 1, \osc2Amp, 0.6, \osc2Detune, 0.01,
+        \cutoff, 3000, \resonance, 0.5,
+        \attack, 0.001, \decay, 0.1, \sustain, 0.2, \release, 1.2,
+        \filterEnvAmount, 5000, \filterAttack, 0.001, \filterDecay, 0.05, \filterSustain, 0.1, \filterRelease, 0.1
+);
+).play(quant:0.0);
+)

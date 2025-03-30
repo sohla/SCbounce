@@ -322,7 +322,9 @@ s.sync; // Wait for synths to be added
 
 // Execute these lines to start the composition
 ~startMonitoring.value;
+s.record;
 ~startEno.value;
 
+
 // Execute this line to stop the composition with a gentle fadeout
-// ~stopEno.value;
+~stopEno.value;

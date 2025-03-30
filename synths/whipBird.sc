@@ -79,7 +79,6 @@ SynthDef(\whipbird, {
 }).add;
 )
 (
-
 // Pattern to play the whipbird with forest-like variations
 Pbindef(\whipPattern,
     \instrument, \whipbird,
@@ -88,7 +87,7 @@ Pbindef(\whipPattern,
     \amp, Pwhite(0.2, 0.1),         // Dynamic variation
     \swoopDelay, Pwhite(0.01, 0.03),// Varied swoop timing
 	\gliss, Pwhite(0.07, 0.2),
-	\pitchRand, Pwhite(0.7,0.8),
+	\pitchRand, Pwhite(0.7,0.9),
     \reverbMix, 0.5,                // Consistent reverb level
     \reverbTime, 3.0,               // Forest-like decay
     \reverbSize, 0.7                // Large space simulation

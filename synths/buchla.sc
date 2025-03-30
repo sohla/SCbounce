@@ -1,4 +1,5 @@
-(// Buchla-inspired synth
+(
+// Buchla-inspired synth
 SynthDef(\buchlaInspired, {
     |out=0, freq=440, amp=0.5, pan=0, gate=1,
     attack=0.01, decay=0.3, sustain=0.5, release=1,
@@ -14,6 +15,7 @@ SynthDef(\buchlaInspired, {
     reverbMix=0.3, reverbRoom=0.5, reverbDamp=0.5|
 
     var sig, osc1, osc2, complexOsc, modOsc, rand, lpg, verb;
+	var buf = [-1,0,1].as(LocalBuf);
 
     modOsc = SinOsc.ar(modOscFreq, 0, modOscAmount);
     rand = LFNoise2.kr(randomFreq).bipolar(randomAmount);
@@ -32,7 +34,7 @@ SynthDef(\buchlaInspired, {
 
     complexOsc = SinOscFB.ar(freq + modOsc + rand, complexOscFold);
     complexOsc = Shaper.ar(
-        Env([-1, 0, 1], [1-complexOscWarp, complexOscWarp], [8, -8]).asSignal(1024),
+        buf,
         complexOsc
     );
 
@@ -56,22 +58,29 @@ SynthDef(\buchlaInspired, {
     verb = FreeVerb.ar(sig, reverbMix, reverbRoom, reverbDamp);
 
     Out.ar(out, verb * amp);
+
 }).add;
 )
 // 10 Example Patches
 
 // 1. Complex Oscillator Drone
+(
 Synth(\buchlaInspired, [
     \freq, 55,
     \complexOscFold, 2.5, \complexOscWarp, 0.7,
     \modOscFreq, 0.1, \modOscAmount, 10,
     \lpgDecay, 2.0, \lpgSustain, 0.8,
-    \lowpassCutoff, 2000, \lowpassResonance, 0.3,
+    \lowpassCutoff, 2000,
+	\lowpassResonance, 0.3,
     \attack, 0.5, \decay, 1.0, \sustain, 0.8, \release, 2.0,
     \reverbMix, 0.4, \reverbRoom, 0.8, \reverbDamp, 0.2
 ]);
+)
 
 // 2. Metallic Percussion
+(
+s.record;
+
 Synth(\buchlaInspired, [
     \freq, 440,
     \osc1Waveform, 1, \osc1Ratio, 2.7, \osc1Index, 0.8,
@@ -82,8 +91,9 @@ Synth(\buchlaInspired, [
     \attack, 0.001, \decay, 0.1, \sustain, 0.1, \release, 0.5,
     \reverbMix, 0.2, \reverbRoom, 0.3, \reverbDamp, 0.5
 ]);
-
+)
 // 3. Buchla Bongo
+(
 Synth(\buchlaInspired, [
     \freq, 110,
     \osc1Waveform, 0, \osc1Ratio, 1, \osc1Index, 1,
@@ -94,8 +104,9 @@ Synth(\buchlaInspired, [
     \attack, 0.001, \decay, 0.1, \sustain, 0, \release, 0.1,
     \reverbMix, 0.1, \reverbRoom, 0.2, \reverbDamp, 0.7
 ]);
-
+)
 // 4. Alien Texture
+(
 Synth(\buchlaInspired, [
     \freq, 220,
     \osc1Waveform, 2, \osc1Ratio, 0.5, \osc1Index, 0.7,
@@ -108,8 +119,9 @@ Synth(\buchlaInspired, [
     \attack, 0.2, \decay, 0.5, \sustain, 0.7, \release, 1.0,
     \reverbMix, 0.5, \reverbRoom, 0.9, \reverbDamp, 0.1
 ]);
-
+)
 // 5. West Coast Bass
+(
 Synth(\buchlaInspired, [
     \freq, 55,
     \osc1Waveform, 1, \osc1Ratio, 1, \osc1Index, 1,
@@ -120,8 +132,9 @@ Synth(\buchlaInspired, [
     \attack, 0.01, \decay, 0.1, \sustain, 0.8, \release, 0.2,
     \reverbMix, 0.1, \reverbRoom, 0.2, \reverbDamp, 0.8
 ]);
-
+)
 // 6. Buchla Bells
+(
 Synth(\buchlaInspired, [
     \freq, 880,
     \osc1Waveform, 0, \osc1Ratio, 1, \osc1Index, 1,
@@ -133,8 +146,9 @@ Synth(\buchlaInspired, [
     \attack, 0.001, \decay, 2.0, \sustain, 0, \release, 2.0,
     \reverbMix, 0.4, \reverbRoom, 0.8, \reverbDamp, 0.2
 ]);
-
+)
 // 7. Cosmic Wind
+(
 Synth(\buchlaInspired, [
     \freq, 440,
     \osc1Waveform, 1, \osc1Ratio, 0.5, \osc1Index, 0.7,
@@ -147,9 +161,9 @@ Synth(\buchlaInspired, [
     \attack, 1.0, \decay, 1.0, \sustain, 0.8, \release, 3.0,
     \reverbMix, 0.6, \reverbRoom, 0.9, \reverbDamp, 0.1
 ]);
-
+)
 // 8. Plucked String
-Synth(\buchlaInspired, [
+(Synth(\buchlaInspired, [
     \freq, 220,
     \osc1Waveform, 1, \osc1Ratio, 1, \osc1Index, 1,
     \osc2Waveform, 1, \osc2Ratio, 2, \osc2Index, 0.5,
@@ -159,7 +173,8 @@ Synth(\buchlaInspired, [
     \attack, 0.001, \decay, 0.5, \sustain, 0, \release, 0.5,
     \reverbMix, 0.2, \reverbRoom, 0.4, \reverbDamp, 0.5
 ]);
-
+)
+(
 // 9. Buchla Keyboard
 Synth(\buchlaInspired, [
     \freq, 440,
@@ -172,7 +187,8 @@ Synth(\buchlaInspired, [
     \attack, 0.01, \decay, 0.1, \sustain, 0.8, \release, 0.3,
     \reverbMix, 0.2, \reverbRoom, 0.3, \reverbDamp, 0.5
 ]);
-
+)
+(
 // 10. Chaos Patch
 Synth(\buchlaInspired, [
     \freq, 110,
@@ -185,4 +201,4 @@ Synth(\buchlaInspired, [
     \lowpassCutoff, 4000, \lowpassResonance, 0.6,
     \attack, 0.05, \decay, 0.2, \sustain, 0.7, \release, 1.0,
     \reverbMix, 0.4, \reverbRoom, 0.7, \reverbDamp, 0.3
-]);
+]);)

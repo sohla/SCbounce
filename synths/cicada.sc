@@ -1,4 +1,5 @@
 (
+s.record;
 Ndef(\cicada, {
     |out=0, freq=6000, amp=0.1, pan=0, gate=1,
     filterFreq=3000, filterQ=0.6,

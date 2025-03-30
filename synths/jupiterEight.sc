@@ -159,32 +159,34 @@ Synth(\jupiter8, [
 
 
 (
+s.record;
+
 Pdef(\a,
 Pbind(
     \instrument, \jupiter8,
 		\dur,0.25,
 		\note, Pseq([0,5,2,9,4], inf),
-		\octave, Pseq([2,3,4,5].stutter(2) + 2, inf),
+		\octave, Pseq([2,3,4,5].stutter(2)+1, 4),
 		\amp,0.5,
     \osc1Waveform, 0,
 	\osc1Level, 1,
 		\osc2Waveform, 1,
 	\osc2Level, 1,
-	\osc2Tune, 0.007,
-		\osc2PulseWidth, 0.008,
-    \cutoff, 2198,
+	\osc2Tune, 0.003,
+		\osc2PulseWidth, 0.003,
+    \cutoff, 3198,
 	\resonance, 0.2,
     \attack, 0.02,
-	\decay, 0.3,
+	\decay, 0.1,
 	\sustain, 0.3,
-	\release, 2.8,
-    \lfoRate, 10.2,
+	\release, 1.8,
+    \lfoRate, 9.2,
 	\lfoFilterMod, 0.9,
 	\lfoPWMod, 0.01,
-    \chorusLevel, 0.4,
-	\chorusRate, 0.1,
+    \chorusLevel, 0.2,
+	\chorusRate, 0.4,
 	\chorusDepth, 0.007
 
 );
-).play(quant:0.1);
+).play(quant:0.0);
 )

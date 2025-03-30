@@ -35,5 +35,5 @@ Pbindef(\walkSignal,
     \att, 0.001,
     \rel, 0.05,
     \amp, 0.9
-).play;
+).play(quant:0);
 )

@@ -30,20 +30,20 @@ var freqs, amps, times;
 // Example usage:
 Synth(\woodBamboo, [\freq, 1200, \ringTime, 0.1, \ringMix, 0.7, \noiseMix, 0.1, \amp, 0.5]);
 Synth(\woodBamboo, [\freq, 800, \ringTime, 0.2, \ringMix, 0.8, \noiseMix, 0.2, \amp, 0.5]);
-Synth(\woodBamboo, [\freq, 45.midicps, \ringTime, 1.7, \ringMix, 0.7, \noiseMix, 0.01, \amp, 2]);
+Synth(\woodBamboo, [\freq, 35.midicps, \ringTime, 1.7, \ringMix, 0.7, \noiseMix, 0.01, \amp, 2]);
 
 
 (
 Pbindef(\wba,
     \instrument, \woodBamboo,
     \dur, Pseq([0.25, 0.25, 0.25, 0.25, 0.25, 0.5] * 0.5, inf),
-    \note, Prand([0,-12,-24,4,9,14,19] * 1 , inf),
-	\root, Pseq([0,3,-4,1].stutter(24), inf),//4
-    \ringTime, Pwhite(0.1, 1.2),
+    \note, Pseq([0,-12,-24,4,9,14,19] - 12 , 8),
+	\root, Pseq([0,3,-4,1].stutter(24), 1),//4
+    \ringTime, Pwhite(0.1, 0.2),
     \ringMix, Pwhite(0.6, 0.8),
-    \noiseMix, Pwhite(0.2, 0.9),
+    \noiseMix, Pwhite(0.2, 0.3),
     \amp, Pwhite(0.7, 0.9)
-).play;
+).play(quant:0);
 )
 
 

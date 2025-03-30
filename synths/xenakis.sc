@@ -465,9 +465,9 @@ s.sync; // Wait for synths to be added
 "Duration: % seconds (about % minutes)".format(~totalDuration, ~totalDuration/60).postln;
 "Run ~playXenakis.value to start the composition.".postln;
 )
-
+s.record
 // Execute this line to start the composition
 ~playXenakis.value;
 
 // Execute this line to stop the composition at any time
-// ~stopXenakis.value;
+~stopXenakis.value;
