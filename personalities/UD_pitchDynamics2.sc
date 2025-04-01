@@ -175,8 +175,8 @@ Event.addEventType(\customEvent, {|e|
     var cs = [0,4,7];
     var notes = cs ++ (cs + 12) ++ (cs + 24) ++ (cs + 36);
 	var index = (d.sensors.gyroEvent.x/pi).linlin(-0.5,0.5,notes.size-1,0.0); //up down
-	var amp = m.accelMassFiltered.lincurve(0,2.5,-58,-14,-8);
-	var sa = m.accelMassFiltered.lincurve(0,2.5,-50,-12,-8);
+	var amp = m.accelMassFiltered.lincurve(0,1.5,-58,-17,-1);
+	var sa = m.accelMassFiltered.lincurve(0,2.5,-70,-2,-8);
 	var sf = m.accelMassFiltered.linexp(0,2.5, 500,5000);
 
 	synth.set(\amp, sa.dbamp);
@@ -185,7 +185,7 @@ Event.addEventType(\customEvent, {|e|
 	Pdef(m.ptn).set(\amp, amp.dbamp);
 	Pdef(m.ptn).set(\note, notes[index.floor]);
 
-	if(m.accelMassFiltered > 0.1,{
+	if(m.accelMassFiltered > 0.04,{
 		if( Pdef(m.ptn).isPlaying.not,{
 			Pdef(m.ptn).resume(quant:dur);
 		});

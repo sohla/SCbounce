@@ -41,7 +41,7 @@ SynthDef(\wingChimes1, {
 	var amp = m.accelMassFiltered.linexp(0,4,0.05,1);
 	Pdef(m.ptn).set(\dur, dur);
 	Pdef(m.ptn).set(\rq, rq);
-	Pdef(m.ptn).set(\amp, amp*1.5);
+	Pdef(m.ptn).set(\amp, amp*0.6);
 	if(m.accelMass > 0.1,{
 		if( Pdef(m.ptn).isPlaying.not,{
 			Pdef(m.ptn).resume(quant:[0.1,0,0,0]);

@@ -175,7 +175,7 @@ var addOSCDeviceListeners = {|d|
 var addDevice = { |ip,port, id|
 
     var d = Event.new(proto:deviceProto);
-
+    var names = ["left arm", "right arm", "left leg", "right leg"];
     var configPattern = "/%/Config".format(id);
     var configListener = OSCFunc({ |msg2, time2, addr2, recvPort2|
         d.color = Color.fromArray(msg2.at([15,16,17])++[1]);
@@ -183,6 +183,7 @@ var addDevice = { |ip,port, id|
         {~addDeviceView.(d, id)}.defer;
     }, configPattern).oneShot;
 
+    d.name = names[id-1];
     d.ip = ip;
     d.port = port;
     d.did = id;

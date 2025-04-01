@@ -23,8 +23,8 @@ SynthDef(\pluck1, { |out=0, amp=0, pch=30, frq=30, gate=0 |
 //------------------------------------------------------------
 ~next = {|d|
 
-	var pch = 20 + (m.accelMass * 60);
-	var frq= 210 + (m.accelMassFiltered * 100);
+	var pch = 20 + (m.accelMass * 160);
+	var frq= 210 + (m.accelMassFiltered * 200);
 	synth.set(\pch,pch);
 	synth.set(\frq,frq);
 

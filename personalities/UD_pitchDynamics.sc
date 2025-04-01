@@ -2,9 +2,9 @@
 var m = ~model;
 
 m.accelMassFilteredAttack = 0.99;
-m.accelMassFilteredDecay = 0.2;
+m.accelMassFilteredDecay = 0.02;
 m.rrateMassFilteredAttack = 0.9;
-m.rrateMassFilteredDecay = 0.5;
+m.rrateMassFilteredDecay = 0.05;
 
 //------------------------------------------------------------
 SynthDef(\template, {
@@ -61,7 +61,7 @@ SynthDef(\template, {
 	Pdef(m.ptn).set(\atk, atk);
 	Pdef(m.ptn).set(\rel, rel);
 
-	if(m.accelMassFiltered > 0.1,{
+	if(m.accelMassFiltered > 0.03,{
 		if( Pdef(m.ptn).isPlaying.not,{
 			Pdef(m.ptn).resume(quant:dur);
 		});
