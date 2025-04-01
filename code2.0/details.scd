@@ -2,8 +2,7 @@ var renderRate = 30;
 var spacing = 2;
 var contentView;
 
-
-var devices = {
+var details = {
 	contentView = View()
 		.layout_(GridLayout.new().hSpacing_(spacing).vSpacing_(spacing).margins_([spacing,spacing,spacing,spacing]))
 		.mouseDownAction_({false});
@@ -17,14 +16,14 @@ var titleView = { |data|
 			.stringColor_(data.color)
 			.font_(Font(size:32))
 			.minWidth_(100)
-			.maxHeight_(70)
+			.maxHeight_(50)
 			.string_(data.name),
-		// StaticText()
-		// 	.stringColor_(data.color.alpha_(0.5))
-		// 	.font_(Font(size:12))
-		// 	.minWidth_(100)
-		// 	.maxHeight_(35)
-		// 	.string_("IP:" ++ data.ip + "Port:" ++ data.port.asString)
+		StaticText()
+			.stringColor_(data.color.alpha_(0.5))
+			.font_(Font(size:12))
+			.minWidth_(100)
+			.maxHeight_(20)
+			.string_("IP:" ++ data.ip + "Port:" ++ data.port.asString)
 	);
 	view
 };
@@ -103,30 +102,12 @@ var threeDeeView = { |data|
 };
 
 
-var func = {|v|
-	Pen.fillColor = Color.grey(0.0,  0.02);
-	Pen.addRect(Window.screenBounds);
-	Pen.fill;
-
-    Pen.use{
-        10.do{
-            Color.hsv(rrand(0.0, 0.999), rrand(0.2, 0.7), 1, 1).set;
-			Pen.addArc((Window.screenBounds.width.rand)@(Window.screenBounds.height.rand), 5.exprand(150), 2pi.rand, pi);
-            Pen.perform([\stroke, \fill].choose);
-        }
-    }
+var visual = {|data|
+	var plotterView = UserView().backColor_(data.color.alpha_(0.5));
+	plotterView
 };
 
-var visual = {
-	UserView()
-	.background_(Color.black.alpha_(0.8))
-	.drawFunc_(func)
-	.clearOnRefresh_(false)
-	.animate_(true)
-	.frameRate_(60)
-};
-
-~addDeviceView = {|d,i|
+~addDetailView = {|d,i|
 
 	var gl;
 	var view = View()
@@ -136,18 +117,31 @@ var visual = {
 				titleView.(d),
 				threeDeeView.(d),
 			],[
-				[visual.(d), columns:2]
 			]
 		))
 		.mouseDownAction_({|but|
 			"Device % clicked".format(i).postln;
 			view.background = Color.rand.alpha_(0.3);
 		});
+
+	var plotter = Plotter("plotter", view.bounds, view)
+		.value_((0..100))
+		.refresh;
+
 	gl.setMinColumnWidth(1, 100);
 	gl.setColumnStretch(0, 1);
 	contentView.layout.add(view, ((i-1)/2).floor, (i-1)%2);	
+
+	plotter.setProperties(
+		\gridColorX, Color.grey,
+		\gridColorY, Color.grey,
+		\plotColor, d.color,
+		\fontColor, d.color,
+		\backgroundColor, Color.black
+	);
+
 };
 
-devices;
+details;
 
 

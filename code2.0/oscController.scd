@@ -180,7 +180,10 @@ var addDevice = { |ip,port, id|
     var configListener = OSCFunc({ |msg2, time2, addr2, recvPort2|
         d.color = Color.fromArray(msg2.at([15,16,17])++[1]);
         "CONFIG % %".format(id,d.color).postln;
-        {~addDeviceView.(d, id)}.defer;
+        {
+            ~addDeviceView.(d, id);
+            ~addDetailView.(d, id);
+        }.defer;
     }, configPattern).oneShot;
 
     d.name = names[id-1];
@@ -195,7 +198,7 @@ var addDevice = { |ip,port, id|
     // reloadPersonality.(d);
     
 
-    ~addDeviceView.(d,id);
+    // ~addDeviceView.(d,id);
 
     addOSCDeviceListeners.(d);
     NetAddr.new(ip,port-id+1).sendMsg("/Config/GetConfig", 57120);

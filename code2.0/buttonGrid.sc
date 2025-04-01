@@ -4,18 +4,16 @@ var staker;
 var oscController = Require("oscController.scd");
 
 var stack = {
-	var visuals = Require("visuals.scd");
 	var devices = Require("devices.scd");
-	var grid = Require("grid.scd");
+	var details = Require("details.scd");
 	View().layout_(staker =StackLayout(
+		details.(),
 		devices.(),
-		grid.(),
-		visuals.(),
 	));
 };
 
 var tabButton = {|i|
-	var d = ["🁪", "⚃","※"];
+	var d = ["🁪","※"];
 	UserView()
 	.background_( if(i==0,Color.new255(0, 139, 69),Color.black.alpha_(0.8)))
 	.mouseDownAction_({|but|
@@ -32,7 +30,7 @@ var tabButton = {|i|
 	.drawFunc_({|v|Pen.stringAtPoint(d[i], (v.bounds.width-15/2)@25, Font(size:30), Color.white)})
 	.animate_(false)
 
-}!3;
+}!2;
 
 var tabs = {|t|
 	View().layout_(HLayout(*tabButton.()).spacing_(2).margins_(0)).maxHeight_(100);
@@ -56,8 +54,6 @@ var initGUI = {
 	};
 	CmdPeriod.doOnce({w.close});
 };
-
-
 
 
 s.waitForBoot({
