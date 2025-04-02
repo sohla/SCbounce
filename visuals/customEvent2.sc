@@ -316,6 +316,13 @@ var envLibrary = (
             \sine
         )
     },
+    percussive: {
+        Env(
+            [0, 0.1, 1],
+            [0.01,0.15],
+            \linear
+        )
+    },
     circle: {
         var sig = Signal.newClear(100);
         sig.waveFill({ |x|
@@ -644,7 +651,7 @@ s.waitForBoot({
         \ey, 75 - Pkey(\midiNote) * 10,
         \xEnv, Pfunc { ce.(\firstQuarter) },
         \yEnv, Pfunc { ce.(\linear) },
-        \startSize, 130,
+        \startSize, 30,
         \endSize, 0,
         \sizeEnv, Pfunc { ce.(\linear) },
         \hue, Pseg(Pseq([0.0,0.79999], inf), 4, \linear, inf),
@@ -655,6 +662,7 @@ s.waitForBoot({
         // \dur, Pxrand([0.125 * 1], inf),
         \dur, 0.125,
 		\duration, 2,
+		\lag, 0.025
 
     ).play(quant: 0.0);
 
@@ -677,14 +685,16 @@ s.waitForBoot({
         \yEnv, Pfunc { ce.(\linear) },
         \startSize, 230,
         \endSize, 23,
-        \sizeEnv, Pfunc { ce.(\firstQuarter) },
+        \sizeEnv, Pfunc { ce.(\percussive) },
         \hue, Pseg(Pseq([0.0,0.49999], inf), 4, \linear, inf),
         \startColor,  Pfunc({|e|Color.hsv(e.hue,1,1)}),
         \endColor,  Pfunc({|e|Color.hsv(e.hue + 0.5,1,0)}),
         \colorEnv, Pfunc { Env([0, 1], [1], \linear) },
         \rotation, Pseg(Pseq([-pi,-pi], inf), 4, \linear, inf),
         \dur, Pseq([0.125 * 4, 0.125 * 2], inf),
-		\duration, 7,
+		\duration, 3,
+		\lag, 0.025
+
 
     ).play(quant: 0.0);
 
