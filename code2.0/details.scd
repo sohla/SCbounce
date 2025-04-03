@@ -37,7 +37,7 @@ var threeDeeView = { |data|
 	
 	graph1 = Canvas3D()
 		.mouseDownAction_({false})
-		.scale_(80)
+		.scale_(220)
 		.background_(Color.clear)
 		.perspective_(0)
 		.transforms_([Canvas3D.mRotateZ(0),Canvas3D.mTranslate(0,0,0)])
@@ -50,18 +50,18 @@ var threeDeeView = { |data|
 
 	graph1.add(accelX = Canvas3DItem.regPrism()
 		.color_(Color.yellow(0.9))
-		.width_(2)
-		.fill_(true)
+		.width_(1)
+		// .fill_(true)
 	);
 	graph1.add(accelY = Canvas3DItem.regPrism()
 		.color_(Color.magenta(0.9))
-		.width_(2)
-		.fill_(true)
+		.width_(1)
+		// .fill_(true)
 	);
 	graph1.add(accelZ = Canvas3DItem.regPrism()
 		.color_(Color.cyan(0.9))
-		.width_(2)
-		.fill_(true)
+		.width_(1)
+		// .fill_(true)
 	);
 
 	// animate
@@ -102,9 +102,39 @@ var threeDeeView = { |data|
 };
 
 
-var visual = {|data|
-	var plotterView = UserView().backColor_(data.color.alpha_(0.5));
-	plotterView
+var plotterView = {|data, parentView|
+	// var pv = UserView(parentView, parentView.bounds).backColor_(data.color.alpha_(0.5)).animate_(true).frameRate_(12);
+	var plotter = Plotter("plotter", parentView.bounds, parentView)
+		.value_((0..50))
+		.minval_(-1.0)
+		.maxval_(1.0)
+		.refresh;
+	var pd = [];
+	var cols = [Color.yellow,Color.magenta,Color.cyan,Color.red,Color.green,Color.blue];
+
+	plotter.setProperties(
+		\gridColorX, Color.grey,
+		\gridColorY, Color.grey,
+		\plotColor, cols,
+		\fontColor, data.color,
+		\backgroundColor, Color.black
+	);
+
+
+	Routine{
+		loop {
+			{
+			pd = pd.addFirst([sin(Clock.beats),cos(Clock.beats),tan(Clock.beats).wrap2(1.0)]);
+			if(pd.size > 50, {pd.pop()});
+			plotter.superpose = true;
+			plotter.setValue(pd, false, true, false);
+			plotter.value = plotter.value.keep(50).flop;
+			}.defer;
+			0.1.yield;
+		}
+	}.play;
+
+	plotter.interactionView
 };
 
 ~addDetailView = {|d,i|
@@ -115,8 +145,8 @@ var visual = {|data|
 		.layout_(gl = GridLayout.rows(
 			[
 				titleView.(d),
-				threeDeeView.(d),
 			],[
+				threeDeeView.(d),
 			]
 		))
 		.mouseDownAction_({|but|
@@ -124,21 +154,11 @@ var visual = {|data|
 			view.background = Color.rand.alpha_(0.3);
 		});
 
-	var plotter = Plotter("plotter", view.bounds, view)
-		.value_((0..100))
-		.refresh;
-
-	gl.setMinColumnWidth(1, 100);
-	gl.setColumnStretch(0, 1);
+	// gl.setMinColumnWidth(1, 100);
+	// gl.setColumnStretch(0, 1);
 	contentView.layout.add(view, ((i-1)/2).floor, (i-1)%2);	
 
-	plotter.setProperties(
-		\gridColorX, Color.grey,
-		\gridColorY, Color.grey,
-		\plotColor, d.color,
-		\fontColor, d.color,
-		\backgroundColor, Color.black
-	);
+	gl.add(plotterView.(d,view), 1, 1);
 
 };
 

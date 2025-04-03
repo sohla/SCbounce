@@ -122,7 +122,7 @@ var visual = {
 	.background_(Color.black.alpha_(0.8))
 	.drawFunc_(func)
 	.clearOnRefresh_(false)
-	.animate_(true)
+	.animate_(false)
 	.frameRate_(60)
 };
 
