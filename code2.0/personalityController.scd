@@ -1,0 +1,190 @@
+var personalityDir = "~/Develop/SuperCollider/Projects/SCbounce/personalities/";//RPI
+// var personalityDir = "~/Develop/SuperCollider/Projects/scbounce/personalities/"; //laptop
+//var personalityDir = "~/Develop/SuperCollider/oscMusic/personalities/"; //mac mini cabin
+
+// var defaultPersonality = "1. Start";
+// var defaultList = "list_yourDNA.sc";
+
+// var defaultPersonality = "1. Start";
+// var defaultList = "list_brenton.sc";
+
+
+var defaultLists = [
+    "list_workshop1.sc",
+    "list_workshop1.sc",
+    "list_workshop1.sc",
+    "list_workshop1.sc",
+];
+
+var com = (
+    \root: 0,
+    \dur: 1,
+    \accelMass: 0,
+    \rrateMass: 0,
+);
+
+
+//------------------------------------------------------------
+// 
+//------------------------------------------------------------
+
+var interpretPersonality = {|d|
+
+    var path = PathName.new(personalityDir++d.name++".sc");
+    var file = File.new(path.asAbsolutePath,"r");
+    var str = file.readAllString;
+
+    // after adding personality to an Environment, add useful functions to be used by anyone
+    var env = Environment.make {
+        ~model = (
+            \com: com,
+            \name: d.name,
+            \ptn: Array.fill(16,{|i|i=90.rrand(65).asAscii.toLower}).join(),
+            \rrateMass: 0,
+            \rrateMassFiltered: 0,
+            \rrateMassFilteredAttack: 0.8,
+            \rrateMassFilteredDecay: 0.1,
+            \rrateMassThreshold: 0.21, //use for isMoving
+            \rrateMassThresholdSpec: ControlSpec(0.07, 0.4, \lin, 0.01, 0.21),
+            \accelMass: 0,
+            \accelMassFiltered: 0,
+            \accelMassFilteredAttack: 0.5,
+            \accelMassFilteredDecay: 0.08,
+            \accelMassAmpThreshold: 2.0,
+            \accelMassThresholdSpec: ControlSpec(0.4, 3.0, \lin, 0.1, 2.0),
+            \isHit: false,
+            \isMoving: true,
+            \accelMassAmp: 0.0,
+
+        );
+        ~device = d;
+        //------------------------------------------------------------
+        // frame rate of rout
+        ~secs = 0.03;
+
+        //------------------------------------------------------------
+        // process data->model
+        ~processDeviceData = {|d|
+            ~model.accelMass = d.sensors.accelEvent.sumabs * 0.33; // scale it
+            ~model.rrateMass = d.sensors.rrateEvent.sumabs;
+            ~model.accelMassFiltered = ~smooth.(
+                ~model.accelMass,
+                ~model.accelMassFiltered,
+                ~model.accelMassFilteredAttack,
+                ~model.accelMassFilteredDecay
+
+            );
+            ~model.rrateMassFiltered = ~smooth.(
+                ~model.rrateMass,
+                ~model.rrateMassFiltered,
+                ~model.rrateMassFilteredAttack,
+                ~model.rrateMassFilteredDecay
+
+            );
+        };
+
+        //------------------------------------------------------------
+        ~play = {
+            postf("play : % \n",~model.name);
+            Pdef(~model.ptn).play(0.125);
+
+        };
+
+        ~stop = {
+            postf("stop : % \n",~model.name);
+            Pdef(~model.ptn).stop();
+        };
+
+        //------------------------------------------------------------
+        ~init = {
+            postf("init : % [%] \n",~model.name, ~model.ptn);
+        };
+
+        //------------------------------------------------------------
+        //------------------------------------------------------------
+        ~deinit = {
+            postf("deinit : % [%] \n",~model.name, ~model.ptn);
+        };
+
+        //------------------------------------------------------------
+
+        //------------------------------------------------------------
+        interpret(str);
+        //------------------------------------------------------------
+
+        ~smooth= {|input,history, attack=0.5, decay=0.05|
+            var coeff = attack;
+            if(history > input, {coeff = decay});
+            (coeff * input + ((1 - coeff) * history))
+            // history + coeff * (input - history)
+        };
+
+        ~slope = {|input,history|
+            history - input
+        };
+    };
+
+    env
+};
+
+//------------------------------------------------------------
+// 
+//------------------------------------------------------------
+
+var createProcRout = {|d|
+    Routine {
+        loop{
+            d.env.use{
+                if(d.enabled == true,{
+                    // process data -> personality model
+                    ~processDeviceData.(d);
+                    //post process : make changes to patterns etc.
+                    ~next.(d);
+                });
+                (~secs.()).yield;
+            };
+        };
+    }
+};
+//------------------------------------------------------------
+// 
+//------------------------------------------------------------
+
+~reloadPersonality = { |d|
+
+    // stop personality
+    d.procRout.stop;
+    d.procRout.free;
+
+    if(d.env != nil,{ d.env.use{
+        Routine{
+            s.sync;
+            ~deinit.();
+            s.sync;
+        }.play;
+    }});
+
+    d.env = interpretPersonality.(d);
+    d.env.use{
+        Routine{
+            s.sync;
+            ~init.();
+            s.sync;
+        }.play;
+    };
+
+    d.procRout = createProcRout.(d);
+    d.procRout.reset.play(AppClock);
+
+};
+
+//------------------------------------------------------------
+// 
+//------------------------------------------------------------
+
+~loadPersonalityList = {|i|
+    var path = PathName.new(personalityDir++defaultLists[i]);
+    var file = File.new(path.asAbsolutePath,"r");
+    var str = file.readAllString;
+    interpret(str) // returns array of personality files
+};

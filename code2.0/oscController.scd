@@ -5,6 +5,13 @@ var oscMessageTag  = "IMUFusedData";
 var airstickListeners = [];
 var numAirwareVirtualDevices = 4;
 
+var defaultPersonalities = [
+    "bongo1",
+    "magicWand",
+    "silence",
+    "silence",
+];
+
 //------------------------------------------------------------
 // Models
 //------------------------------------------------------------
@@ -12,14 +19,6 @@ var numAirwareVirtualDevices = 4;
 var twoCh = (\x: 0, \y:0);
 var threeCh = (\x: 0, \y:0, \z:0);
 var fourCh = (\w: 0, \x: 0, \y:0, \z:0);
-
-
-var com = (
-    \root: 0,
-    \dur: 1,
-    \accelMass: 0,
-    \rrateMass: 0,
-);
 
 var listenersProto = (
     \airware:nil,
@@ -175,7 +174,6 @@ var addOSCDeviceListeners = {|d|
 var addDevice = { |ip,port, id|
 
     var d = Event.new(proto:deviceProto);
-    var names = ["left arm", "right arm", "left leg", "right leg"];
     var configPattern = "/%/Config".format(id);
     var configListener = OSCFunc({ |msg2, time2, addr2, recvPort2|
         d.color = Color.fromArray(msg2.at([15,16,17])++[1]);
@@ -186,7 +184,11 @@ var addDevice = { |ip,port, id|
         }.defer;
     }, configPattern).oneShot;
 
-    d.name = names[id-1];
+    
+    // hack in : set name of device that is something from the list for now!
+    // d.name = ~loadPersonalityList.(id-1)[id-1];
+    d.name = defaultPersonalities[id-1];
+
     d.ip = ip;
     d.port = port;
     d.did = id;
@@ -195,7 +197,7 @@ var addDevice = { |ip,port, id|
     d.sensors =  Event.new(proto:sensorsProto);
 
     ~devices.put(port,d);
-    // reloadPersonality.(d);
+    ~reloadPersonality.(d);
     
 
     // ~addDeviceView.(d,id);

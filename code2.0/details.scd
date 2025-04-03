@@ -130,7 +130,7 @@ var plotterView = {|data, parentView|
 			plotter.setValue(pd, false, true, false);
 			plotter.value = plotter.value.keep(50).flop;
 			}.defer;
-			0.1.yield;
+			0.03.yield; //this has a big impact on CPU use
 		}
 	}.play;
 
