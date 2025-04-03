@@ -8,10 +8,10 @@
             var visualEvents = List.new(20);
         
             // Define the updateView function for this specific view
-            var updateView = {
+            var updateView = {|view|
                 var now = thisThread.seconds;
-        
-                visualEvents.do { |event|
+
+                views[name][\visualEvents].do { |event|
                     var elapsed = 0.0, normTime = 0.0, envVal = 1.0;
                     var shape = \circle, pos = 10@10, size = 50.0, col = Color.white;
         
@@ -41,63 +41,188 @@
                         col = col.alpha_(event[\alphaEnv].at(normTime));
         
                         // Draw the shape
-                        Pen.width = 1;
+                        // Pen.width = 1;
+                        Pen.width = max(1, size.squared.lincurve(1,50000, 1, 20, 0.1));
                         Pen.rotate(event[\rotation], pos.x, pos.y);
                         Pen.fillColor = col;
                         Pen.strokeColor = col;
         
                         switch (event[\shape],
                             \circle, {
-                                Pen.fillOval(Rect.aboutPoint(pos, size, size));
+                                // Pen.fillOval(Rect.aboutPoint(pos, size, size));
+                                Pen.strokeOval(Rect.aboutPoint(pos, size, size));
                             },
                             \square, {
-                                Pen.fillRect(Rect.aboutPoint(pos, size, size));
+                                // Pen.fillRect(Rect.aboutPoint(pos, size, size));
+                                Pen.strokeRect(Rect.aboutPoint(pos, size, size));
                             },
                             \line, {
-                                Pen.width = max(1, size.squared.lincurve(1, 100000, 1, 20, 0.1));
-                                Pen.line(pos - (size @ 0), pos + (size @ 0));
+                                // Pen.width = max(1, size.squared.lincurve(1, 100000, 1, 20, 0.1));
+                                Pen.moveTo(pos - (size @ 0));
+                                Pen.lineTo(pos + (size @ 0));
                                 Pen.stroke;
                             },
                             \triangle, { // Equilateral triangle
                                 var height = size * sqrt(3) / 2;
                                 var points = [
-                                    pos + (0 @ (height.neg / 2)), // Top point
-                                    pos + ((size.neg / 2) @ (height / 2)), // Bottom-left
-                                    pos + ((size / 2) @ (height / 2)) // Bottom-right
+                                    pos + (0 @ (height.neg / 1)), // Top point
+                                    pos + ((size.neg / 1) @ (height / 2)), // Bottom-left
+                                    pos + ((size / 1) @ (height / 2)) // Bottom-right
                                 ];
-                                Pen.addPolygon(points);
+                                Pen.moveTo(points[0]);
+                                Pen.lineTo(points[1]);
+                                Pen.lineTo(points[2]);
+                                Pen.lineTo(points[0]); // Close the triangle
                                 Pen.fill;
                             },
                             \star, { // 5-pointed star
+                                var innerRatio=0.5, rotation=0;
                                 var points = Array.fill(10, { |i|
-                                    var angle = i * pi / 5; // Alternate between inner and outer points
-                                    var radius = if(i % 2 == 0,{size},{(size / 2)});
-                                    pos + (radius * cos(angle) @ radius * sin(angle))
+                                    var angle = (i * pi / 5) + rotation; // Alternate between inner and outer points
+                                    var radius = if(i % 2 == 0, { size }, { size * innerRatio });
+
+                                    // Return a Point with x @ y coordinates
+                                    pos + (radius * cos(angle) @ (radius * sin(angle)))
                                 });
-                                Pen.addPolygon(points);
-                                Pen.fill;
+
+                                // Move to first point
+                                Pen.moveTo(points[0]);
+
+                                // Draw lines to all other points
+                                points.do { |point, i|
+                                    if (i > 0) { Pen.lineTo(point) };
+                                };
+
+                                // Close the path by connecting back to the first point
+                                Pen.lineTo(points[0]);
+                                Pen.stroke;
                             },
                             \hexagon, { // Regular hexagon
+
+                                // Create array of points for a regular hexagon
                                 var points = Array.fill(6, { |i|
-                                    var angle = i * (2pi / 6);
-                                    pos + (size * cos(angle) @ size * sin(angle))
+                                    var angle = (i * (2pi / 6)) + 0;
+
+                                    // Return a Point with x @ y coordinates
+                                    pos + ((size * cos(angle)) @ (size * sin(angle)))
                                 });
-                                Pen.addPolygon(points);
-                                Pen.fill;
+
+                                // Start at the first vertex, not at the center
+                                Pen.moveTo(points[0]);
+
+                                // Draw lines to all other vertices
+                                points[1..].do { |point|
+                                    Pen.lineTo(point);
+                                };
+
+                                // Close the path by connecting back to the first point
+                                Pen.lineTo(points[0]);
+                                Pen.stroke;
+
                             },
                             \cross, { // Cross shape
-                                var thickness = size / 3;
-                                Pen.fillRect(Rect(pos.x - thickness / 2, pos.y - size / 2, thickness, size)); // Vertical bar
-                                Pen.fillRect(Rect(pos.x - size / 2, pos.y - thickness / 2, size, thickness)); // Horizontal bar
+
+                                // If thickness is not specified, default to size/3
+                                var thickness = thickness ? (size / 3);
+                                var halfThick = thickness / 2;
+
+                                // Calculate the eight points of the cross (clockwise from top-left of vertical bar)
+                                var points = [
+                                    // Points for vertical bar (top to bottom)
+                                    Point(pos.x - halfThick, pos.y - size),
+                                    Point(pos.x + halfThick, pos.y - size),
+                                    Point(pos.x + halfThick, pos.y - halfThick),
+
+                                    // Points for horizontal bar (right side)
+                                    Point(pos.x + size, pos.y - halfThick),
+                                    Point(pos.x + size, pos.y + halfThick),
+
+                                    // Bottom of vertical bar
+                                    Point(pos.x + halfThick, pos.y + halfThick),
+                                    Point(pos.x + halfThick, pos.y + size),
+                                    Point(pos.x - halfThick, pos.y + size),
+                                    Point(pos.x - halfThick, pos.y + halfThick),
+
+                                    // Left side of horizontal bar
+                                    Point(pos.x - size, pos.y + halfThick),
+                                    Point(pos.x - size, pos.y - halfThick),
+                                    Point(pos.x - halfThick, pos.y - halfThick)
+                                ];
+
+                                // Draw the cross
+                                Pen.moveTo(points[0]);
+                                points[1..].do { |point|
+                                    Pen.lineTo(point);
+                                };
+                                // Close the path
+                                Pen.lineTo(points[0]);
+                                Pen.fill;
                             },
                             \wave, { // Sine wave
                                 var points = Array.fill(100, { |i|
                                     var x = pos.x + (i / 100 * size * 2) - size; // Map x across the size
-                                    var y = pos.y + (sin(i / 100 * 2pi) * size / 2); // Sine wave for y
+                                    var y = pos.y + (sin(i / 100 * 2pi) * (size / 2));
                                     x @ y
                                 });
-                                Pen.width(2);
-                                Pen.addLines(points);
+                                Pen.moveTo(points[0]);
+                                points.do { |point, i|
+                                    if (i > 0) { Pen.lineTo(point) };
+                                };
+                                Pen.stroke;
+                            },
+                            \leaf,{
+                                var numPoints = 10;
+                                var width = width ? (size / 3);
+
+                                var points = Array.fill(numPoints * 2 + 1, { |i|
+                                    var t;
+                                    var x, y;
+
+                                    if (i <= numPoints) {
+                                        // First half - going from base to tip along right edge
+                                        t = i / numPoints;
+                                        x = pos.x + (size * t);
+                                        // Create curved edge - peak in the middle, tapering at ends
+                                        y = pos.y + (width * sin(t * pi) * (0.5 + (sin(t * pi * 0.2) * 0.5)));
+                                    } {
+                                        // Second half - coming back from tip to base along left edge
+                                        t = (numPoints * 2 - i) / numPoints;
+                                        x = pos.x + (size * t);
+                                        // Mirror the right edge, but with slight asymmetry
+                                        y = pos.y - (width * sin(t * pi) * (0.4 + (sin(t * pi * 0.2) * 0.5)));
+                                    };
+
+                                    Point(x, y);
+                                });
+
+                                // Draw the leaf outline
+                                Pen.moveTo(points[0]);
+                                points[1..].do { |point|
+                                    Pen.lineTo(point);
+                                };
+                                Pen.stroke;
+                            },
+
+                            \spiral, {
+                                var maxRadius = size, turns=3, startRadius=0;
+                                var numPoints = 100 * turns; // More points for smoother spiral
+                                var points = Array.fill(numPoints, { |i|
+                                    var progress = i / (numPoints - 1); // 0 to 1
+                                    var angle = progress * turns * 2pi; // Angle increases with each point
+                                    var radius = startRadius + ((maxRadius - startRadius) * progress); // Radius increases linearly
+
+                                    // Convert polar coordinates to Cartesian
+                                    var x = pos.x + (radius * cos(angle));
+                                    var y = pos.y + (radius * sin(angle));
+
+                                    x @ y
+                                });
+
+                                // Draw the spiral
+                                Pen.moveTo(points[0]);
+                                points[1..].do { |point|
+                                    Pen.lineTo(point);
+                                };
                                 Pen.stroke;
                             }
                         );
@@ -129,12 +254,13 @@
         
         // Create a window with multiple views
         var window = Window("Visual Synthesizer", Rect(100, 100, 1200, 800))
+            .fullScreen
             .front
             .background_(Color.white.alpha_(1))
             .layout_(
                 GridLayout.rows(
-                    [makeView.(\view1, Rect(0, 0, 600, 400)), makeView.(\view2, Rect(600, 0, 600, 400))],
-                    [makeView.(\view3, Rect(0, 400, 600, 400)), makeView.(\view4, Rect(600, 400, 600, 400))]
+                    [makeView.(\view1), makeView.(\view2)],
+                    [makeView.(\view3), makeView.(\view4)]
                 ).margins_(0).hSpacing_(1).vSpacing_(1)
             );
         
@@ -244,17 +370,17 @@
         
             var event = (
                 \shape: ~shape ? \circle,
-                \sx: ~sx ? 10,
-                \sy: ~sy ? 10,
-                \ex: ~ex ? 200,
-                \ey: ~ey ? 200,
+                \sx: ~sx ? 400,
+                \sy: ~sy ? 200,
+                \ex: ~ex ? 400,
+                \ey: ~ey ? 0,
                 \xEnv: ~xEnv ? defaultEnv,
                 \yEnv: ~yEnv ? defaultEnv,
                 \startSize: ~startSize ? 50,
                 \endSize: ~endSize ? 100,
                 \sizeEnv: ~sizeEnv ? defaultEnv,
                 \startColor: ~startColor ? Color.white,
-                \endColor: ~endColor ? Color.red,
+                \endColor: ~endColor ? Color.red.alpha_(0.2),
                 \colorEnv: ~colorEnv ? defaultEnv,
                 \rotation: ~rotation ? 0,
                 \duration: ~duration ? 5,
@@ -262,50 +388,108 @@
                 \alphaEnv: ~alphaEnv ? Env([0, 1, 0], [0.0, 1], \sin),
                 \startTime: thisThread.seconds
             );
-        
             visualEvents.add(event);
+            ~type = \note;
+            currentEnvironment.play;
         });
-        
+        s.waitForBoot({
+
         // Example patterns to add visual events to different views
         Pbind(
             \type, \customEvent,
-            \viewName, \view4, // Specify the view
+            \viewName, \view1, // Specify the view
             \shape, \circle,
-            \sx, 100,
-            \sy, 100,
-            \ex, 300,
-            \ey, 300,
+            \sx, 500,
+            \sy, 200,
+            \ex, 100,
+            \ey, 200,
             \xEnv, Pfunc { ce.(\ripple) },
             \yEnv, Pfunc { ce.(\linear) },
-            \startSize, 30,
+            \startSize, 110,
             \endSize, 0,
             \sizeEnv, Pfunc { ce.(\spring) },
             \startColor, Color.red,
             \endColor, Color.blue,
             \rotation, Pseg(Pseq([-pi, pi], inf), 8, \linear, inf),
-            \duration, 5,
-            \dur, 0.5
+            \duration, 12,
+            \dur, 0.4,
+            \note, Pseg(Pseq([0, 12], inf), 8, \linear, inf),
         ).play;
         
         Pbind(
             \type, \customEvent,
             \viewName, \view2, // Specify the view
             \shape, \square,
-            \sx, 200,
+            \sx, 300,
             \sy, 200,
-            \ex, 400,
-            \ey, 400,
+            \ex, 300,
+            \ey, 190,
             \xEnv, Pfunc { ce.(\anticipate) },
             \yEnv, Pfunc { ce.(\bounce) },
-            \startSize, 40,
+            \startSize, 90,
             \endSize, 10,
             \sizeEnv, Pfunc { ce.(\linear) },
             \startColor, Color.green,
             \endColor, Color.yellow,
             \rotation, Pseg(Pseq([-pi, pi], inf), 8, \linear, inf),
-            \duration, 6,
-            \dur, 0.75
+            \duration, 3,
+            \dur, 0.25,
+            \degree, Pseg(Pseq([0, 24], inf), 8, \linear, inf),
+
         ).play;
+
+
+       Pbind(
+            \type, \customEvent,
+            \viewName, \view3, // Specify the view
+            \shape, \triangle,
+            \sx, 300,
+            \sy, 100,
+            \ex, 300,
+            \ey, 300,
+            \xEnv, Pfunc { ce.(\anticipate) },
+            \yEnv, Pfunc { ce.(\bounce) },
+            \startSize, 70,
+            \endSize, 0,
+            \sizeEnv, Pfunc { ce.(\linear) },
+            \startColor, Color.red,
+            \endColor, Color.cyan,
+            \rotation, Pseg(Pseq([-pi, pi], inf), 8, \linear, inf),
+            \duration, 8,
+            \dur, 0.6,
+            \octave, 3,
+            \degree, Pseg(Pseq([0, 24], inf), 16, \linear, inf),
+
+
+        ).play;
+
+       Pbind(
+            \type, \customEvent,
+            \viewName, \view4, // Specify the view
+            \shape, \cross,
+            \sx, 300,
+            \sy, 200,
+            \ex, 500,
+            \ey, 200,
+            \xEnv, Pfunc { ce.(\anticipate) },
+            \yEnv, Pfunc { ce.(\bounce) },
+            \startSize, 50,
+            \endSize, 0,
+            \sizeEnv, Pfunc { ce.(\linear) },
+            \startColor, Color.red,
+            \endColor, Color.blue,
+            \rotation, Pseg(Pseq([-pi, pi], inf), 8, \linear, inf),
+            \duration, 1,
+            \dur, 0.125,
+            \release, 0.1,
+            \decay, 0.1,
+            \sustain, 0.1,
+            \octave, 3,
+            \degree, Pseg(Pseq([0, 8, 16, 32], inf) + 30, 8, \linear, inf),
+            
+
+        ).play;
+        });
     )
 
 
