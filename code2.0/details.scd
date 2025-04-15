@@ -5,7 +5,6 @@ var contentView;
 var details = {
 	contentView = View()
 		.layout_(GridLayout.new().hSpacing_(spacing).vSpacing_(spacing).margins_([spacing,spacing,spacing,spacing]));
-		// .mouseDownAction_({false});
 	contentView
 };
 
@@ -37,7 +36,8 @@ var threeDeeView = { |data|
 	var accelX, accelY, accelZ;
 	
 	graph1 = Canvas3D()
-		// .mouseDownAction_({false})
+		.mouseDownAction_({false})
+		.mouseUpAction_({false})
 		.scale_(220)
 		.background_(Color.clear)
 		.perspective_(0)
@@ -138,6 +138,9 @@ var plotterView = {|data, parentView|
 		}
 	}.play;
 
+	plotter.interactionView.mouseDownAction_({false});
+	plotter.interactionView.mouseUpAction_({false});
+
 	plotter.interactionView
 };
 
@@ -155,9 +158,12 @@ var plotterView = {|data, parentView|
 				threeDeeView.(d),
 			]
 		))
+		.mouseUpAction_({|but|
+			view.background = Color.black;
+		})
 		.mouseDownAction_({|but|
 			"Device % clicked".format(d.did).postln;
-			view.background = Color.black;
+			view.background = Color.white.alpha_(0.1);
 			index = index + 1;
 			titleViews[1].string = ~reloadPersonality.(d, index).name;
 		});
