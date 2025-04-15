@@ -5,12 +5,12 @@ var oscMessageTag  = "IMUFusedData";
 var airstickListeners = [];
 var numAirwareVirtualDevices = 4;
 
-var defaultPersonalities = [
-    "bongo1",
-    "magicWand",
-    "silence",
-    "silence",
-];
+// var defaultPersonalities = [
+//     "bongo1",
+//     "magicWand",
+//     "silence",
+//     "silence",
+// ];
 
 //------------------------------------------------------------
 // Models
@@ -187,7 +187,7 @@ var addDevice = { |ip,port, id|
     
     // hack in : set name of device that is something from the list for now!
     // d.name = ~loadPersonalityList.(id-1)[id-1];
-    d.name = defaultPersonalities[id-1];
+    // d.name = defaultPersonalities[id-1];
 
     d.ip = ip;
     d.port = port;
@@ -197,7 +197,7 @@ var addDevice = { |ip,port, id|
     d.sensors =  Event.new(proto:sensorsProto);
 
     ~devices.put(port,d);
-    ~reloadPersonality.(d);
+    ~reloadPersonality.(d, 0);
     
 
     // ~addDeviceView.(d,id);

@@ -150,7 +150,9 @@ var createProcRout = {|d|
 // 
 //------------------------------------------------------------
 
-~reloadPersonality = { |d|
+~reloadPersonality = { |d, index|
+
+    var plist = ~loadPersonalityList.(d.did-1);
 
     // stop personality
     d.procRout.stop;
@@ -163,6 +165,10 @@ var createProcRout = {|d|
             s.sync;
         }.play;
     }});
+    index = index.mod(plist.size-1);
+    d.name = plist[index];
+
+    "loading personality: %".format(d.name).postln;
 
     d.env = interpretPersonality.(d);
     d.env.use{
@@ -175,6 +181,8 @@ var createProcRout = {|d|
 
     d.procRout = createProcRout.(d);
     d.procRout.reset.play(AppClock);
+
+    d
 
 };
 

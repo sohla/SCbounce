@@ -4,28 +4,29 @@ var contentView;
 
 var details = {
 	contentView = View()
-		.layout_(GridLayout.new().hSpacing_(spacing).vSpacing_(spacing).margins_([spacing,spacing,spacing,spacing]))
-		.mouseDownAction_({false});
+		.layout_(GridLayout.new().hSpacing_(spacing).vSpacing_(spacing).margins_([spacing,spacing,spacing,spacing]));
+		// .mouseDownAction_({false});
 	contentView
 };
 
 
 var titleView = { |data|
+	var titleText;
 	var view = VLayout(
-		StaticText()
+		titleText = StaticText()
 			.stringColor_(data.color)
 			.font_(Font(size:32))
 			.minWidth_(100)
 			.maxHeight_(50)
 			.string_(data.name),
-		StaticText()
+		StaticText()	
 			.stringColor_(data.color.alpha_(0.5))
 			.font_(Font(size:12))
 			.minWidth_(100)
 			.maxHeight_(20)
 			.string_("IP:" ++ data.ip + "Port:" ++ data.port.asString)
 	);
-	view
+	[view, titleText]
 };
 
 
@@ -36,7 +37,7 @@ var threeDeeView = { |data|
 	var accelX, accelY, accelZ;
 	
 	graph1 = Canvas3D()
-		.mouseDownAction_({false})
+		// .mouseDownAction_({false})
 		.scale_(220)
 		.background_(Color.clear)
 		.perspective_(0)
@@ -111,6 +112,7 @@ var plotterView = {|data, parentView|
 		.refresh;
 	var pd = [];
 	var cols = [Color.yellow,Color.magenta,Color.cyan,Color.red,Color.green,Color.blue];
+	var plotData = { data.env.use{ ~plot.(data)} };
 
 	plotter.setProperties(
 		\gridColorX, Color.grey,
@@ -124,7 +126,9 @@ var plotterView = {|data, parentView|
 	Routine{
 		loop {
 			{
-			pd = pd.addFirst([sin(Clock.beats),cos(Clock.beats),tan(Clock.beats).wrap2(1.0)]);
+			// pd = pd.addFirst([sin(Clock.beats),cos(Clock.beats),tan(Clock.beats).wrap2(1.0)]);
+			pd = pd.addFirst(plotData.());
+
 			if(pd.size > 50, {pd.pop()});
 			plotter.superpose = true;
 			plotter.setValue(pd, false, true, false);
@@ -140,18 +144,22 @@ var plotterView = {|data, parentView|
 ~addDetailView = {|d,i|
 
 	var gl;
+	var index = 0;
+	var titleViews = titleView.(d);
 	var view = View()
 		.background_(Color.black)
 		.layout_(gl = GridLayout.rows(
 			[
-				titleView.(d),
+				titleViews[0],
 			],[
 				threeDeeView.(d),
 			]
 		))
 		.mouseDownAction_({|but|
-			"Device % clicked".format(i).postln;
-			view.background = Color.rand.alpha_(0.3);
+			"Device % clicked".format(d.did).postln;
+			view.background = Color.black;
+			index = index + 1;
+			titleViews[1].string = ~reloadPersonality.(d, index).name;
 		});
 
 	// gl.setMinColumnWidth(1, 100);

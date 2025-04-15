@@ -9,11 +9,11 @@
 	// var defaultPersonality = "1. Start";
 	// var defaultList = "list_yourDNA.sc";
 
-	// var defaultPersonality = "1. Start";
-	// var defaultList = "list_brenton.sc";
+	var defaultPersonality = "1. Start";
+	var defaultList = "list_brenton.sc";
 
-	var defaultPersonality = "silence";
-	var defaultList = "list_workshop1.sc";
+	// var defaultPersonality = "silence";
+	// var defaultList = "list_workshop1.sc";
 
 	// var oscMessageTag  = "CombinedDataPacket";
 	var oscMessageTag  = "IMUFusedData";
