@@ -146,6 +146,7 @@
                     // Calculate interpolated positions using envelopes
                     var x = event[\sx].blend(event[\ex], event[\xEnv].at(normTime));
                     var y = event[\sy].blend(event[\ey], event[\yEnv].at(normTime));
+                    var points;
                     pos = x @ y;
 
                     // Calculate size, color, and other properties
@@ -160,7 +161,6 @@
                     Pen.strokeColor = col;
 
                     // Generate base points for the shape
-                    var points;
 
                     if(event[\points].notNil) {
                         // Use predefined points
@@ -173,10 +173,13 @@
 
                     // Apply modulation to points if enabled
                     if(event[\modulation].notNil) {
+
                         var modFreq = event[\modulation][\freq] ? 0.5;
-                        var modAmp = event[\modulation][\amp] ? 5;
+                        var baseModAmp = event[\modulation][\amp] ? 5;
                         var modPhase = event[\modulation][\phase] ? 0;
                         var modType = event[\modulation][\type] ? \radial;
+                        // Scale modulation amplitude by the current size for proportional effects
+                        var modAmp = baseModAmp * (size / event[\startSize]);
                         var lfoValue = sin(2pi * modFreq * now + modPhase) * modAmp;
                         var harmonics = event[\modulation][\harmonics] ? 1;
 
@@ -186,13 +189,13 @@
 
                             switch(modType,
                                 \radial, {
+                                    var modFactor = lfoValue * sin(harmonics * t * 2pi).abs;
                                     // Modulate along radius vector
                                     vec = point - pos;
                                     len = vec.rho;
                                     angle = vec.theta;
 
                                     // Add oscillation to radius with potential harmonic variation
-                                    var modFactor = lfoValue * sin(harmonics * t * 2pi).abs;
                                     len = len + modFactor;
                                     pos + Polar(len, angle).asPoint;
                                 },
@@ -209,22 +212,22 @@
                                     // Random jitter based on time but consistent per frame
                                     var seed = (i * 1000) + (now.floor * 50);
                                     var rnd = {|s| sin(s * 12345.6789).abs };
-                                    var jitterFactor = sin(t * harmonics * 2pi).abs;
+                                    var jitterFactor = sin(t * harmonics * 2pi);
                                     var jitterX = lfoValue * jitterFactor * (rnd.(seed) * 2 - 1);
                                     var jitterY = lfoValue * jitterFactor * (rnd.(seed + 500) * 2 - 1);
                                     point + (jitterX @ jitterY);
                                 },
                                 \phase, {
                                     // Phase modulation for wave-like shapes
-                                    if(event[\shape] == \wave) {
+                                    // if(event[\shape] == \wave) {
                                         var idx = (i + (lfoValue * harmonics)).wrap(0, points.size - 1);
                                         var idealPoint = points[idx.floor];
                                         var nextPoint = points[idx.ceil % points.size];
                                         var blend = idx - idx.floor;
                                         idealPoint.blend(nextPoint, blend);
-                                    } {
-                                        point  // Only applies to wave shapes
-                                    };
+                                    // } {
+                                    //     point  // Only applies to wave shapes
+                                    // };
                                 },
                                 { point } // Default case - no modulation
                             );
@@ -238,7 +241,7 @@
                         points[1..].do { |point| Pen.lineTo(point) };
                         if(event[\closed] ? true) { Pen.lineTo(points[0]) }; // Close the path
                         Pen.fill;
-                    } else {
+                    }  {
                         // Stroke the shape
                         Pen.moveTo(points[0]);
                         points[1..].do { |point| Pen.lineTo(point) };
@@ -421,7 +424,7 @@
             \sx, 500,
             \sy, 200,
             \ex, 100,
-            \ey, 200,
+            \ey, 500,
             \xEnv, Pfunc { ce.(\ripple) },
             \yEnv, Pfunc { ce.(\linear) },
             \startSize, 110,
@@ -433,7 +436,7 @@
             \modulation, (
                 type: \radial,
                 freq: 2,
-                amp: 5,
+                amp: 15,
                 harmonics: 3
             ),
             \duration, 12,
@@ -444,7 +447,7 @@
         Pbind(
             \type, \customEvent,
             \viewName, \view2, // Specify the view
-            \shape, \blobby,
+            \shape, \hexagon,
             \numPoints, 64,
             \sx, 300,
             \sy, 200,
@@ -459,12 +462,12 @@
             \endColor, Color.yellow,
             \rotation, Pseg(Pseq([-pi, pi], inf), 8, \linear, inf),
             \modulation, (
-                type: \normal,
-                freq: 0.5,
-                amp: 8,
-                harmonics: 5
+                type: \noise,
+                freq: 1,
+                amp: 18,
+                harmonics: 1
             ),
-            \fill, true,
+            \fill, false,
             \duration, 3,
             \dur, 0.25,
             \degree, Pseg(Pseq([0, 24], inf), 8, \linear, inf),
