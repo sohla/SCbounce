@@ -1,11 +1,11 @@
 (
 p = Pbind(
-    \dur, Prand([1], inf),
-	\note, Pseq([0,2,4,5,7,9,11], 1),
+    \dur, Prand([0.2], inf),
+	\note, Pseq([0,4,7,12,11,7,5,2], 4),
     \db, Pwhite( -10,-4 )
 );
 
-m = SimpleMIDIFile( "~/Desktop/Cmaj.mid" );
+m = SimpleMIDIFile( "~/Downloads/CAppeg.mid" );
 m.init1( 2, 120, "4/4" );
 m.fromPattern( p );
 )
@@ -22,5 +22,5 @@ SynthDef( "organ", { |freq = 440, sustain = 1, amp = 0.1|
 }).add;
 );
 n = SimpleMIDIFile.read( "~/Desktop/Cmaj.mid" );
-n = SimpleMIDIFile.read( "~/Downloads/1_Cmaj.mid" );
+n = SimpleMIDIFile.read( "~/Downloads/CAppeg1.mid" );
 n.p.play
