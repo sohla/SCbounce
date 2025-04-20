@@ -6,11 +6,11 @@
 	// var personalityDir = "~/Develop/SuperCollider/Projects/scbounce/personalities/"; //laptop
 	//var personalityDir = "~/Develop/SuperCollider/oscMusic/personalities/"; //mac mini cabin
 
-	// var defaultPersonality = "1. Start";
-	// var defaultList = "list_yourDNA.sc";
+	var defaultPersonality = "silence";
+	var defaultList = "list_yourDNA25.sc";
 
-	var defaultPersonality = "1. Start";
-	var defaultList = "list_brenton.sc";
+	// var defaultPersonality = "1. Start";
+	// var defaultList = "list_brenton.sc";
 
 	// var defaultPersonality = "silence";
 	// var defaultList = "list_workshop1.sc";
@@ -87,6 +87,7 @@
 		\ip: "127.0.0.1",
 		\port: 57120,
 		\did: "nil",
+		\senderAddr: NetAddr("192.168.1.147", 11000),
 		\color: Color.red,
 		\volts: 0,
 		\charge: 0,
@@ -845,6 +846,8 @@ PRESSURE
 				var sx,sy,sz,qe,q,ss,r, rq, rr, rtr;
 				var tr;
 
+				// pass msg to a sender
+				d.senderAddr.sendBundle(0.0, msg);
 
 				if(devices.at(addr.port+i) != nil,{
 					var oq = devices.at(addr.port+i).sensors.quatEvent;
@@ -931,7 +934,6 @@ PRESSURE
 	startOSCListening = {
 
 		var patternBase = "/%/" ++ oscMessageTag;
-
 		// listen for data and if found, add airware virtual device and stop listening
 		numAirwareVirtualDevices.do({|i|
 			var pattern = patternBase.format(i+1);
@@ -945,6 +947,8 @@ PRESSURE
 						//
 						// airstickListeners[i].free;
 						// airstickListeners.removeAt(i);
+
+						// senderAddr.sendMsg(patternBase, msg);
 					});
 				}.defer;
 			}, pattern));
