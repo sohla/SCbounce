@@ -573,7 +573,7 @@
        Pbind(
             \type, \customEvent,
             \viewName, \view4, // Specify the view
-            \shape, \blobby,
+            \shape, \circle,
             \sx, 300,
             \sy, 200,
             \ex, 500,

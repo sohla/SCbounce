@@ -6,11 +6,11 @@
 	// var personalityDir = "~/Develop/SuperCollider/Projects/scbounce/personalities/"; //laptop
 	//var personalityDir = "~/Develop/SuperCollider/oscMusic/personalities/"; //mac mini cabin
 
-	var defaultPersonality = "silence";
-	var defaultList = "list_yourDNA25.sc";
+//	var defaultPersonality = "silence";
+//	var defaultList = "list_yourDNA25.sc";
 
-	// var defaultPersonality = "1. Start";
-	// var defaultList = "list_brenton.sc";
+ var defaultPersonality = "1. Start";
+ var defaultList = "list_brenton.sc";
 
 	// var defaultPersonality = "silence";
 	// var defaultList = "list_workshop1.sc";
@@ -101,7 +101,7 @@
 		\incPersonality: {},
 		\decPersonality: {};
 
-	);
+);
 /*
 device
 	name
@@ -847,7 +847,7 @@ PRESSURE
 				var tr;
 
 				// pass msg to a sender
-				d.senderAddr.sendBundle(0.0, msg);
+//				d.senderAddr.sendBundle(0.0, msg);
 
 				if(devices.at(addr.port+i) != nil,{
 					var oq = devices.at(addr.port+i).sensors.quatEvent;
