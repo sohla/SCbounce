@@ -9,11 +9,11 @@
 //	var defaultPersonality = "silence";
 //	var defaultList = "list_yourDNA25.sc";
 
- var defaultPersonality = "1. Start";
- var defaultList = "list_brenton.sc";
+ 	// var defaultPersonality = "1. Start";
+ 	// var defaultList = "list_brenton.sc";
 
-	// var defaultPersonality = "silence";
-	// var defaultList = "list_workshop1.sc";
+	var defaultPersonality = "silence";
+	var defaultList = "list_workshop1.sc";
 
 	// var oscMessageTag  = "CombinedDataPacket";
 	var oscMessageTag  = "IMUFusedData";
@@ -87,7 +87,7 @@
 		\ip: "127.0.0.1",
 		\port: 57120,
 		\did: "nil",
-		\senderAddr: NetAddr("192.168.1.147", 11000),
+		\senderAddr: NetAddr("192.168.200.48", 57120),
 		\color: Color.red,
 		\volts: 0,
 		\charge: 0,
@@ -700,7 +700,7 @@ PRESSURE
 			.font_(Font(size:9))
 			.background_(Color.gray(0.25))
 			.align_(\center)
-			.stringColor_(col[i].alpha_(0.5));
+			.stringColor_(col[i].alpha_(1));
 		});
 
 		checkBox.action_({
@@ -847,7 +847,7 @@ PRESSURE
 				var tr;
 
 				// pass msg to a sender
-//				d.senderAddr.sendBundle(0.0, msg);
+				d.senderAddr.sendBundle(0.0, msg);
 
 				if(devices.at(addr.port+i) != nil,{
 					var oq = devices.at(addr.port+i).sensors.quatEvent;

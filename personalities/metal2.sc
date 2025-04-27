@@ -118,7 +118,7 @@ SynthDef(\bambooComplex2, {
 
 SynthDef(\sheet2, { |out, frq=111, gate=0, amp = 0, pchx=0|
 	var env = EnvGen.ar(Env.asr(0.3,1.0,8.0), gate, doneAction:Done.freeSelf);
-	var follow = Amplitude.kr(amp.lag(3), 0.3, 0.5);
+	var follow = Amplitude.kr(amp.lag(0.3), 0.3, 0.5);
 	// var sig = Saw.ar(frq.lag(2),0.3 * env * amp.lag(1));
 	var trig = PinkNoise.ar(0.01) * env * follow;
 	var sig =  DynKlank.ar(`[([30,42,54] + pchx.lag(3)).midicps, nil, [2, 1, 1, 1]], trig);
