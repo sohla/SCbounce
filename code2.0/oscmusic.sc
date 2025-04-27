@@ -9,8 +9,8 @@
 //	var defaultPersonality = "silence";
 //	var defaultList = "list_yourDNA25.sc";
 
- 	// var defaultPersonality = "1. Start";
- 	// var defaultList = "list_brenton.sc";
+ 	// var defaultPersonality = "silence";
+ 	// var defaultList = "list_ITR_brenton.sc";
 
 	var defaultPersonality = "silence";
 	var defaultList = "list_workshop1.sc";
