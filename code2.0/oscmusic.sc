@@ -9,11 +9,11 @@
 //	var defaultPersonality = "silence";
 //	var defaultList = "list_yourDNA25.sc";
 
- 	// var defaultPersonality = "silence";
- 	// var defaultList = "list_ITR_brenton.sc";
+ 	var defaultPersonality = "silence";
+ 	var defaultList = "list_ITR_brenton.sc";
 
-	var defaultPersonality = "silence";
-	var defaultList = "list_workshop1.sc";
+	// var defaultPersonality = "silence";
+	// var defaultList = "list_workshop1.sc";
 
 	// var oscMessageTag  = "CombinedDataPacket";
 	var oscMessageTag  = "IMUFusedData";
@@ -847,7 +847,7 @@ PRESSURE
 				var tr;
 
 				// pass msg to a sender
-				d.senderAddr.sendBundle(0.0, msg);
+				// d.senderAddr.sendBundle(0.0, msg);
 
 				if(devices.at(addr.port+i) != nil,{
 					var oq = devices.at(addr.port+i).sensors.quatEvent;

@@ -1,7 +1,8 @@
 (
 	[
 		"silence",
-		"brenton1",
+		"brenton4",
+		"brenton3",
 		"brenton2",
 		"violin1",
 		"violin2",
