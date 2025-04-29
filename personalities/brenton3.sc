@@ -2,7 +2,9 @@ var m = ~model;
 var buffer;
 var subCount = 0;
 var subLimit = 2;
-
+var tempo = 120;
+var subBeat = 4;
+var beat = 120 / subBeat / tempo;
 m.rrateMassFilteredAttack = 0.99;
 m.rrateMassFilteredDecay = 0.6;
 m.accelMassFilteredAttack = 0.99;
@@ -33,7 +35,7 @@ SynthDef(\stereoSampler1, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, fr
 			Pbind(
 				\instrument, \stereoSampler1,
 				\bufnum, buf,
-				\octave, Pxrand([1,2,3,2], inf),
+				\octave, Pxrand([1,2,6.5,2], inf),
 				\note, Pwhite(33,33, inf).floor,
 				\decay, 0.2,
 				\sustain,0.1,
@@ -46,17 +48,13 @@ SynthDef(\stereoSampler1, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, fr
 						++ [12,10,9,12,10,7,5,5,4,2,5,4,2,4,2,0].stutter(4) +7
 					
 					).midiratio, inf),
-				// \dur, Pseq([0.25], inf),
-        \func, Pfunc({|e| 
-        
-        subCount = subCount + 1;
-        if (subCount >= subLimit, {
-          subCount = 0;
-        });
-        subCount
-        
-        
-        }),
+        		\func, Pfunc({|e| 
+            		subCount = subCount + 1;
+					if (subCount >= subLimit, {
+						subCount = 0;
+					});	
+				subCount
+				}),
 				\args, #[],
 			)
 		);
@@ -77,15 +75,15 @@ SynthDef(\stereoSampler1, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, fr
 	var amp = m.accelMassFiltered.lincurve(0,2.5,0,1,-5);
 	var rate= m.accelMass.linlin(0,1,0,2);
 
-	if(amp < 0.07, {amp = 0});
+	if(amp < 0.4, {amp = 0});
 
   if(subCount == 0, {
     if(dur < 1.0, {
       subLimit = 4;
-  	  Pdef(m.ptn).set(\dur, 0.2 * dur);
+  	  Pdef(m.ptn).set(\dur,beat * dur);
     },{
       subLimit = 2;
-    	Pdef(m.ptn).set(\dur, 0.2);
+    	Pdef(m.ptn).set(\dur, beat);
     });
   });
 

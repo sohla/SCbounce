@@ -1041,7 +1041,7 @@ PRESSURE
 	// n = NetAddr("127.0.0.1", 57120);
 	// n.sendMsg(a, 0,0,0,0,0,0,0,0,0,0,0);
 		// s.plotTree;
-	  	// s.meter;
+	  	s.meter;
 	});
 
 	)

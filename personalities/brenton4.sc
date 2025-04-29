@@ -15,7 +15,7 @@ SynthDef(\bufGrain, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=440
 		Warp1.ar(2, bufnum, start, rate * (i+1) * 0.5, 0.3, windowRandRatio:0.3)},
 	1,1,0);
     sig = RLPF.ar(sig, cutoff, rq) + sub;
-		sig = Resonz.ar(sig, rezf.lag(0.4), 0.05, 5)* amp.lag(0.7);
+		sig = Resonz.ar(sig, rezf.lag(0.4), 0.05, 5)* amp.lag(0.9);
 		// sig = AllpassN.ar(sig, 0.1, [0.09, 0.08], 8);
 		// sig = JPverb.ar(sig,1, modDepth: 0.1, modFreq: 4.0, low: 1.0);
 
@@ -42,11 +42,11 @@ SynthDef(\bufGrain, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=440
 	var start = (d.sensors.gyroEvent.z / pi).lincurve(0.0,1.0,0.28,0.5333,0);
 	var rezf = (d.sensors.gyroEvent.y / pi).lincurve(0.0,1.0,130,260*3,0);
 
-	if(amp < 0.01, {amp = 0});
+	if(amp < 0.04, {amp = 0});
 
 	synth.set(\rezf, rezf);
 	synth.set(\start, start);
-	synth.set(\amp, amp * 1.4);
+	synth.set(\amp, amp * 2.4);
 };
 //------------------------------------------------------------
 ~plotMin = -1;
