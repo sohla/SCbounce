@@ -14,9 +14,9 @@ var titleView = { |data|
 	var view = VLayout(
 		titleText = StaticText()
 			.stringColor_(data.color)
-			.font_(Font(size:32))
+			.font_(Font(size:64))
 			.minWidth_(100)
-			.maxHeight_(50)
+			.maxHeight_(80)
 			.string_(data.name),
 		StaticText()	
 			.stringColor_(data.color.alpha_(0.5))
@@ -172,7 +172,7 @@ var plotterView = {|data, parentView|
 	// gl.setColumnStretch(0, 1);
 	contentView.layout.add(view, ((i-1)/2).floor, (i-1)%2);	
 
-	gl.add(plotterView.(d,view), 1, 1);
+	// gl.add(plotterView.(d,view), 1, 1);
 
 };
 
