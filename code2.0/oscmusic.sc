@@ -2,6 +2,11 @@
 
 	// Global config
 
+//fm1 drone
+//fm2 drone
+//fm3 drone
+
+
 	var personalityDir = "~/Develop/SuperCollider/Projects/SCbounce/personalities/";//RPI
 	// var personalityDir = "~/Develop/SuperCollider/Projects/scbounce/personalities/"; //laptop
 	//var personalityDir = "~/Develop/SuperCollider/oscMusic/personalities/"; //mac mini cabin
@@ -66,7 +71,8 @@
 		\airware:nil,
 		\battery:nil,
 		\inc:nil,
-		\dec:nil
+		\dec:nil,
+		\digiIn:nil
 	);
 
 
@@ -824,10 +830,10 @@ PRESSURE
 		var na = NetAddr.new(d.ip, d.port);
 		var patternBase = "/%/" ++ oscMessageTag;
 		var batteryBase = "/%/" ++ "Battery";
+		var digiInBase = "/%/" ++ "DigiIn";
 
 		// listen to all the airware that are connected (1 ip/port)
 		numAirwareVirtualDevices.do({|i|
-
 
 			var address = NetAddr.new(d.ip, d.port - i);
 			var pattern = patternBase.format(i+1);
@@ -836,7 +842,13 @@ PRESSURE
 			var angVel = threeCh;
 			var rx,ry,rz,ox=0,oy=0,oz=0;
 
+			d.listeners.digiIn = OSCFunc({ |msg, time, addr, recvPort|
+				[msg[1].asInteger,msg[2].asInteger].postln;
+			}, digiInBase.format(i+1), address);
+
+
 			d.listeners.battery = OSCFunc({ |msg, time, addr, recvPort|
+			[msg[1].asFloat,msg[2].asFloat].postln;
 				d.volts = msg[1].asFloat;
 				d.charge = msg[2].asFloat;
 			}, batteryBase.format(i+1), address);
