@@ -7,9 +7,10 @@ m.accelMassFilteredDecay = 0.08;
 
 //------------------------------------------------------------
 SynthDef(\bufGrain, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=440,
-    attack=0.01, decay=0.1, sustain=0.0, release=0.2, gate=1,cutoff=20000, rq=1, rezf=200|
+    attack=0.01, decay=0.1, sustain=0.8, release=5.2, gate=1,cutoff=20000, rq=1, rezf=200|
 
 	var lr = rate * BufRateScale.kr(bufnum) * (freq/440.0);
+	var env = EnvGen.kr(Env.adsr(attack, decay, sustain, release), gate, doneAction:2);
 	var sub = LFTri.ar(130/2,0,0.2).tanh;
 	var sig = Splay.arFill(7,{|i|
 		Warp1.ar(2, bufnum, start, rate * (i+1) * 0.5, 0.3, windowRandRatio:0.3)},
@@ -19,7 +20,7 @@ SynthDef(\bufGrain, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=440
 		// sig = AllpassN.ar(sig, 0.1, [0.09, 0.08], 8);
 		// sig = JPverb.ar(sig,1, modDepth: 0.1, modFreq: 4.0, low: 1.0);
 
-    Out.ar(out, sig[0] );
+    Out.ar(out, sig[0] * env);
 }).add;
 
 //------------------------------------------------------------
@@ -28,12 +29,13 @@ SynthDef(\bufGrain, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=440
 	postf("loading sample : % \n", path.fileName);
 	buffer = Buffer.read(s, path.fullPath, action:{ |buf|
 		postf("buffer alloc [%] \n", buf);
-		synth = Synth(\bufGrain,[\bufnum,buf, \rate, 1.1]);
+		synth = Synth(\bufGrain,[\bufnum,buf, \rate, 1.1, \gate, 1 ]);
 	});
 };
 
 ~deinit = ~deinit <> {
-	synth.free;
+	// synth.free;
+	synth.set(\gate, 0);
 	buffer.free;
 };
 //------------------------------------------------------------
@@ -47,6 +49,7 @@ SynthDef(\bufGrain, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=440
 	synth.set(\rezf, rezf);
 	synth.set(\start, start);
 	synth.set(\amp, amp * 2.4);
+
 };
 //------------------------------------------------------------
 ~plotMin = -1;

@@ -11,11 +11,11 @@
 	// var personalityDir = "~/Develop/SuperCollider/Projects/scbounce/personalities/"; //laptop
 	//var personalityDir = "~/Develop/SuperCollider/oscMusic/personalities/"; //mac mini cabin
 
-//	var defaultPersonality = "silence";
-//	var defaultList = "list_yourDNA25.sc";
+	var defaultPersonality = "silence";
+	var defaultList = "list_yourDNA25.sc";
 
- 	var defaultPersonality = "silence";
- 	var defaultList = "list_ITR_brenton.sc";
+ 	// var defaultPersonality = "silence";
+ 	// var defaultList = "list_ITR_brenton.sc";
 
 	// var defaultPersonality = "silence";
 	// var defaultList = "list_workshop1.sc";
@@ -86,6 +86,7 @@
 		\quatEvent: fourCh,
 		\ampValue: 0,
 		\rotateEvent: threeCh,
+		\digiInEvent: Array.fill(4,0)
 	);
 
 	var deviceProto = (
@@ -538,8 +539,8 @@ PRESSURE
 			.maxHeight_(40)
 			.maxWidth_(180)
 			.drawFunc_({
-			// ("V : "+d.volts.asStringPrec(2)).drawAtPoint(4@0, Font(size:14));
-			// ("% : "++d.charge.asStringPrec(2)).drawAtPoint(4@14, Font(size:14));
+			("V : "+d.volts.asStringPrec(2)).drawAtPoint(4@0, Font(size:14));
+			("% : "++d.charge.asStringPrec(2)).drawAtPoint(4@14, Font(size:14));
 			})
 			.frameRate_(1)
 			.animate_(true)
@@ -842,16 +843,22 @@ PRESSURE
 			var angVel = threeCh;
 			var rx,ry,rz,ox=0,oy=0,oz=0;
 
-			d.listeners.digiIn = OSCFunc({ |msg, time, addr, recvPort|
-				[msg[1].asInteger,msg[2].asInteger].postln;
-			}, digiInBase.format(i+1), address);
-
-
 			d.listeners.battery = OSCFunc({ |msg, time, addr, recvPort|
 			[msg[1].asFloat,msg[2].asFloat].postln;
 				d.volts = msg[1].asFloat;
 				d.charge = msg[2].asFloat;
 			}, batteryBase.format(i+1), address);
+
+
+			d.listeners.digiIn = OSCFunc({ |msg, time, addr, recvPort|
+			if(devices.at(addr.port+i) != nil,{
+				// [msg[1].asInteger,msg[2].asInteger].postln;
+				devices.at(addr.port+i).sensors.digiInEvent[msg[1].asInteger] = msg[2].asInteger;
+				// devices.at(addr.port+i).sensors.digiInEvent.postln;
+			});
+			}, digiInBase.format(i+1), address);
+
+
 
 
 			d.listeners.airware = OSCFunc({ |msg, time, addr, recvPort|

@@ -24,7 +24,9 @@ var listenersProto = (
     \airware:nil,
     \battery:nil,
     \inc:nil,
-    \dec:nil
+    \dec:nil,
+    \digiIn:nil
+
 );
 
 
@@ -38,6 +40,7 @@ var sensorsProto = (
     \quatEvent: fourCh,
     \ampValue: 0,
     \rotateEvent: threeCh,
+    \digiInEvent: Array.fill(4,0),
 );
 
 var dataSizeOptions = [100,200,300,400];
@@ -70,6 +73,7 @@ var addOSCDeviceListeners = {|d|
     var na = NetAddr.new(d.ip, d.port);
     var patternBase = "/%/" ++ oscMessageTag;
     var batteryBase = "/%/" ++ "Battery";
+    var digiInBase = "/%/" ++ "DigiIn";
 
     // listen to all the airware that are connected (1 ip/port)
     numAirwareVirtualDevices.do({|i|
@@ -87,6 +91,13 @@ var addOSCDeviceListeners = {|d|
             d.charge = msg[2].asFloat;
         }, batteryBase.format(i+1), address);
 
+        d.listeners.digiIn = OSCFunc({ |msg, time, addr, recvPort|
+        if(~devices.at(addr.port+i) != nil,{
+            // [msg[1].asInteger,msg[2].asInteger].postln;
+            ~devices.at(addr.port+i).sensors.digiInEvent[msg[1].asInteger] = msg[2].asInteger;
+            // devices.at(addr.port+i).sensors.digiInEvent.postln;
+        });
+        }, digiInBase.format(i+1), address);
 
         d.listeners.airware = OSCFunc({ |msg, time, addr, recvPort|
             var sx,sy,sz,qe,q,ss,r, rq, rr, rtr;
