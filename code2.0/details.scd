@@ -4,28 +4,28 @@ var contentView;
 
 var details = {
 	contentView = View()
-		.layout_(GridLayout.new().hSpacing_(spacing).vSpacing_(spacing).margins_([spacing,spacing,spacing,spacing]))
-		.mouseDownAction_({false});
+		.layout_(GridLayout.new().hSpacing_(spacing).vSpacing_(spacing).margins_([spacing,spacing,spacing,spacing]));
 	contentView
 };
 
 
 var titleView = { |data|
+	var titleText;
 	var view = VLayout(
-		StaticText()
+		titleText = StaticText()
 			.stringColor_(data.color)
-			.font_(Font(size:32))
+			.font_(Font(size:64))
 			.minWidth_(100)
-			.maxHeight_(50)
+			.maxHeight_(80)
 			.string_(data.name),
-		StaticText()
+		StaticText()	
 			.stringColor_(data.color.alpha_(0.5))
 			.font_(Font(size:12))
 			.minWidth_(100)
 			.maxHeight_(20)
 			.string_("IP:" ++ data.ip + "Port:" ++ data.port.asString)
 	);
-	view
+	[view, titleText]
 };
 
 
@@ -37,7 +37,8 @@ var threeDeeView = { |data|
 	
 	graph1 = Canvas3D()
 		.mouseDownAction_({false})
-		.scale_(80)
+		.mouseUpAction_({false})
+		.scale_(220)
 		.background_(Color.clear)
 		.perspective_(0)
 		.transforms_([Canvas3D.mRotateZ(0),Canvas3D.mTranslate(0,0,0)])
@@ -50,18 +51,18 @@ var threeDeeView = { |data|
 
 	graph1.add(accelX = Canvas3DItem.regPrism()
 		.color_(Color.yellow(0.9))
-		.width_(2)
-		.fill_(true)
+		.width_(1)
+		// .fill_(true)
 	);
 	graph1.add(accelY = Canvas3DItem.regPrism()
 		.color_(Color.magenta(0.9))
-		.width_(2)
-		.fill_(true)
+		.width_(1)
+		// .fill_(true)
 	);
 	graph1.add(accelZ = Canvas3DItem.regPrism()
 		.color_(Color.cyan(0.9))
-		.width_(2)
-		.fill_(true)
+		.width_(1)
+		// .fill_(true)
 	);
 
 	// animate
@@ -102,43 +103,76 @@ var threeDeeView = { |data|
 };
 
 
-var visual = {|data|
-	var plotterView = UserView().backColor_(data.color.alpha_(0.5));
-	plotterView
+var plotterView = {|data, parentView|
+	// var pv = UserView(parentView, parentView.bounds).backColor_(data.color.alpha_(0.5)).animate_(true).frameRate_(12);
+	var plotter = Plotter("plotter", parentView.bounds, parentView)
+		.value_((0..50))
+		.minval_(-1.0)
+		.maxval_(1.0)
+		.refresh;
+	var pd = [];
+	var cols = [Color.yellow,Color.magenta,Color.cyan,Color.red,Color.green,Color.blue];
+	var plotData = { data.env.use{ ~plot.(data)} };
+
+	plotter.setProperties(
+		\gridColorX, Color.grey,
+		\gridColorY, Color.grey,
+		\plotColor, cols,
+		\fontColor, data.color,
+		\backgroundColor, Color.black
+	);
+
+
+	Routine{
+		loop {
+			{
+			// pd = pd.addFirst([sin(Clock.beats),cos(Clock.beats),tan(Clock.beats).wrap2(1.0)]);
+			pd = pd.addFirst(plotData.());
+
+			if(pd.size > 50, {pd.pop()});
+			plotter.superpose = true;
+			plotter.setValue(pd, false, true, false);
+			plotter.value = plotter.value.keep(50).flop;
+			}.defer;
+			0.03.yield; //this has a big impact on CPU use
+		}
+	}.play;
+
+	plotter.interactionView.mouseDownAction_({false});
+	plotter.interactionView.mouseUpAction_({false});
+
+	plotter.interactionView
 };
 
 ~addDetailView = {|d,i|
 
 	var gl;
+	var index = 0;
+	var titleViews = titleView.(d);
 	var view = View()
 		.background_(Color.black)
 		.layout_(gl = GridLayout.rows(
 			[
-				titleView.(d),
-				threeDeeView.(d),
+				titleViews[0],
 			],[
+				threeDeeView.(d),
 			]
 		))
+		.mouseUpAction_({|but|
+			view.background = Color.black;
+		})
 		.mouseDownAction_({|but|
-			"Device % clicked".format(i).postln;
-			view.background = Color.rand.alpha_(0.3);
+			"Device % clicked".format(d.did).postln;
+			view.background = Color.white.alpha_(0.1);
+			index = index + 1;
+			titleViews[1].string = ~reloadPersonality.(d, index).name;
 		});
 
-	var plotter = Plotter("plotter", view.bounds, view)
-		.value_((0..100))
-		.refresh;
-
-	gl.setMinColumnWidth(1, 100);
-	gl.setColumnStretch(0, 1);
+	// gl.setMinColumnWidth(1, 100);
+	// gl.setColumnStretch(0, 1);
 	contentView.layout.add(view, ((i-1)/2).floor, (i-1)%2);	
 
-	plotter.setProperties(
-		\gridColorX, Color.grey,
-		\gridColorY, Color.grey,
-		\plotColor, d.color,
-		\fontColor, d.color,
-		\backgroundColor, Color.black
-	);
+	// gl.add(plotterView.(d,view), 1, 1);
 
 };
 

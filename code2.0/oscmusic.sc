@@ -2,18 +2,23 @@
 
 	// Global config
 
-// var personalityDir = "~/Develop/SuperCollider/Projects/SCbounce/personalities/";//RPI
-var personalityDir = "~/Develop/SuperCollider/Projects/scbounce/personalities/"; //laptop
+//fm1 drone
+//fm2 drone
+//fm3 drone
+
+
+	var personalityDir = "~/Develop/SuperCollider/Projects/SCbounce/personalities/";//RPI
+	// var personalityDir = "~/Develop/SuperCollider/Projects/scbounce/personalities/"; //laptop
 	//var personalityDir = "~/Develop/SuperCollider/oscMusic/personalities/"; //mac mini cabin
 
-	// var defaultPersonality = "1. Start";
-	// var defaultList = "list_yourDNA.sc";
-
-	// var defaultPersonality = "1. Start";
-	// var defaultList = "list_brenton.sc";
-
 	var defaultPersonality = "silence";
-	var defaultList = "list_workshop1.sc";
+	var defaultList = "list_yourDNA25.sc";
+
+ 	// var defaultPersonality = "silence";
+ 	// var defaultList = "list_ITR_brenton.sc";
+
+	// var defaultPersonality = "silence";
+	// var defaultList = "list_workshop1.sc";
 
 	// var oscMessageTag  = "CombinedDataPacket";
 	var oscMessageTag  = "IMUFusedData";
@@ -45,7 +50,7 @@ var personalityDir = "~/Develop/SuperCollider/Projects/scbounce/personalities/";
 	var createWindowView;
 	var addOSCDeviceListeners, startOSCListening, stopOSCListening;
 
-	var midiOut;
+
 	//------------------------------------------------------------
 	// Models
 	//------------------------------------------------------------
@@ -66,7 +71,8 @@ var personalityDir = "~/Develop/SuperCollider/Projects/scbounce/personalities/";
 		\airware:nil,
 		\battery:nil,
 		\inc:nil,
-		\dec:nil
+		\dec:nil,
+		\digiIn:nil
 	);
 
 
@@ -80,6 +86,7 @@ var personalityDir = "~/Develop/SuperCollider/Projects/scbounce/personalities/";
 		\quatEvent: fourCh,
 		\ampValue: 0,
 		\rotateEvent: threeCh,
+		\digiInEvent: Array.fill(4,0)
 	);
 
 	var deviceProto = (
@@ -87,6 +94,7 @@ var personalityDir = "~/Develop/SuperCollider/Projects/scbounce/personalities/";
 		\ip: "127.0.0.1",
 		\port: 57120,
 		\did: "nil",
+		\senderAddr: NetAddr("192.168.200.48", 57120),
 		\color: Color.red,
 		\volts: 0,
 		\charge: 0,
@@ -100,7 +108,7 @@ var personalityDir = "~/Develop/SuperCollider/Projects/scbounce/personalities/";
 		\incPersonality: {},
 		\decPersonality: {};
 
-	);
+);
 /*
 device
 	name
@@ -185,7 +193,6 @@ PRESSURE
 			~model = (
 				\com: com,
 				\name: d.name,
-			\midiOut: midiOut,
 				\ptn: Array.fill(16,{|i|i=90.rrand(65).asAscii.toLower}).join(),
 				\rrateMass: 0,
 				\rrateMassFiltered: 0,
@@ -400,7 +407,7 @@ PRESSURE
 		devices.put(port,d);
 		reloadPersonality.(d);
 
-	addDeviceView.(contentView, d);
+		//addDeviceView.(contentView, d);
 
 		addOSCDeviceListeners.(d);
 		NetAddr.new(ip,port-id+1).sendMsg("/Config/GetConfig", 57120);
@@ -532,8 +539,8 @@ PRESSURE
 			.maxHeight_(40)
 			.maxWidth_(180)
 			.drawFunc_({
-			// ("V : "+d.volts.asStringPrec(2)).drawAtPoint(4@0, Font(size:14));
-			// ("% : "++d.charge.asStringPrec(2)).drawAtPoint(4@14, Font(size:14));
+			("V : "+d.volts.asStringPrec(2)).drawAtPoint(4@0, Font(size:14));
+			("% : "++d.charge.asStringPrec(2)).drawAtPoint(4@14, Font(size:14));
 			})
 			.frameRate_(1)
 			.animate_(true)
@@ -700,7 +707,7 @@ PRESSURE
 			.font_(Font(size:9))
 			.background_(Color.gray(0.25))
 			.align_(\center)
-			.stringColor_(col[i].alpha_(0.5));
+			.stringColor_(col[i].alpha_(1));
 		});
 
 		checkBox.action_({
@@ -824,10 +831,10 @@ PRESSURE
 		var na = NetAddr.new(d.ip, d.port);
 		var patternBase = "/%/" ++ oscMessageTag;
 		var batteryBase = "/%/" ++ "Battery";
+		var digiInBase = "/%/" ++ "DigiIn";
 
 		// listen to all the airware that are connected (1 ip/port)
 		numAirwareVirtualDevices.do({|i|
-
 
 			var address = NetAddr.new(d.ip, d.port - i);
 			var pattern = patternBase.format(i+1);
@@ -837,15 +844,29 @@ PRESSURE
 			var rx,ry,rz,ox=0,oy=0,oz=0;
 
 			d.listeners.battery = OSCFunc({ |msg, time, addr, recvPort|
+			[msg[1].asFloat,msg[2].asFloat].postln;
 				d.volts = msg[1].asFloat;
 				d.charge = msg[2].asFloat;
 			}, batteryBase.format(i+1), address);
+
+
+			d.listeners.digiIn = OSCFunc({ |msg, time, addr, recvPort|
+			if(devices.at(addr.port+i) != nil,{
+				// [msg[1].asInteger,msg[2].asInteger].postln;
+				devices.at(addr.port+i).sensors.digiInEvent[msg[1].asInteger] = msg[2].asInteger;
+				// devices.at(addr.port+i).sensors.digiInEvent.postln;
+			});
+			}, digiInBase.format(i+1), address);
+
+
 
 
 			d.listeners.airware = OSCFunc({ |msg, time, addr, recvPort|
 				var sx,sy,sz,qe,q,ss,r, rq, rr, rtr;
 				var tr;
 
+				// pass msg to a sender
+				// d.senderAddr.sendBundle(0.0, msg);
 
 				if(devices.at(addr.port+i) != nil,{
 					var oq = devices.at(addr.port+i).sensors.quatEvent;
@@ -932,7 +953,6 @@ PRESSURE
 	startOSCListening = {
 
 		var patternBase = "/%/" ++ oscMessageTag;
-
 		// listen for data and if found, add airware virtual device and stop listening
 		numAirwareVirtualDevices.do({|i|
 			var pattern = patternBase.format(i+1);
@@ -946,6 +966,8 @@ PRESSURE
 						//
 						// airstickListeners[i].free;
 						// airstickListeners.removeAt(i);
+
+						// senderAddr.sendMsg(patternBase, msg);
 					});
 				}.defer;
 			}, pattern));
@@ -1028,12 +1050,7 @@ PRESSURE
 
 	s.waitForBoot({
 
-		MIDIClient.init;
-		MIDIClient.destinations;
-
-	MIDIIn.connectAll;
-
-	midiOut = MIDIOut.newByName("Network", "Session 1");
+		MIDIIn.connectAll;
 
 		startup.();
 		buildUI.();
@@ -1043,7 +1060,7 @@ PRESSURE
 	// n = NetAddr("127.0.0.1", 57120);
 	// n.sendMsg(a, 0,0,0,0,0,0,0,0,0,0,0);
 		// s.plotTree;
-	  	// s.meter;
+	  	s.meter;
 	});
 
 	)

@@ -1,6 +1,7 @@
 (
 
 var staker;
+var personalityController = Require("personalityController.scd");
 var oscController = Require("oscController.scd");
 
 var stack = {

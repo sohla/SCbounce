@@ -5,6 +5,13 @@ var oscMessageTag  = "IMUFusedData";
 var airstickListeners = [];
 var numAirwareVirtualDevices = 4;
 
+// var defaultPersonalities = [
+//     "bongo1",
+//     "magicWand",
+//     "silence",
+//     "silence",
+// ];
+
 //------------------------------------------------------------
 // Models
 //------------------------------------------------------------
@@ -13,19 +20,13 @@ var twoCh = (\x: 0, \y:0);
 var threeCh = (\x: 0, \y:0, \z:0);
 var fourCh = (\w: 0, \x: 0, \y:0, \z:0);
 
-
-var com = (
-    \root: 0,
-    \dur: 1,
-    \accelMass: 0,
-    \rrateMass: 0,
-);
-
 var listenersProto = (
     \airware:nil,
     \battery:nil,
     \inc:nil,
-    \dec:nil
+    \dec:nil,
+    \digiIn:nil
+
 );
 
 
@@ -39,6 +40,7 @@ var sensorsProto = (
     \quatEvent: fourCh,
     \ampValue: 0,
     \rotateEvent: threeCh,
+    \digiInEvent: Array.fill(4,0),
 );
 
 var dataSizeOptions = [100,200,300,400];
@@ -71,6 +73,7 @@ var addOSCDeviceListeners = {|d|
     var na = NetAddr.new(d.ip, d.port);
     var patternBase = "/%/" ++ oscMessageTag;
     var batteryBase = "/%/" ++ "Battery";
+    var digiInBase = "/%/" ++ "DigiIn";
 
     // listen to all the airware that are connected (1 ip/port)
     numAirwareVirtualDevices.do({|i|
@@ -88,6 +91,13 @@ var addOSCDeviceListeners = {|d|
             d.charge = msg[2].asFloat;
         }, batteryBase.format(i+1), address);
 
+        d.listeners.digiIn = OSCFunc({ |msg, time, addr, recvPort|
+        if(~devices.at(addr.port+i) != nil,{
+            // [msg[1].asInteger,msg[2].asInteger].postln;
+            ~devices.at(addr.port+i).sensors.digiInEvent[msg[1].asInteger] = msg[2].asInteger;
+            // devices.at(addr.port+i).sensors.digiInEvent.postln;
+        });
+        }, digiInBase.format(i+1), address);
 
         d.listeners.airware = OSCFunc({ |msg, time, addr, recvPort|
             var sx,sy,sz,qe,q,ss,r, rq, rr, rtr;
@@ -175,7 +185,6 @@ var addOSCDeviceListeners = {|d|
 var addDevice = { |ip,port, id|
 
     var d = Event.new(proto:deviceProto);
-    var names = ["left arm", "right arm", "left leg", "right leg"];
     var configPattern = "/%/Config".format(id);
     var configListener = OSCFunc({ |msg2, time2, addr2, recvPort2|
         d.color = Color.fromArray(msg2.at([15,16,17])++[1]);
@@ -186,7 +195,11 @@ var addDevice = { |ip,port, id|
         }.defer;
     }, configPattern).oneShot;
 
-    d.name = names[id-1];
+    
+    // hack in : set name of device that is something from the list for now!
+    // d.name = ~loadPersonalityList.(id-1)[id-1];
+    // d.name = defaultPersonalities[id-1];
+
     d.ip = ip;
     d.port = port;
     d.did = id;
@@ -195,7 +208,7 @@ var addDevice = { |ip,port, id|
     d.sensors =  Event.new(proto:sensorsProto);
 
     ~devices.put(port,d);
-    // reloadPersonality.(d);
+    ~reloadPersonality.(d, 0);
     
 
     // ~addDeviceView.(d,id);

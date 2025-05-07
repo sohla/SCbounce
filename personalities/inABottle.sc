@@ -1,8 +1,8 @@
 var m = ~model;
 var synth;
 
-m.accelMassFilteredAttack = 0.5;
-m.accelMassFilteredDecay = 0.1;
+m.accelMassFilteredAttack = 0.8;
+m.accelMassFilteredDecay = 0.9;
 
 //------------------------------------------------------------
 SynthDef(\inabottle, { |out, frq=111, gate=0, amp = 0, dust=10, tone = 0.8, bits = 0.01|

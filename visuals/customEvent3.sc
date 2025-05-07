@@ -224,7 +224,114 @@
                                     Pen.lineTo(point);
                                 };
                                 Pen.stroke;
-                            }
+                            },
+\blobby, {
+    var points = Array.fill(100, { |i|
+        var angle = i / 100 * 2pi;
+        var radius = size * (0.8 + (0.3 * sin(angle * 3)) + (0.2 * cos(angle * 5)));
+        var x = pos.x + (radius * cos(angle));
+        var y = pos.y + (radius * sin(angle));
+        x @ y
+    });
+    Pen.moveTo(points[0]);
+    points.do { |point, i|
+        if (i > 0) { Pen.lineTo(point) };
+    };
+    Pen.lineTo(points[0]);
+    Pen.fill;
+},
+
+\tentacle, {
+    var points = Array.fill(100, { |i|
+        var t = i / 99;  // 0 to 1
+        var curve = sin(t * pi) * (1 - t) * 1.5;  // Curve factor that diminishes toward tip
+        var x = pos.x + (t * size * 2) - size;  // Main axis
+        var y = pos.y + (curve * size * sin(t * 8 * pi));  // Oscillations that get smaller
+        x @ y
+    });
+    Pen.moveTo(points[0]);
+    points.do { |point, i|
+        if (i > 0) { Pen.lineTo(point) };
+    };
+    Pen.stroke;
+},
+
+\coral, {
+    var points = Array.fill(140, { |i|
+        var t = i / 140;  // 0 to 1
+        var angle;
+        var radius;
+        var x, y;
+        
+        if (i < 20) {  // Main stem
+            x = pos.x;
+            y = pos.y + (t * 5 * size);
+        } {
+            if (i < 60) {  // First branch
+                angle = -0.3 * pi + ((i-20)/40 * 0.6 * pi);
+                radius = size * 0.8;
+                x = pos.x + (radius * cos(angle));
+                y = pos.y + (radius * sin(angle));
+            } {
+                if (i < 100) {  // Second branch
+                    angle = -0.1 * pi + ((i-60)/40 * 0.6 * pi);
+                    radius = size * 0.9;
+                    x = pos.x + (radius * cos(angle));
+                    y = pos.y + (radius * sin(angle));
+                } {  // Third branch
+                    angle = 0.1 * pi + ((i-100)/40 * 0.6 * pi);
+                    radius = size * 0.7;
+                    x = pos.x + (radius * cos(angle));
+                    y = pos.y + (radius * sin(angle));
+                }
+            }
+        };
+        x @ y
+    });
+    Pen.moveTo(points[0]);
+    points.do { |point, i|
+        if (i > 0) { Pen.lineTo(point) };
+    };
+    Pen.stroke;
+},
+
+\neuron, {
+    var cell_radius = size * 0.4;
+    var branch_count = 6;
+    var points_per_branch = 20;
+    var all_points = Array.new(branch_count * points_per_branch);
+    
+    // Create the branches
+    branch_count.do { |branch_idx|
+        var start_angle = branch_idx / branch_count * 2pi;
+        var branch_length = size * (0.7 + (0.3 * sin(branch_idx * 1.5)));
+        
+        points_per_branch.do { |i|
+            var t = i / (points_per_branch - 1);  // 0 to 1
+            var branch_angle = start_angle + (0.2 * sin(t * 4 * pi));
+            var radius = cell_radius + (t * branch_length);
+            var x = pos.x + (radius * cos(branch_angle));
+            var y = pos.y + (radius * sin(branch_angle));
+            all_points = all_points.add(x @ y);
+        }
+    };
+    
+    // Draw the cell body
+    Pen.fillOval(Rect.aboutPoint(pos, cell_radius, cell_radius));
+    
+    // Draw the branches (dendrites/axons)
+    branch_count.do { |j|
+        var start_idx = j * points_per_branch;
+        Pen.moveTo(all_points[start_idx]);
+        points_per_branch.do { |i|
+            if (i > 0) { Pen.lineTo(all_points[start_idx + i]) };
+        };
+        Pen.stroke;
+    };
+},
+
+
+
                         );
         
                         Pen.rotate(event[\rotation].neg, pos.x, pos.y);
@@ -398,7 +505,7 @@
         Pbind(
             \type, \customEvent,
             \viewName, \view1, // Specify the view
-            \shape, \circle,
+            \shape, \neuron,
             \sx, 500,
             \sy, 200,
             \ex, 100,
@@ -419,7 +526,7 @@
         Pbind(
             \type, \customEvent,
             \viewName, \view2, // Specify the view
-            \shape, \square,
+            \shape, \coral,
             \sx, 300,
             \sy, 200,
             \ex, 300,
@@ -442,7 +549,7 @@
        Pbind(
             \type, \customEvent,
             \viewName, \view3, // Specify the view
-            \shape, \triangle,
+            \shape, \tentacle,
             \sx, 300,
             \sy, 100,
             \ex, 300,
@@ -466,7 +573,7 @@
        Pbind(
             \type, \customEvent,
             \viewName, \view4, // Specify the view
-            \shape, \cross,
+            \shape, \circle,
             \sx, 300,
             \sy, 200,
             \ex, 500,

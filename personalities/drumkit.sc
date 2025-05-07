@@ -24,7 +24,7 @@ SynthDef(\drumkit, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
     sig = Balance2.ar(sig[0],sig[1], pan);
     Out.ar(out, sig * amp * env);
 }).add;
---------------------------------------
+//--------------------------------------
 ~init = ~init <> {
 
 	var folder  = PathName("~/Downloads/yourDNASamples/drums");
