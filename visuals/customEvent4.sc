@@ -404,7 +404,7 @@
             \rotation: ~rotation ? 0,
             \duration: ~duration ? 5,
             \envelope: ~envelope ? defaultEnv,
-            \alphaEnv: ~alphaEnv ? Env([0, 1, 0], [0.0, 1], \sin),
+            \alphaEnv: ~alphaEnv ? Env([1, 1, 0], [0.0, 1], \sin),
             \fill: ~fill ? false,  // Whether to fill the shape or stroke it
             \closed: ~closed ? true,  // Whether to close the shape
             \modulation: ~modulation,  // Optional modulation settings
@@ -414,36 +414,38 @@
         ~type = \note;
         currentEnvironment.play;
     });
-
     s.waitForBoot({
         // Example patterns to add visual events to different views
         Pbind(
             \type, \customEvent,
             \viewName, \view1, // Specify the view
-            \shape, \circle,
-            \sx, 500,
-            \sy, 200,
-            \ex, 100,
-            \ey, 500,
-            \xEnv, Pfunc { ce.(\ripple) },
+            \shape, \line,
+		\note, Prand([0,3,6,9], inf),
+
+		\sx, Pn(Pseries(100,20,20),inf),
+		\sy, 300 - (Pkey(\note) * 20),
+		\ex, 100,
+		\ey, Pkey(\sy),
+            \xEnv, Pfunc { ce.(\linear) },
             \yEnv, Pfunc { ce.(\linear) },
-            \startSize, 110,
-            \endSize, 0,
+            \startSize, 20,
+            \endSize, 20,
             \sizeEnv, Pfunc { ce.(\spring) },
-            \startColor, Color.red,
-            \endColor, Color.blue,
-            \rotation, Pseg(Pseq([-pi, pi], inf), 8, \linear, inf),
+		\startColor, Pfunc{|e|Color.hsv(e.note/12,0.5,1)},
+		\endColor, Pkey(\startColor),
+            \rotation, pi/2,//Pseg(Pseq([-pi, pi], inf), 80, \linear, inf),
             \modulation, (
                 type: \radial,
-                freq: 2,
-                amp: 15,
+                freq: 3,
+                amp: 10,
                 harmonics: 3
             ),
-            \duration, 12,
-            \dur, 0.4,
-            \note, Pseg(Pseq([0, 12], inf), 8, \linear, inf),
+		// \fill, true,
+            \duration, 0.8,
+            \dur, 0.1,
+		\latency,0.03
         ).play;
-
+/*
         Pbind(
             \type, \customEvent,
             \viewName, \view2, // Specify the view
@@ -534,5 +536,6 @@
             \octave, 3,
             \degree, Pseg(Pseq([0, 8, 16, 32], inf) + 30, 8, \linear, inf),
         ).play;
+	*/
     });
 )
