@@ -2,8 +2,8 @@
 
 	// Global config
 
-	var personalityDir = "~/Develop/SuperCollider/Projects/SCbounce/personalities/";//RPI
-	// var personalityDir = "~/Develop/SuperCollider/Projects/scbounce/personalities/"; //laptop
+// var personalityDir = "~/Develop/SuperCollider/Projects/SCbounce/personalities/";//RPI
+var personalityDir = "~/Develop/SuperCollider/Projects/scbounce/personalities/"; //laptop
 	//var personalityDir = "~/Develop/SuperCollider/oscMusic/personalities/"; //mac mini cabin
 
 	// var defaultPersonality = "1. Start";
@@ -45,7 +45,7 @@
 	var createWindowView;
 	var addOSCDeviceListeners, startOSCListening, stopOSCListening;
 
-
+	var midiOut;
 	//------------------------------------------------------------
 	// Models
 	//------------------------------------------------------------
@@ -185,6 +185,7 @@ PRESSURE
 			~model = (
 				\com: com,
 				\name: d.name,
+			\midiOut: midiOut,
 				\ptn: Array.fill(16,{|i|i=90.rrand(65).asAscii.toLower}).join(),
 				\rrateMass: 0,
 				\rrateMassFiltered: 0,
@@ -399,7 +400,7 @@ PRESSURE
 		devices.put(port,d);
 		reloadPersonality.(d);
 
-		//addDeviceView.(contentView, d);
+	addDeviceView.(contentView, d);
 
 		addOSCDeviceListeners.(d);
 		NetAddr.new(ip,port-id+1).sendMsg("/Config/GetConfig", 57120);
@@ -1027,7 +1028,12 @@ PRESSURE
 
 	s.waitForBoot({
 
-		MIDIIn.connectAll;
+		MIDIClient.init;
+		MIDIClient.destinations;
+
+	MIDIIn.connectAll;
+
+	midiOut = MIDIOut.newByName("Network", "Session 1");
 
 		startup.();
 		buildUI.();

@@ -2,6 +2,7 @@
 	[
 		"silence",
     "bongo1",
+	"midiOut",
     "miniMoog",
     "UD_pitchDynamics2",
     "magicWand",
