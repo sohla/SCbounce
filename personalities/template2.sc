@@ -20,6 +20,7 @@ SynthDef(\template, {
 	Pdef(m.ptn,
 		Pbind(
 			\instrument, \template,
+			\type, \customEvent,
 			\scale, Scale.major,
 			\note, Pseq([0,4,7,11], inf),
 			\legato, 1,

@@ -2,6 +2,7 @@
 	[
 
 	"silence",
+	"template2",
 	"button1",
 	"wingChimes1",
 	"wingChimes3",

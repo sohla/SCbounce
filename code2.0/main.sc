@@ -7,10 +7,21 @@ var oscController = Require("oscController.scd");
 var stack = {
 	var devices = Require("devices.scd");
 	var details = Require("details.scd");
-	View().layout_(staker =StackLayout(
+	var view = View().layout_(staker =StackLayout(
 		details.(),
 		devices.(),
 	));
+	
+	// .mouseUpAction_({|but|
+	// 	view.background = Color.black;
+	// })
+	// .mouseDownAction_({|but|
+	// 	// "Device % clicked".format(d.did).postln;
+	// 	view.background = Color.white.alpha_(0.1);
+	// 	// d.index = d.index + 1;
+	// 	// titleViews[1].string = ~reloadPersonality.(d, d.index).name;
+	// });
+	view
 };
 
 var tabButton = {|i|

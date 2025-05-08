@@ -48,6 +48,7 @@ var dataSizeOptions = [100,200,300,400];
 var deviceProto = (
     \name: "default",
     \ip: "127.0.0.1",
+    \index: 0,
     \port: 57120,
     \did: "nil",
     \color: Color.red,
@@ -192,6 +193,9 @@ var addDevice = { |ip,port, id|
         {
             ~addDeviceView.(d, id);
             ~addDetailView.(d, id);
+            // addTitleView.(d);
+            
+            
         }.defer;
     }, configPattern).oneShot;
 

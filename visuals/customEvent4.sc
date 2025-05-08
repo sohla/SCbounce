@@ -155,7 +155,7 @@
                     col = col.alpha_(event[\alphaEnv].at(normTime));
 
                     // Draw the shape
-                    Pen.width = max(1, size.squared.lincurve(1, 50000, 1, 20, 0.1));
+                    Pen.width = 10;//max(1, size.squared.lincurve(1, 50000, 1, 20, 0.1));
                     Pen.rotate(event[\rotation], pos.x, pos.y);
                     Pen.fillColor = col;
                     Pen.strokeColor = col;
@@ -278,7 +278,7 @@
     var window = Window("Visual Synthesizer", Rect(100, 100, 1200, 800))
         .fullScreen
         .front
-        .background_(Color.white.alpha_(1))
+        .background_(Color.white.alpha_(0.1))
         .layout_(
             GridLayout.rows(
                 [makeView.(\view1), makeView.(\view2)],
@@ -375,7 +375,7 @@
         }
     );
 
-    // Function to retrieve a custom envelope by name
+    // Function to retrieve a custom envelope by name (needed for Pfunc) in patterns
     var ce = { |name|
         envLibrary[name].value
     };
@@ -428,7 +428,7 @@
 		\ey, Pkey(\sy),
             \xEnv, Pfunc { ce.(\linear) },
             \yEnv, Pfunc { ce.(\linear) },
-            \startSize, 20,
+            \startSize, 120,
             \endSize, 20,
             \sizeEnv, Pfunc { ce.(\spring) },
 		\startColor, Pfunc{|e|Color.hsv(e.note/12,0.5,1)},

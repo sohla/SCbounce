@@ -1,6 +1,7 @@
 var renderRate = 30;
 var spacing = 2;
 var contentView;
+var addTitleView = Require("titleView.scd");
 
 var details = {
 	contentView = View()
@@ -9,24 +10,24 @@ var details = {
 };
 
 
-var titleView = { |data|
-	var titleText;
-	var view = VLayout(
-		titleText = StaticText()
-			.stringColor_(data.color)
-			.font_(Font(size:64))
-			.minWidth_(100)
-			.maxHeight_(80)
-			.string_(data.name),
-		StaticText()	
-			.stringColor_(data.color.alpha_(0.5))
-			.font_(Font(size:12))
-			.minWidth_(100)
-			.maxHeight_(20)
-			.string_("IP:" ++ data.ip + "Port:" ++ data.port.asString)
-	);
-	[view, titleText]
-};
+// var titleView = { |data|
+// 	var titleText;
+// 	var view = VLayout(
+// 		titleText = StaticText()
+// 			.stringColor_(data.color)
+// 			.font_(Font(size:64))
+// 			.minWidth_(100)
+// 			.maxHeight_(80)
+// 			.string_(data.name),
+// 		StaticText()	
+// 			.stringColor_(data.color.alpha_(0.5))
+// 			.font_(Font(size:12))
+// 			.minWidth_(100)
+// 			.maxHeight_(20)
+// 			.string_("IP:" ++ data.ip + "Port:" ++ data.port.asString)
+// 	);
+// 	[view, titleText]
+// };
 
 
 
@@ -147,25 +148,28 @@ var plotterView = {|data, parentView|
 ~addDetailView = {|d,i|
 
 	var gl;
-	var index = 0;
-	var titleViews = titleView.(d);
+	var tv = addTitleView.(d);
+
 	var view = View()
 		.background_(Color.black)
 		.layout_(gl = GridLayout.rows(
 			[
-				titleViews[0],
+				tv,
 			],[
 				threeDeeView.(d),
 			]
 		))
+		// .mouseDownAction_({false})
+		// .mouseUpAction_({false});
+
 		.mouseUpAction_({|but|
 			view.background = Color.black;
 		})
 		.mouseDownAction_({|but|
 			"Device % clicked".format(d.did).postln;
 			view.background = Color.white.alpha_(0.1);
-			index = index + 1;
-			titleViews[1].string = ~reloadPersonality.(d, index).name;
+			d.index = d.index + 1;
+			tv.string = ~reloadPersonality.(d, d.index).name;
 		});
 
 	// gl.setMinColumnWidth(1, 100);

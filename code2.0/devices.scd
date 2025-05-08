@@ -1,33 +1,28 @@
 var renderRate = 30;
 var spacing = 2;
 var contentView;
-
+var visual = Require("visuals.scd");
 
 var devices = {
 	contentView = View()
-		.layout_(GridLayout.new().hSpacing_(spacing).vSpacing_(spacing).margins_([spacing,spacing,spacing,spacing]))
-		.mouseDownAction_({false});
+		.layout_(GridLayout.new().hSpacing_(spacing).vSpacing_(spacing).margins_([spacing,spacing,spacing,spacing]));
+		// .mouseDownAction_({false});
 	contentView
 };
 
 
-var titleView = { |data|
-	var view = VLayout(
-		StaticText()
-			.stringColor_(data.color)
-			.font_(Font(size:32))
-			.minWidth_(100)
-			.maxHeight_(70)
-			.string_(data.name),
-		// StaticText()
-		// 	.stringColor_(data.color.alpha_(0.5))
-		// 	.font_(Font(size:12))
-		// 	.minWidth_(100)
-		// 	.maxHeight_(35)
-		// 	.string_("IP:" ++ data.ip + "Port:" ++ data.port.asString)
-	);
-	view
-};
+// var titleView = { |data|
+// 	var titleText;
+// 	var view = VLayout(
+// 		titleText = StaticText()
+// 			.stringColor_(data.color)
+// 			.font_(Font(size:64))
+// 			.minWidth_(100)
+// 			.maxHeight_(80)
+// 			.string_(data.name));
+// 	[view, titleText]
+// };
+
 
 
 
@@ -103,29 +98,6 @@ var threeDeeView = { |data|
 };
 
 
-var func = {|v|
-	Pen.fillColor = Color.grey(0.0,  0.02);
-	Pen.addRect(Window.screenBounds);
-	Pen.fill;
-
-    Pen.use{
-        10.do{
-            Color.hsv(rrand(0.0, 0.999), rrand(0.2, 0.7), 1, 1).set;
-			Pen.addArc((Window.screenBounds.width.rand)@(Window.screenBounds.height.rand), 5.exprand(150), 2pi.rand, pi);
-            Pen.perform([\stroke, \fill].choose);
-        }
-    }
-};
-
-var visual = {
-	UserView()
-	.background_(Color.black.alpha_(0.8))
-	.drawFunc_(func)
-	.clearOnRefresh_(false)
-	.animate_(false)
-	.frameRate_(60)
-};
-
 ~addDeviceView = {|d,i|
 
 	var gl;
@@ -133,16 +105,29 @@ var visual = {
 		.background_(Color.black)
 		.layout_(gl = GridLayout.rows(
 			[
-				titleView.(d),
-				threeDeeView.(d),
 			],[
 				[visual.(d), columns:2]
 			]
 		))
+		// .mouseDownAction_({|but|
+		// 	"Device % clicked".format(i).postln;
+		// 	view.background = Color.rand.alpha_(0.3);
+		// });
+		// .mouseDownAction_({false})
+		// .mouseUpAction_({false});
+
+		.mouseUpAction_({|but|
+			view.background = Color.black;
+		})
 		.mouseDownAction_({|but|
-			"Device % clicked".format(i).postln;
-			view.background = Color.rand.alpha_(0.3);
+			"Device % clicked".format(d.did).postln;
+			view.background = Color.white.alpha_(0.1);
+			// d.index = d.index + 1;
+			// tv.string = ~reloadPersonality.(d, d.index).name;
 		});
+
+
+
 	gl.setMinColumnWidth(1, 100);
 	gl.setColumnStretch(0, 1);
 	contentView.layout.add(view, ((i-1)/2).floor, (i-1)%2);	
