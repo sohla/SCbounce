@@ -2,6 +2,7 @@ var renderRate = 30;
 var spacing = 2;
 var contentView;
 var visual = Require("visuals.scd");
+var addTitleView = Require("titleView.scd");
 
 var devices = {
 	contentView = View()
@@ -101,10 +102,12 @@ var threeDeeView = { |data|
 ~addDeviceView = {|d,i|
 
 	var gl;
+	var tv = addTitleView.(d);
 	var view = View()
 		.background_(Color.black)
 		.layout_(gl = GridLayout.rows(
 			[
+				// tv,
 			],[
 				[visual.(d), columns:2]
 			]
@@ -122,8 +125,8 @@ var threeDeeView = { |data|
 		.mouseDownAction_({|but|
 			"Device % clicked".format(d.did).postln;
 			view.background = Color.white.alpha_(0.1);
-			// d.index = d.index + 1;
-			// tv.string = ~reloadPersonality.(d, d.index).name;
+			d.index = d.index + 1;
+			tv.string = ~reloadPersonality.(d, d.index).name;
 		});
 
 

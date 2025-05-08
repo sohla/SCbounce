@@ -23,6 +23,7 @@ SynthDef(\template, {
 			\type, \customEvent,
 			\scale, Scale.major,
 			\note, Pseq([0,4,7,11], inf),
+			\viewName, "192.168.200.11",
 			\legato, 1,
 			\root, Pseq([0,-2].stutter(8*4), inf),
 			\func, Pfunc({|e| ~onEvent.(e)}),
@@ -49,7 +50,7 @@ SynthDef(\template, {
 
 	var dur = m.rrateMassFiltered.linexp(0,0.3,0.35,0.07);
 
-	var oct = (d.sensors.gyroEvent.x/pi).linlin(-0.5,0.2,8.0,3.0); //up down
+	var oct = (d.sensors.gyroEvent.x/pi).linlin(-0.5,0.2,5.0,2.0); //up down
 	// var oct = (d.sensors.gyroEvent.y/pi).linlin(-0.4,0.4,3.0,8.0); //left right
 
 	var amp = m.accelMassFiltered.lincurve(0,2.5,-28,-13,-3);

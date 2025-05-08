@@ -35,6 +35,7 @@ var tabButton = {|i|
 				ab.backColor_(Color.black);
 			},{
 				staker.index = i;
+				~refreshDetailViews.()
 			});
 		},{});
 	})

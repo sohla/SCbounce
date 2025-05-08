@@ -179,7 +179,6 @@ var plotterView = {|data, parentView|
 	// gl.add(plotterView.(d,view), 1, 1);
 
 };
-
 details;
 
 

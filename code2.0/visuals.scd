@@ -15,11 +15,11 @@ var func = {|v|
 };
 
 
+var views = Dictionary.new;
 
+// var visualEvents = [];
 
-var visualEvents = [];
-
-var visuals = {|d|
+var xvisuals = {|d|
 	UserView()
 	.mouseDownAction_({false})
 	.mouseUpAction_({false})
@@ -157,16 +157,16 @@ var visuals = {|d|
 
 
    // Function to create a new UserView with its own visualEvents list
-    // var visuals = { |d|
-    var makeView = { |name, rect|
-        // var visualEvents = List.new(20);
+    var visuals = { |d|
+    // var makeView = { |name, rect|
+        var visualEvents = List.new(20);
 
         // Define the updateView function for this specific view
         var updateView = {|view|
             var now = thisThread.seconds;
 
-            visualEvents.do { |event|
-            // views[name][\visualEvents].do { |event|
+            // visualEvents.do { |event|
+            views[d.ip][\visualEvents].do { |event|
                 var elapsed = 0.0, normTime = 0.0;
                 var pos = 10@10, size = 50.0, col = Color.white;
 
@@ -305,9 +305,12 @@ var visuals = {|d|
             .background_(Color.black)
             .animate_(true)
             .frameRate_(60)
-            .drawFunc_(updateView);
+            .drawFunc_({
+				// updateView.(view);
+			});
 
-        // views[name] = (view: view, visualEvents: visualEvents);
+        views[d.ip] = (view: view, visualEvents: visualEvents);
+		// d.ip.postln;
         // view.bounds = rect;
         view;
     };
@@ -337,26 +340,26 @@ var defaultEnv = Env.asr(0.01, 1, 1);
 
 Event.addEventType(\customEvent, {
         var viewName = ~viewName ? \view1; // Default to view1 if not specified
-        // var visualEvents = views[viewName][\visualEvents];
+        var visualEvents = views[viewName][\visualEvents];
 
         var event = (
             \shape: ~shape ? \circle,
             \points: ~points,  // Optional custom points array
             \numPoints: ~numPoints, // Optional number of points to generate
-            \sx: ~sx ? 400,
-            \sy: ~sy ? 200,
-            \ex: ~ex ? 400,
-            \ey: ~ey ? 0,
+            \sx: ~sx ? 300,
+            \sy: ~sy ? 450,
+            \ex: ~ex ? 300,
+            \ey: ~ey ? 100,
             \xEnv: ~xEnv ? defaultEnv,
             \yEnv: ~yEnv ? defaultEnv,
             \startSize: ~startSize ? 50,
-            \endSize: ~endSize ? 100,
+            \endSize: ~endSize ? 50,
             \sizeEnv: ~sizeEnv ? defaultEnv,
             \startColor: ~startColor ? Color.white,
             \endColor: ~endColor ? Color.red.alpha_(0.2),
             \colorEnv: ~colorEnv ? defaultEnv,
             \rotation: ~rotation ? 0,
-            \duration: ~duration ? 5,
+            \duration: ~duration ? 0.5,
             \envelope: ~envelope ? defaultEnv,
             \alphaEnv: ~alphaEnv ? Env([1, 1, 0], [0.0, 1], \sin),
             \fill: ~fill ? false,  // Whether to fill the shape or stroke it
@@ -364,7 +367,7 @@ Event.addEventType(\customEvent, {
             \modulation: ~modulation,  // Optional modulation settings
             \startTime: thisThread.seconds
         );
-		event.postln;
+		// event.postln;
         visualEvents.add(event);
         ~type = \note;
         currentEnvironment.play;
