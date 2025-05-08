@@ -55,7 +55,7 @@ SynthDef(\stereoSamplerAM, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, f
 //------------------------------------------------------------
 ~next = {|d|
 
-	var dur = m.accelMassFiltered.lincurve(0,1,0.10,0.04,-1).lag(0.2);
+	var dur = m.accelMassFiltered.lincurve(0,1,0.30,0.04,-1).lag(0.2);
 	var leg= m.accelMassFiltered.linlin(0,1,0.6,0.2);
 	var start = m.accelMass.linlin(0,0.5,0.5,0.8);
 	var amp = m.accelMass.lincurve(0,2.5,0,1.5,-5);

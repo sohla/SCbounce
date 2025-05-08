@@ -23,7 +23,7 @@ SynthDef(\sintri, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=440,
 }).add;
 
 SynthDef(\funBass, {
-    |out=0, freq = 440, gate = 1, amp = 0.3, filtFreq = 2000, filtRes = 0.5, envAtk = 0.01, envDec = 0.1, envSus = 0.7, envRel = 1.2, rm = 0.5|
+    |out=0, freq = 440, gate = 1, amp = 0.07, filtFreq = 2000, filtRes = 0.5, envAtk = 0.01, envDec = 0.1, envSus = 0.7, envRel = 1.2, rm = 0.5|
     var osc1, osc2, osc3, env, filter, output;
 
     env = EnvGen.ar(Env.adsr(envAtk, envDec, envSus, envRel), gate, doneAction: 0);
@@ -38,7 +38,7 @@ SynthDef(\funBass, {
 
 
 SynthDef(\versatilePerc, {
-    |out=0, freq=50, tension=0.1, decay=0.5, clickLevel=0.5, amp=0.4, dist = 5, filtFreq = 20, filtRes = 0.8,pan =0, gate=1|
+    |out=0, freq=50, tension=0.1, decay=3.5, clickLevel=0.5, amp=0.05, dist = 5, filtFreq = 20, filtRes = 0.8,pan =0, gate=1|
     var pitch_contour, drum_osc, click_osc, drum_env, click_env, sig, pch;
 
     // Pitch envelope
@@ -71,7 +71,7 @@ SynthDef(\versatilePerc, {
 }).add;
 //------------------------------------------------------------
 ~init = ~init <> {
-		synth = Synth(\funBass,[\gate, 0 ]);
+		synth = Synth(\sintri,[\gate, 0 ]);
 };
 
 ~deinit = ~deinit <> {
@@ -84,8 +84,8 @@ SynthDef(\versatilePerc, {
 	var amp = m.accelMassFiltered.linlin(0,2,0.00001,1);
 	var filtFreq = m.accelMassFiltered.lincurve(0.0,2.5,20,5040,2);
 
-  var notes = [32,39,44,48,50];
-  var ni = (d.sensors.gyroEvent.z / pi).lincurve(0.0,1.0,0,notes.size,0).floor;
+  var notes = [32,39,44,48,50] + 48;
+  var ni = (d.sensors.gyroEvent.y / pi).lincurve(0.0,1.0,0,notes.size,0).floor;
 
 
 	if(amp < 0.04, {amp = 0});

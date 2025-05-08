@@ -58,7 +58,7 @@ SynthDef(\timWind1, { |out, freq=111, gate=0, amp = 0.3, pchx=0|
 			synth = Synth(\timWind1, [
 				\freq, (36 + currentNote + currentRoot + oct).midicps,
 				\gate, 1,
-				\amp, amp * 1.6 * av,
+				\amp, amp * 1 * av,
 			]);
 			synth.server.sendBundle(0.3,[\n_set, synth.nodeID, \gate, 0]);
 		});
