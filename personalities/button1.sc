@@ -71,7 +71,7 @@ SynthDef(\versatilePerc, {
 }).add;
 //------------------------------------------------------------
 ~init = ~init <> {
-		synth = Synth(\sintri,[\gate, 0 ]);
+		synth = Synth(\funBass,[\gate, 0 ]);
 };
 
 ~deinit = ~deinit <> {
@@ -84,9 +84,11 @@ SynthDef(\versatilePerc, {
 	var amp = m.accelMassFiltered.linlin(0,2,0.00001,1);
 	var filtFreq = m.accelMassFiltered.lincurve(0.0,2.5,20,5040,2);
 
-  var notes = [32,39,44,48,50] + 48;
-  var ni = (d.sensors.gyroEvent.y / pi).lincurve(0.0,1.0,0,notes.size,0).floor;
-
+  var notes = [32,39,44,48,50];
+  var ni = (d.sensors.gyroEvent.z / pi).lincurve(-0.5,0.5,0,notes.size,0).floor;//cw/ccw
+  // var ni = (d.sensors.gyroEvent.y / pi).lincurve(-1.0,1.0,0,notes.size,0).floor;//left/right
+  // var ni = (d.sensors.gyroEvent.x / pi).lincurve(-1.0,1.0,notes.size,0,0).floor; //up/down
+// (d.sensors.gyroEvent.x / pi).postln;
 
 	if(amp < 0.04, {amp = 0});
 

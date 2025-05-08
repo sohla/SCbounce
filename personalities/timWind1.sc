@@ -18,10 +18,10 @@ SynthDef(\timWind1, { |out, freq=111, gate=0, amp = 0.3, pchx=0|
 	var follow = Amplitude.kr(amp, 0.03, 0.03);
 	var trig = PinkNoise.ar(0.01) * env * follow.lag(2);
 	var sig =  DynKlank.ar(`[[freq, freq*2].lag(3), [1,0.4,0.3], [2, 1, 1, 1]], trig);
-  var tone = SinOsc.ar([freq * 4, freq * 0.5] * LFNoise2.ar(12,0.02,1), LFNoise2.ar(3,6),[0.04,0.4 ]* env * 1);
+  	var tone = SinOsc.ar([freq * 4, freq * 0.5] * LFNoise2.ar(12,0.02,1), LFNoise2.ar(3,6),[0.04,0.4 ]* env * 6);
 	var dly = DelayC.ar(sig + tone,0.03,[0.02,0.027]);
-	var eq = BLowShelf.ar(dly,600,0.4, -7);
-	Out.ar(out, eq * 1.2 * amp);
+	var eq = BLowShelf.ar(dly,1000,0.4, -7);
+	Out.ar(out, eq * amp);
 }).add;
 
 
