@@ -49,8 +49,8 @@ var deviceProto = (
     \name: "default",
     \ip: "127.0.0.1",
     \index: 0,
+    \personality: 0,
     \port: 57120,
-    \did: "nil",
     \color: Color.red,
     \volts: 0,
     \charge: 0,
@@ -183,19 +183,20 @@ var addOSCDeviceListeners = {|d|
     });
 };
 
-var addDevice = { |ip,port, id|
+var addDevice = { |ip,port, index|
 
     var d = Event.new(proto:deviceProto);
-    var configPattern = "/%/Config".format(id);
+    var configPattern = "/%/Config".format(index);
     var configListener = OSCFunc({ |msg2, time2, addr2, recvPort2|
         d.color = Color.fromArray(msg2.at([15,16,17])++[1]);
-        "CONFIG % %".format(id,d.color).postln;
+        "CONFIG % %".format(index,d.color).postln;
         {
-            ~addDeviceView.(d, id);
-            ~addDetailView.(d, id);
-            // addTitleView.(d);
-            
-            
+            // ~addDeviceView.(d, id);
+            // ~addDetailView.(d, id);
+
+            var n = NetAddr.new("127.0.0.1", 57120);
+            n.sendMsg("/airkit/addDevice", port);
+
         }.defer;
     }, configPattern).oneShot;
 
@@ -206,11 +207,12 @@ var addDevice = { |ip,port, id|
 
     d.ip = ip;
     d.port = port;
-    d.did = id;
+    d.index = index;
 
     d.listeners = Event.new(proto:listenersProto);
     d.sensors =  Event.new(proto:sensorsProto);
 
+    // global storage : port is the key
     ~devices.put(port,d);
     ~reloadPersonality.(d, 0);
     
@@ -218,7 +220,7 @@ var addDevice = { |ip,port, id|
     // ~addDeviceView.(d,id);
 
     addOSCDeviceListeners.(d);
-    NetAddr.new(ip,port-id+1).sendMsg("/Config/GetConfig", 57120);
+    NetAddr.new(ip,port-index+1).sendMsg("/Config/GetConfig", 57120);
 
     d // return the device
 };
@@ -243,7 +245,7 @@ var addDevice = { |ip,port, id|
             {
                 if(~devices.at(addr.port+i) == nil,{
                     var d = addDevice.(addr.ip,addr.port+i,i+1);
-                    postf("device auto detected : % \n", d.did);
+                    postf("device auto detected : % \n", d.index);
                     //
                     // airstickListeners[i].free;
                     // airstickListeners.removeAt(i);

@@ -20,7 +20,7 @@ SynthDef(\template, {
 	Pdef(m.ptn,
 		Pbind(
 			\instrument, \template,
-			\type, \customEvent,
+			// \type, \customEvent,
 			\scale, Scale.major,
 			\note, Pseq([0,4,7,11], inf),
 			\viewName, "192.168.200.11",

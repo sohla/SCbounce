@@ -5,7 +5,16 @@ var visual = Require("visuals.scd");
 var addTitleView = Require("titleView.scd");
 
 var devices = {
+		var osc = OSCFunc({ |msg, time, addr, recvPort|
+		var d = ~devices.at(msg[1].asInteger);
+		if(d != nil,{
+			{addDeviceView.(d)}.defer;
+		});
+	},'/airkit/addDevice', NetAddr("127.0.0.1", NetAddr.langPort));
+
+
 	contentView = View()
+		.onClose_({osc.free})
 		.layout_(GridLayout.new().hSpacing_(spacing).vSpacing_(spacing).margins_([spacing,spacing,spacing,spacing]));
 		// .mouseDownAction_({false});
 	contentView
@@ -99,7 +108,7 @@ var threeDeeView = { |data|
 };
 
 
-~addDeviceView = {|d,i|
+var addDeviceView = {|d|
 
 	var gl;
 	var tv = addTitleView.(d);
@@ -123,17 +132,17 @@ var threeDeeView = { |data|
 			view.background = Color.black;
 		})
 		.mouseDownAction_({|but|
-			"Device % clicked".format(d.did).postln;
-			view.background = Color.white.alpha_(0.1);
-			d.index = d.index + 1;
-			tv.string = ~reloadPersonality.(d, d.index).name;
+			// "Device % clicked".format(d.index).postln;
+			// view.background = Color.white.alpha_(0.1);
+			// d.personality = d.personality + 1;
+			// tv.string = ~reloadPersonality.(d, d.personality).name;
 		});
 
 
 
 	gl.setMinColumnWidth(1, 100);
 	gl.setColumnStretch(0, 1);
-	contentView.layout.add(view, ((i-1)/2).floor, (i-1)%2);	
+	contentView.layout.add(view, ((d.index-1)/2).floor, (d.index-1)%2);	
 };
 
 devices;

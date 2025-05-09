@@ -16,7 +16,7 @@ var stack = {
 	// 	view.background = Color.black;
 	// })
 	// .mouseDownAction_({|but|
-	// 	// "Device % clicked".format(d.did).postln;
+	// 	// "Device % clicked".format(d.index).postln;
 	// 	view.background = Color.white.alpha_(0.1);
 	// 	// d.index = d.index + 1;
 	// 	// titleViews[1].string = ~reloadPersonality.(d, d.index).name;

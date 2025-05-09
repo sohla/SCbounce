@@ -152,7 +152,7 @@ var createProcRout = {|d|
 
 ~reloadPersonality = { |d, index|
 
-    var plist = ~loadPersonalityList.(d.did-1);
+    var plist = ~loadPersonalityList.(d.index-1);
 
     // stop personality
     d.procRout.stop;
