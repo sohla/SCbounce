@@ -21,6 +21,20 @@ SynthDef(\wingChimes1, {
 			\pulseFreq, Pwhite(3, 7),
 			\numHarms, 10,
 			\func, Pfunc({|e| ~onEvent.(e)}),
+			\type, \customEvent,
+			\duration, 3,
+			\sx, 300,
+			\sy, 290,
+			\ex, Pkey(\sx),
+			\ey, Pkey(\sy),
+			
+			\startSize, 10,
+			\endSize, 200,
+			\shape, \circle,
+			\rotation, Pseg(Pseq([-pi, pi], inf), 80, \linear, inf),
+  		\startColor, Color.cyan,
+			
+      // \endColor: Color.blue.alpha_(0.4),
 			\args, #[],
 		);
 	).play(quant:[0.1]);
@@ -39,6 +53,18 @@ SynthDef(\wingChimes1, {
 	var dur = 0.3;// * 2.pow(m.accelMassFiltered.linlin(0,4,0,4).floor).reciprocal;
 	var rq = m.accelMassFiltered.linexp(0,4,0.1,0.0005);
 	var amp = m.accelMassFiltered.linexp(0,4,0.05,1);
+	var sp = m.accelMassFiltered.lincurve(0,2.5,1,5);
+
+	Pdef(m.ptn).set(\modulation, (
+			type: \radial,
+			freq: sp,
+			amp: 1.3,
+			harmonics: 2
+	));
+
+
+	Pdef(m.ptn).set(\viewID, d.port);
+
 	Pdef(m.ptn).set(\dur, dur);
 	Pdef(m.ptn).set(\rq, rq);
 	Pdef(m.ptn).set(\amp, amp*0.6);

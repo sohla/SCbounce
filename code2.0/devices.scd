@@ -88,7 +88,19 @@ var threeDeeView = { |data|
 		];
 	};
 };
-
+var addReloadButton = { |d|
+	var button = Button()
+		.maxWidth_(120)
+		.maxHeight_(120)
+		.font_(Font(size:16))
+		.states_([
+			["</>",d.color,Color.white.alpha_(0.1)],
+		])
+		.action_({|but|
+			NetAddr.new("127.0.0.1", 57120).sendMsg("/airkit/loadPersonality", d.port, d.personality);
+		});
+		button
+};
 
 var addDeviceView = {|d|
 
@@ -98,8 +110,9 @@ var addDeviceView = {|d|
 		.background_(Color.black)
 		.layout_(gl = GridLayout.rows(
 			[
-				[visual.(d), columns:2]
+				[visual.(d), columns:3]
 			],[
+				addReloadButton.(d),
 				[tv, columns:2]
 			]
 		))

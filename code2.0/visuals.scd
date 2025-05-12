@@ -37,7 +37,7 @@ var xxvisuals = {|d|
 
     // Function to generate shape points
     var shapeLib = (
-        circle: { |pos, size, numPoints=32|
+        circle: { |pos, size, numPoints=64|
             Array.fill(numPoints, { |i|
                 var angle = i / numPoints * 2pi;
                 pos + (Polar(size, angle).asPoint);
@@ -166,7 +166,7 @@ var xxvisuals = {|d|
             var now = thisThread.seconds;
 
             // visualEvents.do { |event|
-            views[d.ip][\visualEvents].do { |event|
+            views[d.port][\visualEvents].do { |event|
                 var elapsed = 0.0, normTime = 0.0;
                 var pos = 10@10, size = 50.0, col = Color.white;
 
@@ -193,7 +193,7 @@ var xxvisuals = {|d|
                     col = col.alpha_(event[\alphaEnv].at(normTime));
 
                     // Draw the shape
-                    Pen.width = 10;//max(1, size.squared.lincurve(1, 50000, 1, 20, 0.1));
+                    Pen.width = 2;//max(1, size.squared.lincurve(1, 50000, 1, 20, 0.1));
                     Pen.rotate(event[\rotation], pos.x, pos.y);
                     Pen.fillColor = col;
                     Pen.strokeColor = col;
@@ -306,10 +306,10 @@ var xxvisuals = {|d|
             .animate_(true)
             .frameRate_(60)
             .drawFunc_({
-				// updateView.(view);
+				 updateView.(view);
 			});
 
-        views[d.ip] = (view: view, visualEvents: visualEvents);
+        views[d.port] = (view: view, visualEvents: visualEvents);
 		// d.ip.postln;
         // view.bounds = rect;
         view;
@@ -339,8 +339,8 @@ var xxvisuals = {|d|
 var defaultEnv = Env.asr(0.01, 1, 1);
 
 Event.addEventType(\customEvent, {
-        var viewName = ~viewName ? \view1; // Default to view1 if not specified
-        var visualEvents = views[viewName][\visualEvents];
+        var viewID = ~viewID ? 8888; // Default to view1 if not specified
+        var visualEvents = views[viewID][\visualEvents];
 
         var event = (
             \shape: ~shape ? \circle,

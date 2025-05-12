@@ -8,10 +8,10 @@ m.rrateMassFilteredDecay = 0.5;
 
 //------------------------------------------------------------
 SynthDef(\template, {
-    |out=0, gate=1, freq=111, amp=0.3, atk=0.001, rel=1.4|
+    |out=0, gate=1, freq=111, amp=0.3, atk=0.001, rel=2.4|
 	var env = EnvGen.ar(Env.perc(atk, rel), gate, doneAction:2);
 	var sig = SinOsc.ar(freq);
-	Out.ar(out, sig!2 * env * amp);
+	Out.ar(out, sig!2 * env * amp * 0.1);
 }).add;
 
 
@@ -20,12 +20,17 @@ SynthDef(\template, {
 	Pdef(m.ptn,
 		Pbind(
 			\instrument, \template,
-			// \type, \customEvent,
+			\type, \customEvent,
 			\scale, Scale.major,
-			\note, Pseq([0,4,7,11], inf),
-			\viewName, "192.168.200.11",
+			\note, Pseq([0,7,11,2,3], inf),
 			\legato, 1,
-			\root, Pseq([0,-2].stutter(8*4), inf),
+			\sx, Pwhite(100,500),
+			\sy, 550,
+			\ex, Pkey(\sx),
+			\ey, 10,
+			\startSize, 3,
+			\endSize, 30,
+			\fill, true,
 			\func, Pfunc({|e| ~onEvent.(e)}),
 			\args, #[]
 		);
@@ -41,22 +46,26 @@ SynthDef(\template, {
 //------------------------------------------------------------
 //------------------------------------------------------------
 ~onEvent = {|e|
-	m.com.root = e.root;
+	// m.com.root = e.root;
+	Pdef(m.ptn).set(\root, m.com.root);
 };
 
 
 //------------------------------------------------------------
 ~next = {|d|
 
-	var dur = m.rrateMassFiltered.linexp(0,0.3,0.35,0.07);
+	var dur = m.rrateMassFiltered.linexp(0,0.3,0.35,0.09);
 
-	var oct = (d.sensors.gyroEvent.x/pi).linlin(-0.5,0.2,5.0,2.0); //up down
+	var oct = (d.sensors.gyroEvent.x/pi).linlin(-0.5,0.2,7.0,4.0); //up down
 	// var oct = (d.sensors.gyroEvent.y/pi).linlin(-0.4,0.4,3.0,8.0); //left right
 
-	var amp = m.accelMassFiltered.lincurve(0,2.5,-28,-13,-3);
+	var amp = m.accelMassFiltered.lincurve(0,2.5,-28,-18,-8);
 	var atk = m.accelMassFiltered.lincurve(0,2.5,0.03,0.0001,-3);
-	var rel = m.accelMassFiltered.lincurve(0,2.5,0.2,1.0,-1);
+	var rel = m.accelMassFiltered.lincurve(0,2.5,0.2,5.0,-1);
 
+	Pdef(m.ptn).set(\viewID, d.port);
+
+	Pdef(m.ptn).set(\duration, rel+2);
 	Pdef(m.ptn).set(\dur, dur);
 	Pdef(m.ptn).set(\octave, oct.round);
 	Pdef(m.ptn).set(\amp, amp.dbamp);

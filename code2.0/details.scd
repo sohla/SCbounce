@@ -184,6 +184,14 @@ var addPrevButton = { |d|
 		});
 		button
 };
+var addDeviceView = { |d|
+	StaticText()	
+			.stringColor_(d.color.alpha_(0.5))
+			.font_(Font(size:16))
+			.minWidth_(100)
+			.maxHeight_(30)
+			.string_("IP:" ++ d.ip + "Port:" ++ d.port.asString)
+};
 
 var addDetailView = {|d|
 
@@ -194,6 +202,9 @@ var addDetailView = {|d|
 		.background_(Color.black)
 		.layout_(gl = GridLayout.rows(
 			[
+				[addDeviceView.(d), columns:3]
+			],
+			[				
 				addReloadButton.(d),
 			],
 			[
@@ -221,7 +232,7 @@ var addDetailView = {|d|
 	// gl.setColumnStretch(0, 1);
 	contentView.layout.add(view, ((d.index-1)/2).floor, (d.index-1)%2);	
 
-	gl.addSpanning(plotterView.(d,view), 0, 1, 1, 2);
+	gl.addSpanning(plotterView.(d,view), 1, 1, 1, 2);
 };
 details;
 
