@@ -5,36 +5,18 @@ var visual = Require("visuals.scd");
 var addTitleView = Require("titleView.scd");
 
 var devices = {
-		var osc = OSCFunc({ |msg, time, addr, recvPort|
+	var osc = OSCFunc({ |msg, time, addr, recvPort|
 		var d = ~devices.at(msg[1].asInteger);
 		if(d != nil,{
 			{addDeviceView.(d)}.defer;
 		});
 	},'/airkit/addDevice', NetAddr("127.0.0.1", NetAddr.langPort));
-
-
 	contentView = View()
 		.onClose_({osc.free})
 		.layout_(GridLayout.new().hSpacing_(spacing).vSpacing_(spacing).margins_([spacing,spacing,spacing,spacing]));
 		// .mouseDownAction_({false});
 	contentView
 };
-
-
-// var titleView = { |data|
-// 	var titleText;
-// 	var view = VLayout(
-// 		titleText = StaticText()
-// 			.stringColor_(data.color)
-// 			.font_(Font(size:64))
-// 			.minWidth_(100)
-// 			.maxHeight_(80)
-// 			.string_(data.name));
-// 	[view, titleText]
-// };
-
-
-
 
 var threeDeeView = { |data|
 	var graph1;
@@ -116,16 +98,11 @@ var addDeviceView = {|d|
 		.background_(Color.black)
 		.layout_(gl = GridLayout.rows(
 			[
-				tv,
-				threeDeeView.(d),
-			],[
 				[visual.(d), columns:2]
+			],[
+				[tv, columns:2]
 			]
 		))
-		// .mouseDownAction_({|but|
-		// 	"Device % clicked".format(i).postln;
-		// 	view.background = Color.rand.alpha_(0.3);
-		// });
 		// .mouseDownAction_({false})
 		// .mouseUpAction_({false});
 
@@ -133,13 +110,10 @@ var addDeviceView = {|d|
 			view.background = Color.black;
 		})
 		.mouseDownAction_({|but|
-			"Device % clicked".format(d.index).postln;
 			view.background = Color.white.alpha_(0.1);
 			d.personality = d.personality + 1;
 			NetAddr.new("127.0.0.1", 57120).sendMsg("/airkit/loadPersonality", d.port, d.personality);
 		});
-
-
 
 	gl.setMinColumnWidth(1, 100);
 	gl.setColumnStretch(0, 1);

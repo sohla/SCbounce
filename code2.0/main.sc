@@ -12,15 +12,6 @@ var stack = {
 		devices.(),
 	));
 	
-	// .mouseUpAction_({|but|
-	// 	view.background = Color.black;
-	// })
-	// .mouseDownAction_({|but|
-	// 	// "Device % clicked".format(d.index).postln;
-	// 	view.background = Color.white.alpha_(0.1);
-	// 	// d.index = d.index + 1;
-	// 	// titleViews[1].string = ~reloadPersonality.(d, d.index).name;
-	// });
 	view
 };
 
@@ -38,7 +29,6 @@ var tabButton = {|i|
 			});
 		},{});
 	})
-	// .mouseUpAction_({|m|m.backColor_(Color.black.alpha_(0.8))})
 	.drawFunc_({|v|Pen.stringAtPoint(d[i], (v.bounds.width-15/2)@25, Font(size:30), Color.white)})
 	.animate_(false)
 

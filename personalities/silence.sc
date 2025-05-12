@@ -23,7 +23,7 @@ m.accelMassFilteredDecay = 0.99;
 ~plotMin = -1;
 ~plotMax = 1;
 ~plot = { |d,p|
-	[m.accelMass * 0.1, m.accelMassFiltered.linlin(0,3,0,1)];
+	[0.2,0.4,0.6];
 };
 
 

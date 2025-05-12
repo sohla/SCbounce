@@ -19,7 +19,7 @@ var views = Dictionary.new;
 
 // var visualEvents = [];
 
-var visuals = {|d|
+var xxvisuals = {|d|
 	UserView()
 	.mouseDownAction_({false})
 	.mouseUpAction_({false})
@@ -157,7 +157,7 @@ var visuals = {|d|
 
 
    // Function to create a new UserView with its own visualEvents list
-    var xxvisuals = { |d|
+    var visuals = { |d|
     // var makeView = { |name, rect|
         var visualEvents = List.new(20);
 
