@@ -1,5 +1,5 @@
 var renderRate = 30;
-var spacing = 2;
+var spacing = 4;
 var contentView;
 var addTitleView = Require("titleView.scd");
 
@@ -145,8 +145,9 @@ var addReloadButton = { |d|
 	var button = Button()
 		.maxWidth_(120)
 		.maxHeight_(120)
+		.font_(Font(size:16))
 		.states_([
-			["RELOAD"],
+			["</>",d.color,Color.white.alpha_(0.1)],
 		])
 		.action_({|but|
 			NetAddr.new("127.0.0.1", 57120).sendMsg("/airkit/loadPersonality", d.port, d.personality);
@@ -154,6 +155,35 @@ var addReloadButton = { |d|
 		button
 };
 
+var addNextButton = { |d|
+	var button = Button()
+		.maxWidth_(120)
+		.maxHeight_(120)
+		.font_(Font(size:64))
+		.states_([
+			["+",d.color,Color.white.alpha_(0.1)],
+		])
+		.action_({|but|
+			d.personality = d.personality + 1;
+			NetAddr.new("127.0.0.1", 57120).sendMsg("/airkit/loadPersonality", d.port, d.personality);
+		});
+		button
+};
+
+var addPrevButton = { |d|
+	var button = Button()
+		.maxWidth_(120)
+		.maxHeight_(120)
+		.font_(Font(size:64))
+		.states_([
+			["-",d.color,Color.white.alpha_(0.1)],
+		])
+		.action_({|but|
+			d.personality = d.personality - 1;
+			NetAddr.new("127.0.0.1", 57120).sendMsg("/airkit/loadPersonality", d.port, d.personality);
+		});
+		button
+};
 
 var addDetailView = {|d|
 
@@ -170,20 +200,22 @@ var addDetailView = {|d|
 				[threeDeeView.(d), columns:3],
 			],
 			[
-				[tv, columns:3]
+				addPrevButton.(d),
+				tv,
+				addNextButton.(d),
 			]
-		))
+		));
 		// .mouseDownAction_({false})
 		// .mouseUpAction_({false});
 
-		.mouseUpAction_({|but|
-			view.background = Color.black;
-		})
-		.mouseDownAction_({|but|
-			view.background = Color.white.alpha_(0.1);
-			d.personality = d.personality + 1;
-			NetAddr.new("127.0.0.1", 57120).sendMsg("/airkit/loadPersonality", d.port, d.personality);
-		});
+		// .mouseUpAction_({|but|
+		// 	view.background = Color.black;
+		// })
+		// .mouseDownAction_({|but|
+		// 	view.background = Color.white.alpha_(0.1);
+		// 	d.personality = d.personality + 1;
+		// 	NetAddr.new("127.0.0.1", 57120).sendMsg("/airkit/loadPersonality", d.port, d.personality);
+		// });
 
 	// gl.setMinColumnWidth(1, 100);
 	// gl.setColumnStretch(0, 1);

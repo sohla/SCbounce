@@ -1,5 +1,5 @@
 var renderRate = 30;
-var spacing = 2;
+var spacing = 4;
 var contentView;
 var visual = Require("visuals.scd");
 var addTitleView = Require("titleView.scd");

@@ -10,17 +10,18 @@ var stack = {
 	var view = View().layout_(staker =StackLayout(
 		details.(),
 		devices.(),
+		UserView()
 	));
 	
 	view
 };
 
 var tabButton = {|i|
-	var d = ["🁪","※"];
+	var d = ["🁪","※","-"];
 	UserView()
-	.background_( if(i==0,Color.new255(0, 139, 69),Color.black.alpha_(0.8)))
+	.background_( if(i==0,Color.black.lighten(0.5),Color.black))
 	.mouseDownAction_({|but|
-		but.backColor_(Color.new255(0, 139, 69));
+		but.backColor_(Color.black.lighten(0.5));
 		but.parent.children.do({|ab,i|
 			if(but != ab, {
 				ab.backColor_(Color.black);
@@ -32,7 +33,7 @@ var tabButton = {|i|
 	.drawFunc_({|v|Pen.stringAtPoint(d[i], (v.bounds.width-15/2)@25, Font(size:30), Color.white)})
 	.animate_(false)
 
-}!2;
+}!3;
 
 var tabs = {|t|
 	View().layout_(HLayout(*tabButton.()).spacing_(2).margins_(0)).maxHeight_(100);
@@ -41,7 +42,7 @@ var tabs = {|t|
 var mainView = VLayout(
 		tabs.(),
 		stack.()
-);
+).spacing_(4).margins_(0);
 
 var shutdown = {
 	s.quit;
@@ -49,7 +50,7 @@ var shutdown = {
 
 var initGUI = {
 	QtGUI.palette = QPalette.dark;
-	w = Window().bounds_(Rect(100,100,1000,700)).layout_(mainView).front.fullScreen;
+	w = Window().bounds_(Rect(100,100,1000,700)).layout_(mainView).front.fullScreen.background_(Color.black.lighten(0.5));
 	w.onClose = {
 		// stopOSCListening.();
 		shutdown.();
