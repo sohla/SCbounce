@@ -116,7 +116,8 @@ var addDeviceView = {|d|
 		.background_(Color.black)
 		.layout_(gl = GridLayout.rows(
 			[
-				// tv,
+				tv,
+				threeDeeView.(d),
 			],[
 				[visual.(d), columns:2]
 			]
@@ -132,10 +133,10 @@ var addDeviceView = {|d|
 			view.background = Color.black;
 		})
 		.mouseDownAction_({|but|
-			// "Device % clicked".format(d.index).postln;
-			// view.background = Color.white.alpha_(0.1);
-			// d.personality = d.personality + 1;
-			// tv.string = ~reloadPersonality.(d, d.personality).name;
+			"Device % clicked".format(d.index).postln;
+			view.background = Color.white.alpha_(0.1);
+			d.personality = d.personality + 1;
+			NetAddr.new("127.0.0.1", 57120).sendMsg("/airkit/loadPersonality", d.port, d.personality);
 		});
 
 

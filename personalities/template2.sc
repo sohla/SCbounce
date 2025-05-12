@@ -8,10 +8,10 @@ m.rrateMassFilteredDecay = 0.5;
 
 //------------------------------------------------------------
 SynthDef(\template, {
-    |out=0, gate=1, freq=111, amp=0.3, atk=0.001, rel=0.4|
+    |out=0, gate=1, freq=111, amp=0.3, atk=0.001, rel=1.4|
 	var env = EnvGen.ar(Env.perc(atk, rel), gate, doneAction:2);
-	var sig = SinOsc.ar(freq * [1.0,1.0027]);
-	Out.ar(out, sig * env * amp);
+	var sig = SinOsc.ar(freq);
+	Out.ar(out, sig!2 * env * amp);
 }).add;
 
 

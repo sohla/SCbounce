@@ -1,10 +1,18 @@
 var addTitleView = { |d|
-	StaticText()
+	var st = StaticText()
         .stringColor_(d.color)
         .font_(Font(size:64))
         .minWidth_(100)
         .maxHeight_(80)
-        .string_(d.name)
+        .string_(d.name);
+
+	OSCFunc({ |msg, time, addr, recvPort|
+		if(msg[1].asInteger == d.port, {
+			{st.string = msg[2].asString}.defer;
+		});
+	},'/airkit/personalityName', NetAddr("127.0.0.1", NetAddr.langPort));
+	
+	st
 };
 addTitleView
 

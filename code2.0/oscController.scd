@@ -1,16 +1,10 @@
-	
+
+
 // var oscMessageTag  = "CombinedDataPacket";
 var oscMessageTag  = "IMUFusedData";
 
 var airstickListeners = [];
 var numAirwareVirtualDevices = 4;
-
-// var defaultPersonalities = [
-//     "bongo1",
-//     "magicWand",
-//     "silence",
-//     "silence",
-// ];
 
 //------------------------------------------------------------
 // Models
@@ -183,7 +177,8 @@ var addOSCDeviceListeners = {|d|
     });
 };
 
-var addDevice = { |ip,port, index|
+
+var addDevice = { |ip,port,index|
 
     var d = Event.new(proto:deviceProto);
     var configPattern = "/%/Config".format(index);
@@ -191,16 +186,11 @@ var addDevice = { |ip,port, index|
         d.color = Color.fromArray(msg2.at([15,16,17])++[1]);
         "CONFIG % %".format(index,d.color).postln;
         {
-            // ~addDeviceView.(d, id);
-            // ~addDetailView.(d, id);
-
             var n = NetAddr.new("127.0.0.1", 57120);
             n.sendMsg("/airkit/addDevice", port);
-
         }.defer;
     }, configPattern).oneShot;
 
-    
     // hack in : set name of device that is something from the list for now!
     // d.name = ~loadPersonalityList.(id-1)[id-1];
     // d.name = defaultPersonalities[id-1];
@@ -214,8 +204,7 @@ var addDevice = { |ip,port, index|
 
     // global storage : port is the key
     ~devices.put(port,d);
-    ~reloadPersonality.(d, 0);
-    
+	NetAddr.new("127.0.0.1", 57120).sendMsg("/airkit/loadPersonality", port, 0);
 
     // ~addDeviceView.(d,id);
 
@@ -224,15 +213,16 @@ var addDevice = { |ip,port, index|
 
     d // return the device
 };
+//------------------------------------------------------------
+
 
 
 
 //------------------------------------------------------------
 // 
 //------------------------------------------------------------
-~devices = Dictionary();
 
-~startOSCListening = {
+var startOSCListening = {
 
     var patternBase = "/%/" ++ oscMessageTag;
 
@@ -246,20 +236,25 @@ var addDevice = { |ip,port, index|
                 if(~devices.at(addr.port+i) == nil,{
                     var d = addDevice.(addr.ip,addr.port+i,i+1);
                     postf("device auto detected : % \n", d.index);
-                    //
-                    // airstickListeners[i].free;
-                    // airstickListeners.removeAt(i);
                 });
             }.defer;
         }, pattern));
     });
 };
 
-~stopOSCListening = {
+var stopOSCListening = {
     airstickListeners.do({|obj|
         postf("free : %\n", obj);
         obj.free;
     });
 };
 
+~devices = Dictionary();
 
+OSCFunc({ |msg, time, addr, recvPort|
+    startOSCListening.();
+},'/airkit/startOSCListening', NetAddr("127.0.0.1", NetAddr.langPort)).oneShot;
+
+OSCFunc({ |msg, time, addr, recvPort|
+    stopOSCListening.();
+},'/airkit/stopOSCListening', NetAddr("127.0.0.1", NetAddr.langPort)).oneShot;

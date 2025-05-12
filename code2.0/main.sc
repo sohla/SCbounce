@@ -35,7 +35,6 @@ var tabButton = {|i|
 				ab.backColor_(Color.black);
 			},{
 				staker.index = i;
-				~refreshDetailViews.()
 			});
 		},{});
 	})
@@ -71,10 +70,10 @@ var initGUI = {
 
 s.waitForBoot({
 
-	NetAddr.localAddr.postln;
+	NetAddr.new("127.0.0.1", 57120).sendMsg("/airkit/startOSCListening", 57120);
+
 	initGUI.();
-	~startOSCListening.();
-	
+
 });
 
 
