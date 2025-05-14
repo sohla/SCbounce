@@ -24,18 +24,21 @@ SynthDef(\template, {
 			\scale, Scale.major,
 			\note, Pseq([0,7,11,2,3], inf),
 			\legato, 1,
-			\sx, Pwhite(100,500),
-			\sy, 550,
+			// \sx, Pwhite(0,600),
+			\sy, 0,
 			\ex, Pkey(\sx),
-			\ey, 10,
-			\startSize, 3,
-			\endSize, 30,
+			\ey, 600,
+			\startSize, 20,
+			\endSize, 3,
+			// \startColor, Color.cyan,
+			\endColor, Color.blue,
 			\fill, true,
 			\func, Pfunc({|e| ~onEvent.(e)}),
 			\args, #[]
 		);
 	);
 	Pdef(m.ptn).play(quant:0.1);
+	Pdef(m.ptn).set(\sx,0);
 };
 
 //------------------------------------------------------------
@@ -48,6 +51,8 @@ SynthDef(\template, {
 ~onEvent = {|e|
 	// m.com.root = e.root;
 	Pdef(m.ptn).set(\root, m.com.root);
+	Pdef(m.ptn).set(\sx, ((e.octave * 12) + e.note).linlin(40,100,0,600));
+	// ((e.octave * 12) + e.note).linlin(40,100,0,600).postln;
 };
 
 
@@ -64,8 +69,8 @@ SynthDef(\template, {
 	var rel = m.accelMassFiltered.lincurve(0,2.5,0.2,5.0,-1);
 
 	Pdef(m.ptn).set(\viewID, d.port);
-
-	Pdef(m.ptn).set(\duration, rel+2);
+	Pdef(m.ptn).set(\duration, rel*1.1);
+	Pdef(m.ptn).set(\startColor, d.color);
 	Pdef(m.ptn).set(\dur, dur);
 	Pdef(m.ptn).set(\octave, oct.round);
 	Pdef(m.ptn).set(\amp, amp.dbamp);

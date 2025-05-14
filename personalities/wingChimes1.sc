@@ -22,7 +22,7 @@ SynthDef(\wingChimes1, {
 			\numHarms, 10,
 			\func, Pfunc({|e| ~onEvent.(e)}),
 			\type, \customEvent,
-			\duration, 3,
+			\duration, 3.1,
 			\sx, 300,
 			\sy, 290,
 			\ex, Pkey(\sx),
@@ -30,7 +30,7 @@ SynthDef(\wingChimes1, {
 			
 			\startSize, 10,
 			\endSize, 200,
-			\shape, \circle,
+			\shape, \square,
 			\rotation, Pseg(Pseq([-pi, pi], inf), 80, \linear, inf),
   		\startColor, Color.cyan,
 			

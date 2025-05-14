@@ -44,18 +44,60 @@ var xxvisuals = {|d|
             });
         },
         square: { |pos, size, numPoints=4|
+            var points = Array.newClear(numPoints);
+            var pointsPerSide, i = 0;
+            
+            // Function to create points along one side
+            var sidePoints = { |start, end, count|
+                var pts = Array.newClear(count);
+                count.do { |j|
+                    var t = j / (count - 1);  // Interpolation factor (0 to 1)
+                    pts[j] = start.blend(end, t);
+                };
+                pts;
+            };
+            
+            // Define the four corners
+            var topLeft = pos + (size.neg @ size.neg);
+            var topRight = pos + (size @ size.neg);
+            var bottomRight = pos + (size @ size);
+            var bottomLeft = pos + (size.neg @ size);
+            
+            // Ensure numPoints is at least 4 and a multiple of 4
+            pointsPerSide = (numPoints / 4).floor.max(1);
+            numPoints = pointsPerSide * 4;
+            
+            // Create points for each side
             [
-                pos + (size.neg @ size.neg),
-                pos + (size @ size.neg),
-                pos + (size @ size),
-                pos + (size.neg @ size)
-            ];
-        },
+                sidePoints.(topLeft, topRight, pointsPerSide),      // Top side
+                sidePoints.(topRight, bottomRight, pointsPerSide),  // Right side
+                sidePoints.(bottomRight, bottomLeft, pointsPerSide), // Bottom side
+                sidePoints.(bottomLeft, topLeft, pointsPerSide)     // Left side
+            ].flat.do { |pt|
+                points[i] = pt;
+                i = i + 1;
+            };
+            
+            points;
+        },   
+
         line: { |pos, size, numPoints=2|
-            [
-                pos - (size @ 0),
-                pos + (size @ 0)
-            ];
+            var points = Array.newClear(numPoints);
+            
+            // Ensure numPoints is at least 2
+            numPoints = numPoints.max(2);
+            
+            // Create evenly spaced points along the line
+            numPoints.do { |i|
+                var t = i / (numPoints - 1);  // Interpolation factor (0 to 1)
+                var startPoint = pos - (size @ 0);  // Left endpoint
+                var endPoint = pos + (size @ 0);    // Right endpoint
+                
+                // Linear interpolation between start and end points
+                points[i] = startPoint.blend(endPoint, t);
+            };
+            
+            points;
         },
         triangle: { |pos, size, numPoints=3|
             var height = size * sqrt(3) / 2;
@@ -302,10 +344,14 @@ var xxvisuals = {|d|
 
         // Create the UserView and store it in the views dictionary
         var view = UserView()
-            .background_(Color.black)
             .animate_(true)
+            .background_(d.color.alpha_(0.1))
             .frameRate_(60)
+            // .clearOnRefresh_(false)
             .drawFunc_({
+                // Pen.fillColor = Color.black.alpha_(0.1);
+            	// Pen.addRect(Rect(0, 0, view.bounds.height, view.bounds.width));
+	            // Pen.fill;
 				 updateView.(view);
 			});
 
@@ -336,7 +382,8 @@ var xxvisuals = {|d|
 // ).hSpacing_(spacing).vSpacing_(spacing).margins_([spacing,spacing,spacing,spacing]))
 // };
 
-var defaultEnv = Env.asr(0.01, 1, 1);
+// var defaultEnv = Env.asr(0.01, 1, 1);
+var defaultEnv = Env([0, 1], [1], \linear);
 
 Event.addEventType(\customEvent, {
         var viewID = ~viewID ? 8888; // Default to view1 if not specified
