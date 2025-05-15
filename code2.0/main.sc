@@ -25,6 +25,7 @@ var tabButton = {|i|
 			if(but != ab, {
 				ab.backColor_(Color.black);
 			},{
+				ab.backColor_(Color.black.lighten(0.25));
 				staker.index = i;
 			});
 		},{});

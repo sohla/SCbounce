@@ -320,7 +320,11 @@ var xxvisuals = {|d|
                         Pen.moveTo(points[0]);
                         points[1..].do { |point| Pen.lineTo(point) };
                         if(event[\closed] ? true) { Pen.lineTo(points[0]) }; // Close the path
-                        Pen.fill;
+                        if(event[\shape] == \line) {
+                            Pen.stroke;
+                        }{
+                            Pen.fill;
+                        };
                     }  {
                         // Stroke the shape
                         Pen.moveTo(points[0]);
@@ -414,7 +418,6 @@ Event.addEventType(\customEvent, {
             \modulation: ~modulation,  // Optional modulation settings
             \startTime: thisThread.seconds
         );
-		// event.postln;
         visualEvents.add(event);
         ~type = \note;
         currentEnvironment.play;

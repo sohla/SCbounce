@@ -1,6 +1,6 @@
 
 var m = ~model;
-
+var frame = 0;
 m.accelMassFilteredAttack = 0.7;
 m.accelMassFilteredDecay = 0.2;
 m.rrateMassFilteredAttack = 0.9;
@@ -20,19 +20,23 @@ SynthDef(\template, {
 	Pdef(m.ptn,
 		Pbind(
 			\instrument, \template,
-			\type, \customEvent,
 			\scale, Scale.major,
 			\note, Pseq([0,7,11,2,3], inf),
 			\legato, 1,
+
+
+			\type, \customEvent,
+			\shape, Pseq([\circle, \square, \line, \triangle, \star, \hexagon, \cross, \wave, \leaf, \spiral, \blobby], inf),
 			// \sx, Pwhite(0,600),
-			\sy, 0,
+			\sy, 30,
 			\ex, Pkey(\sx),
-			\ey, 600,
-			\startSize, 20,
-			\endSize, 3,
-			// \startColor, Color.cyan,
-			\endColor, Color.blue,
+			\ey, 700,
+			\startSize, 80,
+			\endSize, 10,
+			
+			// \endColor, Color.hsv((frame/10.0).mod(1.0),0.5,0.5),
 			\fill, true,
+
 			\func, Pfunc({|e| ~onEvent.(e)}),
 			\args, #[]
 		);
@@ -53,6 +57,8 @@ SynthDef(\template, {
 	Pdef(m.ptn).set(\root, m.com.root);
 	Pdef(m.ptn).set(\sx, ((e.octave * 12) + e.note).linlin(40,100,0,600));
 	// ((e.octave * 12) + e.note).linlin(40,100,0,600).postln;
+	frame = frame + 1;
+	(frame/10.0).mod(1.0).postln;
 };
 
 
@@ -70,7 +76,8 @@ SynthDef(\template, {
 
 	Pdef(m.ptn).set(\viewID, d.port);
 	Pdef(m.ptn).set(\duration, rel*1.1);
-	Pdef(m.ptn).set(\startColor, d.color);
+	Pdef(m.ptn).set(\endColor, d.color);
+	Pdef(m.ptn).set(\startColor, Color.hsv((frame/10.0).mod(1.0),1.0,1.0));
 	Pdef(m.ptn).set(\dur, dur);
 	Pdef(m.ptn).set(\octave, oct.round);
 	Pdef(m.ptn).set(\amp, amp.dbamp);
