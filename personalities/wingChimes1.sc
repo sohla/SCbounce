@@ -21,6 +21,7 @@ SynthDef(\wingChimes1, {
 			\pulseFreq, Pwhite(3, 7),
 			\numHarms, 10,
 			\func, Pfunc({|e| ~onEvent.(e)}),
+			
 			\type, \customEvent,
 			\duration, 3.1,
 			\sx, 300,
@@ -29,10 +30,9 @@ SynthDef(\wingChimes1, {
 			\ey, Pkey(\sy),
 			\startSize, 10,
 			\endSize, 200,
-			\shape, \triangle,
-			// \numPoints, 40,
+			\shape, \circle,
 			\rotation, Pseg(Pseq([-pi, pi], inf), 80, \linear, inf),
-  		\startColor, Color.cyan,
+	  		\startColor, Color.red,
 			
       // \endColor: Color.blue.alpha_(0.4),
 			\args, #[],

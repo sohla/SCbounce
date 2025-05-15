@@ -31,6 +31,8 @@ var loadPersonalityList = {|i|
     var path = PathName.new(personalityDir++defaultLists[i]);
     var file = File.new(path.asAbsolutePath,"r");
     var str = file.readAllString;
+    // var time = File.mtime(path.asAbsolutePath);
+    // time.postln;
     interpret(str) // returns array of personality files
 };
 
@@ -42,6 +44,8 @@ var interpretPersonality = {|d|
 
     // after adding personality to an Environment, add useful functions to be used by anyone
     var env = Environment.make {
+        ~filePath = path.asAbsolutePath;
+        ~fileTime = File.mtime(path.asAbsolutePath);
         ~model = (
             \com: com,
             \name: d.name,
@@ -143,6 +147,11 @@ var createProcRout = {|d|
             d.env.use{
                 if(d.enabled == true,{
                     // process data -> personality model
+                    if(~fileTime != File.mtime(~filePath),{
+                        ~fileTime = File.mtime(~filePath);
+                        "[file saved]".postln;
+                        NetAddr.new("127.0.0.1", 57120).sendMsg("/airkit/loadPersonality", d.port, d.personality);
+                    }); 
                     ~processDeviceData.(d);
                     //post process : make changes to patterns etc.
                     ~next.(d);
