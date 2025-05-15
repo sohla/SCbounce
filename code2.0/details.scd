@@ -29,12 +29,12 @@ var threeDeeView = { |data|
 		.mouseDownAction_({false})
 		.mouseUpAction_({false})
 		.scale_(220)
-		.background_(Color.clear)
+		.background_(Color.black)
 		.perspective_(0)
 		.transforms_([Canvas3D.mRotateZ(0),Canvas3D.mTranslate(0,0,0)])
 		.distance_(3.5);
 	graph1.add(cube = Canvas3DItem.cube()
-		.color_(data.color.alpha_(1))
+		.color_(data.color.alpha_(1.0))
 		.width_(2)
 		.transform(Canvas3D.mScale(0.4,0.5,1))
 	);

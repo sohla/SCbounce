@@ -19,9 +19,8 @@ var stack = {
 var tabButton = {|i|
 	var d = ["🁪","※","-"];
 	UserView()
-	.background_( if(i==0,Color.black.lighten(0.5),Color.black))
+	.background_( if(i==0,Color.black.lighten(0.25),Color.black))
 	.mouseDownAction_({|but|
-		but.backColor_(Color.black.lighten(0.5));
 		but.parent.children.do({|ab,i|
 			if(but != ab, {
 				ab.backColor_(Color.black);
@@ -50,7 +49,7 @@ var shutdown = {
 
 var initGUI = {
 	QtGUI.palette = QPalette.dark;
-	w = Window().bounds_(Rect(100,100,1000,700)).layout_(mainView).front.fullScreen.background_(Color.black.lighten(0.5));
+	w = Window().bounds_(Rect(100,100,1000,700)).layout_(mainView).front.fullScreen.background_(Color.black.lighten(0.25));
 	w.onClose = {
 		// stopOSCListening.();
 		shutdown.();

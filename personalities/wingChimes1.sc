@@ -27,10 +27,10 @@ SynthDef(\wingChimes1, {
 			\sy, 290,
 			\ex, Pkey(\sx),
 			\ey, Pkey(\sy),
-			
 			\startSize, 10,
 			\endSize, 200,
-			\shape, \square,
+			\shape, \triangle,
+			// \numPoints, 40,
 			\rotation, Pseg(Pseq([-pi, pi], inf), 80, \linear, inf),
   		\startColor, Color.cyan,
 			
