@@ -26,16 +26,17 @@ SynthDef(\template, {
 
 
 			\type, \customEvent,
-			\shape, Pseq([\circle, \square, \line, \triangle, \star, \hexagon, \cross, \wave, \leaf, \spiral, \blobby], inf),
+			// \shape, Pseq([\circle, \square, \line, \triangle, \star, \hexagon, \cross, \wave, \leaf, \spiral, \blobby], inf),
+			\shape, \line,
 			// \sx, Pwhite(0,600),
-			\sy, 30,
+			\sy, 200,
 			\ex, Pkey(\sx),
-			\ey, 700,
+			\ey, 500,
 			\startSize, 80,
-			\endSize, 10,
-			
+			\endSize, 1,
+			\rotation, pi / Pwhite(1.7,2.3),
 			// \endColor, Color.hsv((frame/10.0).mod(1.0),0.5,0.5),
-			\fill, true,
+			\fill, false,
 
 			\func, Pfunc({|e| ~onEvent.(e)}),
 			\args, #[]
@@ -58,7 +59,6 @@ SynthDef(\template, {
 	Pdef(m.ptn).set(\sx, ((e.octave * 12) + e.note).linlin(40,100,0,600));
 	// ((e.octave * 12) + e.note).linlin(40,100,0,600).postln;
 	frame = frame + 1;
-	(frame/10.0).mod(1.0).postln;
 };
 
 
@@ -67,22 +67,24 @@ SynthDef(\template, {
 
 	var dur = m.rrateMassFiltered.linexp(0,0.3,0.35,0.09);
 
-	var oct = (d.sensors.gyroEvent.x/pi).linlin(-0.5,0.2,7.0,4.0); //up down
-	// var oct = (d.sensors.gyroEvent.y/pi).linlin(-0.4,0.4,3.0,8.0); //left right
+	// var oct = (d.sensors.gyroEvent.x/pi).linlin(-0.5,0.2,7.0,4.0); //up down
+	var oct = (d.sensors.gyroEvent.y/pi).linlin(-0.4,0.4,3.0,8.0); //left right
 
-	var amp = m.accelMassFiltered.lincurve(0,2.5,-28,-18,-8);
+	var amp = m.accelMassFiltered.lincurve(0,2.5,-18,-8,-8);
 	var atk = m.accelMassFiltered.lincurve(0,2.5,0.03,0.0001,-3);
-	var rel = m.accelMassFiltered.lincurve(0,2.5,0.2,5.0,-1);
+	var rel = m.accelMassFiltered.lincurve(0,2.5,0.1,2.0,-1);
 
 	Pdef(m.ptn).set(\viewID, d.port);
-	Pdef(m.ptn).set(\duration, rel*1.1);
+	Pdef(m.ptn).set(\duration, rel*2.1);
 	Pdef(m.ptn).set(\endColor, d.color);
 	Pdef(m.ptn).set(\startColor, Color.hsv((frame/10.0).mod(1.0),1.0,1.0));
+	Pdef(m.ptn).set(\startWidth, rel*4);
+	
 	Pdef(m.ptn).set(\dur, dur);
 	Pdef(m.ptn).set(\octave, oct.round);
 	Pdef(m.ptn).set(\amp, amp.dbamp);
 	Pdef(m.ptn).set(\atk, atk);
-	Pdef(m.ptn).set(\rel, rel);
+	Pdef(m.ptn).set(\rel, rel*2);
 
 	if(m.rrateMassFiltered > 0.01,{
 		if( Pdef(m.ptn).isPlaying.not,{

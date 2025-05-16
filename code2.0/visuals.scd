@@ -210,7 +210,7 @@ var xxvisuals = {|d|
             // visualEvents.do { |event|
             views[d.port][\visualEvents].do { |event|
                 var elapsed = 0.0, normTime = 0.0;
-                var pos = 10@10, size = 50.0, col = Color.white;
+                var pos = 10@10, size = 50.0, col = Color.white, width = 1;
 
                 if (event[\startTime].notNil) {
                     elapsed = now - event[\startTime];
@@ -229,13 +229,14 @@ var xxvisuals = {|d|
                     var points;
                     pos = x @ y;
 
-                    // Calculate size, color, and other properties
+                    // Calculate width, size, color, and other properties
+                    width = event[\startWidth].blend(event[\endWidth], event[\widthEnv].at(normTime));
                     size = event[\startSize].blend(event[\endSize], event[\sizeEnv].at(normTime));
                     col = event[\startColor].blend(event[\endColor], event[\colorEnv].at(normTime));
                     col = col.alpha_(event[\alphaEnv].at(normTime));
 
                     // Draw the shape
-                    Pen.width = 2;//max(1, size.squared.lincurve(1, 50000, 1, 20, 0.1));
+                    Pen.width = width;//max(1, size.squared.lincurve(1, 50000, 1, 20, 0.1));
                     Pen.rotate(event[\rotation], pos.x, pos.y);
                     Pen.fillColor = col;
                     Pen.strokeColor = col;
@@ -403,6 +404,9 @@ Event.addEventType(\customEvent, {
             \ey: ~ey ? 100,
             \xEnv: ~xEnv ? defaultEnv,
             \yEnv: ~yEnv ? defaultEnv,
+            \startWidth: ~startWidth ? 1,
+            \endWidth: ~endWidth ? 1,
+            \widthEnv: ~sizeEnv ? defaultEnv,
             \startSize: ~startSize ? 50,
             \endSize: ~endSize ? 50,
             \sizeEnv: ~sizeEnv ? defaultEnv,
