@@ -23,9 +23,9 @@ SynthDef(\wingChimes1, {
 			\func, Pfunc({|e| ~onEvent.(e)}),
 			
 			\type, \customEvent,
-			\duration, 3.1,
-			\sx, 300,
-			\sy, Pwhite(280,300),
+			\duration, 2.7,
+			\sx, Pwhite(295,305),
+			\sy, Pwhite(285,295),
 			\ex, Pkey(\sx),
 			\ey, Pkey(\sy),
 			\startWidth, 2,

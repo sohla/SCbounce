@@ -147,7 +147,7 @@ var addReloadButton = { |d|
 		.maxHeight_(120)
 		.font_(Font(size:16))
 		.states_([
-			["</>",d.color,Color.white.alpha_(0.1)],
+			["</>",d.color.darken(0.5),Color.white.alpha_(0.1)],
 		])
 		.action_({|but|
 			NetAddr.new("127.0.0.1", 57120).sendMsg("/airkit/loadPersonality", d.port, d.personality);
@@ -161,7 +161,7 @@ var addNextButton = { |d|
 		.maxHeight_(120)
 		.font_(Font(size:64))
 		.states_([
-			["+",d.color,Color.white.alpha_(0.1)],
+			["+",d.color.darken(0.5),Color.white.alpha_(0.1)],
 		])
 		.action_({|but|
 			d.personality = d.personality + 1;
@@ -176,7 +176,7 @@ var addPrevButton = { |d|
 		.maxHeight_(120)
 		.font_(Font(size:64))
 		.states_([
-			["-",d.color,Color.white.alpha_(0.1)],
+			["-",d.color.darken(0.5),Color.white.alpha_(0.1)],
 		])
 		.action_({|but|
 			d.personality = d.personality - 1;

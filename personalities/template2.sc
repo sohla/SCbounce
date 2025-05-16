@@ -68,7 +68,7 @@ SynthDef(\template, {
 	var dur = m.rrateMassFiltered.linexp(0,0.3,0.35,0.09);
 
 	// var oct = (d.sensors.gyroEvent.x/pi).linlin(-0.5,0.2,7.0,4.0); //up down
-	var oct = (d.sensors.gyroEvent.y/pi).linlin(-0.4,0.4,3.0,8.0); //left right
+	var oct = (d.sensors.gyroEvent.y/pi).linlin(-0.4,0.4,4.0,8.0); //left right
 
 	var amp = m.accelMassFiltered.lincurve(0,2.5,-18,-8,-8);
 	var atk = m.accelMassFiltered.lincurve(0,2.5,0.03,0.0001,-3);
