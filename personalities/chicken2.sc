@@ -87,8 +87,8 @@ SynthDef(\grobt, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 //------------------------------------------------------------
 ~next = {|d|
 
-	var sub = 2.pow(m.rrateMassFiltered.lincurve(0,0.2,0,1,-2).floor).reciprocal;
-	Pdef(m.ptn).set(\dur, 0.4 * sub);
+	var sub = 2.pow(m.rrateMassFiltered.lincurve(0,0.2,0,2,-2).floor).reciprocal;
+	Pdef(m.ptn).set(\dur, 0.5 * sub);
 
 	if(m.rrateMassFiltered > 0.022,{
 		if( Pdef(m.ptn).isPlaying.not,{

@@ -49,9 +49,9 @@ SynthDef(\blobblob2, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 				if(bi >= (buffers.size-1),{bi=0});
 				buffers[bi];
 			},
-			\dur, Pseq([0.2,0.2,0.2,0.2,0.2,0.1,0.1,0.2], inf),
+			\dur, Pseq([0.2,0.2,0.2,Rest(0.2),0.2,Rest(0.1),0.1,0.2] * 1.25, inf),
 			\octave, Pseq([1,1].stutter(48), inf),
-			\rate, Pseq([0,12,0].midiratio, inf),
+			\rate, Pseq([0,12,0].midiratio * 2, inf),
 			\legato, 0.35,
 			\start, Pwhite(0, 0.1),
 			\note, Pseq([33,35,33,35,36,33,36,33,35,33,35,33,36,33,36,33,38,35,38,35].stutter(8), inf),
@@ -63,7 +63,7 @@ SynthDef(\blobblob2, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 		)
 	);
 
-	Pdef(m.ptn).play(quant:0.2);
+	Pdef(m.ptn).play(quant:0.25);
 };
 
 ~deinit = ~deinit <> {
@@ -84,7 +84,7 @@ SynthDef(\blobblob2, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 
 	if(m.accelMassFiltered > 0.07,{
 		if( Pdef(~model.ptn).isPlaying.not,{
-			Pdef(~model.ptn).resume(quant:0.2);
+			Pdef(~model.ptn).resume(quant:0.25);
 		});
 	},{
 		if( Pdef(~model.ptn).isPlaying,{

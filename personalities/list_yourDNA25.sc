@@ -2,6 +2,12 @@
 	[
 
 	"silence",
+	"drumkit4",
+	"drumkit5",
+	"pluck1",
+	"pluck2",
+	"pen1",
+	"pen2",
 	"template2",
 	"button1",
 	"wingChimes1",

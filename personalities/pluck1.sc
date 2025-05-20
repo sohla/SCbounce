@@ -23,14 +23,14 @@ SynthDef(\pluck1, { |out=0, amp=0, pch=30, frq=30, gate=0 |
 //------------------------------------------------------------
 ~next = {|d|
 
-	var pch = 20 + (m.accelMass * 160);
-	var frq= 210 + (m.accelMassFiltered * 200);
+	var pch = 20 + (m.accelMass * 150);
+	var frq= 110 + (m.accelMassFiltered * 100);
 	synth.set(\pch,pch);
 	synth.set(\frq,frq);
 
-	synth.set(\amp, 0.15);
+	synth.set(\amp, 0.1);
 
-	if(m.accelMass < 0.06,{
+	if(m.accelMass < 0.05,{
 		synth.set(\gate,0);
 	},{
 		synth.set(\gate,1);

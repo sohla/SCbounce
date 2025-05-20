@@ -209,7 +209,10 @@ var addDevice = { |ip,port,index|
     // ~addDeviceView.(d,id);
 
     addOSCDeviceListeners.(d);
+
     NetAddr.new(ip,port-index+1).sendMsg("/Config/GetConfig", 57120);
+    // Use from Airware
+	// NetAddr.new("127.0.0.1", 57120).sendMsg("/airkit/addDevice", port);
 
     d // return the device
 };

@@ -35,8 +35,8 @@ SynthDef(\wingChimes1, {
 			\shape, \circle,
 			\rotation, Pseg(Pseq([-pi, pi], inf), 80, \linear, inf),
 	  	// \startColor, Pfunc{|e|Color.hsv(e.octave.linlin(3,6,0.2,0.23),0.6,0.8)},
-	  	\startColor, Pfunc{|e|Color.hsv(e.root.linlin(-4,3,0.0,0.99),0.6,0.8)},
-			\endColor, Pfunc{|e|Color.hsv(e.root.linlin(-4,3,0.0,0.99),0.3,0.3)},
+	  	\startColor, Color.new255(255, 255, 0),//Pfunc{|e|Color.hsv(e.root.linlin(-4,3,0.0,0.99),0.6,0.8)},
+			\endColor, Color.new255(255, 255, 0),//Pfunc{|e|Color.hsv(e.root.linlin(-4,3,0.0,0.99),0.3,0.3)},
 			
       // \endColor: Color.blue.alpha_(0.4),
 			\args, #[],
@@ -71,10 +71,10 @@ SynthDef(\wingChimes1, {
 	Pdef(m.ptn).set(\pulseFreq, 3.rrand(7));
 	Pdef(m.ptn).set(\dur, dur);
 	Pdef(m.ptn).set(\rq, rq);
-	Pdef(m.ptn).set(\amp, amp * 4);
-	if(m.accelMass > 0.1,{
+	Pdef(m.ptn).set(\amp, amp * 1);
+	if(m.accelMass > 0.08,{
 		if( Pdef(m.ptn).isPlaying.not,{
-			Pdef(m.ptn).resume(quant:[0.1,0,0,0]);
+			Pdef(m.ptn).resume(quant:[0.2,0,0,0]);
 		});
 	},{
 		if( Pdef(m.ptn).isPlaying,{

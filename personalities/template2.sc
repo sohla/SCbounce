@@ -21,22 +21,23 @@ SynthDef(\template, {
 		Pbind(
 			\instrument, \template,
 			\scale, Scale.major,
-			\note, Pseq([0,7,11,2,3], inf),
+			\note, Pseq([0,2,5,9,11]+10, inf),
 			\legato, 1,
 
 
 			\type, \customEvent,
 			// \shape, Pseq([\circle, \square, \line, \triangle, \star, \hexagon, \cross, \wave, \leaf, \spiral, \blobby], inf),
-			\shape, \line,
+			\shape, \square,
 			// \sx, Pwhite(0,600),
 			\sy, 200,
 			\ex, Pkey(\sx),
 			\ey, 500,
-			\startSize, 80,
-			\endSize, 1,
+			\startSize, 180,
+			\endSize, 10,
 			\rotation, pi / Pwhite(1.7,2.3),
+			\startColor, Color.new255(255, 255, 0),
 			// \endColor, Color.hsv((frame/10.0).mod(1.0),0.5,0.5),
-			\fill, false,
+			\fill, true,
 
 			\func, Pfunc({|e| ~onEvent.(e)}),
 			\args, #[]
@@ -68,25 +69,25 @@ SynthDef(\template, {
 	var dur = m.rrateMassFiltered.linexp(0,0.3,0.35,0.09);
 
 	// var oct = (d.sensors.gyroEvent.x/pi).linlin(-0.5,0.2,7.0,4.0); //up down
-	var oct = (d.sensors.gyroEvent.y/pi).linlin(-0.4,0.4,4.0,8.0); //left right
+	var oct = (d.sensors.gyroEvent.y/pi).linlin(-0.4,0.4,5.0,7.0); //left right
 
-	var amp = m.accelMassFiltered.lincurve(0,2.5,-18,-8,-8);
+	var amp = m.accelMassFiltered.lincurve(0,2.5,-18,-6,-8);
 	var atk = m.accelMassFiltered.lincurve(0,2.5,0.03,0.0001,-3);
-	var rel = m.accelMassFiltered.lincurve(0,2.5,0.1,2.0,-1);
+	var rel = m.accelMassFiltered.lincurve(0,4.5,0.000001,5.0,-3);
 
 	Pdef(m.ptn).set(\viewID, d.port);
 	Pdef(m.ptn).set(\duration, rel*2.1);
 	Pdef(m.ptn).set(\endColor, d.color);
-	Pdef(m.ptn).set(\startColor, Color.hsv((frame/10.0).mod(1.0),1.0,1.0));
-	Pdef(m.ptn).set(\startWidth, rel*4);
+	// Pdef(m.ptn).set(\startColor, Color.hsv((frame/10.0).mod(1.0),1.0,1.0));
+	Pdef(m.ptn).set(\startWidth, rel*1);
 	
 	Pdef(m.ptn).set(\dur, dur);
-	Pdef(m.ptn).set(\octave, oct.round);
+	Pdef(m.ptn).set(\octave, oct.round -1);
 	Pdef(m.ptn).set(\amp, amp.dbamp);
 	Pdef(m.ptn).set(\atk, atk);
-	Pdef(m.ptn).set(\rel, rel*2);
+	Pdef(m.ptn).set(\rel, rel*0.4);
 
-	if(m.rrateMassFiltered > 0.01,{
+	if(m.rrateMassFiltered > 0.045,{
 		if( Pdef(m.ptn).isPlaying.not,{
 			Pdef(m.ptn).resume(quant:0.35);
 		});

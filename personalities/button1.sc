@@ -23,7 +23,7 @@ SynthDef(\sintri, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=440,
 }).add;
 
 SynthDef(\funBass, {
-    |out=0, freq = 440, gate = 1, amp = 0.07, filtFreq = 2000, filtRes = 0.5, envAtk = 0.01, envDec = 0.1, envSus = 0.8, envRel = 1.2, rm = 0.5|
+    |out=0, freq = 440, gate = 1, amp = 0.2, filtFreq = 2000, filtRes = 0.5, envAtk = 0.01, envDec = 0.1, envSus = 0.8, envRel = 1.2, rm = 0.5|
     var osc1, osc2, osc3, env, filter, output;
 
     env = EnvGen.ar(Env.adsr(envAtk, envDec, envSus, envRel), gate, doneAction: 0);
@@ -81,10 +81,10 @@ SynthDef(\versatilePerc, {
 };
 //------------------------------------------------------------
 ~next = {|d|
-	var amp = m.accelMassFiltered.linlin(0,2,0.00001,1);
+	var amp = m.accelMassFiltered.linlin(0,2,0.00001,2);
 	var filtFreq = m.accelMassFiltered.lincurve(0.0,2.5,20,5040,2);
 
-  var notes = [29,31,34,38,39];
+  var notes = [23,26,19] + 12;
   var colors = [Color.red, Color.green, Color.blue, Color.yellow, Color.cyan];
   var ni = (d.sensors.gyroEvent.z / pi).lincurve(-0.5,0.5,0,notes.size,0).floor;//cw/ccw
   // var ni = (d.sensors.gyroEvent.y / pi).lincurve(-1.0,1.0,0,notes.size,0).floor;//left/right
@@ -103,8 +103,8 @@ SynthDef(\versatilePerc, {
       startSize: filtFreq.linlin(20,5040,100,200),
       endSize: filtFreq.linlin(20,5040,100,200),
       duration: 0.6,
-      startColor: colors[ni],
-      endColor: colors[ni].lighten(0.1),
+      startColor: Color.new255(255, 255, 0),//colors[ni],
+      endColor: Color.new255(255, 255, 0),//colors[ni].lighten(0.1),
       sx: 300,
       sy: 300,
       ex: 300,
