@@ -3,6 +3,7 @@
 var staker;
 var personalityController = Require("personalityController.scd");
 var oscController = Require("oscController.scd");
+var specsView;
 
 var stack = {
 	var devices = Require("devices.scd");
@@ -10,7 +11,13 @@ var stack = {
 	var view = View().layout_(staker =StackLayout(
 		details.(),
 		devices.(),
-		UserView()
+		specsView = UserView()
+			.minWidth_(200)
+			.maxHeight_(800)
+			.animate_(true)
+			.drawFunc_({|uv|
+			("CPU: "++s.peakCPU.asStringPrec(2)++"%").drawAtPoint(24@8, Font.default, Color.yellow);
+		});
 	));
 	
 	view
@@ -64,6 +71,8 @@ s.waitForBoot({
 	NetAddr.new("127.0.0.1", 57120).sendMsg("/airkit/startOSCListening", 57120);
 
 	initGUI.();
+
+	s.plotTreeView(0.5, specsView);
 
 });
 

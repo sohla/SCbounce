@@ -201,7 +201,7 @@ var xxvisuals = {|d|
    // Function to create a new UserView with its own visualEvents list
     var visuals = { |d|
     // var makeView = { |name, rect|
-        var visualEvents = List.new(20);
+        // var visualEvents = List.new(20);
 
         // Define the updateView function for this specific view
         var updateView = {|view|
@@ -233,7 +233,7 @@ var xxvisuals = {|d|
                     width = event[\startWidth].blend(event[\endWidth], event[\widthEnv].at(normTime));
                     size = event[\startSize].blend(event[\endSize], event[\sizeEnv].at(normTime));
                     col = event[\startColor].blend(event[\endColor], event[\colorEnv].at(normTime));
-                    col = col.alpha_(event[\alphaEnv].at(normTime));
+                    // col = col.alpha_(event[\alphaEnv].at(normTime));
 
                     // Draw the shape
                     Pen.width = width;//max(1, size.squared.lincurve(1, 50000, 1, 20, 0.1));
@@ -339,11 +339,12 @@ var xxvisuals = {|d|
             };
 
             // Remove expired events
-            visualEvents = visualEvents.select { |event|
+            views[d.port][\visualEvents] = views[d.port][\visualEvents].select { |event|
                 var now = thisThread.seconds;
                 var elapsed = now - event[\startTime];
                 var duration = event[\duration] ? 1;
-                elapsed < duration;
+                // views[d.port][\visualEvents].size.postln;
+                elapsed < duration
             };
         };
 
@@ -360,10 +361,10 @@ var xxvisuals = {|d|
 				 updateView.(view);
 			});
 
-        views[d.port] = (view: view, visualEvents: visualEvents);
-		// d.ip.postln;
+        views[d.port] = (view: view, visualEvents: List.new(20));
+		// visualEvents.postln;
         // view.bounds = rect;
-        view;
+        view
     };
 
 
@@ -390,9 +391,9 @@ var xxvisuals = {|d|
 // var defaultEnv = Env.asr(0.01, 1, 1);
 var defaultEnv = Env([0, 1], [1], \linear);
 
-Event.addEventType(\customEvent, {
+Event.addEventType(\customVisualEvent, {
         var viewID = ~viewID ? 8888; // Default to view1 if not specified
-        var visualEvents = views[viewID][\visualEvents];
+        // var visualEvents = views[viewID][\visualEvents];
 
         var event = (
             \shape: ~shape ? \circle,
@@ -422,7 +423,7 @@ Event.addEventType(\customEvent, {
             \modulation: ~modulation,  // Optional modulation settings
             \startTime: thisThread.seconds
         );
-        visualEvents.add(event);
+        views[viewID][\visualEvents] = views[viewID][\visualEvents].add(event);
         ~type = \note;
         currentEnvironment.play;
     });

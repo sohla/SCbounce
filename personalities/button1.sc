@@ -8,7 +8,7 @@ m.accelMassFilteredDecay = 0.08;
 
 //------------------------------------------------------------
 SynthDef(\sintri, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=440,
-    attack=0.001, decay=0.03, sustain=0.8, release=0.9, gate=1,cutoff=20000, rq=1, rezf=200|
+    attack=0.001, decay=0.03, sustain=0.1, release=0.09, gate=1,cutoff=20000, rq=1, rezf=200|
 
 	var env = EnvGen.kr(Env.adsr(attack, decay, sustain, release), gate, doneAction:0);
 	var sub = LFTri.ar(freq/2,0,0.2).tanh;
@@ -38,7 +38,7 @@ SynthDef(\funBass, {
 
 
 SynthDef(\versatilePerc, {
-    |out=0, freq=50, tension=0.1, decay=3.5, clickLevel=0.5, amp=0.05, dist = 5, filtFreq = 20, filtRes = 0.8,pan =0, gate=1|
+    |out=0, freq=50, tension=0.1, decay=0.5, clickLevel=0.5, amp=0.5, dist = 5, filtFreq = 20, filtRes = 0.8,pan =0, gate=1|
     var pitch_contour, drum_osc, click_osc, drum_env, click_env, sig, pch;
 
     // Pitch envelope
@@ -71,7 +71,7 @@ SynthDef(\versatilePerc, {
 }).add;
 //------------------------------------------------------------
 ~init = ~init <> {
-		synth = Synth(\funBass,[\gate, 0 ]);
+		synth = Synth(\versatilePerc,[\gate, 0 ]);
 };
 
 ~deinit = ~deinit <> {
@@ -95,7 +95,7 @@ SynthDef(\versatilePerc, {
   if(d.sensors.digiInEvent[0] == 1, {
     
     var event = (
-      type: \customEvent,
+      type: \customVisualEvent,
       amp: 0,
       viewID: d.port,
       shape: \circle,

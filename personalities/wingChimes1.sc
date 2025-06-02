@@ -35,8 +35,8 @@ SynthDef(\wingChimes1, {
 			\shape, \circle,
 			\rotation, Pseg(Pseq([-pi, pi], inf), 80, \linear, inf),
 	  	// \startColor, Pfunc{|e|Color.hsv(e.octave.linlin(3,6,0.2,0.23),0.6,0.8)},
-	  	\startColor, Color.new255(255, 255, 0),//Pfunc{|e|Color.hsv(e.root.linlin(-4,3,0.0,0.99),0.6,0.8)},
-			\endColor, Color.new255(255, 255, 0),//Pfunc{|e|Color.hsv(e.root.linlin(-4,3,0.0,0.99),0.3,0.3)},
+	  	\startColor, Pfunc{|e|Color.hsv(e.root.linlin(-4,3,0.0,0.49),0.9,0.9)},
+			\endColor, Pfunc{|e|Color.hsv(e.root.linlin(-4,3,0.5,0.99),0.6,0.7)},
 			
       // \endColor: Color.blue.alpha_(0.4),
 			\args, #[],

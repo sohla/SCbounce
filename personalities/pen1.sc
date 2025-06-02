@@ -1,7 +1,7 @@
 var m = ~model;
 var synth;
 
-m.accelMassFilteredAttack = 0.7;
+m.accelMassFilteredAttack = 0.99;
 m.accelMassFilteredDecay = 0.2;
 m.rrateMassFilteredAttack = 0.9;
 m.rrateMassFilteredDecay = 0.5;

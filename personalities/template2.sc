@@ -25,17 +25,17 @@ SynthDef(\template, {
 			\legato, 1,
 
 
-			\type, \customEvent,
+			\type, \customVisualEvent,
 			// \shape, Pseq([\circle, \square, \line, \triangle, \star, \hexagon, \cross, \wave, \leaf, \spiral, \blobby], inf),
-			\shape, \square,
-			// \sx, Pwhite(0,600),
+			\shape, \line,
+			\sx, Pwhite(0,600),
 			\sy, 200,
 			\ex, Pkey(\sx),
 			\ey, 500,
-			\startSize, 180,
+			\startSize, 80,
 			\endSize, 10,
 			\rotation, pi / Pwhite(1.7,2.3),
-			\startColor, Color.new255(255, 255, 0),
+			// \startColor, Color.hsv((frame/10.0).mod(1.0),0.5,0.5),//Color.new255(255, 255, 0),
 			// \endColor, Color.hsv((frame/10.0).mod(1.0),0.5,0.5),
 			\fill, true,
 
@@ -44,7 +44,7 @@ SynthDef(\template, {
 		);
 	);
 	Pdef(m.ptn).play(quant:0.1);
-	Pdef(m.ptn).set(\sx,0);
+	// Pdef(m.ptn).set(\sx,0);
 };
 
 //------------------------------------------------------------
@@ -78,7 +78,7 @@ SynthDef(\template, {
 	Pdef(m.ptn).set(\viewID, d.port);
 	Pdef(m.ptn).set(\duration, rel*2.1);
 	Pdef(m.ptn).set(\endColor, d.color);
-	// Pdef(m.ptn).set(\startColor, Color.hsv((frame/10.0).mod(1.0),1.0,1.0));
+	Pdef(m.ptn).set(\startColor, Color.hsv((frame/10.0).mod(1.0),1.0,1.0));
 	Pdef(m.ptn).set(\startWidth, rel*1);
 	
 	Pdef(m.ptn).set(\dur, dur);
