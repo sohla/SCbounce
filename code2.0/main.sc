@@ -8,23 +8,19 @@ var specsView;
 var stack = {
 	var devices = Require("devices.scd");
 	var details = Require("details.scd");
+	var specs = Require("specs.scd");
 	var view = View().layout_(staker =StackLayout(
 		details.(),
 		devices.(),
-		specsView = UserView()
-			.minWidth_(200)
-			.maxHeight_(800)
-			.animate_(true)
-			.drawFunc_({|uv|
-			("CPU: "++s.peakCPU.asStringPrec(2)++"%").drawAtPoint(24@8, Font.default, Color.yellow);
-		});
+		specs.()
 	));
 	
 	view
 };
 
 var tabButton = {|i|
-	var d = ["🁪","※","-"];
+	// var d = ["🁪","※","-"];
+	var d = ["device","visual","system"];
 	UserView()
 	.background_( if(i==0,Color.black.lighten(0.25),Color.black))
 	.mouseDownAction_({|but|
@@ -37,7 +33,7 @@ var tabButton = {|i|
 			});
 		},{});
 	})
-	.drawFunc_({|v|Pen.stringAtPoint(d[i], (v.bounds.width-15/2)@25, Font(size:30), Color.white)})
+	.drawFunc_({|v|Pen.stringAtPoint(d[i], (v.bounds.width-45/2)-40@25, Font(size:30), Color.white.darken(0.75))})
 	.animate_(false)
 
 }!3;
@@ -72,7 +68,6 @@ s.waitForBoot({
 
 	initGUI.();
 
-	s.plotTreeView(0.5, specsView);
 
 });
 

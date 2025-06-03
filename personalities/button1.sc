@@ -67,7 +67,7 @@ SynthDef(\versatilePerc, {
 }).add;
 //------------------------------------------------------------
 ~init = ~init <> {
-  var size = 100;
+  var size = 60;
 	Pdef(m.ptn,
 		Pbind(
 			\instrument, \versatilePerc,
@@ -83,20 +83,14 @@ SynthDef(\versatilePerc, {
 
 
 			\type, \customVisualEvent,
-			// \shape, Pseq([\square], inf),
-			// \shape, \line,
-			\sx, Pseq([size,size*3,size*3,size] + 400, inf),
-			\sy, Pseq([size,size,size*3,size*3] + 60, inf),
-			\ex, Pkey(\sx),
-			\ey, Pkey(\sy),
-			// \startSize, size,
-			\endSize, size,
-      \duration, 0.3,
-			// \rotation, pi * Pwhite(1.7,2.3,inf),
-			// \startColor, Color.hsv((frame/10.0).mod(1.0),0.5,0.5,1),//Color.new255(255, 255, 0),
-			// \endColor, Color.hsv((frame/10.0).mod(1.0),0.5,0.5,1),
-			\fill, true,
-      \startWidth, 10,
+			\sx, Pseq([0,600,600,0] + 350, inf),
+			\sy, Pseq([0,0,500,500] + 60, inf),
+			\ex, Pseq([size,size*3,size*3,size] + 500, inf),
+			\ey, Pseq([size,size,size*3,size*3] + 200, inf),
+			\endSize, 1,
+      \duration, 2.0,
+			\fill, false,
+      \startWidth, 3,
       
 
 			\func, Pfunc({|e| ~onEvent.(e)}),
@@ -136,7 +130,7 @@ SynthDef(\versatilePerc, {
 
   var notes = [26,19,17] + 12;
   var colors = [Color.red, Color.green, Color.blue, Color.yellow, Color.cyan];
-  var ni = (d.sensors.gyroEvent.z / pi).lincurve(-0.5,0.5,0,notes.size,0).floor;//cw/ccw
+  var ni = (d.sensors.gyroEvent.z / pi).lincurve(-0.5,0.5,0,notes.size,1).floor;//cw/ccw
   var shapes = [\square, \triangle, \hexagon];
   var bassLine = bassLines[0];
   // var ni = (d.sensors.gyroEvent.y / pi).lincurve(-1.0,1.0,0,notes.size,0).floor;//left/right
@@ -153,12 +147,18 @@ SynthDef(\versatilePerc, {
   Pdef(m.ptn).set(\decay, dcy);
   Pdef(m.ptn).set(\level, level);
   Pdef(m.ptn).set(\shape, shapes[ni % shapes.size]);
-  Pdef(m.ptn).set(\startSize, 400 * level);
+  Pdef(m.ptn).set(\startSize, 30 + (100 * level));
 
 	Pdef(m.ptn).set(\viewID, d.port);
-	Pdef(m.ptn).set(\startColor, Color.hsv((frame/10.0).mod(1.0),1,1.0,level* 2));
+	Pdef(m.ptn).set(\startColor, Color.hsv((frame/10.0).mod(1.0),1,1.0, 0.5 + level));
 	Pdef(m.ptn).set(\endColor, Color.hsv((frame/10.0).mod(1.0),1,1.0,0.2));
-	Pdef(m.ptn).set(\rotation, level-0.25);
+	Pdef(m.ptn).set(\rotation, (pi/60) * frame);
+	Pdef(m.ptn).set(\modulation, (
+			type: \radial,
+			freq: 10,
+			amp: level * 20,
+			harmonics: 1
+	));
 
 
   if(d.sensors.digiInEvent[0] == 1, {
@@ -175,11 +175,12 @@ SynthDef(\versatilePerc, {
       duration: 0.6,
       startColor: Color.new255(amp.lincurve(0.001,0.06,100,255,-3), 255, 0, amp.lincurve(0.001,0.06,100,255,-3)),//colors[ni],
       endColor: Color.new255(225, 5, 250,200),//colors[ni].lighten(0.1),
-      sx: 600,
-      sy: 300,
-      ex: 600,
-      ey: 300,
-      rotation: amp * pi,
+      startWidth: 3,
+      sx: 630,
+      sy: 340,
+      ex: 630,
+      ey: 340,
+      rotation: (amp - 0.17.half.half) * pi,
       modulation: (
         type: \normal,
         freq: 2,
