@@ -1,44 +1,40 @@
 var m = ~model;
 var synth;
-var buffer;
 var bl = false;
+var frame = 0;
+var bassLines = [[0,10,17,16],[0]];
+var bassLine = bassLines[0];
 
 m.accelMassFilteredAttack = 0.9;
-m.accelMassFilteredDecay = 0.08;
+m.accelMassFilteredDecay = 0.38;
 
 //------------------------------------------------------------
-SynthDef(\sintri, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=440,
+SynthDef(\simple, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=440,
     attack=0.001, decay=0.03, sustain=0.1, release=0.09, gate=1,cutoff=20000, rq=1, rezf=200|
 
 	var env = EnvGen.kr(Env.adsr(attack, decay, sustain, release), gate, doneAction:0);
-	var sub = LFTri.ar(freq/2,0,0.2).tanh;
-	var sig = SinOsc.ar(freq * [1.0,1.03],0,0.5) + sub;
-	
-    // sig = RLPF.ar(sig, cutoff, rq) + sub;
-		// sig = Resonz.ar(sig, rezf.lag(0.4), 0.05, 5)* amp.lag(0.9);
-		// sig = AllpassN.ar(sig, 0.1, [0.09, 0.08], 8);
-		// sig = JPverb.ar(sig,1, modDepth: 0.1, modFreq: 4.0, low: 1.0);
-
+	var sig = SinOsc.ar(freq,0,0.5);
     Out.ar(out, sig * env);
 }).add;
 
 SynthDef(\funBass, {
-    |out=0, freq = 440, gate = 1, amp = 0.2, filtFreq = 2000, filtRes = 0.5, envAtk = 0.01, envDec = 0.1, envSus = 0.8, envRel = 1.2, rm = 0.5|
+    |out=0, freq = 440, gate = 1, amp = 0.2, filtFreq = 2000, filtRes = 0.5, envAtk = 0.001, envDec = 0.1, envSus = 0.8, envRel = 1.2, rm = 0.5|
     var osc1, osc2, osc3, env, filter, output;
-
+    freq = freq.lag(0.7);
     env = EnvGen.ar(Env.adsr(envAtk, envDec, envSus, envRel), gate, doneAction: 0);
-    osc1 = Saw.ar(freq, 1);
-    osc2 = Pulse.ar(freq * 0.99, 0.3, 1);
+    osc1 = LFTri.ar(freq * 4.98, 0,0.3);
+    osc2 = LFSaw.ar(freq * 1.99, 0, 1);
     osc3 = SinOsc.ar(freq * 1.01, 0, 1);
     output = Mix([osc1, osc2, osc3]) * env * amp;
     filter = RLPF.ar(output, filtFreq.lag(0.7), filtRes);
-		filter = [filter.distort, filter.tanh];
+		// filter = [filter.distort, filter.tanh];
+    filter = DelayC.ar(filter, 0.09, [0.03,0.09], 1, filter);
     Out.ar(out, filter.softclip);
 }).add;
 
 
 SynthDef(\versatilePerc, {
-    |out=0, freq=50, tension=0.1, decay=0.5, clickLevel=0.5, amp=0.5, dist = 5, filtFreq = 20, filtRes = 0.8,pan =0, gate=1|
+    |out=0, freq=50, tension=0.1, decay=0.5, clickLevel=0.5, level=0.1, dist = 5, filtFreq = 20, filtRes = 0.8,pan =0, gate=1|
     var pitch_contour, drum_osc, click_osc, drum_env, click_env, sig, pch;
 
     // Pitch envelope
@@ -55,42 +51,115 @@ SynthDef(\versatilePerc, {
     // Drum envelope
     drum_env = EnvGen.ar(
         Env.perc(attackTime: 0.005, releaseTime: decay, curve: -4),gate,
-        doneAction: 0
+        doneAction: 2
     );
 
     // Click envelope
     click_env = EnvGen.ar(
-        Env.perc(attackTime: 0.001, releaseTime: 0.01),
+        Env.perc(attackTime: 0.001, releaseTime: 0.01), 
         levelScale: clickLevel
     );
 	sig = (drum_osc * drum_env) + (click_osc * click_env);
 	sig = (sig * dist).tanh.distort;
-	sig = HPF.ar(sig, filtFreq);
+	sig = HPF.ar(sig, filtFreq) * level;
     // Mix and output
-    Out.ar(out, Balance2.ar(sig[0], sig[1],pan,amp))
+    Out.ar(out, Balance2.ar(sig[0], sig[1],pan));
 }).add;
 //------------------------------------------------------------
 ~init = ~init <> {
-		synth = Synth(\versatilePerc,[\gate, 0 ]);
+  var size = 100;
+	Pdef(m.ptn,
+		Pbind(
+			\instrument, \versatilePerc,
+			\scale, Scale.major,
+			\note, Pseq(bassLine + 2, inf),
+      \dur, 0.2,
+      \octave, 4,
+      \dist, 10,
+      // \filtFreq, 100,
+      \filtRes, 0.1,
+      \tension, 0.1,
+      // \decay, 0.2,
+
+
+			\type, \customVisualEvent,
+			// \shape, Pseq([\square], inf),
+			// \shape, \line,
+			\sx, Pseq([size,size*3,size*3,size] + 400, inf),
+			\sy, Pseq([size,size,size*3,size*3] + 60, inf),
+			\ex, Pkey(\sx),
+			\ey, Pkey(\sy),
+			// \startSize, size,
+			\endSize, size,
+      \duration, 0.3,
+			// \rotation, pi * Pwhite(1.7,2.3,inf),
+			// \startColor, Color.hsv((frame/10.0).mod(1.0),0.5,0.5,1),//Color.new255(255, 255, 0),
+			// \endColor, Color.hsv((frame/10.0).mod(1.0),0.5,0.5,1),
+			\fill, true,
+      \startWidth, 10,
+      
+
+			\func, Pfunc({|e| ~onEvent.(e)}),
+			\args, #[]
+		);
+	);
+	Pdef(m.ptn).play(quant:0.1);
+
+		synth = Synth(\funBass,[\gate, 0 ]);
+    // NodeWatcher.register(synth);
 };
 
 ~deinit = ~deinit <> {
+  	Pdef(m.ptn).remove;
+
 	synth.free;
 	// synth.set(\gate, 0);
-	buffer.free;
+	// buffer.free;
 };
+
+//------------------------------------------------------------
+~onEvent = {|e|
+	m.com.root = e.root;
+	// Pdef(m.ptn).set(\root, m.com.root);
+	// Pdef(m.ptn).set(\sx, ((e.octave * 12) + e.note).linlin(40,100,0,600));
+	// ((e.octave * 12) + e.note).linlin(40,100,0,600).postln;
+	frame = frame + 1;
+};
+
+
 //------------------------------------------------------------
 ~next = {|d|
-	var amp = m.accelMassFiltered.linlin(0,2,0.00001,2);
+	var amp = m.accelMassFiltered.lincurve(0,2.5,0.00001,0.14,-4);
+	var level = m.accelMassFiltered.lincurve(0,2.5,0.01,0.5,-4);
 	var filtFreq = m.accelMassFiltered.lincurve(0.0,2.5,20,5040,2);
+	var dcy = m.accelMassFiltered.lincurve(0.0,2.5,0.2,1.5,-2);
 
-  var notes = [23,26,19] + 12;
+  var notes = [26,19,17] + 12;
   var colors = [Color.red, Color.green, Color.blue, Color.yellow, Color.cyan];
   var ni = (d.sensors.gyroEvent.z / pi).lincurve(-0.5,0.5,0,notes.size,0).floor;//cw/ccw
+  var shapes = [\square, \triangle, \hexagon];
+  var bassLine = bassLines[0];
   // var ni = (d.sensors.gyroEvent.y / pi).lincurve(-1.0,1.0,0,notes.size,0).floor;//left/right
   // var ni = (d.sensors.gyroEvent.x / pi).lincurve(-1.0,1.0,notes.size,0,0).floor; //up/down
 
-	if(amp < 0.04, {amp = 0});
+	// if(amp < 0.04, {amp = 0});
+
+  synth.set(\amp, amp);
+  synth.set(\freq, notes[ni].midicps);
+  synth.set(\filtFreq, filtFreq);
+
+  Pdef(m.ptn).set(\root, notes[ni]-12-23-3);
+  Pdef(m.ptn).set(\filtFreq, filtFreq);
+  Pdef(m.ptn).set(\decay, dcy);
+  Pdef(m.ptn).set(\level, level);
+  Pdef(m.ptn).set(\shape, shapes[ni % shapes.size]);
+  Pdef(m.ptn).set(\startSize, 400 * level);
+
+	Pdef(m.ptn).set(\viewID, d.port);
+	Pdef(m.ptn).set(\startColor, Color.hsv((frame/10.0).mod(1.0),1,1.0,level* 2));
+	Pdef(m.ptn).set(\endColor, Color.hsv((frame/10.0).mod(1.0),1,1.0,0.2));
+	Pdef(m.ptn).set(\rotation, level-0.25);
+
 
   if(d.sensors.digiInEvent[0] == 1, {
     
@@ -98,34 +167,39 @@ SynthDef(\versatilePerc, {
       type: \customVisualEvent,
       amp: 0,
       viewID: d.port,
-      shape: \circle,
+      shape: shapes[ni % shapes.size],
       fill: false,
-      startSize: filtFreq.linlin(20,5040,100,200),
-      endSize: filtFreq.linlin(20,5040,100,200),
+      rotate: filtFreq.linlin(20,5040,0.0,pi),
+      startSize: filtFreq.linlin(20,5040,200,300),
+      endSize: filtFreq.linlin(20,5040,10,20),
       duration: 0.6,
-      startColor: Color.new255(255, 255, 0),//colors[ni],
-      endColor: Color.new255(255, 255, 0),//colors[ni].lighten(0.1),
-      sx: 300,
+      startColor: Color.new255(amp.lincurve(0.001,0.06,100,255,-3), 255, 0, amp.lincurve(0.001,0.06,100,255,-3)),//colors[ni],
+      endColor: Color.new255(225, 5, 250,200),//colors[ni].lighten(0.1),
+      sx: 600,
       sy: 300,
-      ex: 300,
+      ex: 600,
       ey: 300,
       rotation: amp * pi,
       modulation: (
         type: \normal,
         freq: 2,
-        amp: 80 * amp,
+        amp: 80 * amp * 10,
         harmonics: 2
     ),
     );
 
     event.play;
-    synth.set(\gate, 1);
+    if(bl == false, {
+      bl = true;
+      synth.set(\gate, 1);
+      // synth.postln;
+    });
+
   }, {
+    bl = false;
     synth.set(\gate, 0);
   });
 
-  synth.set(\freq, notes[ni].midicps);
-  synth.set(\filtFreq, filtFreq);
     
 };
 //------------------------------------------------------------

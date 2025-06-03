@@ -7,32 +7,32 @@ var synth, bassSynth;
 var dur = 0.11;
 var notes = [0,2,5,7,9,11,12,14,12,11] + 1;
 var bass = [2,9,5,12,5,9,2] + 1;
-var root = [0,2].stutter(7);
-var octave = 5;
-	var noteToMidi = { |noteName|
-	    var pattern = "([A-G](#|b)?)([0-9])";
-	    var noteNames = "C C# D D# E F F# G G# A A# B";
-	    var parts, note, octave, noteIndex;
-	    parts = noteName.findRegexp(pattern);
-	    if(parts.size < 3, { Error("Invalid note format: %".format(noteName)).throw});
-	    note = parts[1][1];
-	    octave = parts[3][1].asInteger;
-	    note = note.replace("Cb", "B").replace("Db", "C#").replace("Eb", "D#")
-	               .replace("Fb", "E").replace("Gb", "F#").replace("Ab", "G#").replace("Bb", "A#");
-		noteIndex = noteNames.split($ ).find([note]);
-	    (octave + 1) * 12 + noteIndex;
-	};
+var root = [0];
+//------------------------------------------------------------
 
-	var folder = PathName("~/Music/yourDNASamples/harp");
+var noteToMidi = { |noteName|
+		var pattern = "([A-G](#|b)?)([0-9])";
+		var noteNames = "C C# D D# E F F# G G# A A# B";
+		var parts, note, octave, noteIndex;
+		parts = noteName.findRegexp(pattern);
+		if(parts.size < 3, { Error("Invalid note format: %".format(noteName)).throw});
+		note = parts[1][1];
+		octave = parts[3][1].asInteger;
+		note = note.replace("Cb", "B").replace("Db", "C#").replace("Eb", "D#")
+								.replace("Fb", "E").replace("Gb", "F#").replace("Ab", "G#").replace("Bb", "A#");
+	noteIndex = noteNames.split($ ).find([note]);
+		(octave + 1) * 12 + noteIndex;
+};
 
-	var samplesLib = folder.entries.collect({ |path|
-
-		var note = path.fileNameWithoutExtension.split($_).last;
-		var buffer = Buffer.read(s, path.fullPath, action:{ |buf|
-		});
-		postf("loading sample : % \n", path.fileNameWithoutExtension);
-		(name: path.fileNameWithoutExtension, buffer: buffer, midiNote: noteToMidi.(note))
+var folder = PathName("~/Music/yourDNASamples/harp");
+var samplesLib = folder.entries.collect({ |path|
+	var note = path.fileNameWithoutExtension.split($_).last;
+	var buffer = Buffer.read(s, path.fullPath, action:{ |buf|
 	});
+	postf("loading sample : % \n", path.fileNameWithoutExtension);
+	(name: path.fileNameWithoutExtension, buffer: buffer, midiNote: noteToMidi.(note))
+});
+//------------------------------------------------------------
 
 m.accelMassFilteredAttack = 0.99;
 m.accelMassFilteredDecay = 0.5;
@@ -105,20 +105,20 @@ SynthDef(\funBass, {
 
 	};
 
-Event.addEventType(\customEvent, {|e|
-	~note = ~note + ~root + (12 * ~octave);
-	if(~note.odd,{
-		~bufnum = findSampleBuffer.(~note-1);
-	    ~rate = 1.midiratio;
-	},{
-		~bufnum = findSampleBuffer.(~note);
-	    ~rate = 1;
+	Event.addEventType(\customEvent, {|e|
+		~note = ~note + ~root + (12 * ~octave);
+		if(~note.odd,{
+			~bufnum = findSampleBuffer.(~note-1);
+				~rate = 1.midiratio;
+		},{
+			~bufnum = findSampleBuffer.(~note);
+				~rate = 1;
+		});
+			// ~instrument = \stereoSampler;
+			~type = \customVisualEvent;
+			currentEnvironment.play;
+		// ~bufnum.postln;
 	});
-    // ~instrument = \stereoSampler;
-    ~type = \customVisualEvent;
-    currentEnvironment.play;
-	// ~bufnum.postln;
-});
 
 	Pdef(m.ptn,
 		Pbind(
@@ -129,8 +129,6 @@ Event.addEventType(\customEvent, {|e|
 			\endSize, 10,
 			\startWidth, 2,
 			\rotation,pi.half + Pwhite(-0.02,0.02),
-			// \startColor, Color.hsv((frame/20.0).mod(1.0),0.5,1.0,1.0),//Color.new255(255, 255, 0),
-			// \endColor, Color.hsv((frame/20.0).mod(1.0),0.5,1.0,0.0),
 			\fill, true,
 			\instrument, \stereoSampler,
 			\dur, Pslide([dur,dur,dur,dur,dur,dur,dur,dur,dur,dur], inf, Pkey(\range), 0, 0),
@@ -139,8 +137,7 @@ Event.addEventType(\customEvent, {|e|
 			\sy, 300,
 			\ex, Pkey(\sx),
 			\ey, 300,
-			// \root, Pseq([0].stutter(12*8), inf),
-			\octave, octave,
+			\octave, 5,//Pwhite(5,7),
 			\func, Pfunc({|e| ~onEvent.(e)}),
 		);
 	);
@@ -178,10 +175,21 @@ Event.addEventType(\customEvent, {|e|
 	Pdef(m.ptn).set(\viewID, d.port);
 	Pdef(m.ptn).set(\startColor, Color.hsv((frame/40.0).mod(1.0),0.5,1.0,1.0));
 	Pdef(m.ptn).set(\endColor, Color.hsv((frame/40.0).mod(1.0),0.5,1.0,0.0));
+	Pdef(m.ptn).set(\modulation, (
+			type: \normal,
+			freq: 4 ,
+			amp: 3,
+			harmonics: 1
+	));
 
 	Pdef(m.ptn).set(\range, move.floor);
 	Pdef(m.ptn).set(\amp, amp.dbamp);
 	Pdef(m.ptn).set(\root, root[0]);
+
+	if(bassSynth.isPlaying,{
+			if(ff<0,{ff=200});
+			bassSynth.set(\filtFreq, ff);
+	});
 
 	if(m.accelMassFiltered > 0.1,{
 		if( Pdef(m.ptn).isPlaying.not,{
@@ -193,18 +201,6 @@ Event.addEventType(\customEvent, {|e|
 		});
 	});
 
-	if(bassSynth.isPlaying,{
-			if(ff<0,{ff=200});
-			bassSynth.set(\filtFreq, ff);
-	});
-
-	Pdef(m.ptn).set(\modulation, (
-			type: \normal,
-			freq: 4 ,
-			amp: 3,
-			harmonics: 1
-	));
-
 	if(m.accelMassFiltered > 3.7, {
 		if(TempoClock.beats > (lastTime + (dur*4)),{
 			var n = bass[0] + root[0];
@@ -214,12 +210,12 @@ Event.addEventType(\customEvent, {|e|
 				viewID: d.port,
 				shape: \line,
 				fill: false,
-				startSize: 100 * amp.dbamp,//filtFreq.linlin(20,5040,100,200),
-				endSize: 1500 * amp.dbamp,//filtFreq.linlin(20,5040,100,200),
+				startSize: 100 * amp.dbamp,
+				endSize: 1500 * amp.dbamp,
 				duration: 4.6,
 				sizeEnv: Env([0,1], [1], [-3]),
-				startColor: Color.new255(255, 55, 200, 90),//colors[ni],
-				endColor: Color.new255(255, 255, 0, 0),//colors[ni].lighten(0.1),
+				startColor: Color.new255(255, 55, 200, 90),
+				endColor: Color.new255(255, 255, 0, 0),
 				startWidth:700,
 				sx: 300,
 				sy: 300,
@@ -240,11 +236,8 @@ Event.addEventType(\customEvent, {|e|
 			NodeWatcher.register(bassSynth);
 			event.play;
 			bass = bass.rotate(-1);
-			// root = root.rotate(-1);
-				// {bassSynth.set(\gate,0)}.defer(0.1);
-				// s.queryAllNodes;
 
-
+			// i.div(14).mod(2)
 		});
 	});
 };
