@@ -24,7 +24,7 @@ var noteToMidi = { |noteName|
 		(octave + 1) * 12 + noteIndex;
 };
 
-var folder = PathName("~/Music/yourDNASamples/harp");
+var folder = PathName("~/Downloads/openLabSamples/harp");
 var samplesLib = folder.entries.collect({ |path|
 	var note = path.fileNameWithoutExtension.split($_).last;
 	var buffer = Buffer.read(s, path.fullPath, action:{ |buf|
@@ -249,13 +249,13 @@ SynthDef(\funBass, {
 
 	// ACCEL
 	// [m.accelMass * 0.1, m.accelMassFiltered.linlin(0,3,0,1)];
-	
+
 	// ROTATE
 	[m.rrateMass/2, m.rrateMassFiltered.linlin(0,2,0,1)];
 
 	// X axis
 	// [d.sensors.gyroEvent.x/pi]; // norm
-	
+
 	// Y axis
 	// [d.sensors.gyroEvent.y/pi]; // norm
 
