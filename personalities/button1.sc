@@ -138,14 +138,14 @@ SynthDef(\versatilePerc, {
 
 	// if(amp < 0.04, {amp = 0});
 
-  synth.set(\amp, amp);
+  synth.set(\amp, amp*0.8);
   synth.set(\freq, notes[ni].midicps);
   synth.set(\filtFreq, filtFreq);
 
   Pdef(m.ptn).set(\root, notes[ni]-12-23-3);
   Pdef(m.ptn).set(\filtFreq, filtFreq);
   Pdef(m.ptn).set(\decay, dcy);
-  Pdef(m.ptn).set(\level, level);
+  Pdef(m.ptn).set(\level, level*1.5);
   Pdef(m.ptn).set(\shape, shapes[ni % shapes.size]);
   Pdef(m.ptn).set(\startSize, 30 + (100 * level));
 

@@ -8,6 +8,8 @@ var dur = 0.11;
 var notes = [0,2,5,7,9,11,12,14,12,11] + 1;
 var bass = [2,9,5,12,5,9,2] + 1;
 var root = [0];
+var offset = 0;
+var bassCount = 0;
 //------------------------------------------------------------
 
 var noteToMidi = { |noteName|
@@ -132,7 +134,7 @@ SynthDef(\funBass, {
 			\fill, true,
 			\instrument, \stereoSampler,
 			\dur, Pslide([dur,dur,dur,dur,dur,dur,dur,dur,dur,dur], inf, Pkey(\range), 0, 0),
-			\note, Pslide(notes, inf, Pkey(\range), 0, 0),
+			\note, Pslide(notes, inf, Pkey(\range), 0, offset),
 			\sx, 100 + (Pkey(\note) * 20),
 			\sy, 300,
 			\ex, Pkey(\sx),
@@ -169,8 +171,9 @@ SynthDef(\funBass, {
 ~next = {|d|
 
 	var move = m.accelMassFiltered.lincurve(0,3,3,notes.size,2);
-	var amp = m.accelMassFiltered.lincurve(0,2.4,-50,-14,-1);
+	var amp = m.accelMassFiltered.lincurve(0,2.4,-50,-10,-1);
 	var ff = m.rrateMassFiltered.lincurve(0.0,2.0,200,2000,-3); //left right
+	var step = d.sensors.gyroEvent.x.linlin(-0.8,0.8,0,3).floor; //up down
 
 	Pdef(m.ptn).set(\viewID, d.port);
 	Pdef(m.ptn).set(\startColor, Color.hsv((frame/40.0).mod(1.0),0.5,1.0,1.0));
@@ -186,9 +189,11 @@ SynthDef(\funBass, {
 	Pdef(m.ptn).set(\amp, amp.dbamp);
 	Pdef(m.ptn).set(\root, root[0]);
 
+
+	
 	if(bassSynth.isPlaying,{
-			if(ff<0,{ff=200});
-			bassSynth.set(\filtFreq, ff);
+		if(ff<0,{ff=200});
+		bassSynth.set(\filtFreq, ff);
 	});
 
 	if(m.accelMassFiltered > 0.1,{
@@ -204,7 +209,7 @@ SynthDef(\funBass, {
 	if(m.accelMassFiltered > 3.7, {
 		if(TempoClock.beats > (lastTime + (dur*4)),{
 			var n = bass[0] + root[0];
-   		var event = (
+   			var event = (
 				type: \customVisualEvent,
 				amp: 0,
 				viewID: d.port,
@@ -232,12 +237,12 @@ SynthDef(\funBass, {
 
 			lastTime = TempoClock.beats;
 			~playNote.(n-12,0, 3,amp.dbamp * 0.15);
-			bassSynth = Synth(\funBass, [\freq, (n + 24).midicps, \gate,1, \amp, amp.dbamp * 0.1]);
+			bassSynth = Synth(\funBass, [\freq, (n + 24).midicps, \gate,1, \amp, amp.dbamp * 0.08]);
 			NodeWatcher.register(bassSynth);
 			event.play;
 			bass = bass.rotate(-1);
+			bassCount = bassCount + 1;
 
-			// i.div(14).mod(2)
 		});
 	});
 };

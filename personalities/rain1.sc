@@ -81,7 +81,7 @@ SynthDef(\rainSampler, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0,
 
 	var mix = [0.6,1,1,1.5] * 2;
 	var cutoff = m.accelMassFiltered.lincurve(0,1.5,600,20,-2);
-	var pan = d.sensors.gyroEvent.z.linlin(-1,1,-1,1);
+	var pan = d.sensors.gyroEvent.z.linlin(-1,1,-0.3,0.3);
 
 	synths.do({|synth, i|
 		synth.set(\amp, levels[i] * mix[i]);
