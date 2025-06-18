@@ -102,7 +102,7 @@ Pbindef(\whipPattern).play;
 Pbindef(\whipPattern).stop;
 
 // For a single test:
-Synth(\whipbird, [\amp, 0.2, \swoopDelay, 0.01, \gliss, 0.15, \pitchRand, 0.8,\reverbMix, 0.3, \gate,1]);
+Synth(\whipbird, [\amp, 0.2, \swoopDelay, 0.01, \gliss, 0.15, \pitchRand, 0.8.rrand(0.9),\reverbMix, 0.3, \gate,1]);
 s.meter
 
 

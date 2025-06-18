@@ -1,40 +1,34 @@
 var m = ~model;
 var bi = 0;
-~buffers;
+var dur = 0.11;
 
-m.rrateMassFilteredAttack = 0.99;
-m.rrateMassFilteredDecay = 0.2;
+~buffers;
 m.accelMassFilteredAttack = 0.99;
 m.accelMassFilteredDecay = 0.9;
 
 //------------------------------------------------------------
-SynthDef(\grobt, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
-    attack=0.01, decay=0.1, sustain=0.3, release=0.2, gate=1,cutoff=200, rq=0.3, subFreq=145|
-
-	var lr = rate * BufRateScale.kr(bufnum) * (freq/440.0);
+SynthDef(\drumkit, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
+    attack=0.01, decay=0.1, sustain=0.8, release=0.02, gate=1,cutoff=10, rq=1|
+	var lr = rate * BufRateScale.kr(bufnum);
 	var cd = BufDur.kr(bufnum);
-    var env = EnvGen.kr(Env.adsr(attack, decay, sustain, release), gate, timeScale: cd * 2, doneAction: 2);
-		  var kick = SinOsc.ar(XLine.kr(subFreq*2, subFreq*1, 0.01),0,0.4) * EnvGen.ar(Env.perc(0.01, 3.3), gate) * 0.3;
-
-	var sig = PlayBuf.ar(1, bufnum, rate: [lr, lr * 1.0], startPos: start * BufFrames.kr(bufnum), loop: 0) * 1.6;
+  var env = EnvGen.kr(Env.adsr(attack, decay, sustain, release), gate, doneAction: 2);
+	var sig = PlayBuf.ar(1, bufnum, rate: [lr, lr * 1.0], startPos: start * BufFrames.kr(bufnum), loop: 0) ;
     sig = RHPF.ar(sig, cutoff, rq);
 		sig = Compander.ar(sig, sig,
-        thresh: -33.dbamp,
+        thresh: -15.dbamp,
         slopeBelow: 1,
         slopeAbove: 0.5,
         clampTime:  0.01,
         relaxTime:  0.01
-		);
-		sig = Mix.ar([sig,kick]);
+		) ;
+		sig = Mix.ar([sig]);
     sig = Balance2.ar(sig[0],sig[1], pan);
     Out.ar(out, sig * amp * env);
 }).add;
-
-
-//------------------------------------------------------------
+//--------------------------------------
 ~init = ~init <> {
 
-	var folder  = PathName("~/Downloads/yourDNASamples/robt");
+	var folder  = PathName("~/Downloads/openLabSamples/kit");
 	postf("loading samples : % \n", folder);
 
 	~buffers = folder.entries.collect({ |path,i|
@@ -48,29 +42,38 @@ SynthDef(\grobt, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 
 	Pdef(m.ptn,
 		Pbind(
-			\instrument, \grobt,
+			\instrument, \drumkit,			
+      \type, \customVisualEvent,
+			\sx, Pwhite(250,350),
+			\sy, 300,
+			\ex, Pkey(\sx),
+			\ey, 380,
+			// \startSize, 40,
+			\endSize, 30,
+			\rotation, pi / Pwhite(1.7,2.3),
+			\fill, true,
+			\startColor, Color.hsv(0.1,1,1.0,1),
+			\endColor, Color.hsv(0.2,1,1.0,0.0),
+      \duration, 0.4,
+
 			\bufnum, Pfunc{
-				bi = bi + 1;
 				if(bi >= (~buffers.size-1),{bi=0});
 				~buffers[bi];
 			},
-			\octave, Pseq([3,4].stutter(24), inf),
-			\rate, Pseq([0,-3,-5,4,7,9,12,0].midiratio, inf),
-			\amp, Pseq([1, 2, 2, 0.9,0.7,0.6 ,0.5 ,1] * 1.8, inf),
-			\subFreq,Pxrand([65,255,440,180,245,100] , inf),
+			\octave, Pseq([5].stutter(24), inf),
 			\start, 0,
-			\legato, Prand([0.1,0.5], inf),
-      		\root, Pseq([0,7].stutter(12), inf),
-			\note, Pseq([33], inf),
-		 	// \dur, 0.4,//Pseq([0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4/3,0.4/3,0.4/3],inf),
-		 	\pan,Pseq([-0.8],inf),
-			\attack, 0.02,
-			\release,0.2,
+			\note, Pseq([40], inf),
+			\dur, Pseq([1] * dur, inf),
+			\pan, Pwhite(-0.3,0.3),
+			\attack, 0.01,
+			\release,1.3,
 			\args, #[],
 		)
 	);
 
-	Pdef(m.ptn).play(quant:0.2);
+	Pdef(m.ptn).play(quant:dur);
+	Pdef(m.ptn).set(\bufnum, ~buffers[0]);
+
 };
 
 ~deinit = ~deinit <> {
@@ -87,12 +90,30 @@ SynthDef(\grobt, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 //------------------------------------------------------------
 ~next = {|d|
 
-	var sub = 2.pow(m.rrateMassFiltered.lincurve(0,0.2,0,2,-2).floor).reciprocal;
-	Pdef(m.ptn).set(\dur, 0.5 * sub);
+	var rate = m.rrateMassFiltered.linlin(0,1,1,1.4);
+	var amp = m.accelMassFiltered.lincurve(0,2.5,0.02,1, 2);
+	Pdef(m.ptn).set(\amp, amp * 3);
+	Pdef(m.ptn).set(\rate, rate);
 
-	if(m.rrateMassFiltered > 0.022,{
+
+	Pdef(m.ptn).set(\viewID, d.port);
+  Pdef(m.ptn).set(\startSize, 10 + (160 * amp));
+
+	Pdef(m.ptn).set(\modulation, (
+			type: \radial,
+			freq: 3 ,
+			amp: 3,
+			harmonics: 2
+	));
+
+
+	// bi = (d.sensors.gyroEvent.y.abs / pi) * (~buffers.size-1);
+	// bi = bi.asInteger;
+	// bi = [0,1].choose;
+  bi = ~buffers.size.rand;
+	if(m.accelMassFiltered > 0.05,{
 		if( Pdef(m.ptn).isPlaying.not,{
-			Pdef(m.ptn).resume(quant:0.2);
+			Pdef(m.ptn).resume(quant:dur*2);
 		});
 	},{
 		if( Pdef(m.ptn).isPlaying,{
@@ -115,3 +136,4 @@ SynthDef(\grobt, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 
 
 };
+Buffer.cachedBuffersDo(s, {|b|b.postln})

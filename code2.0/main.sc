@@ -3,35 +3,40 @@
 var staker;
 var personalityController = Require("personalityController.scd");
 var oscController = Require("oscController.scd");
+var specsView;
 
 var stack = {
 	var devices = Require("devices.scd");
 	var details = Require("details.scd");
-	View().layout_(staker =StackLayout(
+	var specs = Require("specs.scd");
+	var view = View().layout_(staker =StackLayout(
 		details.(),
 		devices.(),
+		specs.()
 	));
+	
+	view
 };
 
 var tabButton = {|i|
-	var d = ["🁪","※"];
+	// var d = ["🁪","※","-"];
+	var d = ["device","visual","system"];
 	UserView()
-	.background_( if(i==0,Color.new255(0, 139, 69),Color.black.alpha_(0.8)))
+	.background_( if(i==0,Color.black.lighten(0.25),Color.black))
 	.mouseDownAction_({|but|
-		but.backColor_(Color.new255(0, 139, 69));
 		but.parent.children.do({|ab,i|
 			if(but != ab, {
 				ab.backColor_(Color.black);
 			},{
+				ab.backColor_(Color.black.lighten(0.25));
 				staker.index = i;
 			});
 		},{});
 	})
-	// .mouseUpAction_({|m|m.backColor_(Color.black.alpha_(0.8))})
-	.drawFunc_({|v|Pen.stringAtPoint(d[i], (v.bounds.width-15/2)@25, Font(size:30), Color.white)})
+	.drawFunc_({|v|Pen.stringAtPoint(d[i], (v.bounds.width-45/2)-40@25, Font(size:30), Color.white.darken(0.75))})
 	.animate_(false)
 
-}!2;
+}!3;
 
 var tabs = {|t|
 	View().layout_(HLayout(*tabButton.()).spacing_(2).margins_(0)).maxHeight_(100);
@@ -40,7 +45,7 @@ var tabs = {|t|
 var mainView = VLayout(
 		tabs.(),
 		stack.()
-);
+).spacing_(4).margins_(0);
 
 var shutdown = {
 	s.quit;
@@ -48,7 +53,7 @@ var shutdown = {
 
 var initGUI = {
 	QtGUI.palette = QPalette.dark;
-	w = Window().bounds_(Rect(100,100,1000,700)).layout_(mainView).front.fullScreen;
+	w = Window().bounds_(Rect(100,100,1000,700)).layout_(mainView).front.fullScreen.background_(Color.black.lighten(0.25));
 	w.onClose = {
 		// stopOSCListening.();
 		shutdown.();
@@ -59,10 +64,11 @@ var initGUI = {
 
 s.waitForBoot({
 
-	NetAddr.localAddr.postln;
+	NetAddr.new("127.0.0.1", 57120).sendMsg("/airkit/startOSCListening", 57120);
+
 	initGUI.();
-	~startOSCListening.();
-	
+
+
 });
 
 

@@ -1,35 +1,22 @@
 var renderRate = 30;
-var spacing = 2;
+var spacing = 4;
 var contentView;
-
+var visual = Require("visuals.scd");
+var addTitleView = Require("titleView.scd");
 
 var devices = {
+	var osc = OSCFunc({ |msg, time, addr, recvPort|
+		var d = ~devices.at(msg[1].asInteger);
+		if(d != nil,{
+			{addDeviceView.(d)}.defer;
+		});
+	},'/airkit/addDevice', NetAddr("127.0.0.1", NetAddr.langPort));
 	contentView = View()
-		.layout_(GridLayout.new().hSpacing_(spacing).vSpacing_(spacing).margins_([spacing,spacing,spacing,spacing]))
-		.mouseDownAction_({false});
+		.onClose_({osc.free})
+		.layout_(GridLayout.new().hSpacing_(spacing).vSpacing_(spacing).margins_([spacing,spacing,spacing,spacing]));
+		// .mouseDownAction_({false});
 	contentView
 };
-
-
-var titleView = { |data|
-	var view = VLayout(
-		StaticText()
-			.stringColor_(data.color)
-			.font_(Font(size:32))
-			.minWidth_(100)
-			.maxHeight_(70)
-			.string_(data.name),
-		// StaticText()
-		// 	.stringColor_(data.color.alpha_(0.5))
-		// 	.font_(Font(size:12))
-		// 	.minWidth_(100)
-		// 	.maxHeight_(35)
-		// 	.string_("IP:" ++ data.ip + "Port:" ++ data.port.asString)
-	);
-	view
-};
-
-
 
 var threeDeeView = { |data|
 	var graph1;
@@ -39,12 +26,12 @@ var threeDeeView = { |data|
 	graph1 = Canvas3D()
 		.mouseDownAction_({false})
 		.scale_(80)
-		.background_(Color.clear)
+		.background_(Color.black)
 		.perspective_(0)
 		.transforms_([Canvas3D.mRotateZ(0),Canvas3D.mTranslate(0,0,0)])
 		.distance_(3.5);
 	graph1.add(cube = Canvas3DItem.cube()
-		.color_(data.color.alpha_(1))
+		.color_(data.color.alpha_(1.0))
 		.width_(2)
 		.transform(Canvas3D.mScale(0.4,0.5,1))
 	);
@@ -101,51 +88,49 @@ var threeDeeView = { |data|
 		];
 	};
 };
-
-
-var func = {|v|
-	Pen.fillColor = Color.grey(0.0,  0.02);
-	Pen.addRect(Window.screenBounds);
-	Pen.fill;
-
-    Pen.use{
-        10.do{
-            Color.hsv(rrand(0.0, 0.999), rrand(0.2, 0.7), 1, 1).set;
-			Pen.addArc((Window.screenBounds.width.rand)@(Window.screenBounds.height.rand), 5.exprand(150), 2pi.rand, pi);
-            Pen.perform([\stroke, \fill].choose);
-        }
-    }
+var addReloadButton = { |d|
+	var button = Button()
+		.maxWidth_(120)
+		.maxHeight_(120)
+		.font_(Font(size:16))
+		.states_([
+			["</>",d.color.darken(0.5),Color.white.alpha_(0.1)],
+		])
+		.action_({|but|
+			NetAddr.new("127.0.0.1", 57120).sendMsg("/airkit/loadPersonality", d.port, d.personality);
+		});
+		button
 };
 
-var visual = {
-	UserView()
-	.background_(Color.black.alpha_(0.8))
-	.drawFunc_(func)
-	.clearOnRefresh_(false)
-	.animate_(false)
-	.frameRate_(60)
-};
-
-~addDeviceView = {|d,i|
+var addDeviceView = {|d|
 
 	var gl;
+	var tv = addTitleView.(d);
 	var view = View()
 		.background_(Color.black)
 		.layout_(gl = GridLayout.rows(
 			[
-				titleView.(d),
-				threeDeeView.(d),
+				[visual.(d), columns:3]
 			],[
-				[visual.(d), columns:2]
+				addReloadButton.(d),
+				[tv, columns:2]
 			]
 		))
+		// .mouseDownAction_({false})
+		// .mouseUpAction_({false});
+
+		.mouseUpAction_({|but|
+			view.background = Color.black;
+		})
 		.mouseDownAction_({|but|
-			"Device % clicked".format(i).postln;
-			view.background = Color.rand.alpha_(0.3);
+			view.background = Color.white.alpha_(0.1);
+			d.personality = d.personality + 1;
+			NetAddr.new("127.0.0.1", 57120).sendMsg("/airkit/loadPersonality", d.port, d.personality);
 		});
+
 	gl.setMinColumnWidth(1, 100);
 	gl.setColumnStretch(0, 1);
-	contentView.layout.add(view, ((i-1)/2).floor, (i-1)%2);	
+	contentView.layout.add(view, ((d.index-1)/2).floor, (d.index-1)%2);	
 };
 
 devices;

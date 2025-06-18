@@ -67,7 +67,7 @@ SynthDef(\hl, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=440,
 
 	var dur = m.accelMassFiltered.linlin(0,1,0.6,0.3);
 	var start = (d.sensors.gyroEvent.y / 2pi) + 0.5;
-	var amp = m.accelMass.linlin(0,1,0,6);
+	var amp = m.accelMass.linlin(0,1,0,2);
 	var pan = d.sensors.gyroEvent.z.linlin(-1,1,-1,1);
 
 	Pdef(m.ptn).set(\pan, pan);

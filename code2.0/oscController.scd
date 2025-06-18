@@ -1,16 +1,10 @@
-	
+
+
 // var oscMessageTag  = "CombinedDataPacket";
 var oscMessageTag  = "IMUFusedData";
 
 var airstickListeners = [];
 var numAirwareVirtualDevices = 4;
-
-// var defaultPersonalities = [
-//     "bongo1",
-//     "magicWand",
-//     "silence",
-//     "silence",
-// ];
 
 //------------------------------------------------------------
 // Models
@@ -24,7 +18,9 @@ var listenersProto = (
     \airware:nil,
     \battery:nil,
     \inc:nil,
-    \dec:nil
+    \dec:nil,
+    \digiIn:nil
+
 );
 
 
@@ -38,6 +34,7 @@ var sensorsProto = (
     \quatEvent: fourCh,
     \ampValue: 0,
     \rotateEvent: threeCh,
+    \digiInEvent: Array.fill(4,0),
 );
 
 var dataSizeOptions = [100,200,300,400];
@@ -45,8 +42,9 @@ var dataSizeOptions = [100,200,300,400];
 var deviceProto = (
     \name: "default",
     \ip: "127.0.0.1",
+    \index: 0,
+    \personality: 0,
     \port: 57120,
-    \did: "nil",
     \color: Color.red,
     \volts: 0,
     \charge: 0,
@@ -70,6 +68,7 @@ var addOSCDeviceListeners = {|d|
     var na = NetAddr.new(d.ip, d.port);
     var patternBase = "/%/" ++ oscMessageTag;
     var batteryBase = "/%/" ++ "Battery";
+    var digiInBase = "/%/" ++ "DigiIn";
 
     // listen to all the airware that are connected (1 ip/port)
     numAirwareVirtualDevices.do({|i|
@@ -87,6 +86,13 @@ var addOSCDeviceListeners = {|d|
             d.charge = msg[2].asFloat;
         }, batteryBase.format(i+1), address);
 
+        d.listeners.digiIn = OSCFunc({ |msg, time, addr, recvPort|
+        if(~devices.at(addr.port+i) != nil,{
+            // [msg[1].asInteger,msg[2].asInteger].postln;
+            ~devices.at(addr.port+i).sensors.digiInEvent[msg[1].asInteger] = msg[2].asInteger;
+            // devices.at(addr.port+i).sensors.digiInEvent.postln;
+        });
+        }, digiInBase.format(i+1), address);
 
         d.listeners.airware = OSCFunc({ |msg, time, addr, recvPort|
             var sx,sy,sz,qe,q,ss,r, rq, rr, rtr;
@@ -171,51 +177,55 @@ var addOSCDeviceListeners = {|d|
     });
 };
 
-var addDevice = { |ip,port, id|
+
+var addDevice = { |ip,port,index|
 
     var d = Event.new(proto:deviceProto);
-    var configPattern = "/%/Config".format(id);
+    var configPattern = "/%/Config".format(index);
     var configListener = OSCFunc({ |msg2, time2, addr2, recvPort2|
-        d.color = Color.fromArray(msg2.at([15,16,17])++[1]);
-        "CONFIG % %".format(id,d.color).postln;
+        d.color = Color.fromArray(msg2.at([15,16,17])++[1.0]);
+        "CONFIG % %".format(index,d.color).postln;
         {
-            ~addDeviceView.(d, id);
-            ~addDetailView.(d, id);
+            var n = NetAddr.new("127.0.0.1", 57120);
+            n.sendMsg("/airkit/addDevice", port);
         }.defer;
     }, configPattern).oneShot;
 
-    
     // hack in : set name of device that is something from the list for now!
     // d.name = ~loadPersonalityList.(id-1)[id-1];
     // d.name = defaultPersonalities[id-1];
 
     d.ip = ip;
     d.port = port;
-    d.did = id;
+    d.index = index;
 
     d.listeners = Event.new(proto:listenersProto);
     d.sensors =  Event.new(proto:sensorsProto);
 
+    // global storage : port is the key
     ~devices.put(port,d);
-    ~reloadPersonality.(d, 0);
-    
+	NetAddr.new("127.0.0.1", 57120).sendMsg("/airkit/loadPersonality", port, 0);
 
     // ~addDeviceView.(d,id);
 
     addOSCDeviceListeners.(d);
-    NetAddr.new(ip,port-id+1).sendMsg("/Config/GetConfig", 57120);
+
+    NetAddr.new(ip,port-index+1).sendMsg("/Config/GetConfig", 57120);
+    // Use from Airware
+	// NetAddr.new("127.0.0.1", 57120).sendMsg("/airkit/addDevice", port);
 
     d // return the device
 };
+//------------------------------------------------------------
+
 
 
 
 //------------------------------------------------------------
 // 
 //------------------------------------------------------------
-~devices = Dictionary();
 
-~startOSCListening = {
+var startOSCListening = {
 
     var patternBase = "/%/" ++ oscMessageTag;
 
@@ -228,21 +238,26 @@ var addDevice = { |ip,port, id|
             {
                 if(~devices.at(addr.port+i) == nil,{
                     var d = addDevice.(addr.ip,addr.port+i,i+1);
-                    postf("device auto detected : % \n", d.did);
-                    //
-                    // airstickListeners[i].free;
-                    // airstickListeners.removeAt(i);
+                    postf("device auto detected : % \n", d.index);
                 });
             }.defer;
         }, pattern));
     });
 };
 
-~stopOSCListening = {
+var stopOSCListening = {
     airstickListeners.do({|obj|
         postf("free : %\n", obj);
         obj.free;
     });
 };
 
+~devices = Dictionary();
 
+OSCFunc({ |msg, time, addr, recvPort|
+    startOSCListening.();
+},'/airkit/startOSCListening', NetAddr("127.0.0.1", NetAddr.langPort)).oneShot;
+
+OSCFunc({ |msg, time, addr, recvPort|
+    stopOSCListening.();
+},'/airkit/stopOSCListening', NetAddr("127.0.0.1", NetAddr.langPort)).oneShot;

@@ -40,18 +40,33 @@ SynthDef(\thunderSampler, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0,
 
 ~deinit = ~deinit <> {
 
-	buffers.do({|buf|
-		buf.free;
-		s.sync;
-		postf("buffer dealloc [%] \n", buf);
+	if(synth.notNil, {
+		synth.onFree({
+			"all synths on free".postln;
+			buffers.do({|buf|
+				{
+					postf("buffer dealloc [%] \n", buf);
+					buf.free;
+					s.sync;
+				}.fork;
+			});
+		});
+		synth.set(\gate, 0);	
 	});
+	// synth.sendMsg(\gate, 0);
+	// buffers.do({|buf|
+	// 	buf.free;
+	// 	s.sync;
+	// 	postf("buffer dealloc [%] \n", buf);
+	// });
+
 };
 
 //------------------------------------------------------------
 ~next = {|d|
 
 	var move = m.accelMassFiltered.linlin(0,3,0,1);
-	var amp = m.accelMassFiltered.lincurve(0,2.5,0.05,0.1,-2);
+	var amp = m.accelMassFiltered.lincurve(0,2.5,0.05,0.3,-2);
 
 	if(move > 0.05, {
 		if(TempoClock.beats > (lastTime + 0.35),{

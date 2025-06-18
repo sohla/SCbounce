@@ -49,7 +49,7 @@ var m = ~model;
 
 	var dur = 0.3;
 	var rq = m.accelMassFiltered.linexp(0,4,0.1,0.0005);
-	var amp = m.accelMassFiltered.linexp(0,4,0.05,1);
+	var amp = m.accelMassFiltered.linexp(0,4,0.05,2);
 	Pdef(m.ptn).set(\dur, dur);
 	Pdef(m.ptn).set(\rq, rq);
 	Pdef(m.ptn).set(\amp, amp);

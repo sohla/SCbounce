@@ -1,8 +1,11 @@
 
 var m = ~model;
 var frame = 0;
-m.accelMassFilteredAttack = 0.7;
-m.accelMassFilteredDecay = 0.2;
+var synth;
+var lastTime = 0;
+var root = [12,5,8,3] + 31;
+m.accelMassFilteredAttack = 0.99;
+m.accelMassFilteredDecay = 0.99;
 m.rrateMassFilteredAttack = 0.9;
 m.rrateMassFilteredDecay = 0.5;
 
@@ -14,7 +17,18 @@ SynthDef(\template, {
 	Out.ar(out, sig!2 * env * amp * 0.1);
 }).add;
 
-
+SynthDef("woiworung1", {|out,freq = 1000, amp = 0.1, att = 0.02, dec = 0.3, sus = 1, rel = 1, gate = 1, fb = 0.2, ch=1|
+	var snd, env;
+	env = EnvGen.kr(Env.adsr(att, dec, sus, rel), gate: gate, doneAction: 2);
+	snd = SinOsc.ar(freq * [1,1.008],
+		LocalIn.ar(2) * LFNoise1.ar(0.1,2),
+		LFNoise2.ar(ch.lag(0.03),2.7)
+	).tanh * amp.lag(0.1) * freq.linlin(50,800,1,0.007);
+	2.do{
+		snd = AllpassL.ar(snd,0.3,{0.1.rand+0.03}!2,5)
+	};
+	Out.ar(out, snd.tanh * env);
+}).add;
 //------------------------------------------------------------
 ~init = ~init <> {
 	Pdef(m.ptn,
@@ -44,12 +58,15 @@ SynthDef(\template, {
 		);
 	);
 	Pdef(m.ptn).play(quant:0.1);
-	// Pdef(m.ptn).set(\sx,0);
+  	// synth = Synth(\woiworung1, [\freq, 31.midicps, \gate, 1]);
+
 };
 
 //------------------------------------------------------------
 ~deinit = ~deinit <> {
 	Pdef(m.ptn).remove;
+  	synth.set(\gate, 0);
+
 };
 
 //------------------------------------------------------------
@@ -67,13 +84,21 @@ SynthDef(\template, {
 ~next = {|d|
 
 	var dur = m.rrateMassFiltered.linexp(0,0.3,0.35,0.09);
+	var sa = m.accelMassFiltered.lincurve(0,2.5,0,3,-6);
+	var ch = m.accelMassFiltered.lincurve(0,2.5,0,100,-6);
 
 	// var oct = (d.sensors.gyroEvent.x/pi).linlin(-0.5,0.2,7.0,4.0); //up down
 	var oct = (d.sensors.gyroEvent.y/pi).linlin(-0.4,0.4,5.0,7.0); //left right
 
-	var amp = m.accelMassFiltered.lincurve(0,2.5,-18,-6,-8);
+	var amp = m.accelMassFiltered.lincurve(0,2.5,-18,-6,3);
 	var atk = m.accelMassFiltered.lincurve(0,2.5,0.03,0.0001,-3);
 	var rel = m.accelMassFiltered.lincurve(0,4.5,0.000001,5.0,-3);
+
+	if(sa<0.06,{sa=0});
+	if(sa>0.9,{sa=1.0});
+	synth.set(\amp, sa * 0.1);
+	// synth.set(\ch, ch);
+
 
 	Pdef(m.ptn).set(\viewID, d.port);
 	Pdef(m.ptn).set(\duration, rel*2.1);
@@ -85,9 +110,9 @@ SynthDef(\template, {
 	Pdef(m.ptn).set(\octave, oct.round -1);
 	Pdef(m.ptn).set(\amp, amp.dbamp);
 	Pdef(m.ptn).set(\atk, atk);
-	Pdef(m.ptn).set(\rel, rel*0.4);
+	Pdef(m.ptn).set(\rel, dur*dur*20);
 
-	if(m.rrateMassFiltered > 0.045,{
+	if(m.rrateMassFiltered > 0.075,{
 		if( Pdef(m.ptn).isPlaying.not,{
 			Pdef(m.ptn).resume(quant:0.35);
 		});
@@ -96,6 +121,23 @@ SynthDef(\template, {
 			Pdef(m.ptn).pause();
 		});
 	});
+
+
+  	if(m.accelMassFiltered > 0.2, {
+		  if(TempoClock.beats > (lastTime + (dur*4)),{
+      
+        lastTime = TempoClock.beats;
+        if(synth != nil,{
+        if(synth.isPlaying,{
+          synth.set(\gate,0);
+        });
+        });
+        synth = Synth(\woiworung1, [\freq, root[0].midicps, \gate, 1]);
+        NodeWatcher.register(synth);
+        root = root.rotate(-1);
+        // {synth.set(\gate,0)}.defer(0.1);
+      });
+    });
 };
 
 //------------------------------------------------------------
@@ -104,10 +146,10 @@ SynthDef(\template, {
 ~plot = { |d,p|
 
 	// ACCEL
-	// [m.accelMass * 0.1, m.accelMassFiltered.linlin(0,3,0,1)];
+	 [m.accelMass*5, m.accelMassFiltered.linlin(0,1,0,4)];
 	
 	// ROTATE
-	[m.rrateMass, m.rrateMassFiltered.linlin(0,1,0,1)];
+	//[m.rrateMass, m.rrateMassFiltered.linlin(0,1,0,1)];
 
 	// X axis
 	// [d.sensors.gyroEvent.x/pi]; // norm
