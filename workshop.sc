@@ -6,17 +6,28 @@
 // shift + return (evaluate)
 
 "Hello World".postln
+2+3
+4>2
+pi
+4.half
+3.2.round
 
-{ SinOsc.ar(440.0, 0.0, 0.3) }.play
+// the server
+s.boot
+s.quit
+
+// let's boot so we can make sound
+s.boot
+
+// command + d (documentation)
+//type 'SinOsc'
+SinOsc
+//copy the example code '{ SinOsc.ar(200, 0, 0.5) }.play;'
+{ SinOsc.ar(200, 0, 0.5) }.play;
 
 // command + . (stop)
 
-// command + d (documentation)
-
-SinOsc
-
-{ SinOsc.ar(200, 0, 0.5) }.play;
-
+// we made sound!
 
 // -----------------------------------------------------------------
 // Scope + Variables
