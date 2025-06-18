@@ -2,15 +2,15 @@ var m = ~model;
 var synth, synth2;
 m.rrateMassFilteredAttack = 0.3;
 m.rrateMassFilteredDecay = 0.1;
-m.accelMassFilteredAttack = 0.1;
-m.accelMassFilteredDecay = 0.1;
+m.accelMassFilteredAttack = 0.09;
+m.accelMassFilteredDecay = 0.09;
 
 //------------------------------------------------------------
 
 SynthDef(\insects, {
-    |out=0, freq=6000, amp=0.08, pan=0, gate=1,
+    |out=0, freq=6000, amp=0.004, pan=0, gate=1,
     filterFreq=3000, filterQ=0.6,
-    reverbMix=0.6, reverbRoom=0.5, reverbDamp=0.5|
+    reverbMix=0.6, reverbRoom=0.5, reverbDamp=0.5, temp = 1.43|
 
     var sig, env, filtered, reverbed;
 
@@ -19,7 +19,7 @@ SynthDef(\insects, {
   var modulator, mod1, mod2, mod3;
 
 	// repeat time is 0.7s: equates to 1.43 Hz.
-	modulator = LFSaw.ar(1.43, 1, 0.5, 0.5) ;
+	modulator = LFSaw.ar(temp, 1, 0.5, 0.5) ;
 	mod2 = (modulator * 40.6 * 2pi).cos.squared;
 	mod3 = modulator * 3147;
 	mod3 = (mod3 * 2pi).cos + ((mod3 * 2 * 2pi).cos * 0.3);
@@ -33,7 +33,7 @@ SynthDef(\insects, {
 	sig = sig * LFTri.ar(55+ LFNoise2.kr([1,2], 10), 0, MouseX.kr(1,10), 1);
 
     // Envelope
-    env = EnvGen.kr(Env.asr(14, 1, 5.1), gate, doneAction: 2);
+    env = EnvGen.kr(Env.asr(14, 1, 3.1), gate, doneAction: 2);
 
     // Apply bandpass filter
 	filtered = BPF.ar(sig, filterFreq, [0.5,0.4]);
@@ -96,11 +96,15 @@ SynthDef(\syntheticLeaf, {
 //------------------------------------------------------------
 ~next = {|d|
 
-	var a = m.accelMassFiltered.lincurve(0,3,0.02,1.3,-2);
-
+	var a = m.accelMassFiltered.lincurve(0,3,0.02,0.6,-2);
+    var f = (d.sensors.gyroEvent.x / pi).linlin(-1,1,1.13,1.56);
+	var pan = d.sensors.gyroEvent.z.linlin(-1,1,-0.3,0.3);
+    
+    synth.set(\temp, f);
 	if(a<0.0003,{a=0});
 
 	synth2.set(\amp, a);
+	synth2.set(\pan, pan);
 
 };
 

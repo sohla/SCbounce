@@ -21,4 +21,8 @@ Emerging expressive techonlogies
 
 How can real-time adaptive systems balance individual expression needs with collective cohearance in collaborative performance making?
 
+## airkit
+
+sounds need to work together
+same sounds means you loose whats what
 

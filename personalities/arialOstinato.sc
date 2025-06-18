@@ -66,8 +66,8 @@ SynthDef(\warmRichSynth, {
 			\scale, Scale.major,
 			// \octave, Pseq([7,8].stutter(3), inf),
 			// \note, Pseq([-5,0,4,-5,0,4,-5,0,4,-5,0,4,-3,2,6,-3,2,6,-3,2,6,-3,2,6,-3,2,6,-3,2,6]-2, inf),
-			\octave, Pseq([7,8,6].stutter(3), inf),
-			\root,-3,
+			\octave, Pseq([3,5,6,7].stutter(3), inf),
+			\root,Pseq([-3,2,0].stutter(32), inf),
 			\note, Pseq([12,11,7,5,0], inf),
 			\legato, 1,
 			\attackTime, 0.001,
@@ -106,7 +106,7 @@ SynthDef(\warmRichSynth, {
 //------------------------------------------------------------
 ~next = {|d|
 
-	var dur = m.accelMassFiltered.linlin(0,2.5,0.5/3,0.5/6);
+	var dur = m.accelMassFiltered.lincurve(0,2.5,0.5/3,0.5/6,-3);
 	Pdef(m.ptn).set(\dur, dur);
 
 	// var dur = 0.5 - m.accelMassFiltered.squared.linlin(0,3,0,0.43);

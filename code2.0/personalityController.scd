@@ -10,10 +10,10 @@ var personalityDir = "~/Develop/SuperCollider/Projects/SCbounce/personalities/";
 
 
 var defaultLists = [
-    "list_yourDNA25.sc",
-    "list_yourDNA25.sc",
-    "list_yourDNA25.sc",
-    "list_yourDNA25.sc",
+    "list_OL3.sc",
+    "list_OL3.sc",
+    "list_OL3.sc",
+    "list_OL3.sc",
 ];
 
 var com = (
@@ -27,6 +27,14 @@ var com = (
 //------------------------------------------------------------
 // 
 //------------------------------------------------------------
+var loadPersonalityList = {|i|
+    var path = PathName.new(personalityDir++defaultLists[i]);
+    var file = File.new(path.asAbsolutePath,"r");
+    var str = file.readAllString;
+    // var time = File.mtime(path.asAbsolutePath);
+    // time.postln;
+    interpret(str) // returns array of personality files
+};
 
 var interpretPersonality = {|d|
 
@@ -36,6 +44,8 @@ var interpretPersonality = {|d|
 
     // after adding personality to an Environment, add useful functions to be used by anyone
     var env = Environment.make {
+        ~filePath = path.asAbsolutePath;
+        ~fileTime = File.mtime(path.asAbsolutePath);
         ~model = (
             \com: com,
             \name: d.name,
@@ -137,6 +147,11 @@ var createProcRout = {|d|
             d.env.use{
                 if(d.enabled == true,{
                     // process data -> personality model
+                    if(~fileTime != File.mtime(~filePath),{
+                        ~fileTime = File.mtime(~filePath);
+                        "[file saved]".postln;
+                        NetAddr.new("127.0.0.1", 57120).sendMsg("/airkit/loadPersonality", d.port, d.personality);
+                    }); 
                     ~processDeviceData.(d);
                     //post process : make changes to patterns etc.
                     ~next.(d);
@@ -147,13 +162,15 @@ var createProcRout = {|d|
     }
 };
 //------------------------------------------------------------
-// 
+// s
 //------------------------------------------------------------
 
-~reloadPersonality = { |d, index|
+var loadPersonality = { |port, index|
 
-    var plist = ~loadPersonalityList.(d.did-1);
+    var d = ~devices.at(port);
+    var devicePersonalityList = loadPersonalityList.(d.index-1);
 
+    // d.personality = index;
     // stop personality
     d.procRout.stop;
     d.procRout.free;
@@ -165,10 +182,13 @@ var createProcRout = {|d|
             s.sync;
         }.play;
     }});
-    index = index.mod(plist.size-1);
-    d.name = plist[index];
 
+    // change device to new personality
+    index = index.mod(devicePersonalityList.size-1);
+    d.name = devicePersonalityList[index];
     "loading personality: %".format(d.name).postln;
+
+    NetAddr.new("127.0.0.1", 57120).sendMsg("/airkit/personalityName", d.port, d.name);
 
     d.env = interpretPersonality.(d);
     d.env.use{
@@ -182,6 +202,8 @@ var createProcRout = {|d|
     d.procRout = createProcRout.(d);
     d.procRout.reset.play(AppClock);
 
+    ~devices.put(d.port,d);
+
     d
 
 };
@@ -190,9 +212,11 @@ var createProcRout = {|d|
 // 
 //------------------------------------------------------------
 
-~loadPersonalityList = {|i|
-    var path = PathName.new(personalityDir++defaultLists[i]);
-    var file = File.new(path.asAbsolutePath,"r");
-    var str = file.readAllString;
-    interpret(str) // returns array of personality files
-};
+OSCFunc({ |msg, time, addr, recvPort|
+    loadPersonality.(msg[1], msg[2]);
+},'/airkit/loadPersonality', NetAddr("127.0.0.1", NetAddr.langPort));
+
+
+OSCFunc({ |msg, time, addr, recvPort|
+    NetAddr.new("127.0.0.1", 57120).sendMsg("/airkit/personalityName", msg[1], ~devices.at(msg[1]).name);
+},'/airkit/getPersonalityName', NetAddr("127.0.0.1", NetAddr.langPort));

@@ -806,13 +806,13 @@ PRESSURE
 			];
 
 			accelX.transforms = [
-				Canvas3D.mScale((data.sensors.accelEvent.z),0.01,0.01),
+				Canvas3D.mScale((data.sensors.accelEvent.x),0.01,0.01),
 				Canvas3D.mRotateX(tr[0]),
 				Canvas3D.mRotateY(tr[1]),
 				Canvas3D.mRotateZ(tr[2]),
 			];
 			accelZ.transforms = [
-				Canvas3D.mScale(0.01,0.01,(data.sensors.accelEvent.x)),
+				Canvas3D.mScale(0.01,0.01,(data.sensors.accelEvent.z)),
 				Canvas3D.mRotateX(tr[0]),
 				Canvas3D.mRotateY(tr[1]),
 				Canvas3D.mRotateZ(tr[2]),

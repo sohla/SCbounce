@@ -1,34 +1,24 @@
 var renderRate = 30;
-var spacing = 2;
+var spacing = 4;
 var contentView;
+var addTitleView = Require("titleView.scd");
 
 var details = {
+	var osc = OSCFunc({ |msg, time, addr, recvPort|
+		var d = ~devices.at(msg[1].asInteger);
+		if(d != nil,{
+			{addDetailView.(d)}.defer;
+		});
+	},'/airkit/addDevice', NetAddr("127.0.0.1", NetAddr.langPort));
 	contentView = View()
-		.layout_(GridLayout.new().hSpacing_(spacing).vSpacing_(spacing).margins_([spacing,spacing,spacing,spacing]));
+		.onClose_({osc.free})
+		.layout_(GridLayout.new()
+			.hSpacing_(spacing)
+			.vSpacing_(spacing)
+			.margins_([spacing,spacing,spacing,spacing])
+		);
 	contentView
 };
-
-
-var titleView = { |data|
-	var titleText;
-	var view = VLayout(
-		titleText = StaticText()
-			.stringColor_(data.color)
-			.font_(Font(size:64))
-			.minWidth_(100)
-			.maxHeight_(80)
-			.string_(data.name),
-		StaticText()	
-			.stringColor_(data.color.alpha_(0.5))
-			.font_(Font(size:12))
-			.minWidth_(100)
-			.maxHeight_(20)
-			.string_("IP:" ++ data.ip + "Port:" ++ data.port.asString)
-	);
-	[view, titleText]
-};
-
-
 
 var threeDeeView = { |data|
 	var graph1;
@@ -39,12 +29,12 @@ var threeDeeView = { |data|
 		.mouseDownAction_({false})
 		.mouseUpAction_({false})
 		.scale_(220)
-		.background_(Color.clear)
+		.background_(Color.black)
 		.perspective_(0)
 		.transforms_([Canvas3D.mRotateZ(0),Canvas3D.mTranslate(0,0,0)])
 		.distance_(3.5);
 	graph1.add(cube = Canvas3DItem.cube()
-		.color_(data.color.alpha_(1))
+		.color_(data.color.alpha_(1.0))
 		.width_(2)
 		.transform(Canvas3D.mScale(0.4,0.5,1))
 	);
@@ -113,6 +103,8 @@ var plotterView = {|data, parentView|
 	var pd = [];
 	var cols = [Color.yellow,Color.magenta,Color.cyan,Color.red,Color.green,Color.blue];
 	var plotData = { data.env.use{ ~plot.(data)} };
+	var pmin = data.env.use{ ~plotMin.()};
+	var pmax = data.env.use{ ~plotMax.()};
 
 	plotter.setProperties(
 		\gridColorX, Color.grey,
@@ -133,6 +125,11 @@ var plotterView = {|data, parentView|
 			plotter.superpose = true;
 			plotter.setValue(pd, false, true, false);
 			plotter.value = plotter.value.keep(50).flop;
+
+			plotter.minval_(pmin);
+			plotter.maxval_(pmax);
+			// plotter.setProperties(\plotColor, col).refresh;
+
 			}.defer;
 			0.03.yield; //this has a big impact on CPU use
 		}
@@ -144,38 +141,99 @@ var plotterView = {|data, parentView|
 	plotter.interactionView
 };
 
-~addDetailView = {|d,i|
+var addReloadButton = { |d|
+	var button = Button()
+		.maxWidth_(120)
+		.maxHeight_(120)
+		.font_(Font(size:16))
+		.states_([
+			["</>",d.color.darken(0.5),Color.white.alpha_(0.1)],
+		])
+		.action_({|but|
+			NetAddr.new("127.0.0.1", 57120).sendMsg("/airkit/loadPersonality", d.port, d.personality);
+		});
+		button
+};
+
+var addNextButton = { |d|
+	var button = Button()
+		.maxWidth_(120)
+		.maxHeight_(120)
+		.font_(Font(size:64))
+		.states_([
+			["+",d.color.darken(0.5),Color.white.alpha_(0.1)],
+		])
+		.action_({|but|
+			d.personality = d.personality + 1;
+			NetAddr.new("127.0.0.1", 57120).sendMsg("/airkit/loadPersonality", d.port, d.personality);
+		});
+		button
+};
+
+var addPrevButton = { |d|
+	var button = Button()
+		.maxWidth_(120)
+		.maxHeight_(120)
+		.font_(Font(size:64))
+		.states_([
+			["-",d.color.darken(0.5),Color.white.alpha_(0.1)],
+		])
+		.action_({|but|
+			d.personality = d.personality - 1;
+			NetAddr.new("127.0.0.1", 57120).sendMsg("/airkit/loadPersonality", d.port, d.personality);
+		});
+		button
+};
+var addDeviceView = { |d|
+	StaticText()	
+			.stringColor_(d.color.alpha_(0.5))
+			.font_(Font(size:16))
+			.minWidth_(100)
+			.maxHeight_(30)
+			.string_("IP:" ++ d.ip + "Port:" ++ d.port.asString)
+};
+
+var addDetailView = {|d|
 
 	var gl;
-	var index = 0;
-	var titleViews = titleView.(d);
+	var tv = addTitleView.(d);
+
 	var view = View()
 		.background_(Color.black)
 		.layout_(gl = GridLayout.rows(
 			[
-				titleViews[0],
-			],[
-				threeDeeView.(d),
+				[addDeviceView.(d), columns:3]
+			],
+			[				
+				addReloadButton.(d),
+			],
+			[
+				[threeDeeView.(d), columns:3],
+			],
+			[
+				addPrevButton.(d),
+				tv,
+				addNextButton.(d),
 			]
-		))
-		.mouseUpAction_({|but|
-			view.background = Color.black;
-		})
-		.mouseDownAction_({|but|
-			"Device % clicked".format(d.did).postln;
-			view.background = Color.white.alpha_(0.1);
-			index = index + 1;
-			titleViews[1].string = ~reloadPersonality.(d, index).name;
-		});
+		));
+		// .mouseDownAction_({false})
+		// .mouseUpAction_({false});
+
+		// .mouseUpAction_({|but|
+		// 	view.background = Color.black;
+		// })
+		// .mouseDownAction_({|but|
+		// 	view.background = Color.white.alpha_(0.1);
+		// 	d.personality = d.personality + 1;
+		// 	NetAddr.new("127.0.0.1", 57120).sendMsg("/airkit/loadPersonality", d.port, d.personality);
+		// });
 
 	// gl.setMinColumnWidth(1, 100);
 	// gl.setColumnStretch(0, 1);
-	contentView.layout.add(view, ((i-1)/2).floor, (i-1)%2);	
+	contentView.layout.add(view, ((d.index-1)/2).floor, (d.index-1)%2);	
 
-	// gl.add(plotterView.(d,view), 1, 1);
-
+	gl.addSpanning(plotterView.(d,view), 1, 1, 1, 2);
 };
-
 details;
 
 

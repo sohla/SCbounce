@@ -1,6 +1,6 @@
 var m = ~model;
 var bi = 0;
-var dur = 0.2 ;
+var dur = 0.5 ;
 
 ~buffers;
 m.accelMassFilteredAttack = 0.99;
@@ -57,7 +57,7 @@ SynthDef(\drumkit, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 			// \amp, 1,
 			\start, 0,
 			\note, Pseq([40], inf),
-		 \dur, Pseq([1] * dur, inf),
+		 \dur, Pseq([1,1,1,0.5,0.5,1,1,0.5,0.5] * dur, inf),
 		//  \latency, Pwhite(0,0.013),
 		 \pan,Pwhite(-0.1,0.1),
 			\attack, 0.02,
@@ -85,12 +85,12 @@ SynthDef(\drumkit, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 //------------------------------------------------------------
 ~next = {|d|
 
-	var rate = m.accelMassFiltered.linlin(0,2.5,3,0.3);
-	var amp = m.accelMassFiltered.lincurve(0,2.5,-20,-5,-1);
+	var rate = m.accelMassFiltered.linlin(0,2.5,0.5,0.3);
+	var amp = m.accelMassFiltered.lincurve(0,2.5,-20,8,-1);
   	var notes = [7,8,9];
 	var index = (d.sensors.gyroEvent.y/pi).linlin(-0.5,0.5,0.0,notes.size-1); 
 
-	Pdef(m.ptn).set(\amp, amp.dbamp *0.8);
+	Pdef(m.ptn).set(\amp, amp.dbamp *1.0);
 	Pdef(m.ptn).set(\rate, rate);
 
 	bi = notes[index.floor];
