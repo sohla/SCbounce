@@ -407,10 +407,10 @@ PRESSURE
 		devices.put(port,d);
 		reloadPersonality.(d);
 
-		//addDeviceView.(contentView, d);
+	addDeviceView.(contentView, d);
 
 		addOSCDeviceListeners.(d);
-		NetAddr.new(ip,port-id+1).sendMsg("/Config/GetConfig", 57120);
+	// NetAddr.new(ip,port-id+1).sendMsg("/Config/GetConfig", 57120);
 
 		d // return the device
 	};
