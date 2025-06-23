@@ -119,7 +119,7 @@ SynthDef(\versatilePerc, {
 			\envDec,0.3,
 			\envSus, 0.0,
 			\envRel,Pkey(\octave).squared * 0.05,
-   		\amp, 0.35,
+   		\amp, 0.55,
 			\pan, Pxrand([-0.5,0.5], inf),
    		\filtRes, 1,//Pwhite(0.4,0.7),
 			\func, Pfunc({|e| ~onEvent.(e)}),
@@ -174,13 +174,13 @@ SynthDef(\versatilePerc, {
 	var dur = 0.5 * 2.pow(m.accelMassFiltered.lincurve(0,2,0,3,-1).floor).reciprocal;
 	var a = m.accelMassFiltered.lincurve(0,3,0,1,-3);
 	var filtSpeed = m.accelMassFiltered.lincurve(0,2.5,0.1,20,3);
-	var lfoFreq = m.accelMassFiltered.lincurve(0,2.5,0.1,8,-1);
+	var lfoFreq = m.accelMassFiltered.lincurve(0,2.5,0.1,18,-1);
 	var filtFreq = m.accelMassFiltered.lincurve(0,3,3,400,3);//d.sensors.gyroEvent.z.abs.linlin(0.3,0.7,30,200);
 
 	if(a<0.03,{a=0});
 	if(a>0.9,{a=0.9});
 
-	synth.set(\amp, a * 0.2);
+	synth.set(\amp, a * 0.4);
 	synth.set(\filtSpeed, filtSpeed);
 	synth.set(\lfoFreq, lfoFreq);
 

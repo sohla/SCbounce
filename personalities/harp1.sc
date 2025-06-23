@@ -101,7 +101,7 @@ SynthDef(\funBass, {
 				\bufnum, bufnum,
 				\rate,rate,
 				\freq, n.midicps,
-				\amp,amp
+				\amp,amp*2
 			]);
 			synth.server.sendBundle(0.3,[\n_set, synth.nodeID, \gate, 0]);
 
@@ -130,7 +130,7 @@ SynthDef(\funBass, {
 			\duration, 1,
 			\endSize, 10,
 			\startWidth, 2,
-			\rotation,pi.half + Pwhite(-0.02,0.02),
+			\rotation,pi.half + Pwhite(-0.2,0.2),
 			\fill, true,
 			\instrument, \stereoSampler,
 			\dur, Pslide([dur,dur,dur,dur,dur,dur,dur,dur,dur,dur], inf, Pkey(\range), 0, 0),
@@ -171,7 +171,7 @@ SynthDef(\funBass, {
 ~next = {|d|
 
 	var move = m.accelMassFiltered.lincurve(0,3,3,notes.size,2);
-	var amp = m.accelMassFiltered.lincurve(0,2.4,-50,-10,-1);
+	var amp = m.accelMassFiltered.lincurve(0,2.4,-50,-1,-1);
 	var ff = m.rrateMassFiltered.lincurve(0.0,2.0,200,2000,-3); //left right
 	var step = d.sensors.gyroEvent.x.linlin(-0.8,0.8,0,3).floor; //up down
 
@@ -196,7 +196,7 @@ SynthDef(\funBass, {
 		bassSynth.set(\filtFreq, ff);
 	});
 
-	if(m.accelMassFiltered > 0.1,{
+	if(m.accelMassFiltered > 0.07,{
 		if( Pdef(m.ptn).isPlaying.not,{
 			Pdef(m.ptn).resume(quant:dur);
 		});
@@ -206,16 +206,16 @@ SynthDef(\funBass, {
 		});
 	});
 
-	if(m.accelMassFiltered > 3.7, {
+	if(m.accelMassFiltered > 2.1, {
 		if(TempoClock.beats > (lastTime + (dur*4)),{
 			var n = bass[0] + root[0];
    			var event = (
 				type: \customVisualEvent,
 				amp: 0,
 				viewID: d.port,
-				shape: \line,
+				shape: \circle,
 				fill: false,
-				startSize: 100 * amp.dbamp,
+				startSize: 10 * amp.dbamp,
 				endSize: 1500 * amp.dbamp,
 				duration: 4.6,
 				sizeEnv: Env([0,1], [1], [-3]),
