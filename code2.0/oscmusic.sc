@@ -7,9 +7,9 @@
 //fm3 drone
 
 
-	var personalityDir = "~/Develop/SuperCollider/Projects/SCbounce/personalities/";//RPI
+// var personalityDir = "~/Develop/SuperCollider/Projects/SCbounce/personalities/";//RPI
 	// var personalityDir = "~/Develop/SuperCollider/Projects/scbounce/personalities/"; //laptop
-	//var personalityDir = "~/Develop/SuperCollider/oscMusic/personalities/"; //mac mini cabin
+var personalityDir = "~/Develop/SuperCollider/oscMusic/personalities/"; //mac mini cabin
 
 	var defaultPersonality = "silence";
 	var defaultList = "list_yourDNA25.sc";
@@ -20,8 +20,8 @@
 	// var defaultPersonality = "silence";
 	// var defaultList = "list_workshop1.sc";
 
-	// var oscMessageTag  = "CombinedDataPacket";
-	var oscMessageTag  = "IMUFusedData";
+var oscMessageTag  = "CombinedDataPacket";
+// var oscMessageTag  = "IMUFusedData";
 
 	var renderRate = 10;
 
@@ -885,9 +885,9 @@ PRESSURE
 					// bus.getn(7).postln;testing
 
 					devices.at(addr.port+i).sensors.accelEvent = (
-						\x:msg[1].asFloat * 0.1,
+						\x:msg[3].asFloat * 0.1,
 						\y:msg[2].asFloat * 0.1,
-						\z:msg[3].asFloat * 0.1
+						\z:msg[1].asFloat * 0.1
 					);
 
 					devices.at(addr.port+i).sensors.quatEvent = (
@@ -902,12 +902,16 @@ PRESSURE
 					// Calculate others
 					// take quaternion and convert to ueler angles
 					qe = devices.at(addr.port+i).sensors.quatEvent;
-					q = Quaternion.new(qe.w,qe.x,qe.y,qe.z);
-					// q = Quaternion.new(qe.w,qe.x,qe.z,qe.y);
-					// q = Quaternion.new(qe.w,qe.y,qe.z,qe.x);
-					// q = Quaternion.new(qe.w,qe.y,qe.x,qe.z);
-					// q = Quaternion.new(qe.w,qe.z,qe.x,qe.y);
-					// q = Quaternion.new(qe.w,qe.z,qe.y,qe.y);
+				q = Quaternion.new(qe.w,qe.x,qe.y,qe.z);
+
+				// q = Quaternion.new(qe.w,qe.x,qe.z,qe.y);
+				// q = Quaternion.new(qe.w,qe.x,qe.y,qe.z);
+
+				// q = Quaternion.new(qe.w,qe.y,qe.z,qe.x);
+				// q = Quaternion.new(qe.w,qe.y,qe.x,qe.z);
+
+				// q = Quaternion.new(qe.w,qe.z,qe.x,qe.y);
+				// q = Quaternion.new(qe.w,qe.z,qe.y,qe.x);
 					r = q.asEuler;
 					tr = [r[0],r[1],r[2]];
 
