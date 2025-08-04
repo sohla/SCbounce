@@ -230,7 +230,8 @@ var addDetailView = {|d|
 
 	// gl.setMinColumnWidth(1, 100);
 	// gl.setColumnStretch(0, 1);
-	contentView.layout.add(view, ((d.index-1)/2).floor, (d.index-1)%2);	
+	// contentView.layout.add(view, ((d.index-1)/2).floor, (d.index-1)%2);	
+	contentView.layout.add(view, (d.index-1)%2, ((d.index-1)/2).floor);	
 
 	gl.addSpanning(plotterView.(d,view), 1, 1, 1, 2);
 };
