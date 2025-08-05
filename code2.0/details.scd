@@ -144,7 +144,7 @@ var plotterView = {|data, parentView|
 var addReloadButton = { |d|
 	var button = Button()
 		.maxWidth_(120)
-		.maxHeight_(120)
+		.minHeight_(120)
 		.font_(Font(size:16))
 		.states_([
 			["</>",d.color.darken(0.5),Color.white.alpha_(0.1)],
@@ -158,10 +158,10 @@ var addReloadButton = { |d|
 var addNextButton = { |d|
 	var button = Button()
 		.maxWidth_(120)
-		.maxHeight_(120)
+		.minHeight_(120)
 		.font_(Font(size:64))
 		.states_([
-			["+",d.color.darken(0.5),Color.white.alpha_(0.1)],
+			["+",d.color.darken(0.5),Color.white.alpha_(0.75)],
 		])
 		.action_({|but|
 			d.personality = d.personality + 1;
@@ -173,10 +173,10 @@ var addNextButton = { |d|
 var addPrevButton = { |d|
 	var button = Button()
 		.maxWidth_(120)
-		.maxHeight_(120)
+		.minHeight_(120)
 		.font_(Font(size:64))
 		.states_([
-			["-",d.color.darken(0.5),Color.white.alpha_(0.1)],
+			["-",d.color.darken(0.5),Color.white.alpha_(0.75)],
 		])
 		.action_({|but|
 			d.personality = d.personality - 1;

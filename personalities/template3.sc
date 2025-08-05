@@ -2,7 +2,7 @@ var m = ~model;
 var synth;
 var bl = false;
 var frame = 0;
-var bassLines = [[0,10,17,16],[0]];
+var bassLines = [[0,2,4,5,7,9,11,12],[0]];
 var bassLine = bassLines[0];
 var beat = 0.2;
 
@@ -14,7 +14,7 @@ SynthDef(\simple, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=440,
     attack=0.001, decay=0.03, sustain=0.1, release=0.09, gate=1,cutoff=20000, rq=1, rezf=200|
 
 	var env = EnvGen.kr(Env.adsr(attack, decay, sustain, release), gate, doneAction:0);
-	var sig = SinOsc.ar(freq,0,0.5);
+	var sig = SinOsc.ar(freq,0,0.5)!2;
     Out.ar(out, sig * env * amp);
 }).add;
 
@@ -86,7 +86,7 @@ SynthDef(\versatilePerc, {
       \dur, beat,
       \octave, 4,
       \dist, 10,
-      \amp,0.1,
+      \amp,0.5,
       // \filtFreq, 100,
       \filtRes, 0.1,
       \tension, 0.1,
@@ -97,10 +97,10 @@ SynthDef(\versatilePerc, {
 			\sx, Pseq([0,600,600,0] + 350, inf),
 			\sy, Pseq([0,0,500,500] + 60, inf),
 			\ex, Pseq([size,size*3,size*3,size] + 500, inf),
-			\ey, Pseq([size,size,size*3,size*3] + 200, inf),
+			\ey, Pseq([size,size,size*3,size*3] + 600, inf),
 			\endSize, 1,
       \duration, 2.0,
-			\fill, false,
+			\fill, true,
       \startWidth, 3,
       
 
@@ -191,7 +191,7 @@ SynthDef(\versatilePerc, {
       amp: 0,
       viewID: d.port,
       shape: shapes[ni % shapes.size],
-      fill: false,
+      fill: true,
       rotate: filtFreq.linlin(20,5040,0.0,pi),
       startSize: filtFreq.linlin(20,5040,200,300),
       endSize: filtFreq.linlin(20,5040,10,20),
@@ -199,9 +199,9 @@ SynthDef(\versatilePerc, {
       startColor: Color.new255(amp.lincurve(0.001,0.06,100,255,-3), 255, 0, amp.lincurve(0.001,0.06,100,255,-3)),//colors[ni],
       endColor: Color.new255(225, 5, 250,200),//colors[ni].lighten(0.1),
       startWidth: 3,
-      sx: 630,
+      sx: 330,
       sy: 340,
-      ex: 630,
+      ex: 330,
       ey: 340,
       rotation: (amp - 0.17.half.half) * pi,
       modulation: (

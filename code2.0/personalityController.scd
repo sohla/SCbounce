@@ -10,10 +10,10 @@ var personalityDir = "~/Develop/SuperCollider/Projects/SCbounce/personalities/";
 
 
 var defaultLists = [
-    "list_yourDNA25.sc",
-    "list_yourDNA25.sc",
-    "list_yourDNA25.sc",
-    "list_yourDNA25.sc",
+    "list_workshop1.sc",
+    "list_workshop1.sc",
+    "list_workshop1.sc",
+    "list_workshop1.sc",
 ];
 
 var com = (

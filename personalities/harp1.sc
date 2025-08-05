@@ -26,7 +26,7 @@ var noteToMidi = { |noteName|
 		(octave + 1) * 12 + noteIndex;
 };
 
-var folder = PathName("~/Downloads/openLabSamples/harp");
+var folder = PathName("~/Downloads/yourDNASamples/harp");
 var samplesLib = folder.entries.collect({ |path|
 	var note = path.fileNameWithoutExtension.split($_).last;
 	var buffer = Buffer.read(s, path.fullPath, action:{ |buf|
@@ -101,7 +101,7 @@ SynthDef(\funBass, {
 				\bufnum, bufnum,
 				\rate,rate,
 				\freq, n.midicps,
-				\amp,amp*2
+				\amp,amp*1
 			]);
 			synth.server.sendBundle(0.3,[\n_set, synth.nodeID, \gate, 0]);
 
@@ -119,14 +119,14 @@ SynthDef(\funBass, {
 			// ~instrument = \stereoSampler;
 			~type = \customVisualEvent;
 			currentEnvironment.play;
-		// ~bufnum.postln;
+		 ~bufnum.postln;
 	});
 
 	Pdef(m.ptn,
 		Pbind(
 			\type, \customEvent,
-			\shape, \line,
-			\startSize, 300,
+			\shape, \circle,
+			\startSize, 30,
 			\duration, 1,
 			\endSize, 10,
 			\startWidth, 2,
@@ -136,9 +136,9 @@ SynthDef(\funBass, {
 			\dur, Pslide([dur,dur,dur,dur,dur,dur,dur,dur,dur,dur], inf, Pkey(\range), 0, 0),
 			\note, Pslide(notes, inf, Pkey(\range), 0, offset),
 			\sx, 100 + (Pkey(\note) * 20),
-			\sy, 300,
+			\sy, 100,
 			\ex, Pkey(\sx),
-			\ey, 300,
+			\ey, 600,
 			\octave, 5,//Pwhite(5,7),
 			\func, Pfunc({|e| ~onEvent.(e)}),
 		);
@@ -176,8 +176,10 @@ SynthDef(\funBass, {
 	var step = d.sensors.gyroEvent.x.linlin(-0.8,0.8,0,3).floor; //up down
 
 	Pdef(m.ptn).set(\viewID, d.port);
-	Pdef(m.ptn).set(\startColor, Color.hsv((frame/40.0).mod(1.0),0.5,1.0,1.0));
-	Pdef(m.ptn).set(\endColor, Color.hsv((frame/40.0).mod(1.0),0.5,1.0,0.0));
+	// Pdef(m.ptn).set(\startColor, Color.hsv((frame/40.0).mod(1.0),0.5,1.0,1.0));
+	// Pdef(m.ptn).set(\endColor, Color.hsv((frame/40.0).mod(1.0),0.5,1.0,0.0));
+	Pdef(m.ptn).set(\startColor, Color.yellow);
+	Pdef(m.ptn).set(\endColor, Color.red);
 	Pdef(m.ptn).set(\modulation, (
 			type: \normal,
 			freq: 4 ,
@@ -213,15 +215,15 @@ SynthDef(\funBass, {
 				type: \customVisualEvent,
 				amp: 0,
 				viewID: d.port,
-				shape: \circle,
+				shape: \line,
 				fill: false,
 				startSize: 10 * amp.dbamp,
-				endSize: 1500 * amp.dbamp,
-				duration: 4.6,
+				endSize: 150 * amp.dbamp,
+				duration: 2.6,
 				sizeEnv: Env([0,1], [1], [-3]),
 				startColor: Color.new255(255, 55, 200, 90),
 				endColor: Color.new255(255, 255, 0, 0),
-				startWidth:700,
+				startWidth:500,
 				sx: 300,
 				sy: 300,
 				ex: 300,
@@ -236,8 +238,8 @@ SynthDef(\funBass, {
 			);
 
 			lastTime = TempoClock.beats;
-			~playNote.(n-12,0, 3,amp.dbamp * 0.15);
-			bassSynth = Synth(\funBass, [\freq, (n + 24).midicps, \gate,1, \amp, amp.dbamp * 0.08]);
+			~playNote.(n-12,0, 3,amp.dbamp * 0.08);
+			bassSynth = Synth(\funBass, [\freq, (n + 24).midicps, \gate,1, \amp, amp.dbamp * 0.19]);
 			NodeWatcher.register(bassSynth);
 			event.play;
 			bass = bass.rotate(-1);

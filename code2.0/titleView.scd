@@ -1,10 +1,10 @@
 var addTitleView = { |d|
 	var st = StaticText()
-        .stringColor_(d.color.darken(0.75))
+        .stringColor_(d.color)
         .font_(Font(size:48))
 				.background_(Color.white.alpha_(0.1))
         .minWidth_(100)
-        .maxHeight_(80)
+        .minHeight_(120)
 				.align_(\center)
         .string_(d.name);
 

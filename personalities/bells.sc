@@ -138,7 +138,7 @@ SynthDef(\bambooComplex, {
 ~next = {|d|
 
 	var move = m.accelMassFiltered.linlin(0,3,0,1);
-	var att = m.accelMassFiltered.linexp(0,2.5,0.2,0.001);
+	var att = m.accelMassFiltered.lincurve(0,2.5,0.2,0.001,-8);
 	var amp = m.accelMassFiltered.linexp(0,2.5,0.08,1);
 	var noteIndex = m.accelMassFiltered.linlin(0,2,0.0001,notes.size).floor;
 	var space = m.accelMassFiltered.lincurve(0,2.5,0.25,0.02,-2);
@@ -155,7 +155,7 @@ SynthDef(\bambooComplex, {
 				\freq, (30 + notes[noteIndex] + currentRoot).midicps,
 				\gate, 1,
 				\att, att,
-				\amp, 0.1 * amp,
+				\amp, 0.7 * amp,
 				\strikePos, 1.0.rand, // Position of strike (affects resonance)
 				\resonance, 0.2, // Amount of resonant body sound
 				\bambooMoisture, 1.0.rand, // Affects damping and resonance

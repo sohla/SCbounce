@@ -24,7 +24,7 @@ var threeDeeView = { |data|
 	var accelX, accelY, accelZ;
 	
 	graph1 = Canvas3D()
-		.mouseDownAction_({false})
+		// .mouseDownAction_({false})
 		.scale_(80)
 		.background_(Color.black)
 		.perspective_(0)

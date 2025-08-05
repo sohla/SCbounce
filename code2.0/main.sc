@@ -61,7 +61,7 @@ var initGUI = {
 	CmdPeriod.doOnce({w.close});
 };
 
-
+s.volume = -10;
 s.waitForBoot({
 
 	NetAddr.new("127.0.0.1", 57120).sendMsg("/airkit/startOSCListening", 57120);
