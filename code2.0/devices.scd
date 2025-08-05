@@ -101,6 +101,35 @@ var addReloadButton = { |d|
 		});
 		button
 };
+var addNextButton = { |d|
+	var button = Button()
+		.maxWidth_(120)
+		.minHeight_(120)
+		.font_(Font(size:64))
+		.states_([
+			["+",d.color.darken(0.5),Color.white.alpha_(0.75)],
+		])
+		.action_({|but|
+			d.personality = d.personality + 1;
+			NetAddr.new("127.0.0.1", 57120).sendMsg("/airkit/loadPersonality", d.port, d.personality);
+		});
+		button
+};
+
+var addPrevButton = { |d|
+	var button = Button()
+		.maxWidth_(120)
+		.minHeight_(120)
+		.font_(Font(size:64))
+		.states_([
+			["-",d.color.darken(0.5),Color.white.alpha_(0.75)],
+		])
+		.action_({|but|
+			d.personality = d.personality - 1;
+			NetAddr.new("127.0.0.1", 57120).sendMsg("/airkit/loadPersonality", d.port, d.personality);
+		});
+		button
+};
 
 var addDeviceView = {|d|
 
@@ -109,13 +138,23 @@ var addDeviceView = {|d|
 	var view = View()
 		.background_(Color.black)
 		.layout_(gl = GridLayout.rows(
-			[
+			[				
+				addReloadButton.(d),
+				UserView(),
+				addReloadButton.(d),
+			],[
 				[visual.(d), columns:3]
 			],[
-				addReloadButton.(d),
-				[tv, columns:2]
+				addPrevButton.(d),
+				tv,
+				addNextButton.(d),
+				// addReloadButton.(d),
+				// [tv, columns:2]
 			]
 		))
+
+
+
 		// .mouseDownAction_({false})
 		// .mouseUpAction_({false});
 
@@ -128,8 +167,8 @@ var addDeviceView = {|d|
 			NetAddr.new("127.0.0.1", 57120).sendMsg("/airkit/loadPersonality", d.port, d.personality);
 		});
 
-	gl.setMinColumnWidth(1, 100);
-	gl.setColumnStretch(0, 1);
+	// gl.setMinColumnWidth(1, 100);
+	// gl.setColumnStretch(0, 1);
 	// contentView.layout.add(view, ((d.index-1)/2).floor, (d.index-1)%2);	
 	contentView.layout.add(view, (d.index-1)%2, ((d.index-1)/2).floor);	
 };

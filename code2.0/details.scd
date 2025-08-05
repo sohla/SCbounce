@@ -186,11 +186,12 @@ var addPrevButton = { |d|
 };
 var addDeviceView = { |d|
 	StaticText()	
-			.stringColor_(d.color.alpha_(0.5))
+			.stringColor_(d.color)
+			.align_(\center)
 			.font_(Font(size:16))
 			.minWidth_(100)
 			.maxHeight_(30)
-			.string_("IP:" ++ d.ip + "Port:" ++ d.port.asString)
+			.string_("DEVICE:" ++ d.index + "   IP:" ++ d.ip + "   Port:" ++ d.port.asString + "   Battery: " ++ d.charge.asStringPrec(1) ++ "%")
 };
 
 var addDetailView = {|d|
@@ -201,14 +202,14 @@ var addDetailView = {|d|
 	var view = View()
 		.background_(Color.black)
 		.layout_(gl = GridLayout.rows(
-			[
-				[addDeviceView.(d), columns:3]
-			],
 			[				
 				addReloadButton.(d),
 			],
 			[
 				[threeDeeView.(d), columns:3],
+			],
+			[
+				[addDeviceView.(d), columns:3]
 			],
 			[
 				addPrevButton.(d),
@@ -233,7 +234,7 @@ var addDetailView = {|d|
 	// contentView.layout.add(view, ((d.index-1)/2).floor, (d.index-1)%2);	
 	contentView.layout.add(view, (d.index-1)%2, ((d.index-1)/2).floor);	
 
-	gl.addSpanning(plotterView.(d,view), 1, 1, 1, 2);
+	gl.addSpanning(plotterView.(d,view), 0, 1, 1, 2);
 };
 details;
 

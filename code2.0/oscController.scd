@@ -46,8 +46,8 @@ var deviceProto = (
     \personality: 0,
     \port: 57120,
     \color: Color.red,
-    \volts: 0,
-    \charge: 0,
+    \volts: 0.0,
+    \charge: 0.0,
     \enabled: true, // are we running
     \dataSize: dataSizeOptions[0],
     \listeners: Event.new(proto:listenersProto),
