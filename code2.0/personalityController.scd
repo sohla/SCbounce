@@ -145,6 +145,7 @@ var createProcRout = {|d|
     Routine {
         loop{
             d.env.use{
+                // [~fileTime,File.mtime(~filePath)].postln;
                 if(d.enabled == true,{
                     // process data -> personality model
                     if(~fileTime != File.mtime(~filePath),{

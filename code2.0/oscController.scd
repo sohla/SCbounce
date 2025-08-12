@@ -236,6 +236,10 @@ var startOSCListening = {
 
         airstickListeners = airstickListeners.add( OSCFunc({ |msg, time, addr, recvPort|
             {
+                // NetAddr.new("192.168.70.165", 3333).sendMsg(*msg); //connected to pi
+                NetAddr.new("192.168.2.1", 3333).sendMsg(*msg); // Mac Mini connected to SensiLab
+                // NetAddr.new("192.168.70.48", 3333).sendMsg(*msg); // connected to Laptop
+
                 if(~devices.at(addr.port+i) == nil,{
                     var d = addDevice.(addr.ip,addr.port+i,i+1);
                     postf("device auto detected : % \n", d.index);
