@@ -6,8 +6,8 @@ var oscController = Require("oscController.scd");
 var specsView;
 
 var stack = {
-	var devices = Require("devices.scd");
 	var details = Require("details.scd");
+	var devices = Require("devices.scd");
 	var specs = Require("specs.scd");
 	var view = View().layout_(staker =StackLayout(
 		details.(),
@@ -61,7 +61,7 @@ var initGUI = {
 	CmdPeriod.doOnce({w.close});
 };
 
-
+s.volume = -10;
 s.waitForBoot({
 
 	NetAddr.new("127.0.0.1", 57120).sendMsg("/airkit/startOSCListening", 57120);

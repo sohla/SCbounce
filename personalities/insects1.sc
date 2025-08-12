@@ -84,7 +84,7 @@ SynthDef(\syntheticLeaf, {
 }).add;
 
 ~init = ~init <> {
-	synth = Synth(\insects, [\gate, 1, \amp, 0.06]);
+	synth = Synth(\insects, [\gate, 1, \amp, 0.02]);
 	synth2 = Synth(\syntheticLeaf, [\gate, 1]);
 };
 

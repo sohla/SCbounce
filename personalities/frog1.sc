@@ -79,7 +79,7 @@ SynthDef(\blobblob2, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 //------------------------------------------------------------
 ~next = {|d|
 
-	var amp = m.accelMassFiltered.linexp(0,1.5,2,4);
+	var amp = m.accelMassFiltered.linexp(0,1.5,1,3);
 	Pdef(m.ptn).set(\amp, amp);
 
 	if(m.accelMassFiltered > 0.07,{

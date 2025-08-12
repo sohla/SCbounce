@@ -44,6 +44,7 @@ SynthDef(\drumkit, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 		Pbind(
 			\instrument, \drumkit,			
       \type, \customVisualEvent,
+	  \shape, \star,
 			\sx, Pwhite(250,350),
 			\sy, 300,
 			\ex, Pkey(\sx),
@@ -97,7 +98,7 @@ SynthDef(\drumkit, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 
 
 	Pdef(m.ptn).set(\viewID, d.port);
-  Pdef(m.ptn).set(\startSize, 10 + (160 * amp));
+  Pdef(m.ptn).set(\startSize, 40 + (160 * amp));
 
 	Pdef(m.ptn).set(\modulation, (
 			type: \radial,

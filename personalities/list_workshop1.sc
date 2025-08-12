@@ -1,20 +1,19 @@
 (
 	[
 		"silence",
-    "bongo1",
-	"midiOut",
-    "miniMoog",
-    "UD_pitchDynamics2",
-    "magicWand",
-    "drumkit5",
-    "drumkit4",
-    "pluck1",
-    "ROLL_pitchTimbre",//head
-    "SW_pitchDynamics",//always on
-		"rain1",
+		"template3",
+		"harp1",
+		"bongo1",
+		"button1",
+		"pluck1",
+		"pluck2",
+		"metal1",
+		"bells",
+		"miniMoog",
+		"magicWand",
 		"wind1",
-		"thunder",
-		"wingChimes1",
+		"insects1",
+		"silence",
 	]
 )
 

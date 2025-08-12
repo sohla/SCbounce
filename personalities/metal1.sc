@@ -133,7 +133,7 @@ SynthDef(\sheet2, { |out, frq=111, gate=0, amp = 0, pchx=0|
       // \dur, Pseq([0.4,Rest(0.2),0.2] * 0.5, inf),
       \degree, Pseq([0,2,7], inf),
       \root, Pseq([0,3,-2,0,-5,3,5,2].stutter(30), inf),
-      \amp, 0.1,
+      \amp, 0.2,
       \pan, Pwhite(-0.6, 0.6),
       \model, 1,//Prand([0, 1, 2,3,4,5,6], inf),
       \strikePos, Pwhite(0.1, 0.9),
@@ -175,7 +175,7 @@ SynthDef(\sheet2, { |out, frq=111, gate=0, amp = 0, pchx=0|
 	// pchs[i.floor].postln;
 	if(a<0.02,{a=0.0});
 	if(a>0.9,{a=0.3});
-	synth.set(\amp, a * 0.3);
+	synth.set(\amp, a * 0.6);
   
   Pdef(m.ptn).set(\dur, dur);
 	// Pdef(m.ptn).set(\octave, 4 + oct);

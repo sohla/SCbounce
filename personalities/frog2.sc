@@ -67,7 +67,7 @@ SynthDef(\miniMoogModel, { |freq = 440, amp = 0.5, gate = 1, pan = 0,
 				buffers[bi];
 			},
 			\dur, Pseq([0.2,Rest(0.2),0.2,0.2,Rest(0.2),0.1,0.1,0.2]*1.25, inf),
-			\octave, Pseq([1,1].stutter(48), inf),
+			\octave, Pseq([3].stutter(48), inf),
 			\rate, Pseq([0,12,0].midiratio, inf),
 			\legato, Prand([0.35,0.65], inf),
 			\start, Pwhite(0, 0.1),

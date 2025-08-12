@@ -16,7 +16,7 @@ SynthDef(\wingChimes1, {
 		Pbind(
 			\instrument, \wingChimes1,
 			\note, Prand([0,7,11], inf),
-			\octave, Pwhite(3,6),
+			\octave, Pwhite(1,3),
 			\root, Pseq([0,3,-4, -1, 3].stutter(24),inf),
 			// \pulseFreq, Pwhite(3, 7),
 			\numHarms, 10,

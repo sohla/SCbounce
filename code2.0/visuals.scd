@@ -385,6 +385,9 @@ var xxvisuals = {|d|
 
         // Create the UserView and store it in the views dictionary
         var view = UserView()
+            .mouseDownAction_({false})
+	        .mouseUpAction_({false})
+
             .animate_(true)
             // .background_(d.color.alpha_(0.9))
             .frameRate_(60)
