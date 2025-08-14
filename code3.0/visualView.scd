@@ -140,8 +140,7 @@ var addDeviceView = {|d|
 		.layout_(gl = GridLayout.rows(
 			[				
 				addReloadButton.(d),
-				UserView(),
-				addReloadButton.(d),
+				[UserView(), columns:2]
 			],[
 				[renderer.(d), columns:3]
 			],[

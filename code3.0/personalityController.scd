@@ -145,16 +145,15 @@ var createProcRout = {|d|
     Routine {
         loop{
             d.env.use{
-                // [~fileTime,File.mtime(~filePath)].postln;
+                if(~fileTime != File.mtime(~filePath),{
+                    ~fileTime = File.mtime(~filePath);
+                    "[file saved]".postln;
+                    NetAddr.new("127.0.0.1", 57120).sendMsg("/airkit/loadPersonality", d.port, d.personality);
+                }); 
                 if(d.enabled == true,{
-                    // process data -> personality model
-                    if(~fileTime != File.mtime(~filePath),{
-                        ~fileTime = File.mtime(~filePath);
-                        "[file saved]".postln;
-                        NetAddr.new("127.0.0.1", 57120).sendMsg("/airkit/loadPersonality", d.port, d.personality);
-                    }); 
+                    // pre-process data -> personality model
                     ~processDeviceData.(d);
-                    //post process : make changes to patterns etc.
+                    //post process : make changes in personlity file
                     ~next.(d);
                 });
                 (~secs.()).yield;
@@ -190,8 +189,9 @@ var loadPersonality = { |port, index|
     "loading personality: %".format(d.name).postln;
 
     NetAddr.new("127.0.0.1", 57120).sendMsg("/airkit/personalityName", d.port, d.name);
-
+    d.enabled.postln;
     d.env = interpretPersonality.(d);
+    d.enabled.postln;
     d.env.use{
         Routine{
             s.sync;
@@ -212,6 +212,7 @@ var loadPersonality = { |port, index|
 //------------------------------------------------------------
 // 
 //------------------------------------------------------------
+~devices = Dictionary();
 
 OSCFunc({ |msg, time, addr, recvPort|
     loadPersonality.(msg[1], msg[2]);

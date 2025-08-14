@@ -8,7 +8,8 @@ var addTitleView = { |d|
 			[d.name,Color.black,Color.white.alpha_(0.1)],
 		])
 		.action_({|but|
-			d.enabled = but.value;
+			d.enabled = but.value.asBoolean.not;
+			d.enabled.postln;
 		});
 
 	OSCFunc({ |msg, time, addr, recvPort|
@@ -17,7 +18,7 @@ var addTitleView = { |d|
 				[msg[2].asString, Color.black, Color.white.alpha_(0.8)],
 				[msg[2].asString, Color.black,Color.white.alpha_(0.1)],
 			];
-			// FIX button.valueAction = d.enabled;
+			button.valueAction = d.enabled.not;
 			}.defer;
 		});
 	},'/airkit/personalityName', NetAddr("127.0.0.1", NetAddr.langPort));

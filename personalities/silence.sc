@@ -27,6 +27,7 @@ m.accelMassFilteredDecay = 0.99;
 	// [d.sensors.rrateEvent.x, d.sensors.rrateEvent.y, d.sensors.rrateEvent.z];
 	[d.sensors.accelEvent.x, d.sensors.accelEvent.y, d.sensors.accelEvent.z] * 0.1;
 
+
 };
 
 
