@@ -1,20 +1,22 @@
 var renderRate = 30;
 var spacing = 4;
 var contentView;
-var visual = Require("visuals.scd");
 var addTitleView = Require("titleView.scd");
 
-var devices = {
+var deviceView = {
 	var osc = OSCFunc({ |msg, time, addr, recvPort|
 		var d = ~devices.at(msg[1].asInteger);
 		if(d != nil,{
-			{addDeviceView.(d)}.defer;
+			{addDetailView.(d)}.defer;
 		});
 	},'/airkit/addDevice', NetAddr("127.0.0.1", NetAddr.langPort));
 	contentView = View()
 		.onClose_({osc.free})
-		.layout_(GridLayout.new().hSpacing_(spacing).vSpacing_(spacing).margins_([spacing,spacing,spacing,spacing]));
-		// .mouseDownAction_({false});
+		.layout_(GridLayout.new()
+			.hSpacing_(spacing)
+			.vSpacing_(spacing)
+			.margins_([spacing,spacing,spacing,spacing])
+		);
 	contentView
 };
 
@@ -24,8 +26,9 @@ var threeDeeView = { |data|
 	var accelX, accelY, accelZ;
 	
 	graph1 = Canvas3D()
-		// .mouseDownAction_({false})
-		.scale_(80)
+		.mouseDownAction_({false})
+		.mouseUpAction_({false})
+		.scale_(220)
 		.background_(Color.black)
 		.perspective_(0)
 		.transforms_([Canvas3D.mRotateZ(0),Canvas3D.mTranslate(0,0,0)])
@@ -38,18 +41,18 @@ var threeDeeView = { |data|
 
 	graph1.add(accelX = Canvas3DItem.regPrism()
 		.color_(Color.yellow(0.9))
-		.width_(2)
-		.fill_(true)
+		.width_(1)
+		// .fill_(true)
 	);
 	graph1.add(accelY = Canvas3DItem.regPrism()
 		.color_(Color.magenta(0.9))
-		.width_(2)
-		.fill_(true)
+		.width_(1)
+		// .fill_(true)
 	);
 	graph1.add(accelZ = Canvas3DItem.regPrism()
 		.color_(Color.cyan(0.9))
-		.width_(2)
-		.fill_(true)
+		.width_(1)
+		// .fill_(true)
 	);
 
 	// animate
@@ -88,10 +91,60 @@ var threeDeeView = { |data|
 		];
 	};
 };
+
+
+var plotterView = {|data, parentView|
+	// var pv = UserView(parentView, parentView.bounds).backColor_(data.color.alpha_(0.5)).animate_(true).frameRate_(12);
+	var plotter = Plotter("plotter", parentView.bounds, parentView)
+		.value_((0..50))
+		.minval_(-1.0)
+		.maxval_(1.0)
+		.refresh;
+	var pd = [];
+	var cols = [Color.yellow,Color.magenta,Color.cyan,Color.red,Color.green,Color.blue];
+	var plotData = { data.env.use{ ~plot.(data)} };
+	var pmin = data.env.use{ ~plotMin.()};
+	var pmax = data.env.use{ ~plotMax.()};
+
+	plotter.setProperties(
+		\gridColorX, Color.grey,
+		\gridColorY, Color.grey,
+		\plotColor, cols,
+		\fontColor, data.color,
+		\backgroundColor, Color.black
+	);
+
+
+	Routine{
+		loop {
+			{
+			// pd = pd.addFirst([sin(Clock.beats),cos(Clock.beats),tan(Clock.beats).wrap2(1.0)]);
+			pd = pd.addFirst(plotData.());
+
+			if(pd.size > 50, {pd.pop()});
+			plotter.superpose = true;
+			plotter.setValue(pd, false, true, false);
+			plotter.value = plotter.value.keep(50).flop;
+
+			plotter.minval_(pmin);
+			plotter.maxval_(pmax);
+			// plotter.setProperties(\plotColor, col).refresh;
+
+			}.defer;
+			0.03.yield; //this has a big impact on CPU use
+		}
+	}.play;
+
+	plotter.interactionView.mouseDownAction_({false});
+	plotter.interactionView.mouseUpAction_({false});
+
+	plotter.interactionView
+};
+
 var addReloadButton = { |d|
 	var button = Button()
 		.maxWidth_(120)
-		.maxHeight_(120)
+		.minHeight_(120)
 		.font_(Font(size:16))
 		.states_([
 			["</>",d.color.darken(0.5),Color.white.alpha_(0.1)],
@@ -101,6 +154,7 @@ var addReloadButton = { |d|
 		});
 		button
 };
+
 var addNextButton = { |d|
 	var button = Button()
 		.maxWidth_(120)
@@ -130,49 +184,58 @@ var addPrevButton = { |d|
 		});
 		button
 };
+var addDeviceView = { |d|
+	StaticText()	
+			.stringColor_(d.color)
+			.align_(\center)
+			.font_(Font(size:16))
+			.minWidth_(100)
+			.maxHeight_(30)
+			.string_("DEVICE:" ++ d.index + "   IP:" ++ d.ip + "   Port:" ++ d.port.asString + "   Battery: " ++ d.charge.asStringPrec(1) ++ "%")
+};
 
-var addDeviceView = {|d|
+var addDetailView = {|d|
 
 	var gl;
 	var tv = addTitleView.(d);
+
 	var view = View()
 		.background_(Color.black)
 		.layout_(gl = GridLayout.rows(
 			[				
 				addReloadButton.(d),
-				UserView(),
-				addReloadButton.(d),
-			],[
-				[visual.(d), columns:3]
-			],[
+			],
+			[
+				[threeDeeView.(d), columns:3],
+			],
+			[
+				[addDeviceView.(d), columns:3]
+			],
+			[
 				addPrevButton.(d),
 				tv,
 				addNextButton.(d),
-				// addReloadButton.(d),
-				// [tv, columns:2]
 			]
-		))
-
-
-
+		));
 		// .mouseDownAction_({false})
 		// .mouseUpAction_({false});
 
-		.mouseUpAction_({|but|
-			view.background = Color.black;
-		})
-		.mouseDownAction_({|but|
-			view.background = Color.white.alpha_(0.1);
-			d.personality = d.personality + 1;
-			NetAddr.new("127.0.0.1", 57120).sendMsg("/airkit/loadPersonality", d.port, d.personality);
-		});
+		// .mouseUpAction_({|but|
+		// 	view.background = Color.black;
+		// })
+		// .mouseDownAction_({|but|
+		// 	view.background = Color.white.alpha_(0.1);
+		// 	d.personality = d.personality + 1;
+		// 	NetAddr.new("127.0.0.1", 57120).sendMsg("/airkit/loadPersonality", d.port, d.personality);
+		// });
 
 	// gl.setMinColumnWidth(1, 100);
 	// gl.setColumnStretch(0, 1);
 	// contentView.layout.add(view, ((d.index-1)/2).floor, (d.index-1)%2);	
 	contentView.layout.add(view, (d.index-1)%2, ((d.index-1)/2).floor);	
-};
 
-devices;
+	gl.addSpanning(plotterView.(d,view), 0, 1, 1, 2);
+};
+deviceView;
 
 

@@ -6,20 +6,19 @@ var oscController = Require("oscController.scd");
 var specsView;
 
 var stack = {
-	var details = Require("details.scd");
-	var devices = Require("devices.scd");
-	var specs = Require("specs.scd");
+	var deviceView = Require("deviceView.scd");
+	var visualView = Require("visualView.scd");
+	var systemView = Require("systemView.scd");
 	var view = View().layout_(staker =StackLayout(
-		details.(),
-		devices.(),
-		specs.()
+		deviceView.(),
+		visualView.(),
+		systemView.()
 	));
 	
 	view
 };
 
 var tabButton = {|i|
-	// var d = ["🁪","※","-"];
 	var d = ["device","visual","system"];
 	UserView()
 	.background_( if(i==0,Color.black.lighten(0.25),Color.black))
@@ -53,9 +52,13 @@ var shutdown = {
 
 var initGUI = {
 	QtGUI.palette = QPalette.dark;
-	w = Window().bounds_(Rect(100,100,1000,700)).layout_(mainView).front.fullScreen.background_(Color.black.lighten(0.25));
+	w = Window()
+		.bounds_(Rect(100,100,1000,700))
+		.layout_(mainView)
+		.front
+		.fullScreen
+		.background_(Color.black.lighten(0.25));
 	w.onClose = {
-		// stopOSCListening.();
 		shutdown.();
 	};
 	CmdPeriod.doOnce({w.close});
@@ -67,7 +70,6 @@ s.waitForBoot({
 	NetAddr.new("127.0.0.1", 57120).sendMsg("/airkit/startOSCListening", 57120);
 
 	initGUI.();
-
 
 });
 
