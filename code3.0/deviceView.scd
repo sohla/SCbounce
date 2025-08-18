@@ -229,13 +229,16 @@ var addDetailView = {|d|
 		// 	NetAddr.new("127.0.0.1", 57120).sendMsg("/airkit/loadPersonality", d.port, d.personality);
 		// });
 
-	// gl.setMinColumnWidth(1, 100);
-	// gl.setColumnStretch(0, 1);
-	// contentView.layout.add(view, ((d.index-1)/2).floor, (d.index-1)%2);	
-	contentView.layout.add(view, (d.index-1)%2, ((d.index-1)/2).floor);	
+
+	// layout rows
+	contentView.layout.add(view, ((d.index-1)/2).floor, (d.index-1)%2);	
+
+	// layout cols
+	// contentView.layout.add(view, (d.index-1)%2, ((d.index-1)/2).floor);	
 
 	gl.addSpanning(plotterView.(d,view), 0, 1, 1, 2);
 };
 deviceView;
+
 
 

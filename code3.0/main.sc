@@ -56,7 +56,7 @@ var initGUI = {
 		.bounds_(Rect(100,100,1000,700))
 		.layout_(mainView)
 		.front
-		.fullScreen
+		// .fullScreen
 		.background_(Color.black.lighten(0.25));
 	w.onClose = {
 		shutdown.();
@@ -75,3 +75,5 @@ s.waitForBoot({
 
 
 )
+
+

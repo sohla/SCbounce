@@ -1,5 +1,5 @@
-var personalityDir = "~/Develop/SuperCollider/Projects/SCbounce/personalities/";//RPI
-// var personalityDir = "~/Develop/SuperCollider/Projects/scbounce/personalities/"; //laptop
+// var personalityDir = "~/Develop/SuperCollider/Projects/SCbounce/personalities/";//RPI
+var personalityDir = "~/Develop/SuperCollider/Projects/scbounce/personalities/"; //laptop
 //var personalityDir = "~/Develop/SuperCollider/oscMusic/personalities/"; //mac mini cabin
 
 // var defaultPersonality = "1. Start";
