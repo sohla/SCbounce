@@ -32,11 +32,11 @@ SynthDef(\stereoSampler1, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, fr
 				\bufnum, buf,
 				\octave, Pxrand([3], inf),
 				// \note, Pxrand([33,35,37], inf),
-				\note, Pxrand([33,38].stutter(4), inf),
+				\note, Pxrand([33,38,45,52].stutter(4), inf),
 				\decay, 0.2,
 				\sustain,0.1,
 				\release,0.2,
-				\rate, 0.midiratio,
+				\rate, 0.125,
 				// \dur, Pseq([0.25], inf),
 				\args, #[],
 			)
@@ -61,7 +61,7 @@ SynthDef(\stereoSampler1, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, fr
 	if(amp < 0.03, {amp = 0});
 
 	Pdef(m.ptn).set(\dur, dur);
-	Pdef(m.ptn).set(\amp, amp * 2);
+	Pdef(m.ptn).set(\amp, amp * 3);
  	Pdef(m.ptn).set(\start, start.linlin(0,1,0,1));
 
 };

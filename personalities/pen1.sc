@@ -52,7 +52,7 @@ SynthDef(\sheet1, { |out, frq=111, gate=0, amp = 0, pchx=0|
   //   a=0;
   // });
 
-	synth.set(\amp, a * 0.5);
+	synth.set(\amp, a * 0.3);
 	synth.set(\pchx,pchs[i.floor]);
 };
 

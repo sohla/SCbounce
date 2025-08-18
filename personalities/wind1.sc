@@ -1,9 +1,9 @@
 var m = ~model;
 var synth;
-m.accelMassFilteredAttack = 0.99;
-m.accelMassFilteredDecay = 0.15;
-m.rrateMassFilteredAttack = 0.9;
-m.rrateMassFilteredDecay = 0.9;
+m.accelMassFilteredAttack = 0.09;
+m.accelMassFilteredDecay = 0.06;
+m.rrateMassFilteredAttack = 0.4;
+m.rrateMassFilteredDecay = 0.4;
 
 //------------------------------------------------------------
 SynthDef(\sheet3, {
@@ -52,7 +52,7 @@ SynthDef(\sheet3, {
 	// if(a<0.03,{a=0});
 	if(a>0.9,{a=0.9});
 	
-	synth.set(\amp, a * 3.3);
+	synth.set(\amp, a * 34.3);
 	synth.set(\my, b);
 	synth.set(\mx, r);
 	synth.set(\filterFreq, e);

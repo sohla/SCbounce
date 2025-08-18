@@ -3,7 +3,7 @@ var spacing = 4;
 var contentView;
 var addTitleView = Require("titleView.scd");
 
-var details = {
+var deviceView = {
 	var osc = OSCFunc({ |msg, time, addr, recvPort|
 		var d = ~devices.at(msg[1].asInteger);
 		if(d != nil,{
@@ -144,7 +144,7 @@ var plotterView = {|data, parentView|
 var addReloadButton = { |d|
 	var button = Button()
 		.maxWidth_(120)
-		.maxHeight_(120)
+		.minHeight_(120)
 		.font_(Font(size:16))
 		.states_([
 			["</>",d.color.darken(0.5),Color.white.alpha_(0.1)],
@@ -158,10 +158,10 @@ var addReloadButton = { |d|
 var addNextButton = { |d|
 	var button = Button()
 		.maxWidth_(120)
-		.maxHeight_(120)
+		.minHeight_(120)
 		.font_(Font(size:64))
 		.states_([
-			["+",d.color.darken(0.5),Color.white.alpha_(0.1)],
+			["+",d.color.darken(0.5),Color.white.alpha_(0.75)],
 		])
 		.action_({|but|
 			d.personality = d.personality + 1;
@@ -173,10 +173,10 @@ var addNextButton = { |d|
 var addPrevButton = { |d|
 	var button = Button()
 		.maxWidth_(120)
-		.maxHeight_(120)
+		.minHeight_(120)
 		.font_(Font(size:64))
 		.states_([
-			["-",d.color.darken(0.5),Color.white.alpha_(0.1)],
+			["-",d.color.darken(0.5),Color.white.alpha_(0.75)],
 		])
 		.action_({|but|
 			d.personality = d.personality - 1;
@@ -186,11 +186,12 @@ var addPrevButton = { |d|
 };
 var addDeviceView = { |d|
 	StaticText()	
-			.stringColor_(d.color.alpha_(0.5))
+			.stringColor_(d.color)
+			.align_(\center)
 			.font_(Font(size:16))
 			.minWidth_(100)
 			.maxHeight_(30)
-			.string_("IP:" ++ d.ip + "Port:" ++ d.port.asString)
+			.string_("DEVICE:" ++ d.index + "   IP:" ++ d.ip + "   Port:" ++ d.port.asString + "   Battery: " ++ d.charge.asStringPrec(1) ++ "%")
 };
 
 var addDetailView = {|d|
@@ -201,14 +202,14 @@ var addDetailView = {|d|
 	var view = View()
 		.background_(Color.black)
 		.layout_(gl = GridLayout.rows(
-			[
-				[addDeviceView.(d), columns:3]
-			],
 			[				
 				addReloadButton.(d),
 			],
 			[
 				[threeDeeView.(d), columns:3],
+			],
+			[
+				[addDeviceView.(d), columns:3]
 			],
 			[
 				addPrevButton.(d),
@@ -230,10 +231,11 @@ var addDetailView = {|d|
 
 	// gl.setMinColumnWidth(1, 100);
 	// gl.setColumnStretch(0, 1);
-	contentView.layout.add(view, ((d.index-1)/2).floor, (d.index-1)%2);	
+	// contentView.layout.add(view, ((d.index-1)/2).floor, (d.index-1)%2);	
+	contentView.layout.add(view, (d.index-1)%2, ((d.index-1)/2).floor);	
 
-	gl.addSpanning(plotterView.(d,view), 1, 1, 1, 2);
+	gl.addSpanning(plotterView.(d,view), 0, 1, 1, 2);
 };
-details;
+deviceView;
 
 

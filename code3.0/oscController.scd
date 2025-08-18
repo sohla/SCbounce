@@ -46,8 +46,8 @@ var deviceProto = (
     \personality: 0,
     \port: 57120,
     \color: Color.red,
-    \volts: 0,
-    \charge: 0,
+    \volts: 0.0,
+    \charge: 0.0,
     \enabled: true, // are we running
     \dataSize: dataSizeOptions[0],
     \listeners: Event.new(proto:listenersProto),
@@ -236,6 +236,10 @@ var startOSCListening = {
 
         airstickListeners = airstickListeners.add( OSCFunc({ |msg, time, addr, recvPort|
             {
+                // NetAddr.new("192.168.70.165", 3333).sendMsg(*msg); //connected to pi
+                NetAddr.new("192.168.2.1", 3333).sendMsg(*msg); // Mac Mini connected to SensiLab
+                // NetAddr.new("192.168.70.48", 3333).sendMsg(*msg); // connected to Laptop
+
                 if(~devices.at(addr.port+i) == nil,{
                     var d = addDevice.(addr.ip,addr.port+i,i+1);
                     postf("device auto detected : % \n", d.index);

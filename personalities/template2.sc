@@ -26,8 +26,8 @@ SynthDef(\template, {
 
 
 			\type, \customVisualEvent,
-			// \shape, Pseq([\circle, \square, \line, \triangle, \star, \hexagon, \cross, \wave, \leaf, \spiral, \blobby], inf),
-			\shape, \line,
+			\shape, Pseq([\circle, \square, \line, \triangle, \star, \hexagon, \cross, \wave, \leaf, \spiral, \blobby], inf),
+			//\shape, \line,
 			\sx, Pwhite(0,600),
 			\sy, 200,
 			\ex, Pkey(\sx),

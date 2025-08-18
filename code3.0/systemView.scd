@@ -21,7 +21,7 @@ var networkReset = Button()
         });
 
 
-var specs = {
+var systemView = {
 	View().layout_(VLayout(
         cpu,
         networkReset,
@@ -33,4 +33,4 @@ s.plotTreeView(0.5, nodeTree);
 ServerMeterView.new(s, nodeTree, 400@0, 2, 2);
 // ServerMeterView.new(s, nodeTree);
 
-specs;
+systemView;
