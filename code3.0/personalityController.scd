@@ -219,6 +219,6 @@ OSCFunc({ |msg, time, addr, recvPort|
 },'/airkit/loadPersonality', NetAddr("127.0.0.1", NetAddr.langPort));
 
 
-OSCFunc({ |msg, time, addr, recvPort|
-    NetAddr.new("127.0.0.1", 57120).sendMsg("/airkit/personalityName", msg[1], ~devices.at(msg[1]).name);
-},'/airkit/getPersonalityName', NetAddr("127.0.0.1", NetAddr.langPort));
+// OSCFunc({ |msg, time, addr, recvPort|
+//     NetAddr.new("127.0.0.1", 57120).sendMsg("/airkit/personalityName", msg[1], ~devices.at(msg[1]).name);
+// },'/airkit/getPersonalityName', NetAddr("127.0.0.1", NetAddr.langPort));
