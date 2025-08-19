@@ -11,7 +11,7 @@ m.accelMassFilteredDecay = 0.38;
 
 //------------------------------------------------------------
 SynthDef(\simple, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=440,
-    attack=0.001, decay=0.03, sustain=0.1, release=2.09, gate=1,cutoff=20000, rq=1, rezf=200|
+    attack=0.001, decay=0.03, sustain=0.1, release=0.59, gate=1,cutoff=20000, rq=1, rezf=200|
 
 	var env = EnvGen.kr(Env.adsr(attack, decay, sustain, release), gate, doneAction: Done.freeSelf);
 	var sig = SinOsc.ar(freq,0,0.5)!2;
@@ -78,10 +78,11 @@ SynthDef(\versatilePerc, {
 	Pdef(m.ptn,
 		Pbind(
 			\instrument, \simple,
+      \latency, 0.07,
 			\scale, Scale.major,
 			\note, Pseq(bassLine + 2, inf),
       \dur, beat,
-      \octave, 4,
+      \octave, 5,
       \dist, 10,
       \amp,0.5,
       // \filtFreq, 100,
@@ -91,21 +92,21 @@ SynthDef(\versatilePerc, {
 
 
 			\type, \customVisualEvent,
-			\sx, Pseq([0,200,200,0] + 150, inf),
-			\sy, Pseq([0,0,150,150] + 100, inf),
-			\ex, Pkey(\sx),
+			\sx, Pn(Pseries(100,140,bassLines[0].size), inf),
+			\sy, Pseq([0] + 150, inf),
+			\ex, 600,
 			\ey, Pkey(\sy),
-      \startSize, 60,
-			\endSize, 50,
-      \duration, 1.0,
-			\fill, Prand([false, true], inf),
+      \startSize, 100,
+			\endSize, 10,
+      \duration, 3.5,
+			\fill, true,
       // \startWidth, 3,
-      \modulation, (
-          type: \radial,
-          freq: 1,
-          amp: 10,
-          harmonics: 1
-      ),
+      // \modulation, (
+      //     type: \radial,
+      //     freq: 4,
+      //     amp: 10,
+      //     harmonics: 1
+      // ),
 
 			\func, Pfunc({|e| ~onEvent.(e)}),
 			\args, #[]
@@ -157,7 +158,7 @@ SynthDef(\versatilePerc, {
   synth.set(\freq, (notes[ni] + 0).midicps);
   synth.set(\filtFreq, filtFreq);
 
-  Pdef(m.ptn).set(\root, notes[ni]-12-23-3);
+  // Pdef(m.ptn).set(\root, notes[ni]-12-23-3);
   Pdef(m.ptn).set(\filtFreq, filtFreq);
   Pdef(m.ptn).set(\decay, dcy);
   Pdef(m.ptn).set(\level, level*1.5);
@@ -165,15 +166,15 @@ SynthDef(\versatilePerc, {
   // Pdef(m.ptn).set(\startSize, 30 + (100 * level));
 
 	Pdef(m.ptn).set(\viewID, d.port);
-	Pdef(m.ptn).set(\startColor, Color.hsv((frame/10.0).mod(1.0),1,1.0, 0.5 + level));
-	Pdef(m.ptn).set(\endColor, Color.hsv((frame/10.0).mod(1.0),1,1.0,0.2));
+	Pdef(m.ptn).set(\startColor, Color.hsv((frame/30.0).mod(1.0),1,1.0, 0.5 + level));
+	Pdef(m.ptn).set(\endColor, Color.hsv((frame/30.0).mod(1.0),1,1.0,0.0));
 	Pdef(m.ptn).set(\rotation, (pi/60) * frame);
-	// Pdef(m.ptn).set(\modulation, (
-	// 		type: \radial,
-	// 		freq: 1,
-	// 		amp: 60 * level,
-	// 		harmonics: 1
-	// ));
+	Pdef(m.ptn).set(\modulation, (
+			type: \radial,
+			freq: 4,
+			amp: 10 * level,
+			harmonics: 1
+	));
 
 
 	if(m.rrateMassFiltered > 0.045,{

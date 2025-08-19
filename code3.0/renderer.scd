@@ -261,7 +261,7 @@ var renderer = { |d|
                     var modPhase = event[\modulation][\phase] ? 0;
                     var modType = event[\modulation][\type] ? \radial;
                     // Scale modulation amplitude by the current size for proportional effects
-                    var modAmp = baseModAmp * (size / event[\startSize]);
+                    var modAmp = baseModAmp * ( 1.0 - event[\sizeEnv].at(normTime));
                     var lfoValue = sin(2pi * modFreq * now + modPhase) * modAmp;
                     var harmonics = event[\modulation][\harmonics] ? 1;
 

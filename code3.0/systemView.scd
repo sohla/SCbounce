@@ -9,38 +9,53 @@ var cpu = UserView()
     ("Synths: "++s.numSynths).drawAtPoint(300@4, Font.default, Color.yellow);
 });
 
+var meterView = View()
+	.minWidth_(140);
+
 var nodeTree = View()
-    .minWidth_(200)
-    .maxHeight_(800);
+	.background_(Color.blue(0.25))
+	.minWidth_(600)
+	.maxHeight_(800);
 
 
 var networkReset = Button()
-        .maxWidth_(120)
-        .maxHeight_(40)
-        .states_([["Network",Color.gray(0.5),Color.gray(0.25)]])
-        .action_({
-                ("sudo systemctl restart NetworkManager").unixCmdGetStdOut();
-        });
+	.maxWidth_(140)
+	.maxHeight_(140)
+	.states_([["Network",Color.gray(0.5),Color.gray(0.25)]])
+	.action_({
+			("sudo systemctl restart NetworkManager").unixCmdGetStdOut();
+	});
 
 var freeAllNodes = Button()
-        .maxWidth_(120)
-        .maxHeight_(40)
-        .states_([["Free All Nodes",Color.gray(0.5),Color.gray(0.25)]])
-        .action_({
-                s.freeAll;
-        });
+	.maxWidth_(140)
+	.maxHeight_(140)
+	.states_([["Free All Nodes",Color.gray(0.5),Color.gray(0.25)]])
+	.action_({
+			s.freeAll;
+	});
 
 
 var systemView = {
 	View().layout_(VLayout(
-                cpu,
-                networkReset,
-                freeAllNodes,
-                nodeTree,
-))
+			cpu,
+
+		GridLayout.columns(
+		[
+		],
+		[
+			networkReset,
+			freeAllNodes,
+			meterView,
+
+		],[
+			[nodeTree, rows:3],
+
+		]
+	))
+	)
 };
 
 s.plotTreeView(0.5, nodeTree);
 
-ServerMeterView.new(s, nodeTree, 700@0, 2, 2);
+ServerMeterView.new(s, meterView, 0@0, 2, 2);
 systemView;

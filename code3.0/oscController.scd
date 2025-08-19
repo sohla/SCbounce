@@ -1,7 +1,7 @@
 
 
-var oscMessageTag  = "CombinedDataPacket";
-// var oscMessageTag  = "IMUFusedData";
+// var oscMessageTag  = "CombinedDataPacket";
+var oscMessageTag  = "IMUFusedData"; // this is coming from AirSticks
 
 var airstickListeners = [];
 var numAirwareVirtualDevices = 4;
@@ -181,6 +181,8 @@ var addOSCDeviceListeners = {|d|
 var addDevice = { |ip,port,index|
 
     var d = Event.new(proto:deviceProto);
+
+    // FIX : need a better way to do this
     var configPattern = "/%/Config".format(index);
     var configListener = OSCFunc({ |msg2, time2, addr2, recvPort2|
         d.color = Color.fromArray(msg2.at([15,16,17])++[1.0]);
@@ -210,7 +212,9 @@ var addDevice = { |ip,port,index|
 
     addOSCDeviceListeners.(d);
 
+    // Use from AirStick 
     // NetAddr.new(ip,port-index+1).sendMsg("/Config/GetConfig", 57120);
+    
     // Use from Airware
 	NetAddr.new("127.0.0.1", 57120).sendMsg("/airkit/addDevice", port);
 

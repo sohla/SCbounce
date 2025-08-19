@@ -119,28 +119,30 @@ SynthDef(\funBass, {
 			// ~instrument = \stereoSampler;
 			~type = \customVisualEvent;
 			currentEnvironment.play;
-		 ~bufnum.postln;
+		 	// ~bufnum.postln;
 	});
 
 	Pdef(m.ptn,
 		Pbind(
 			\type, \customEvent,
-			\shape, \circle,
-			\startSize, 30,
+			\shape, \line,
+			\startSize, 130,
 			\duration, 1,
 			\endSize, 10,
 			\startWidth, 2,
-			\rotation,pi.half + Pwhite(-0.2,0.2),
+			\rotation,pi.half + Pwhite(-0.4,0.4),
 			\fill, true,
 			\instrument, \stereoSampler,
 			\dur, Pslide([dur,dur,dur,dur,dur,dur,dur,dur,dur,dur], inf, Pkey(\range), 0, 0),
 			\note, Pslide(notes, inf, Pkey(\range), 0, offset),
-			\sx, 100 + (Pkey(\note) * 20),
-			\sy, 100,
-			\ex, Pkey(\sx),
-			\ey, 600,
+			\sx, 300,
+			\sy, 400 - (Pkey(\note) * 20),
+			\ex, 300,
+			\ey, Pkey(\sy),
 			\octave, 5,//Pwhite(5,7),
 			\func, Pfunc({|e| ~onEvent.(e)}),
+			\args, #[]
+
 		);
 	);
 	Pdef(m.ptn).play(quant:0.1);
@@ -178,14 +180,14 @@ SynthDef(\funBass, {
 	Pdef(m.ptn).set(\viewID, d.port);
 	// Pdef(m.ptn).set(\startColor, Color.hsv((frame/40.0).mod(1.0),0.5,1.0,1.0));
 	// Pdef(m.ptn).set(\endColor, Color.hsv((frame/40.0).mod(1.0),0.5,1.0,0.0));
-	Pdef(m.ptn).set(\startColor, Color.yellow);
-	Pdef(m.ptn).set(\endColor, Color.red);
-	Pdef(m.ptn).set(\modulation, (
-			type: \normal,
-			freq: 4 ,
-			amp: 3,
-			harmonics: 1
-	));
+	Pdef(m.ptn).set(\startColor, Color.yellow.alpha_(amp.dbamp));
+	Pdef(m.ptn).set(\endColor, Color.red.alpha_(0));
+	// Pdef(m.ptn).set(\modulation, (
+	// 		type: \radial,
+	// 		freq: 4 ,
+	// 		amp: 30,
+	// 		harmonics: 2
+	// ));
 
 	Pdef(m.ptn).set(\range, move.floor);
 	Pdef(m.ptn).set(\amp, amp.dbamp);
@@ -215,24 +217,24 @@ SynthDef(\funBass, {
 				type: \customVisualEvent,
 				amp: 0,
 				viewID: d.port,
-				shape: \line,
+				shape: \circle,
 				fill: false,
-				startSize: 10 * amp.dbamp,
-				endSize: 150 * amp.dbamp,
+				startSize: 40 * amp.dbamp,
+				endSize: 200 * amp.dbamp,
 				duration: 2.6,
 				sizeEnv: Env([0,1], [1], [-3]),
-				startColor: Color.new255(255, 55, 200, 90),
+				startColor: Color.new255(255, 55, 200, 255),
 				endColor: Color.new255(255, 255, 0, 0),
-				startWidth:500,
+				startWidth: 2.rrand(14),
 				sx: 300,
-				sy: 300,
+				sy: 200,
 				ex: 300,
-				ey: 300,
+				ey: 200,
 				rotation: pi/2,
 				modulation: (
-					type: \normal,
-					freq: 5,
-					amp: amp.dbamp.squared * 10,
+					type: \radial,
+					freq: 3.8,
+					amp: amp.dbamp.squared * 20,
 					harmonics: 1
 				),
 			);

@@ -1,5 +1,5 @@
-// var personalityDir = "~/Develop/SuperCollider/Projects/SCbounce/personalities/";//RPI
-var personalityDir = "~/Develop/SuperCollider/Projects/scbounce/personalities/"; //laptop
+var personalityDir = "~/Develop/SuperCollider/Projects/SCbounce/personalities/";//RPI
+// var personalityDir = "~/Develop/SuperCollider/Projects/scbounce/personalities/"; //laptop
 //var personalityDir = "~/Develop/SuperCollider/oscMusic/personalities/"; //mac mini cabin
 
 // var defaultPersonality = "1. Start";
@@ -192,9 +192,8 @@ var loadPersonality = { |port, index|
     "loading personality: %".format(d.name).postln;
 
     NetAddr.new("127.0.0.1", 57120).sendMsg("/airkit/personalityName", d.port, d.name);
-    d.enabled.postln;
     d.env = interpretPersonality.(d);
-    d.enabled.postln;
+    ["TODO",d.enabled].postln;
     d.env.use{
         Routine{
             s.sync;
