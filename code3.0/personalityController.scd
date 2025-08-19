@@ -46,6 +46,7 @@ var interpretPersonality = {|d|
     var env = Environment.make {
         ~filePath = path.asAbsolutePath;
         ~fileTime = File.mtime(path.asAbsolutePath);
+        ~group = Group.new;
         ~model = (
             \com: com,
             \name: d.name,
@@ -179,6 +180,8 @@ var loadPersonality = { |port, index|
         Routine{
             s.sync;
             ~deinit.();
+            s.sync;
+            ~group.free;
             s.sync;
         }.play;
     }});

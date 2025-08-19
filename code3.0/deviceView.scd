@@ -185,6 +185,7 @@ var addPrevButton = { |d|
 		button
 };
 var addDeviceView = { |d|
+//TODO this needs to be a UserView to update the battery value
 	StaticText()	
 			.stringColor_(d.color)
 			.align_(\center)

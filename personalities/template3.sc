@@ -13,7 +13,7 @@ m.accelMassFilteredDecay = 0.38;
 SynthDef(\simple, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=440,
     attack=0.001, decay=0.03, sustain=0.1, release=2.09, gate=1,cutoff=20000, rq=1, rezf=200|
 
-	var env = EnvGen.kr(Env.adsr(attack, decay, sustain, release), gate, doneAction:2);
+	var env = EnvGen.kr(Env.adsr(attack, decay, sustain, release), gate, doneAction: Done.freeSelf);
 	var sig = SinOsc.ar(freq,0,0.5)!2;
     Out.ar(out, sig * env * amp);
 }).add;
@@ -21,7 +21,7 @@ SynthDef(\simple, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=440,
 SynthDef(\simple2, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=440,
     attack=0.001, decay=0.03, sustain=0.1, release=0.09, gate=1,cutoff=20000, rq=1, rezf=200|
 
-	var env = EnvGen.kr(Env.adsr(attack, decay, sustain, release), gate, doneAction:2);
+	var env = EnvGen.kr(Env.adsr(attack, decay, sustain, release), gate, doneAction: Done.freeSelf);
 	var sig = SinOsc.ar(freq,0,0.5);
     Out.ar(out, sig * env * amp);
 }).add;
@@ -31,7 +31,7 @@ SynthDef(\funBass, {
     |out=0, freq = 440, gate = 1, amp = 0.2, filtFreq = 2000, filtRes = 0.5, envAtk = 0.001, envDec = 0.1, envSus = 0.8, envRel = 1.2, rm = 0.5|
     var osc1, osc2, osc3, env, filter, output;
     freq = freq.lag(0.7);
-    env = EnvGen.ar(Env.adsr(envAtk, envDec, envSus, envRel), gate, doneAction: 2);
+    env = EnvGen.ar(Env.adsr(envAtk, envDec, envSus, envRel), gate, doneAction: Done.freeSelf);
     osc1 = LFTri.ar(freq * 4.98, 0,0.3);
     osc2 = LFSaw.ar(freq * 1.99, 0, 1);
     osc3 = SinOsc.ar(freq * 1.01, 0, 1);
@@ -59,10 +59,7 @@ SynthDef(\versatilePerc, {
     click_osc = LPF.ar(WhiteNoise.ar(1), 1500);
 
     // Drum envelope
-    drum_env = EnvGen.ar(
-        Env.perc(attackTime: 0.005, releaseTime: decay, curve: -4),gate,
-        doneAction: 2
-    );
+    drum_env = EnvGen.ar(Env.perc(attackTime: 0.005, releaseTime: decay, curve: -4),gate, doneAction: Done.freeSelf);
 
     // Click envelope
     click_env = EnvGen.ar(
@@ -238,7 +235,7 @@ SynthDef(\versatilePerc, {
 ~plotMin = -1;
 ~plotMax = 1;
 ~plot = { |d,p|
-	[m.rrateMass * 0.1, m.rrateMassFiltered * 0.1];
+	[m.rrateMass * 0.1, m.rrateMassFiltered * 0.1,d.sensors.digiInEvent[0]];
 	// [m.accelMass * 0.3, m.accelMassFiltered * 0.5];
 	// [m.rrateMassFiltered, m.rrateMassThreshold];
 	// [m.rrateMassFiltered, m.rrateMassThreshold, m.accelMassAmp];

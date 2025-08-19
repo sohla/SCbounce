@@ -3,7 +3,7 @@ var synth;
 
 //------------------------------------------------------------
 SynthDef(\pluck1, { |out=0, amp=0, pch=30, frq=30, gate=0 |
-	var env = EnvGen.ar(Env.asr(0.1,1.0,3.3), gate, doneAction:0);
+	var env = EnvGen.ar(Env.asr(0.1,1.0,3.3), gate, doneAction:2);
 	var sig = Impulse.ar(pch.linlin(30,300,1,30));
 	var dly = Decay.ar(sig, 0.01, BrownNoise.ar(0.1));
 	var plk = Pluck.ar(WhiteNoise.ar, sig, frq.reciprocal, frq.reciprocal, 8, 0.9, 0.7);
