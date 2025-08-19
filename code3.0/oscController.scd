@@ -1,8 +1,12 @@
+// NetAddr.new("192.168.70.165", 3333).sendMsg(*msg); //connected to pi
+// NetAddr.new("192.168.2.1", 3333).sendMsg(*msg); // Mac Mini connected to SensiLab (ethernet)
+// NetAddr.new("192.168.70.232", 3333).sendMsg(*msg); // iPhone connected 
+// NetAddr.new("192.168.70.48", 3333).sendMsg(*msg); // connected to Laptop
 
 
 // var oscMessageTag  = "CombinedDataPacket";
 var oscMessageTag  = "IMUFusedData"; // this is coming from AirSticks
-
+var outAddr = NetAddr.new("192.168.70.232", 3333);
 var airstickListeners = [];
 var numAirwareVirtualDevices = 4;
 
@@ -97,6 +101,7 @@ var addOSCDeviceListeners = {|d|
         d.listeners.airware = OSCFunc({ |msg, time, addr, recvPort|
             var sx,sy,sz,qe,q,ss,r, rq, rr, rtr;
             var tr;
+
 
 
             if(~devices.at(addr.port+i) != nil,{
@@ -240,9 +245,7 @@ var startOSCListening = {
 
         airstickListeners = airstickListeners.add( OSCFunc({ |msg, time, addr, recvPort|
             {
-                // NetAddr.new("192.168.70.165", 3333).sendMsg(*msg); //connected to pi
-                NetAddr.new("192.168.2.1", 3333).sendMsg(*msg); // Mac Mini connected to SensiLab
-                // NetAddr.new("192.168.70.48", 3333).sendMsg(*msg); // connected to Laptop
+                // outAddr.sendMsg(*msg); // iPhone connected 
 
                 if(~devices.at(addr.port+i) == nil,{
                     var d = addDevice.(addr.ip,addr.port+i,i+1);
