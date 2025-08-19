@@ -198,7 +198,6 @@ var addDeviceView = { |d|
 var addDetailView = {|d|
 
 	var gl;
-	var tv = addTitleView.(d);
 
 	var view = View()
 		.background_(Color.black)
@@ -214,7 +213,7 @@ var addDetailView = {|d|
 			],
 			[
 				addPrevButton.(d),
-				tv,
+				addTitleView.(d),
 				addNextButton.(d),
 			]
 		));

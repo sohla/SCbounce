@@ -37,10 +37,7 @@ SynthDef(\bongo1, {
     );
 
     // Basic envelope
-    env = EnvGen.kr(
-        Env.perc(0.001, damp ),
-        doneAction: 2
-    );
+    env = EnvGen.kr(Env.perc(0.001, damp ));
 
     // Body filter for overall tone
     sound = BPF.ar(
@@ -56,6 +53,7 @@ SynthDef(\bongo1, {
         [0.01, 0.012, 0.013]
     ).sum * 0.3;
 
+
     // Room reverb
     sound = FreeVerb.ar(
         sound + earlyRefs,
@@ -65,6 +63,7 @@ SynthDef(\bongo1, {
     );
 
     sound = Pan2.ar(sound * env * amp, pan);
+    DetectSilence.ar(sound, doneAction: Done.freeSelf);
     Out.ar(out, sound);
 }).add;
 

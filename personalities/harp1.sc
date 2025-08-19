@@ -153,12 +153,20 @@ SynthDef(\funBass, {
 //------------------------------------------------------------
 ~deinit = ~deinit <> {
 	Pdef(m.ptn).remove;
-	samplesLib.do({|sample|
-		postf("buffer dealloc [%] \n", sample.buffer);
-		sample.buffer.free;
-		s.sync;
+	// hack a delay to ensure the Pdef is removed before the samples are freed
+	fork{
+		1.0.yield;
+		samplesLib.do({|sample|
+			postf("buffer dealloc [%] \n", sample.buffer);
+			sample.buffer.free;
+			s.sync;
+		});
+	};
+	
+	if(bassSynth.isPlaying,{
+		bassSynth.set(\gate,0);
+		"deallocating bass synth".postln;
 	});
-	bassSynth.set(\gate,0);
 };
 
 //------------------------------------------------------------
@@ -243,6 +251,7 @@ SynthDef(\funBass, {
 			~playNote.(n-12,0, 3,amp.dbamp * 0.08);
 			bassSynth = Synth(\funBass, [\freq, (n + 24).midicps, \gate,1, \amp, amp.dbamp * 0.19]);
 			NodeWatcher.register(bassSynth);
+			bassSynth.server.sendBundle(0.3,[\n_set, bassSynth.nodeID, \gate, 0]);
 			event.play;
 			bass = bass.rotate(-1);
 			bassCount = bassCount + 1;

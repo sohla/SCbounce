@@ -65,6 +65,9 @@ var initGUI = {
 };
 
 s.volume = -10;
+s.options.numBuffers = 2048;  // more buffers
+s.options.memSize = 65536;    // more memory
+
 s.waitForBoot({
 
 	NetAddr.new("127.0.0.1", 57120).sendMsg("/airkit/startOSCListening", 57120);
