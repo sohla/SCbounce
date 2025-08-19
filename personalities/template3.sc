@@ -92,13 +92,13 @@ SynthDef(\versatilePerc, {
 
 
 			\type, \customVisualEvent,
-			\sx, Pn(Pseries(100,140,bassLines[0].size), inf),
-			\sy, Pseq([0] + 150, inf),
-			\ex, 600,
-			\ey, Pkey(\sy),
-      \startSize, 100,
+			\sx, Pn(Pseries(60,60,bassLines[0].size), inf),
+			\sy, 300 - Pn(Pseries(0,40,bassLines[0].size), inf),
+			\ex, Pkey(\sx),
+			\ey, Pkey(\sy) + 60,
+      \startSize, 50,
 			\endSize, 10,
-      \duration, 3.5,
+      \duration, 0.5,
 			\fill, true,
       // \startWidth, 3,
       // \modulation, (

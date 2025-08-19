@@ -37,22 +37,18 @@ var freeAllNodes = Button()
 
 var systemView = {
 	View().layout_(VLayout(
-			cpu,
-
+		cpu,
 		GridLayout.columns(
-		[
-		],
-		[
-			networkReset,
-			freeAllNodes,
-			meterView,
+			[
+				networkReset,
+				freeAllNodes,
+				meterView,
 
-		],[
-			[nodeTree, rows:3],
-
-		]
+			],[
+				[nodeTree, rows:3],
+			]
+		)
 	))
-	)
 };
 
 s.plotTreeView(0.5, nodeTree);
