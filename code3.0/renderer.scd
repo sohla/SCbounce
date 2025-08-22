@@ -36,9 +36,11 @@ var renderer = { |d|
                 var points;
                 pos = x @ y;
 
-                // Calculate width, size, color, and other properties
-                width = event[\startWidth].blend(event[\endWidth], event[\widthEnv].at(normTime));
+                // Calculate width, size, color, and other properties 
+                // TODO size norm (smallest of mx/my)
                 size = event[\startSize].blend(event[\endSize], event[\sizeEnv].at(normTime));
+                
+                width = event[\startWidth].blend(event[\endWidth], event[\widthEnv].at(normTime));
                 col = event[\startColor].blend(event[\endColor], event[\colorEnv].at(normTime));
                 // col = col.alpha_(event[\alphaEnv].at(normTime));
 
