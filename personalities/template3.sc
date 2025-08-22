@@ -34,7 +34,7 @@ SynthDef(\funBass, {
     env = EnvGen.ar(Env.adsr(envAtk, envDec, envSus, envRel), gate, doneAction: Done.freeSelf);
     osc1 = LFTri.ar(freq * 4.98, 0,0.3);
     osc2 = LFSaw.ar(freq * 1.99, 0, 1);
-    osc3 = SinOsc.ar(freq * 1.01, 0, 30);
+    osc3 = SinOsc.ar(freq * 1.01, 0, 30).distort;
     output = Mix([osc1, osc2, osc3]) * env * amp;
     filter = RLPF.ar(output, filtFreq.lag(0.7), filtRes);
 		filter = [filter.distort, filter.tanh];
@@ -92,10 +92,10 @@ SynthDef(\versatilePerc, {
 
 
 			\type, \customVisualEvent,
-			\sx, Pn(Pseries(60,60,bassLines[0].size), inf),
-			\sy, 300 - Pn(Pseries(0,40,bassLines[0].size), inf),
+			\sx, Pn(Pseries(-1.0,2/bassLines[0].size,bassLines[0].size), inf),
+			\sy, Pn(Pseries(-1.0,2/bassLines[0].size,bassLines[0].size), inf).neg,
 			\ex, Pkey(\sx),
-			\ey, Pkey(\sy) + 60,
+			\ey, Pkey(\sy),
       \startSize, 50,
 			\endSize, 10,
       \duration, 0.5,
@@ -147,7 +147,7 @@ SynthDef(\versatilePerc, {
   var notes = [0,5,10] + 24;
   var colors = [Color.red, Color.green, Color.blue, Color.yellow, Color.cyan];
   var ni = (d.sensors.gyroEvent.z / pi).lincurve(-0.5,0.5,0,notes.size,1).floor;//cw/ccw
-  var shapes = [\square, \triangle, \circle];
+  var shapes = [\circle, \square, \triangle];
   var bassLine = bassLines[0];
   // var ni = (d.sensors.gyroEvent.y / pi).lincurve(-1.0,1.0,0,notes.size,0).floor;//left/right
   // var ni = (d.sensors.gyroEvent.x / pi).lincurve(-1.0,1.0,notes.size,0,0).floor; //up/down
@@ -192,7 +192,7 @@ SynthDef(\versatilePerc, {
       amp: 0,
       viewID: d.port,
       shape: shapes[ni % shapes.size],
-      fill: true,
+      fill: false,
       rotate: filtFreq.linlin(20,5040,0.0,pi),
       startSize: filtFreq.linlin(20,5040,200,300),
       endSize: filtFreq.linlin(20,5040,10,20),
@@ -200,10 +200,10 @@ SynthDef(\versatilePerc, {
       startColor: Color.new255(amp.lincurve(0.001,0.06,100,255,-3), 255, 0, amp.lincurve(0.001,0.06,100,255,-3)),//colors[ni],
       endColor: Color.new255(225, 5, 250,200),//colors[ni].lighten(0.1),
       startWidth: 3,
-      sx: 330,
-      sy: 340,
-      ex: 330,
-      ey: 340,
+      sx: 0,
+      sy: 0,
+      ex: 0,
+      ey: 0,
       rotation: (amp - 0.17.half.half) * pi,
       modulation: (
         type: \normal,
