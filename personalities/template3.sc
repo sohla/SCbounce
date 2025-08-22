@@ -28,17 +28,17 @@ SynthDef(\simple2, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=440,
 
 
 SynthDef(\funBass, {
-    |out=0, freq = 440, gate = 1, amp = 0.2, filtFreq = 2000, filtRes = 0.5, envAtk = 0.001, envDec = 0.1, envSus = 0.8, envRel = 1.2, rm = 0.5|
+    |out=0, freq = 440, gate = 1, amp = 0.2, filtFreq = 10000, filtRes = 0.9, envAtk = 0.001, envDec = 0.1, envSus = 0.8, envRel = 1.2, rm = 0.5|
     var osc1, osc2, osc3, env, filter, output;
     freq = freq.lag(0.7);
     env = EnvGen.ar(Env.adsr(envAtk, envDec, envSus, envRel), gate, doneAction: Done.freeSelf);
     osc1 = LFTri.ar(freq * 4.98, 0,0.3);
     osc2 = LFSaw.ar(freq * 1.99, 0, 1);
-    osc3 = SinOsc.ar(freq * 1.01, 0, 1);
+    osc3 = SinOsc.ar(freq * 1.01, 0, 30);
     output = Mix([osc1, osc2, osc3]) * env * amp;
     filter = RLPF.ar(output, filtFreq.lag(0.7), filtRes);
-		// filter = [filter.distort, filter.tanh];
-    filter = DelayC.ar(filter, 0.09, [0.03,0.09], 1, filter);
+		filter = [filter.distort, filter.tanh];
+    // filter = DelayC.ar(filter, 0.09, [0.03,0.09], 1, filter);
     Out.ar(out, filter.softclip);
 }).add;
 
@@ -154,9 +154,6 @@ SynthDef(\versatilePerc, {
 
 	// if(amp < 0.04, {amp = 0});
 
-  synth.set(\amp, amp*0.4);
-  synth.set(\freq, (notes[ni] + 0).midicps);
-  synth.set(\filtFreq, filtFreq);
 
   // Pdef(m.ptn).set(\root, notes[ni]-12-23-3);
   Pdef(m.ptn).set(\filtFreq, filtFreq);
@@ -220,14 +217,15 @@ SynthDef(\versatilePerc, {
     if(bl == false, {
       bl = true;
       // synth.set(\gate, 1);
-      		synth = Synth(\funBass);
-
-      // synth.postln;
+      	synth = Synth(\funBass, [\amp, 0.1]);
+        synth.set(\freq, 26.midicps);
     });
 
   }, {
+    if(bl == true,{
+      synth.set(\gate, 0);
+    });
     bl = false;
-    synth.set(\gate, 0);
   });
 
     
@@ -236,7 +234,7 @@ SynthDef(\versatilePerc, {
 ~plotMin = -1;
 ~plotMax = 1;
 ~plot = { |d,p|
-	[m.rrateMass * 0.1, m.rrateMassFiltered * 0.1,d.sensors.digiInEvent[0]];
+	[m.rrateMass * 0.1, m.rrateMassFiltered ,d.sensors.digiInEvent[0]];
 	// [m.accelMass * 0.3, m.accelMassFiltered * 0.5];
 	// [m.rrateMassFiltered, m.rrateMassThreshold];
 	// [m.rrateMassFiltered, m.rrateMassThreshold, m.accelMassAmp];

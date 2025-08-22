@@ -235,9 +235,9 @@ SynthDef(\funBass, {
 				endColor: Color.new255(255, 255, 0, 0),
 				startWidth: 2.rrand(14),
 				sx: 300,
-				sy: 200,
+				sy: 250,
 				ex: 300,
-				ey: 200,
+				ey: 250,
 				rotation: pi/2,
 				modulation: (
 					type: \radial,

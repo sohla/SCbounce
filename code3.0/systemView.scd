@@ -51,11 +51,11 @@ var systemView = {
 			[
 				networkReset,
 				freeAllNodes,
+				restartButton,
 				meterView,
-				restartButton
 
 			],[
-				[nodeTree, rows:3],
+				[nodeTree, rows:4],
 			]
 		)
 	))
