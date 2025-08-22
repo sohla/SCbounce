@@ -17,6 +17,15 @@ var nodeTree = View()
 	.minWidth_(600)
 	.maxHeight_(800);
 
+var restartButton = Button()
+		.maxWidth_(140)
+		.maxHeight_(140)
+		.states_([["QUIT",Color.gray(0.5),Color.gray(0.25)]])
+		.action_({
+				s.quit({
+					0.exit;
+				});
+		});
 
 var networkReset = Button()
 	.maxWidth_(140)
@@ -43,6 +52,7 @@ var systemView = {
 				networkReset,
 				freeAllNodes,
 				meterView,
+				restartButton
 
 			],[
 				[nodeTree, rows:3],

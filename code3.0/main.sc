@@ -71,6 +71,7 @@ s.options.memSize = 65536;    // more memory
 
 s.waitForBoot({
 
+	["local port:", NetAddr.localAddr.port].postln;
 	NetAddr.new("127.0.0.1", 57120).sendMsg("/airkit/startOSCListening", 57120);
 
 	initGUI.();
