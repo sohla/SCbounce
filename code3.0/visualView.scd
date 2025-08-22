@@ -4,6 +4,8 @@ var contentView;
 var renderer = Require("renderer.scd");
 var addTitleView = Require("titleView.scd");
 var addReloadButton = Require("reloadButton.scd");
+var addPrevButton = Require("prevButton.scd");
+var addNextButton = Require("nextButton.scd");
 
 var visualView = {
 	var osc = OSCFunc({ |msg, time, addr, recvPort|
@@ -88,36 +90,6 @@ var threeDeeView = { |data|
 			Canvas3D.mRotateZ(tr[2]),
 		];
 	};
-};
-
-var addNextButton = { |d|
-	var button = Button()
-		.maxWidth_(120)
-		.minHeight_(120)
-		.font_(Font(size:64))
-		.states_([
-			["+",d.color.darken(0.5),Color.white.alpha_(0.75)],
-		])
-		.action_({|but|
-			d.personality = d.personality + 1;
-			NetAddr.new("127.0.0.1", 57120).sendMsg("/airkit/loadPersonality", d.port, d.personality);
-		});
-		button
-};
-
-var addPrevButton = { |d|
-	var button = Button()
-		.maxWidth_(120)
-		.minHeight_(120)
-		.font_(Font(size:64))
-		.states_([
-			["-",d.color.darken(0.5),Color.white.alpha_(0.75)],
-		])
-		.action_({|but|
-			d.personality = d.personality - 1;
-			NetAddr.new("127.0.0.1", 57120).sendMsg("/airkit/loadPersonality", d.port, d.personality);
-		});
-		button
 };
 
 var addDeviceView = {|d|
