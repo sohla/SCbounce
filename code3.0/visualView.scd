@@ -3,7 +3,6 @@ var spacing = 4;
 var contentView;
 var renderer = Require("renderer.scd");
 var addTitleView = Require("titleView.scd");
-var addReloadButton = Require("reloadButton.scd");
 var addPrevButton = Require("prevButton.scd");
 var addNextButton = Require("nextButton.scd");
 
@@ -29,9 +28,6 @@ var addDeviceView = {|d|
 		.background_(Color.black)
 		.layout_(gl = GridLayout.rows(
 			[				
-				addReloadButton.(d),
-				[UserView(), columns:2]
-			],[
 				[renderer.(d), columns:3]
 			],[
 				addPrevButton.(d),

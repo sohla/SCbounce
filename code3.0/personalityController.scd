@@ -46,7 +46,7 @@ var interpretPersonality = {|d|
     var env = Environment.make {
         ~filePath = path.asAbsolutePath;
         ~fileTime = File.mtime(path.asAbsolutePath);
-        ~group = Group.new;
+        // ~group = Group.new;
         ~model = (
             \com: com,
             \name: d.name,
@@ -181,7 +181,7 @@ var loadPersonality = { |port, index|
             s.sync;
             ~deinit.();
             s.sync;
-            ~group.free;
+            // ~group.free;
             s.sync;
         }.play;
     }});
@@ -210,6 +210,65 @@ var loadPersonality = { |port, index|
     d
 
 };
+//------------------------------------------------------------
+// 
+//------------------------------------------------------------
+
+var unLoadPersonality = { |port, index|
+
+    var d = ~devices.at(port);
+    var devicePersonalityList = loadPersonalityList.(d.index-1);
+
+    // d.personality = index;
+    // stop personality
+    d.procRout.stop;
+    d.procRout.free;
+
+    if(d.env != nil,{ d.env.use{
+        Routine{
+            s.sync;
+            ~deinit.();
+            s.sync;
+            // ~group.free;
+            // s.sync;
+        }.play;
+    }});
+    d
+};
+
+//------------------------------------------------------------
+// 
+//------------------------------------------------------------
+
+var reLoadPersonality = { |port, index|
+
+    var d = ~devices.at(port);
+    // var devicePersonalityList = loadPersonalityList.(d.index-1);
+
+    // change device to new personality
+    // index = index.mod(devicePersonalityList.size-1);
+    // d.name = devicePersonalityList[index];
+    // "loading personality: %".format(d.name).postln;
+
+    // NetAddr.new("127.0.0.1", 57120).sendMsg("/airkit/personalityName", d.port, d.name);
+    d.env = interpretPersonality.(d);
+    // ["TODO",d.enabled].postln;
+    d.env.use{
+        Routine{
+            s.sync;
+            ~init.();
+            s.sync;
+        }.play;
+    };
+
+    d.procRout = createProcRout.(d);
+    d.procRout.reset.play(AppClock);
+
+    ~devices.put(d.port,d);
+
+    d
+
+};
 
 //------------------------------------------------------------
 // 
@@ -220,6 +279,13 @@ OSCFunc({ |msg, time, addr, recvPort|
     loadPersonality.(msg[1], msg[2]);
 },'/airkit/loadPersonality', NetAddr("127.0.0.1", NetAddr.langPort));
 
+OSCFunc({ |msg, time, addr, recvPort|
+    unLoadPersonality.(msg[1], msg[2]);
+},'/airkit/unLoadPersonality', NetAddr("127.0.0.1", NetAddr.langPort));
+
+OSCFunc({ |msg, time, addr, recvPort|
+    reLoadPersonality.(msg[1], msg[2]);
+},'/airkit/reLoadPersonality', NetAddr("127.0.0.1", NetAddr.langPort));
 
 // OSCFunc({ |msg, time, addr, recvPort|
 //     NetAddr.new("127.0.0.1", 57120).sendMsg("/airkit/personalityName", msg[1], ~devices.at(msg[1]).name);

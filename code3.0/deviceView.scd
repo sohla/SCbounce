@@ -29,7 +29,6 @@ var deviceView = {
 
 
 var addDeviceView = { |d|
-//TODO this needs to be a UserView to update the battery value
 	var batteryView = UserView()
 		.animate_(true)
 		.frameRate_(60)
@@ -63,8 +62,8 @@ var addDetailView = {|d|
 	var view = View()
 		.background_(Color.black)
 		.layout_(gl = GridLayout.rows(
-			[				
-				addReloadButton.(d),
+			[
+				View().maxHeight_(140)
 			],
 			[
 				[addThreeDeeView.(d), columns:3],
@@ -90,6 +89,7 @@ var addDetailView = {|d|
 		// 	NetAddr.new("127.0.0.1", 57120).sendMsg("/airkit/loadPersonality", d.port, d.personality);
 		// });
 
+	gl.addSpanning(addPlotterView.(d,view), 0, 0, 1, 3);
 
 	// layout rows
 	contentView.layout.add(view, ((d.index-1)/2).floor, (d.index-1)%2);	
@@ -97,7 +97,6 @@ var addDetailView = {|d|
 	// layout cols
 	// contentView.layout.add(view, (d.index-1)%2, ((d.index-1)/2).floor);	
 
-	gl.addSpanning(addPlotterView.(d,view), 0, 1, 1, 2);
 };
 deviceView;
 
