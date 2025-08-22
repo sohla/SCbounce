@@ -3,6 +3,7 @@ var spacing = 4;
 var contentView;
 var renderer = Require("renderer.scd");
 var addTitleView = Require("titleView.scd");
+var addReloadButton = Require("reloadButton.scd");
 
 var visualView = {
 	var osc = OSCFunc({ |msg, time, addr, recvPort|
@@ -88,19 +89,7 @@ var threeDeeView = { |data|
 		];
 	};
 };
-var addReloadButton = { |d|
-	var button = Button()
-		.maxWidth_(120)
-		.maxHeight_(120)
-		.font_(Font(size:16))
-		.states_([
-			["</>",d.color.darken(0.5),Color.white.alpha_(0.1)],
-		])
-		.action_({|but|
-			NetAddr.new("127.0.0.1", 57120).sendMsg("/airkit/loadPersonality", d.port, d.personality);
-		});
-		button
-};
+
 var addNextButton = { |d|
 	var button = Button()
 		.maxWidth_(120)
