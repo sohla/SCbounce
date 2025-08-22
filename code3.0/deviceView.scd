@@ -145,9 +145,9 @@ var addReloadButton = { |d|
 	var button = Button()
 		.maxWidth_(120)
 		.minHeight_(120)
-		.font_(Font(size:16))
+		.font_(Font(size:24))
 		.states_([
-			["</>",d.color.darken(0.5),Color.white.alpha_(0.1)],
+			["∫",d.color,Color.white.alpha_(0.1)],
 		])
 		.action_({|but|
 			NetAddr.new("127.0.0.1", 57120).sendMsg("/airkit/loadPersonality", d.port, d.personality);
@@ -186,13 +186,30 @@ var addPrevButton = { |d|
 };
 var addDeviceView = { |d|
 //TODO this needs to be a UserView to update the battery value
-	StaticText()	
-			.stringColor_(d.color)
-			.align_(\center)
-			.font_(Font(size:16))
-			.minWidth_(100)
-			.maxHeight_(30)
-			.string_("DEVICE:" ++ d.index + "   IP:" ++ d.ip + "   Port:" ++ d.port.asString + "   Battery: " ++ d.charge.asStringPrec(1) ++ "%")
+	var batteryView = UserView()
+		.animate_(true)
+		.frameRate_(60)
+		.clearOnRefresh_(true)
+		.drawFunc_({
+				Pen.stringAtPoint("Battery: " ++ d.charge.asInteger ++ "%", Rect(0,0,50,20), Font(size:16), d.color);
+		});
+
+	View()
+		.maxHeight_(30)
+		.layout_(HLayout(
+			UserView(),
+			StaticText()	
+					.stringColor_(d.color)
+					.align_(\left)
+					.font_(Font(size:16))
+					.maxWidth_(360)
+					.maxHeight_(30)
+					.string_("DEVICE:" ++ d.index + "   IP:" ++ d.ip + "   Port:" ++ d.port.asString),
+
+			batteryView
+
+		));
+
 };
 
 var addDetailView = {|d|
