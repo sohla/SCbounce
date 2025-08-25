@@ -11,6 +11,7 @@ var addTitleView = { |d|
 			// d.enabled = but.value.asBoolean.not;
 			// d.enabled.postln;
 			if(but.value == 0, {
+				//  NetAddr("127.0.0.1", 57120).sendMsg("/airkit/calibrate", d.port);
 				NetAddr.new("127.0.0.1", 57120).sendMsg("/airkit/reLoadPersonality", d.port, d.personality);
 			},{
 				NetAddr.new("127.0.0.1", 57120).sendMsg("/airkit/unLoadPersonality", d.port, d.personality);

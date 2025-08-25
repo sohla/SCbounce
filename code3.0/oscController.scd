@@ -36,6 +36,9 @@ var sensorsProto = (
     \accelEvent: threeCh,
     \accelMass: 1,
     \quatEvent: fourCh,
+    \quatReference: fourCh,
+    \quatCalibrated: fourCh,
+    \isCalibrated: false,
     \ampValue: 0,
     \rotateEvent: threeCh,
     \digiInEvent: Array.fill(4,0),
@@ -63,6 +66,68 @@ var deviceProto = (
     \decPersonality: {};
 
 );
+
+//------------------------------------------------------------
+// Quaternion Functions
+//------------------------------------------------------------
+
+// Create quaternion from w,x,y,z components
+// var quatNew = { |w, x, y, z|
+//     (w: w, x: x, y: y, z: z)
+// };
+
+// Quaternion conjugate (inverse rotation)
+var quatConjugate = { |quat|
+    Quaternion.new(quat.w, quat.x.neg, quat.y.neg, quat.z.neg)
+};
+
+// Calibrate device orientation - stores current quaternion as reference
+var calibrateDevice = { |devicePort|
+    var device = ~devices.at(devicePort);
+    if(device.notNil, {
+        var currentQuat = device.sensors.quatEvent;
+        device.sensors.quatReference = currentQuat.copy;
+        device.sensors.isCalibrated = true;
+        postf("Device % calibrated at orientation: w=% x=% y=% z=%\n", 
+            devicePort, currentQuat.w, currentQuat.x, currentQuat.y, currentQuat.z);
+    }, {
+        postf("Device % not found for calibration\n", devicePort);
+    });
+};
+
+// Convert quaternion to Euler angles - matches SuperCollider's Quaternion.asEuler
+// var quatToEuler = { |quat|
+//     var w = quat.w;
+//     var x = quat.x;
+//     var y = quat.y;
+//     var z = quat.z;
+    
+//     // SuperCollider's Quaternion.asEuler implementation
+//     var test = x*y + z*w;
+//     var roll, pitch, yaw;
+    
+//     if(test > 0.499, { // singularity at north pole
+//         yaw = 2 * atan2(x, w);
+//         pitch = pi / 2;
+//         roll = 0;
+//     }, {
+//         if(test < -0.499, { // singularity at south pole
+//             yaw = -2 * atan2(x, w);
+//             pitch = -pi / 2;
+//             roll = 0;
+//         }, {
+//             var sqx = x * x;
+//             var sqy = y * y;
+//             var sqz = z * z;
+            
+//             yaw = atan2(2*y*w - 2*x*z, 1 - 2*sqy - 2*sqz);
+//             pitch = asin(2*test);
+//             roll = atan2(2*x*w - 2*y*z, 1 - 2*sqx - 2*sqz);
+//         });
+//     });
+    
+//     [roll, pitch, yaw]
+// };
 
 //------------------------------------------------------------
 // 
@@ -127,10 +192,10 @@ var addOSCDeviceListeners = {|d|
                 );
 
                 ~devices.at(addr.port+i).sensors.quatEvent = (
-                    \w:msg[7].asFloat,
                     \x:msg[4].asFloat,
                     \y:msg[5].asFloat,
-                    \z:msg[6].asFloat
+                    \z:msg[6].asFloat,
+                    \w:msg[7].asFloat
                 );
 
 
@@ -138,13 +203,25 @@ var addOSCDeviceListeners = {|d|
                 // Calculate others
                 // take quaternion and convert to ueler angles
                 qe = ~devices.at(addr.port+i).sensors.quatEvent;
-                q = Quaternion.new(qe.w,qe.x,qe.y,qe.z);
-                // q = Quaternion.new(qe.w,qe.x,qe.z,qe.y);
-                // q = Quaternion.new(qe.w,qe.y,qe.z,qe.x);
-                // q = Quaternion.new(qe.w,qe.y,qe.x,qe.z);
-                // q = Quaternion.new(qe.w,qe.z,qe.x,qe.y);
-                // q = Quaternion.new(qe.w,qe.z,qe.y,qe.y);
-                r = q.asEuler;
+                // q = quatNew.value(qe.w,qe.x,qe.y,qe.z);
+                q = Quaternion.new(qe.w,qe.x,qe.z,qe.y);
+                // q = quatNew.value(qe.w,qe.y,qe.z,qe.x);
+                // q = quatNew.value(qe.w,qe.y,qe.x,qe.z);
+                // q = quatNew.value(qe.w,qe.z,qe.x,qe.y);
+                // q = quatNew.value(qe.w,qe.z,qe.y,qe.y);
+
+
+                // Apply calibration if device is calibrated
+                if(~devices.at(addr.port+i).sensors.isCalibrated, {
+                    var qRef = ~devices.at(addr.port+i).sensors.quatReference;
+                    var qRefInv = quatConjugate.value(qRef);
+                    q = qRefInv * q; // Relative rotation from reference
+                    ~devices.at(addr.port+i).sensors.quatCalibrated = Quaternion.new(q.a,q.b,q.c,q.d);
+                    ~devices.at(addr.port+i).sensors.isCalibrated = false;
+                });
+
+
+                r = q.asEuler;//quatToEuler.value(q);
                 tr = [r[0],r[1],r[2]];
 
                 ~devices.at(addr.port+i).sensors.gyroEvent = (
@@ -272,3 +349,9 @@ OSCFunc({ |msg, time, addr, recvPort|
 OSCFunc({ |msg, time, addr, recvPort|
     stopOSCListening.();
 },'/airkit/stopOSCListening', NetAddr("127.0.0.1", NetAddr.langPort)).oneShot;
+
+OSCFunc({ |msg, time, addr, recvPort|
+    var devicePort = msg[1].asInteger;
+    calibrateDevice.value(devicePort);
+},'/airkit/calibrate', NetAddr("127.0.0.1", NetAddr.langPort));
+
