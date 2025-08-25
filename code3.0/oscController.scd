@@ -226,16 +226,12 @@ var addOSCDeviceListeners = {|d|
                     \y:tr[1].asFloat,
                     \z:tr[2].asFloat);
 
-                // TODO : normalize gyro from 0 to pi
-                rx = tr[0].asFloat;
-                ry = tr[1].asFloat * (pi.half + pi.half.half);
-                rz = tr[2].asFloat;
+                // Proper angle wrapping to [0, pi] range
+                rx = tr[0].asFloat.wrap(0, pi);
+                ry = tr[1].asFloat.wrap(0, pi);
+                rz = tr[2].asFloat.wrap(0, pi);
 
-                if(rx <= 0, { rx = pi - (pi + rx)});
-                if(ry <= 0, { ry = pi - (pi + ry)});
-                if(rz <= 0, { rz = pi - (pi + rz)});
-
-                // rx,ry,rz / pi = 0-1 ie. normalized ?? not sure this works
+                // Normalized angles (0-1 range)
                 ~devices.at(addr.port+i).sensors.rotateEvent = (
                     \x:rx/pi,
                     \y:ry/pi,
