@@ -10,7 +10,7 @@ var addThreeDeeView = { |data|
 		.mouseUpAction_({false})
 		.scale_(220)
 		.background_(Color.black)
-		.perspective_(1)
+		.perspective_(0.75)
 		.transforms_([Canvas3D.mRotateZ(0),Canvas3D.mTranslate(0,0,0)])
 		.distance_(3.5);
 	graph1.add(cube = Canvas3DItem.cube()
