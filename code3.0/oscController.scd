@@ -71,11 +71,6 @@ var deviceProto = (
 // Quaternion Functions
 //------------------------------------------------------------
 
-// Create quaternion from w,x,y,z components
-// var quatNew = { |w, x, y, z|
-//     (w: w, x: x, y: y, z: z)
-// };
-
 // Quaternion conjugate (inverse rotation)
 var quatConjugate = { |quat|
     Quaternion.new(quat.w, quat.x.neg, quat.y.neg, quat.z.neg)
@@ -95,39 +90,6 @@ var calibrateDevice = { |devicePort|
     });
 };
 
-// Convert quaternion to Euler angles - matches SuperCollider's Quaternion.asEuler
-// var quatToEuler = { |quat|
-//     var w = quat.w;
-//     var x = quat.x;
-//     var y = quat.y;
-//     var z = quat.z;
-    
-//     // SuperCollider's Quaternion.asEuler implementation
-//     var test = x*y + z*w;
-//     var roll, pitch, yaw;
-    
-//     if(test > 0.499, { // singularity at north pole
-//         yaw = 2 * atan2(x, w);
-//         pitch = pi / 2;
-//         roll = 0;
-//     }, {
-//         if(test < -0.499, { // singularity at south pole
-//             yaw = -2 * atan2(x, w);
-//             pitch = -pi / 2;
-//             roll = 0;
-//         }, {
-//             var sqx = x * x;
-//             var sqy = y * y;
-//             var sqz = z * z;
-            
-//             yaw = atan2(2*y*w - 2*x*z, 1 - 2*sqy - 2*sqz);
-//             pitch = asin(2*test);
-//             roll = atan2(2*x*w - 2*y*z, 1 - 2*sqx - 2*sqz);
-//         });
-//     });
-    
-//     [roll, pitch, yaw]
-// };
 
 //------------------------------------------------------------
 // 
@@ -214,7 +176,7 @@ var addOSCDeviceListeners = {|d|
                 // Apply calibration if device is calibrated
                 if(~devices.at(addr.port+i).sensors.isCalibrated, {
                     var qRef = ~devices.at(addr.port+i).sensors.quatReference;
-                    var qRefInv = quatConjugate.value(qRef);
+                    var qRefInv = quatConjugate.(qRef);
                     q = qRefInv * q; // Relative rotation from reference
                     ~devices.at(addr.port+i).sensors.quatCalibrated = Quaternion.new(q.d,q.a,q.b,q.c);
                     // ~devices.at(addr.port+i).sensors.isCalibrated = false;
@@ -225,9 +187,9 @@ var addOSCDeviceListeners = {|d|
                 tr = [r[0],r[1],r[2]];
 
                 ~devices.at(addr.port+i).sensors.gyroEvent = (
-                    \x:tr[2].asFloat,
-                    \y:tr[0].asFloat,
-                    \z:tr[1].asFloat);
+                    \x:tr[0].asFloat,
+                    \y:tr[1].asFloat,
+                    \z:tr[2].asFloat);
 
                 // normalize gyro from 0 to pi
                 rx = tr[2].asFloat;
