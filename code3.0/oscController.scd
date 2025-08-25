@@ -109,6 +109,15 @@ var quatNorm = { |quat|
     sqrt(quat.w.squared + quat.x.squared + quat.y.squared + quat.z.squared)
 };
 
+// Angular difference function for proper wrap-around handling
+var angleDiff = { |newAngle, oldAngle|
+    var diff = newAngle - oldAngle;
+    // Wrap difference to [-pi, pi] range
+    while { diff > pi } { diff = diff - (2*pi) };
+    while { diff < pi.neg } { diff = diff + (2*pi) };
+    diff
+};
+
 // Convert quaternion to Euler angles (matches your Quaternion.sc asEuler)
 var quatToEuler = { |quat|
     var q = [quat.w, quat.x, quat.y, quat.z];
@@ -155,7 +164,7 @@ var addOSCDeviceListeners = {|d|
         // var pattern = patternBase.format("/60:01:E2:E2:27:48/");
         var prev = fourCh;
         var angVel = threeCh;
-        var rx,ry,rz,ox=0,oy=0,oz=0;
+        var rx,ry,rz,ox=nil,oy=nil,oz=nil;
 
         d.listeners.battery = OSCFunc({ |msg, time, addr, recvPort|
             d.volts = msg[1].asFloat;
@@ -226,22 +235,24 @@ var addOSCDeviceListeners = {|d|
                     \y:tr[1].asFloat,
                     \z:tr[2].asFloat);
 
-                // Proper angle wrapping to [0, pi] range
-                rx = tr[0].asFloat.wrap(0, pi);
-                ry = tr[1].asFloat.wrap(0, pi);
-                rz = tr[2].asFloat.wrap(0, pi);
+                // Get raw Euler angles for rate calculation
+                rx = tr[0].asFloat;
+                ry = tr[1].asFloat;
+                rz = tr[2].asFloat;
 
-                // Normalized angles (0-1 range)
-                ~devices.at(addr.port+i).sensors.rotateEvent = (
-                    \x:rx/pi,
-                    \y:ry/pi,
-                    \z:rz/pi);
-
-                // store rate of change
-                ~devices.at(addr.port+i).sensors.rrateEvent = (
-                    \x:rx - ox,
-                    \y:ry - oy,
-                    \z:rz - oz);
+                // Calculate angular rate using proper difference function
+                if(ox.notNil and: oy.notNil and: oz.notNil, {
+                    ~devices.at(addr.port+i).sensors.rrateEvent = (
+                        \x:angleDiff.value(rx, ox),
+                        \y:angleDiff.value(ry, oy),
+                        \z:angleDiff.value(rz, oz));
+                }, {
+                    // Initialize on first measurement
+                    ~devices.at(addr.port+i).sensors.rrateEvent = (
+                        \x:0,
+                        \y:0,
+                        \z:0);
+                });
 
                 ox = rx;
                 oy = ry;
