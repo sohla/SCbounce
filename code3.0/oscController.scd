@@ -203,8 +203,8 @@ var addOSCDeviceListeners = {|d|
                 // Calculate others
                 // take quaternion and convert to ueler angles
                 qe = ~devices.at(addr.port+i).sensors.quatEvent;
-                // q = quatNew.value(qe.w,qe.x,qe.y,qe.z);
-                q = Quaternion.new(qe.w,qe.x,qe.z,qe.y);
+                q = Quaternion.new(qe.w,qe.x,qe.y,qe.z);
+                // q = Quaternion.new(qe.w,qe.x,qe.z,qe.y);
                 // q = quatNew.value(qe.w,qe.y,qe.z,qe.x);
                 // q = quatNew.value(qe.w,qe.y,qe.x,qe.z);
                 // q = quatNew.value(qe.w,qe.z,qe.x,qe.y);
@@ -216,8 +216,8 @@ var addOSCDeviceListeners = {|d|
                     var qRef = ~devices.at(addr.port+i).sensors.quatReference;
                     var qRefInv = quatConjugate.value(qRef);
                     q = qRefInv * q; // Relative rotation from reference
-                    ~devices.at(addr.port+i).sensors.quatCalibrated = Quaternion.new(q.a,q.b,q.c,q.d);
-                    ~devices.at(addr.port+i).sensors.isCalibrated = false;
+                    ~devices.at(addr.port+i).sensors.quatCalibrated = Quaternion.new(q.d,q.a,q.b,q.c);
+                    // ~devices.at(addr.port+i).sensors.isCalibrated = false;
                 });
 
 

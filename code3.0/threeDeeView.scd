@@ -16,7 +16,7 @@ var addThreeDeeView = { |data|
 	graph1.add(cube = Canvas3DItem.cube()
 		.color_(data.color.alpha_(1.0))
 		.width_(2)
-		.transform(Canvas3D.mScale(1,0.5,0.5))
+		.transform(Canvas3D.mScale(0.5,0.5,1))
 	);
 
 	graph1.add(accelX = Canvas3DItem.cube()
