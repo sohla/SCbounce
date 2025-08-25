@@ -130,12 +130,12 @@ SynthDef(\versatilePerc, {
 
   var notes = [26,19,17] + 12;
   var colors = [Color.red, Color.green, Color.blue, Color.yellow, Color.cyan];
-  var ni = (d.sensors.gyroEvent.z / pi).lincurve(-0.5,0.5,0,notes.size,1).floor;//cw/ccw
+  var ni = (d.  sensors.gyroEvent.z / pi).lincurve(-0.5,0.5,0,notes.size-1,1).asInteger;//cw/ccw
   var shapes = [\square, \triangle, \hexagon];
   var bassLine = bassLines[0];
   // var ni = (d.sensors.gyroEvent.y / pi).lincurve(-1.0,1.0,0,notes.size,0).floor;//left/right
   // var ni = (d.sensors.gyroEvent.x / pi).lincurve(-1.0,1.0,notes.size,0,0).floor; //up/down
-
+  (d.  sensors.gyroEvent.z / pi).lincurve(-0.5,0.5,0,notes.size-1,1).asInteger.postln;
 	// if(amp < 0.04, {amp = 0});
 
   synth.set(\amp, amp*0.8);
@@ -207,8 +207,9 @@ SynthDef(\versatilePerc, {
 ~plotMin = -1;
 ~plotMax = 1;
 ~plot = { |d,p|
-	[m.rrateMass * 0.1, m.rrateMassFiltered * 0.1];
-	// [m.accelMass * 0.3, m.accelMassFiltered * 0.5];
+	// [m.rrateMass * 0.1, m.rrateMassFiltered * 0.1];
+  // [(d.sensors.gyroEvent.z / pi).lincurve(-0.5,0.5,0,5,1).floor] / 5;
+	[m.accelMass * 0.3, m.accelMassFiltered * 0.5];
 	// [m.rrateMassFiltered, m.rrateMassThreshold];
 	// [m.rrateMassFiltered, m.rrateMassThreshold, m.accelMassAmp];
 	// [d.sensors.gyroEvent.x, d.sensors.gyroEvent.y, d.sensors.gyroEvent.z];
