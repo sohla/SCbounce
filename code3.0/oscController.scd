@@ -68,12 +68,57 @@ var deviceProto = (
 );
 
 //------------------------------------------------------------
-// Quaternion Functions
+// Quaternion Functions  
 //------------------------------------------------------------
 
-// Quaternion conjugate (inverse rotation)
-var quatConjugate = { |quat|
-    Quaternion.new(quat.w, quat.x.neg, quat.y.neg, quat.z.neg)
+// Create quaternion from w,x,y,z components
+var quatNew = { |w, x, y, z|
+    (w: w, x: x, y: y, z: z)
+};
+
+// Quaternion multiplication
+var quatMul = { |q1, q2|
+    var a = q1.w, b = q1.x, c = q1.y, d = q1.z;
+    var a2 = q2.w, b2 = q2.x, c2 = q2.y, d2 = q2.z;
+    
+    quatNew.value(
+        (a * a2) - (b * b2) - (c * c2) - (d * d2),  // w
+        (a * b2) + (b * a2) + (c * d2) - (d * c2),  // x
+        (a * c2) - (b * d2) + (c * a2) + (d * b2),  // y
+        (a * d2) + (b * c2) - (c * b2) + (d * a2)   // z
+    )
+};
+
+// Quaternion addition
+var quatAdd = { |q1, q2|
+    quatNew.(q1.w + q2.w, q1.x + q2.x, q1.y + q2.y, q1.z + q2.z)
+};
+
+// Quaternion subtraction
+var quatSub = { |q1, q2|
+    quatNew.(q1.w - q2.w, q1.x - q2.x, q1.y - q2.y, q1.z - q2.z)
+};
+
+// Scale quaternion by scalar
+var quatScale = { |quat, scalar|
+    quatNew.(quat.w * scalar, quat.x * scalar, quat.y * scalar, quat.z * scalar)
+};
+
+// Quaternion norm
+var quatNorm = { |quat|
+    sqrt(quat.w.squared + quat.x.squared + quat.y.squared + quat.z.squared)
+};
+
+// Convert quaternion to Euler angles (matches your Quaternion.sc asEuler)
+var quatToEuler = { |quat|
+    var q = [quat.w, quat.x, quat.y, quat.z];
+    var euler = Array.newClear(3);
+    
+    euler[0] = atan2( (2 * q[1] * q[2]) - (2 * q[0] * q[3]), (2 * q[0]*q[0]) + (2 * q[1] * q[1]) - 1); // psi
+    euler[1] = asin( (2 * q[1] * q[3]) + (2 * q[0] * q[2])).neg; // theta
+    euler[2] = atan2( (2 * q[2] * q[3]) - (2 * q[0] * q[1]), (2 * q[0] * q[0]) + (2 * q[3] * q[3]) - 1); // phi
+    
+    euler
 };
 
 // Calibrate device orientation - stores current quaternion as reference
@@ -126,7 +171,7 @@ var addOSCDeviceListeners = {|d|
         }, digiInBase.format(i+1), address);
 
         d.listeners.airware = OSCFunc({ |msg, time, addr, recvPort|
-            var sx,sy,sz,qe,q,ss,r, rq, rr, rtr;
+            var sx,sy,sz,qe,ss,r, rq, rr, rtr;
             var tr;
 
 
@@ -160,30 +205,20 @@ var addOSCDeviceListeners = {|d|
                     \w:msg[7].asFloat
                 );
 
-
-                //
-                // Calculate others
-                // take quaternion and convert to ueler angles
+                // Quat. calculations
                 qe = ~devices.at(addr.port+i).sensors.quatEvent;
-                q = Quaternion.new(qe.w,qe.x,qe.y,qe.z);
-                // q = Quaternion.new(qe.w,qe.x,qe.z,qe.y);
-                // q = quatNew.value(qe.w,qe.y,qe.z,qe.x);
-                // q = quatNew.value(qe.w,qe.y,qe.x,qe.z);
-                // q = quatNew.value(qe.w,qe.z,qe.x,qe.y);
-                // q = quatNew.value(qe.w,qe.z,qe.y,qe.y);
-
 
                 // Apply calibration if device is calibrated
                 if(~devices.at(addr.port+i).sensors.isCalibrated, {
                     var qRef = ~devices.at(addr.port+i).sensors.quatReference;
-                    var qRefInv = quatConjugate.(qRef);
-                    q = qRefInv * q; // Relative rotation from reference
-                    ~devices.at(addr.port+i).sensors.quatCalibrated = Quaternion.new(q.d,q.a,q.b,q.c);
-                    // ~devices.at(addr.port+i).sensors.isCalibrated = false;
+                    var qRefNeg = quatScale.value(quatNew.value(qRef.w, qRef.x, qRef.y, qRef.z), -1);
+                    var qRefInv = quatNew.value(qRef.w, qRef.x.neg, qRef.y.neg, qRef.z.neg); // Simple conjugate
+                    qe = quatMul.value(qRefInv, qe); // Relative rotation from reference
+                    ~devices.at(addr.port+i).sensors.quatCalibrated = q;
                 });
 
-
-                r = q.asEuler;//quatToEuler.value(q);
+                // Convert
+                r = quatToEuler.value(qe);
                 tr = [r[0],r[1],r[2]];
 
                 ~devices.at(addr.port+i).sensors.gyroEvent = (
@@ -191,10 +226,10 @@ var addOSCDeviceListeners = {|d|
                     \y:tr[1].asFloat,
                     \z:tr[2].asFloat);
 
-                // normalize gyro from 0 to pi
-                rx = tr[2].asFloat;
-                ry = tr[0].asFloat;
-                rz = tr[1].asFloat * (pi.half + pi.half.half);
+                // TODO : normalize gyro from 0 to pi
+                rx = tr[0].asFloat;
+                ry = tr[1].asFloat * (pi.half + pi.half.half);
+                rz = tr[2].asFloat;
 
                 if(rx <= 0, { rx = pi - (pi + rx)});
                 if(ry <= 0, { ry = pi - (pi + ry)});
