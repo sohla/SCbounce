@@ -24,10 +24,6 @@ var deviceView = {
 	contentView
 };
 
-
-
-
-
 var addDeviceView = { |d|
 	var batteryView = UserView()
 		.animate_(true)
@@ -85,8 +81,7 @@ var addDetailView = {|d|
 		// })
 		// .mouseDownAction_({|but|
 		// 	view.background = Color.white.alpha_(0.1);
-		// 	d.personality = d.personality + 1;
-		// 	NetAddr.new("127.0.0.1", 57120).sendMsg("/airkit/loadPersonality", d.port, d.personality);
+		// 	NetAddr("127.0.0.1", 57120).sendMsg("/airkit/calibrate", d.port);
 		// });
 
 	gl.addSpanning(addPlotterView.(d,view), 0, 0, 1, 3);
