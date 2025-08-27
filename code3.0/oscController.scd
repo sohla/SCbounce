@@ -183,12 +183,9 @@ var addOSCDeviceListeners = {|d|
             var sx,sy,sz,qe,ss,r, rq, rr, rtr;
             var tr;
 
-
-
             if(~devices.at(addr.port+i) != nil,{
                 var oq = ~devices.at(addr.port+i).sensors.quatEvent;
                 var bus = ~devices.at(addr.port+i).sensorBus;
-
 
                 bus.setn([
                     msg[1].asFloat * 0.1,
@@ -200,13 +197,15 @@ var addOSCDeviceListeners = {|d|
                     msg[6].asFloat, //z
                 ]);
                 // bus.getn(7).postln;
-
+                
+                // Store Accel.
                 ~devices.at(addr.port+i).sensors.accelEvent = (
                     \x:msg[1].asFloat * 0.1,
                     \y:msg[2].asFloat * 0.1,
                     \z:msg[3].asFloat * 0.1
                 );
 
+                // Store Quat.
                 ~devices.at(addr.port+i).sensors.quatEvent = (
                     \x:msg[4].asFloat,
                     \y:msg[5].asFloat,
@@ -214,7 +213,7 @@ var addOSCDeviceListeners = {|d|
                     \w:msg[7].asFloat
                 );
 
-                // Quat. calculations
+                // Calculate Gyro from Quat
                 qe = ~devices.at(addr.port+i).sensors.quatEvent;
 
                 // Apply calibration if device is calibrated
@@ -230,6 +229,7 @@ var addOSCDeviceListeners = {|d|
                 r = quatToEuler.value(qe);
                 tr = [r[0],r[1],r[2]];
 
+                // Store Gyro.
                 ~devices.at(addr.port+i).sensors.gyroEvent = (
                     \x:tr[0].asFloat,
                     \y:tr[1].asFloat,
