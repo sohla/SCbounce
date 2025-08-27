@@ -1,3 +1,5 @@
+var bh = 80;
+
 var cpu = UserView()
     .minWidth_(60)
     .maxHeight_(20)
@@ -19,7 +21,7 @@ var nodeTree = View()
 
 var restartButton = Button()
 		.maxWidth_(140)
-		.maxHeight_(140)
+		.maxHeight_(bh)
 		.states_([["QUIT",Color.gray(0.5),Color.gray(0.25)]])
 		.action_({
 				s.quit({
@@ -27,9 +29,21 @@ var restartButton = Button()
 				});
 		});
 
+var oscThruButton = Button()
+		.maxWidth_(140)
+		.maxHeight_(bh)
+		.states_([
+			["OSC Thru",Color.gray(0.5),Color.gray(0.25)],
+			["OSC Thru",Color.white(),Color.green(0.25)]
+			])
+		.action_({|b|
+			NetAddr.new("127.0.0.1", 57120).sendMsg("/airkit/oscThru", b.value.asBoolean);
+		});
+
+
 var networkReset = Button()
 	.maxWidth_(140)
-	.maxHeight_(140)
+	.maxHeight_(bh)
 	.states_([["Network",Color.gray(0.5),Color.gray(0.25)]])
 	.action_({
 			("sudo systemctl restart NetworkManager").unixCmdGetStdOut();
@@ -37,7 +51,7 @@ var networkReset = Button()
 
 var freeAllNodes = Button()
 	.maxWidth_(140)
-	.maxHeight_(140)
+	.maxHeight_(bh)
 	.states_([["Free All Nodes",Color.gray(0.5),Color.gray(0.25)]])
 	.action_({
 			s.freeAll;
@@ -51,6 +65,7 @@ var systemView = {
 			[
 				networkReset,
 				freeAllNodes,
+				oscThruButton,
 				restartButton,
 				meterView,
 

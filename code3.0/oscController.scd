@@ -6,10 +6,10 @@
 
 // var oscMessageTag  = "CombinedDataPacket";
 var oscMessageTag  = "IMUFusedData"; // this is coming from AirSticks
-var outAddr = NetAddr.new("192.168.70.232", 3333);
+var outAddr = NetAddr.new("192.168.70.119", 3333);
 var airstickListeners = [];
 var numAirwareVirtualDevices = 4;
-
+var oscThru = false;
 //------------------------------------------------------------
 // Models
 //------------------------------------------------------------
@@ -332,7 +332,10 @@ var startOSCListening = {
 
         airstickListeners = airstickListeners.add( OSCFunc({ |msg, time, addr, recvPort|
             {
-                // outAddr.sendMsg(*msg); // iPhone connected 
+                if(oscThru, {
+                    msg.postln;
+                    outAddr.sendMsg(*msg);
+                });
 
                 if(~devices.at(addr.port+i) == nil,{
                     var d = addDevice.(addr.ip,addr.port+i,i+1);
@@ -351,6 +354,12 @@ var stopOSCListening = {
 };
 
 ~devices = Dictionary();
+
+
+OSCFunc({ |msg, time, addr, recvPort|
+    oscThru = msg[1].asBoolean;
+},'/airkit/oscThru', NetAddr("127.0.0.1", NetAddr.langPort));
+
 
 OSCFunc({ |msg, time, addr, recvPort|
     startOSCListening.();
