@@ -273,10 +273,10 @@ var addDevice = { |ip,port,index|
     var configListener = OSCFunc({ |msg2, time2, addr2, recvPort2|
         d.color = Color.fromArray(msg2.at([15,16,17])++[1.0]);
         "CONFIG % %".format(index,d.color).postln;
-        {
-            var n = NetAddr.new("127.0.0.1", 57120);
-            n.sendMsg("/airkit/addDevice", port);
-        }.defer;
+        // {
+        //     var n = NetAddr.new("127.0.0.1", 57120);
+        //     n.sendMsg("/airkit/addDevice", port);
+        // }.defer;
     }, configPattern).oneShot;
 
     // hack in : set name of device that is something from the list for now!
@@ -298,11 +298,17 @@ var addDevice = { |ip,port,index|
 
     addOSCDeviceListeners.(d);
 
+    ["Connected:", NetAddr.new(ip,port).isConnected].postln;
+
+    // hack : try and get color from config
+    NetAddr.new(ip,port-index+1).sendMsg("/Config/GetConfig", 57120);
+    // ...wait then make then add devices
+	{ NetAddr.new("127.0.0.1", 57120).sendMsg("/airkit/addDevice", port) }.defer(0.2);
+
     // Use from AirStick 
     // NetAddr.new(ip,port-index+1).sendMsg("/Config/GetConfig", 57120);
-    
     // Use from Airware
-	NetAddr.new("127.0.0.1", 57120).sendMsg("/airkit/addDevice", port);
+	// NetAddr.new("127.0.0.1", 57120).sendMsg("/airkit/addDevice", port);
 
     d // return the device
 };

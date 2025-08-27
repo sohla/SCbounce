@@ -14,6 +14,7 @@ var deviceView = {
 			{addDetailView.(d)}.defer;
 		});
 	},'/airkit/addDevice', NetAddr("127.0.0.1", NetAddr.langPort));
+	
 	contentView = View()
 		.onClose_({osc.free})
 		.layout_(GridLayout.new()
