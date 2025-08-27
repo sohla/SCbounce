@@ -1,10 +1,12 @@
 var shapeLib = (
+    
     circle: { |pos, size, numPoints=64|
         Array.fill(numPoints, { |i|
             var angle = i / numPoints * 2pi;
             pos + (Polar(size, angle).asPoint);
         });
     },
+
     square: { |pos, size, numPoints=4|
         var points = Array.newClear(numPoints);
         var pointsPerSide, i = 0;
@@ -61,14 +63,6 @@ var shapeLib = (
         
         points;
     },
-    // triangle: { |pos, size, numPoints=3|
-    //     var height = size * sqrt(3) / 2;
-    //     [
-    //         pos + (0 @ (height.neg / 1)), // Top point
-    //         pos + ((size.neg / 1) @ (height / 2)), // Bottom-left
-    //         pos + ((size / 1) @ (height / 2)) // Bottom-right
-    //     ];
-    // },
 
     triangle: { |pos, size, numPoints=3|
         var points = Array.newClear(numPoints);
@@ -102,8 +96,6 @@ var shapeLib = (
         points;
     },
 
-
-
     star: { |pos, size, numPoints=10|
         var innerRatio = 0.5, rotation = 0;
         Array.fill(numPoints, { |i|
@@ -112,12 +104,14 @@ var shapeLib = (
             pos + (radius * cos(angle) @ (radius * sin(angle)));
         });
     },
+
     hexagon: { |pos, size, numPoints=6|
         Array.fill(numPoints, { |i|
             var angle = (i * (2pi / 6)) + 0;
             pos + ((size * cos(angle)) @ (size * sin(angle)));
         });
     },
+
     cross: { |pos, size, numPoints=12|
         var thickness = size / 3;
         var halfThick = thickness / 2;
@@ -143,6 +137,7 @@ var shapeLib = (
             Point(pos.x - halfThick, pos.y - halfThick)
         ];
     },
+
     wave: { |pos, size, numPoints=64|
         Array.fill(numPoints, { |i|
             var x = pos.x + (i / (numPoints-1) * size * 2) - size; // Map x across the size
@@ -150,6 +145,7 @@ var shapeLib = (
             x @ y
         });
     },
+
     leaf: { |pos, size, numPoints=20|
         var width = size / 3;
         var points = Array.new(numPoints + 1);
@@ -173,6 +169,7 @@ var shapeLib = (
 
         points;
     },
+
     spiral: { |pos, size, numPoints=100|
         var turns = 3, startRadius = 0;
         Array.fill(numPoints, { |i|
@@ -182,6 +179,7 @@ var shapeLib = (
             pos + (radius * cos(angle) @ (radius * sin(angle)));
         });
     },
+    
     blobby: { |pos, size, numPoints=64|
         Array.fill(numPoints, { |i|
             var angle = i / numPoints * 2pi;
