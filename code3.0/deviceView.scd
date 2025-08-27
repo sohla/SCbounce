@@ -54,7 +54,7 @@ var addDeviceView = { |d|
 var addDetailView = {|d|
 
 	var gl;
-
+	var numDevices = contentView.children.size;
 	var view = View()
 		.background_(Color.black)
 		.layout_(gl = GridLayout.rows(
@@ -85,12 +85,8 @@ var addDetailView = {|d|
 		// });
 
 	gl.addSpanning(addPlotterView.(d,view), 0, 0, 1, 3);
-
-	// layout rows
-	contentView.layout.add(view, ((d.index-1)/2).floor, (d.index-1)%2);	
-
-	// layout cols
-	// contentView.layout.add(view, (d.index-1)%2, ((d.index-1)/2).floor);	
+	// add device view
+	contentView.layout.add(view, (numDevices/2).floor, numDevices%2);	
 
 };
 deviceView;

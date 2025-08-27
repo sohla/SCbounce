@@ -24,6 +24,8 @@ var addDeviceView = {|d|
 
 	var gl;
 	var tv = addTitleView.(d);
+	var numDevices = contentView.children.size;
+
 	var view = View()
 		.background_(Color.black)
 		.layout_(gl = GridLayout.rows(
@@ -47,11 +49,9 @@ var addDeviceView = {|d|
 			NetAddr.new("127.0.0.1", 57120).sendMsg("/airkit/loadPersonality", d.port, d.personality);
 		});
 
-	// layout rows
-	contentView.layout.add(view, ((d.index-1)/2).floor, (d.index-1)%2);	
-	
-	// layout cols
-	// contentView.layout.add(view, (d.index-1)%2, ((d.index-1)/2).floor);	
+	// add device view
+	contentView.layout.add(view, (numDevices/2).floor, numDevices%2);	
+
 };
 
 visualView;
