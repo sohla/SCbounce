@@ -27,7 +27,6 @@ var listenersProto = (
 
 );
 
-
 var sensorsProto = (
     \gyroEvent: threeCh,
     \gyroMass: 0,
@@ -71,11 +70,13 @@ var deviceProto = (
 // Quaternion Functions  
 //------------------------------------------------------------
 
+//------------------------------------------------------------
 // Create quaternion from w,x,y,z components
 var quatNew = { |w, x, y, z|
     (w: w, x: x, y: y, z: z)
 };
 
+//------------------------------------------------------------
 // Quaternion multiplication
 var quatMul = { |q1, q2|
     var a = q1.w, b = q1.x, c = q1.y, d = q1.z;
@@ -89,26 +90,31 @@ var quatMul = { |q1, q2|
     )
 };
 
+//------------------------------------------------------------
 // Quaternion addition
 var quatAdd = { |q1, q2|
     quatNew.(q1.w + q2.w, q1.x + q2.x, q1.y + q2.y, q1.z + q2.z)
 };
 
+//------------------------------------------------------------
 // Quaternion subtraction
 var quatSub = { |q1, q2|
     quatNew.(q1.w - q2.w, q1.x - q2.x, q1.y - q2.y, q1.z - q2.z)
 };
 
+//------------------------------------------------------------
 // Scale quaternion by scalar
 var quatScale = { |quat, scalar|
     quatNew.(quat.w * scalar, quat.x * scalar, quat.y * scalar, quat.z * scalar)
 };
 
+//------------------------------------------------------------
 // Quaternion norm
 var quatNorm = { |quat|
     sqrt(quat.w.squared + quat.x.squared + quat.y.squared + quat.z.squared)
 };
 
+//------------------------------------------------------------
 // Angular difference function for proper wrap-around handling
 var angleDiff = { |newAngle, oldAngle|
     var diff = newAngle - oldAngle;
@@ -118,6 +124,7 @@ var angleDiff = { |newAngle, oldAngle|
     diff
 };
 
+//------------------------------------------------------------
 // Convert quaternion to Euler angles (matches your Quaternion.sc asEuler)
 var quatToEuler = { |quat|
     var q = [quat.w, quat.x, quat.y, quat.z];
@@ -130,6 +137,7 @@ var quatToEuler = { |quat|
     euler
 };
 
+//------------------------------------------------------------
 // Calibrate device orientation - stores current quaternion as reference
 var calibrateDevice = { |devicePort|
     var device = ~devices.at(devicePort);
@@ -144,9 +152,8 @@ var calibrateDevice = { |devicePort|
     });
 };
 
-
 //------------------------------------------------------------
-// 
+//  Deveice Data listener
 //------------------------------------------------------------
 var addOSCDeviceListeners = {|d|
 
@@ -263,12 +270,9 @@ var addOSCDeviceListeners = {|d|
     });
 };
 
-
+//------------------------------------------------------------
 var addDevice = { |ip,port,index|
 
-    var d = Event.new(proto:deviceProto);
-
-    // FIX : need a better way to do this
     var configPattern = "/%/Config".format(index);
     var configListener = OSCFunc({ |msg2, time2, addr2, recvPort2|
         d.color = Color.fromArray(msg2.at([15,16,17])++[1.0]);
@@ -279,14 +283,12 @@ var addDevice = { |ip,port,index|
         // }.defer;
     }, configPattern).oneShot;
 
-    // hack in : set name of device that is something from the list for now!
-    // d.name = ~loadPersonalityList.(id-1)[id-1];
-    // d.name = defaultPersonalities[id-1];
+    var d = Event.new(proto:deviceProto);
 
+    // init model
     d.ip = ip;
     d.port = port;
     d.index = index;
-
     d.listeners = Event.new(proto:listenersProto);
     d.sensors =  Event.new(proto:sensorsProto);
 
@@ -294,10 +296,8 @@ var addDevice = { |ip,port,index|
     ~devices.put(port,d);
 	NetAddr.new("127.0.0.1", 57120).sendMsg("/airkit/loadPersonality", port, 0);
 
-    // ~addDeviceView.(d,id);
-
+    // start listening to device data
     addOSCDeviceListeners.(d);
-
     ["Connected:", NetAddr.new(ip,port).isConnected].postln;
 
     // hack : try and get color from config
@@ -312,15 +312,10 @@ var addDevice = { |ip,port,index|
 
     d // return the device
 };
-//------------------------------------------------------------
-
-
-
 
 //------------------------------------------------------------
-// 
+// Listen out for devices sending data
 //------------------------------------------------------------
-
 var startOSCListening = {
 
     var patternBase = "/%/" ++ oscMessageTag;
@@ -328,14 +323,10 @@ var startOSCListening = {
     // listen for data and if found, add airware virtual device and stop listening
     numAirwareVirtualDevices.do({|i|
         var pattern = patternBase.format(i+1);
-        // var pattern = patternBase.format("60:01:E2:E2:27:48");
 
         airstickListeners = airstickListeners.add( OSCFunc({ |msg, time, addr, recvPort|
             {
-                if(oscThru, {
-                    msg.postln;
-                    outAddr.sendMsg(*msg);
-                });
+                if(oscThru, { outAddr.sendMsg(*msg) });
 
                 if(~devices.at(addr.port+i) == nil,{
                     var d = addDevice.(addr.ip,addr.port+i,i+1);
@@ -346,6 +337,7 @@ var startOSCListening = {
     });
 };
 
+//------------------------------------------------------------
 var stopOSCListening = {
     airstickListeners.do({|obj|
         postf("free : %\n", obj);
@@ -353,13 +345,16 @@ var stopOSCListening = {
     });
 };
 
+//------------------------------------------------------------
+// Global Storage
+//------------------------------------------------------------
+
 ~devices = Dictionary();
 
-
+//------------------------------------------------------------
 OSCFunc({ |msg, time, addr, recvPort|
     oscThru = msg[1].asBoolean;
 },'/airkit/oscThru', NetAddr("127.0.0.1", NetAddr.langPort));
-
 
 OSCFunc({ |msg, time, addr, recvPort|
     startOSCListening.();
