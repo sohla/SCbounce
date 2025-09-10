@@ -41,7 +41,7 @@ SynthDef(\miniMoog, {
   var detune = m.accelMassFiltered.linlin(0,2.5,0.1,0.2);
   var filterFreq = m.rrateMassFiltered.linexp(0,1,400,9.2e3);
 	
-  var index = d.sensors.rotateEvent.y.linlin(0,1,0,notes.size).floor;
+  var index = d.sensors.gyroEvent.y.linlin(-1,1,0,notes.size-1).floor;
 	var freq = notes[index].midicps;
 
 	if(filterFreq < 400, { filterFreq = 400 });
@@ -60,7 +60,8 @@ SynthDef(\miniMoog, {
 ~plotMax = 1;
 ~plot = { |d,p|
 	// [d.sensors.quatEvent.x, d.sensors.quatEvent.y, d.sensors.quatEvent.z];
-	[m.accelMassFiltered * 0.1, d.sensors.rotateEvent.y];
+	// [m.accelMassFiltered * 0.1, d.sensors.rotateEvent.y];
+	[d.sensors.gyroEvent.y];
 	// [m.accelMass + m.rrateMassFiltered, m.accelMassFiltered,m.rrateMassThreshold];
 	// [m.rrateMassFiltered, m.rrateMassThreshold, m.accelMassAmp];
 	// [d.sensors.gyroEvent.x, d.sensors.gyroEvent.y, d.sensors.gyroEvent.z];

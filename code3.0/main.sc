@@ -47,16 +47,18 @@ var mainView = VLayout(
 ).spacing_(4).margins_(0);
 
 var shutdown = {
-	s.quit;
+	s.quit({
+		0.exit;
+	});
 };
 
 var initGUI = {
 	QtGUI.palette = QPalette.dark;
-	w = Window()
+	w = Window("AirKit")
 		.bounds_(Rect(100,100,1000,700))
 		.layout_(mainView)
 		.front
-		// .fullScreen
+		.fullScreen
 		.background_(Color.black.lighten(0.25));
 	w.onClose = {
 		shutdown.();

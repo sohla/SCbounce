@@ -1,7 +1,7 @@
 var m = ~model;
 var synth;
 m.accelMassFilteredAttack = 0.99;
-m.accelMassFilteredDecay = 0.4;
+m.accelMassFilteredDecay = 0.07;
 m.rrateMassFilteredAttack = 0.99;
 m.rrateMassFilteredDecay = 0.9;
 
@@ -72,7 +72,7 @@ sig = FreeVerb.ar(sig,0.4,0.9,0.1);
 	var spd = m.accelMassFiltered.lincurve(0,2.5,2,9,-2);
 	var idx = (d.sensors.gyroEvent.y.abs / pi) * 3;
 
-	var base = [100,200,400];
+	var base = [100,200,400,800,1600];
 	var fdx = (d.sensors.gyroEvent.y.abs / pi) * base.size;
 
 	if(amp < 0.1, {amp = 0});

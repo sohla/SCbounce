@@ -15,7 +15,7 @@ var meterView = View()
 	.minWidth_(140);
 
 var nodeTree = View()
-	.background_(Color.blue(0.25))
+	.background_(Color.black(0.25))
 	.minWidth_(600)
 	.maxHeight_(800);
 
