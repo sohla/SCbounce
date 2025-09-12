@@ -33,7 +33,6 @@ SynthDef(\pullstretchMonoQ, {|out, amp = 1, buffer = 0, envbuf = -1, pch = 1.0, 
 	var lfo = LFSaw.kr( (1.0/len) * speed ,1,0.5,0.5);
 	// my = MouseY.kr(0.01,1,1.0);//splay
 
-
 	sp = Splay.arFill(4,
 		{ |i| Warp1.ar(1, buffer, lfo.linlin(0,1,0.05,0.95), pch,splay, envbuf, 8, 0.3, 4)  },
 			1,
@@ -42,9 +41,7 @@ SynthDef(\pullstretchMonoQ, {|out, amp = 1, buffer = 0, envbuf = -1, pch = 1.0, 
 	) ;
 
 	mas = HPF.ar(sp,245);
-
-  mas = FreeVerb.ar(mas,0.5);
-
+	mas = FreeVerb.ar(mas,0.5);
 	Out.ar(out,Pan2.ar(mas[0],pan)* amp.lag(1));
 }).add;
 //------------------------------------------------------------
@@ -79,7 +76,7 @@ SynthDef(\pullstretchMonoQ, {|out, amp = 1, buffer = 0, envbuf = -1, pch = 1.0, 
 
 	synth.set(\pch, pch.midiratio);
 	synth.set(\speed, speed);
-	synth.set(\amp, amp * 1);
+	synth.set(\amp, amp * 2);
 	synth.set(\pan, pan);
 };
 //------------------------------------------------------------

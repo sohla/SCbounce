@@ -4,7 +4,7 @@ var buffer;
 m.rrateMassFilteredAttack = 0.99;
 m.rrateMassFilteredDecay = 0.6;
 m.accelMassFilteredAttack = 0.99;
-m.accelMassFilteredDecay = 0.6;
+m.accelMassFilteredDecay = 0.8;
 
 //------------------------------------------------------------
 SynthDef(\stereoSampler1, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=440,
@@ -12,8 +12,9 @@ SynthDef(\stereoSampler1, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, fr
 
 	  var lr = rate * BufRateScale.kr(bufnum) * (freq/440.0);
     var env = EnvGen.kr(Env.adsr(attack, decay, sustain, release), gate, timeScale: 2,doneAction: 2);
-	  var sig = PlayBuf.ar(2, bufnum, rate: [lr, lr * 1.003], startPos: start * BufFrames.kr(bufnum), loop: 0);
-    sig = RLPF.ar(sig, cutoff, rq);
+	var sig = PlayBuf.ar(2, bufnum, rate: [lr, lr * 1.003], startPos: start * BufFrames.kr(bufnum), loop: 0);
+	var osc = LFTri.ar((29 + rate.ratiomidi).midicps * [1,1.03], 0, 0.4 + sig).distort;
+    sig = RLPF.ar(sig, cutoff, rq) + osc;
     sig = Balance2.ar(sig[0], sig[1], pan, amp * env);
     Out.ar(out, sig);
 }).add;
@@ -67,7 +68,7 @@ SynthDef(\stereoSampler1, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, fr
 	if(amp < 0.07, {amp = 0});
 
 	Pdef(m.ptn).set(\dur, 0.2);
-	Pdef(m.ptn).set(\amp, amp * 0.6);
+	Pdef(m.ptn).set(\amp, amp );
  	Pdef(m.ptn).set(\start, start.linlin(0,1,0,1));
 
 };

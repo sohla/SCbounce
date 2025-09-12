@@ -36,7 +36,7 @@ SynthDef(\stereoSampler1, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, fr
 				\decay, 0.2,
 				\sustain,0.1,
 				\release,0.2,
-				\rate, 0.125,
+				\rate, 0.25,
 				// \dur, Pseq([0.25], inf),
 				\args, #[],
 			)

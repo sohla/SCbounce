@@ -85,7 +85,6 @@ SynthDef(\funBass, {
 		});
 		bufnum
 	};
-
 	~playNote = {|note,root,octave, amp=0.1|
 			var n = note + root + (12 * octave);
 			var bufnum,rate;
@@ -181,7 +180,7 @@ SynthDef(\funBass, {
 ~next = {|d|
 
 	var move = m.accelMassFiltered.lincurve(0,3,3,notes.size,2);
-	var amp = m.accelMassFiltered.lincurve(0,2.4,-50,-1,-1);
+	var amp = m.accelMassFiltered.lincurve(0,2.4,-50,-8,-1);
 	var ff = m.rrateMassFiltered.lincurve(0.0,2.0,200,2000,-3); //left right
 	var step = d.sensors.gyroEvent.x.linlin(-0.8,0.8,0,3).floor; //up down
 

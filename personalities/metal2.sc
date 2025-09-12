@@ -2,7 +2,7 @@ var m = ~model;
 var synth;
 
 m.accelMassFilteredAttack = 0.99;
-m.accelMassFilteredDecay = 0.9;
+m.accelMassFilteredDecay = 0.1;
 
 SynthDef(\bambooComplex2, {
   arg out=0, freq=440, pan=0, amp=0.5,
@@ -131,16 +131,16 @@ SynthDef(\sheet2, { |out, frq=111, gate=0, amp = 0, pchx=0|
 	Pdef(m.ptn,
 		Pbind(
 			\instrument, \bambooComplex2,
-      \octave, Pseq([4,5], inf),
-      \dur, Pseq([0.4/3,0.4/2].stutter(12), inf),
-      \degree, Pseq([0], inf),
-      \amp, 0.07,
+      \octave, Pseq([3,4,5], inf),
+    //   \dur, Pseq([0.4/3,0.4/2].stutter(12), inf),
+      \degree, Pseq([0,-15,21,-7,5].stutter(2), inf),
+      \amp, 0.2,
       \pan, Pwhite(-0.6, 0.6),
       \model, 1,//Prand([0, 1, 2,3,4,5,6], inf),
-      \strikePos, Pwhite(0.1, 0.9),
-      \resonance, Pwhite(0.1, 0.9),
-      \bambooMoisture, Pwhite(0.1,0.9),
-      \rel, 0.2,
+      \strikePos, Pwhite(0.1, 0.3),
+      \resonance, Pwhite(0.6, 0.9),
+      \bambooMoisture, Pwhite(0.8,0.9),
+      \rel, 0.8,
 			\func, Pfunc({|e| ~onEvent.(e)}),
 			\args, #[],
 		)
@@ -167,24 +167,27 @@ SynthDef(\sheet2, { |out, frq=111, gate=0, amp = 0, pchx=0|
 ~next = {|d|
 
 	var move = m.accelMassFiltered.linlin(0,3,0,1);
-  var spf = m.accelMassFiltered.linexp(0,3.5,0.1,40);
+    var spf = m.accelMassFiltered.linexp(0,3.5,0.1,40);
+  	var dur = m.accelMassFiltered.lincurve(0,3.5,0.3,0.03,-1);
+
   // var durIndex = m.accelMassFiltered.linexp(0,2,0.1,1).floor;
   // var durs = [0.4/3, 0.4/2];
   // Pdef(m.ptn).set(\dur, durs[durIndex]);
   
 	var a = m.accelMass * 0.5;
 	var f = 50 + (m.accelMassFiltered * 100);
-	var pchs = [0,12,24,36,48];
-	var i = (d.sensors.gyroEvent.y.abs / pi) * (pchs.size);
-	// pchs[i.floor].postln;
+	var pchs = [0,7];
+	var i = (d.sensors.gyroEvent.y.abs / 1.57) * (pchs.size);
+    // i.floor.postln;
 	if(a<0.02,{a=0.0});
 	if(a>0.9,{a=0.2});
-	synth.set(\amp, a * 0.2);
+	synth.set(\amp, a * 0.5);
+	synth.set(\pchx, (pchs[i.floor] - 10));
   
-  
-  Pdef(m.ptn).set(\spf,spf);
+    Pdef(m.ptn).set(\dur, dur);
+    Pdef(m.ptn).set(\spf,spf);
 
-  if(move > 0.1, {
+    if(move > 0.07, {
 		if( Pdef(m.ptn).isPlaying.not,{
 			Pdef(m.ptn).resume(quant:0.4/1);
 		});

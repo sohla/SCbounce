@@ -129,11 +129,11 @@ SynthDef(\sheet2, { |out, frq=111, gate=0, amp = 0, pchx=0|
 	Pdef(m.ptn,
 		Pbind(
 			\instrument, \bambooComplex1,
-      \octave, Pseq([6,8,7], inf),
+      \octave, Pseq([6,8,7] - 2, inf),
       // \dur, Pseq([0.4,Rest(0.2),0.2] * 0.5, inf),
       \degree, Pseq([0,2,7], inf),
       \root, Pseq([0,3,-2,0,-5,3,5,2].stutter(30), inf),
-      \amp, 0.2,
+      \amp, 0.12,
       \pan, Pwhite(-0.6, 0.6),
       \model, 1,//Prand([0, 1, 2,3,4,5,6], inf),
       \strikePos, Pwhite(0.1, 0.9),

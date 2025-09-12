@@ -13,7 +13,7 @@ SynthDef(\pluck1, { |out=0, amp=0, pch=30, frq=30, gate=0 |
 
 
 ~init = ~init <> {
-	synth = Synth(\pluck1, [\frq, 140.rrand(80), \gate, 0]);
+	synth = Synth(\pluck1, [\frq, 140.rrand(80), \gate, 1]);
 };
 
 ~deinit = ~deinit <> {
@@ -28,12 +28,10 @@ SynthDef(\pluck1, { |out=0, amp=0, pch=30, frq=30, gate=0 |
 	synth.set(\pch,pch);
 	synth.set(\frq,frq);
 
-	synth.set(\amp, 0.1);
-
 	if(m.accelMass < 0.05,{
-		synth.set(\gate,0);
+		synth.set(\amp,0);
 	},{
-		synth.set(\gate,1);
+		synth.set(\amp,0.7);
 	});
 
 };

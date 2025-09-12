@@ -10,10 +10,10 @@ var personalityDir = "~/Develop/SuperCollider/Projects/SCbounce/personalities/";
 
 
 var defaultLists = [
-    "list_brenton.sc",
-    "list_brenton.sc",
-    "list_brenton.sc",
-    "list_brenton.sc",
+    "list_SoloBrenton.sc",
+    "list_SoloBrenton.sc",
+    "list_SoloBrenton.sc",
+    "list_SoloBrenton.sc",
 ];
 
 var com = (
