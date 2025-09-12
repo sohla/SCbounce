@@ -19,7 +19,15 @@ var nodeTree = View()
 	.minWidth_(600)
 	.maxHeight_(800);
 
-var restartButton = Button()
+var shutdownButton = Button()
+		.maxWidth_(140)
+		.maxHeight_(bh)
+		.states_([["SHUTDOWN",Color.gray(0.5),Color.gray(0.25)]])
+		.action_({
+				"sudo shutdown now".unixCmdGetStdOut;
+		});
+
+var quitButton = Button()
 		.maxWidth_(140)
 		.maxHeight_(bh)
 		.states_([["QUIT",Color.gray(0.5),Color.gray(0.25)]])
@@ -28,6 +36,7 @@ var restartButton = Button()
 					0.exit;
 				});
 		});
+
 
 var oscThruButton = Button()
 		.maxWidth_(140)
@@ -66,7 +75,8 @@ var systemView = {
 				networkReset,
 				freeAllNodes,
 				oscThruButton,
-				restartButton,
+				quitButton,
+				shutdownButton,
 				meterView,
 
 			],[
