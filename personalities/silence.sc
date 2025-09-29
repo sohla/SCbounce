@@ -25,11 +25,14 @@ m.accelMassFilteredDecay = 0.99;
 ~plot = { |d,p|
 	// [0.2,0.4,0.6];
 	// [d.sensors.rrateEvent.x, d.sensors.rrateEvent.y, d.sensors.rrateEvent.z];
-	// [d.sensors.accelEvent.x, d.sensors.accelEvent.y, d.sensors.accelEvent.z] * 0.1;
-	// [m.accelMass * 0.3, m.accelMassFiltered * 0.5];
+	// [d.sensors.accelEvent.x, d.sensors.accelEvent.y, d.sensors.accelEvent.z] * 0.5;
+	// [m.accelMass.abs - m.accelMass, m.accelMass - m.accelMass.abs];
+	[d.sensors.velocity.sum.abs * 30 ,m.accelMass];// compare these values we can get direction?
+	
+	// // [((m.accelMassFiltered - m.accelMassFiltered.abs)-(m.accelMassFiltered.abs - m.accelMassFiltered)).abs, m.accelMassFiltered.abs];
 	// [m.rrateMassFiltered, m.rrateMassThreshold];
 	// [m.rrateMassFiltered, m.rrateMassThreshold, m.accelMassAmp];
-	[d.sensors.gyroEvent.z] / pi;
+	// [d.sensors.gyroEvent.z] / pi;
 	// [d.sensors.rotateEvent.x, d.sensors.rotateEvent.y, d.sensors.rotateEvent.z];
 	// [d.sensors.rrateEvent.x, d.sensors.rrateEvent.y, d.sensors.rrateEvent.z] * 4;
 	// [d.sensors.accelEvent.x, d.sensors.accelEvent.y, d.sensors.accelEvent.z] * 0.1;

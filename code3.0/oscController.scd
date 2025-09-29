@@ -6,7 +6,7 @@
 
 // var oscMessageTag  = "CombinedDataPacket";
 var oscMessageTag  = "IMUFusedData"; // this is coming from AirSticks
-var outAddr = NetAddr.new("192.168.70.119", 3333);
+var outAddr = NetAddr.new("192.168.1.124", 3333);
 var airstickListeners = [];
 var numAirwareVirtualDevices = 4;
 var oscThru = false;
@@ -37,6 +37,8 @@ var sensorsProto = (
     \quatEvent: fourCh,
     \quatReference: fourCh,
     \quatCalibrated: fourCh,
+    \velocity: threeCh,
+    \lastTimestamp: 0,
     \isCalibrated: false,
     \ampValue: 0,
     \rotateEvent: threeCh,
@@ -115,6 +117,39 @@ var quatNorm = { |quat|
 };
 
 //------------------------------------------------------------
+//------------------------------------------------------------
+
+
+//------------------------------------------------------------
+// Simple 3D vector creation and operations
+var vec3New = { |x, y, z|
+    (x: x ? 0, y: y ? 0, z: z ? 0)
+};
+
+//------------------------------------------------------------
+var vec3Add = { |v1, v2|
+    vec3New.(v1.x + v2.x, v1.y + v2.y, v1.z + v2.z)
+};
+
+//------------------------------------------------------------
+var vec3Sub = { |v1, v2|
+    vec3New.(v1.x - v2.x, v1.y - v2.y, v1.z - v2.z)
+};
+
+//------------------------------------------------------------
+var vec3Scale = { |vec, scalar|
+    vec3New.(vec.x * scalar, vec.y * scalar, vec.z * scalar)
+};
+
+//------------------------------------------------------------
+var vec3Magnitude = { |vec|
+    sqrt(vec.x.squared + vec.y.squared + vec.z.squared)
+};
+
+
+
+
+//------------------------------------------------------------
 // Angular difference function for proper wrap-around handling
 var angleDiff = { |newAngle, oldAngle|
     var diff = newAngle - oldAngle;
@@ -123,6 +158,10 @@ var angleDiff = { |newAngle, oldAngle|
     while { diff < pi.neg } { diff = diff + (2*pi) };
     diff
 };
+
+
+
+
 
 //------------------------------------------------------------
 // Convert quaternion to Euler angles (matches your Quaternion.sc asEuler)
@@ -168,10 +207,8 @@ var addOSCDeviceListeners = {|d|
 
         var address = NetAddr.new(d.ip, d.port - i);
         var pattern = patternBase.format(i+1);
-        // var pattern = patternBase.format("/60:01:E2:E2:27:48/");
-        var prev = fourCh;
-        var angVel = threeCh;
-        var rx,ry,rz,ox=nil,oy=nil,oz=nil;
+        var rx,ry,rz,ox=nil,oy=nil,oz=nil; //rotation integration
+        var deltaTime = 0, deltaVelocity = 0;
 
         d.listeners.battery = OSCFunc({ |msg, time, addr, recvPort|
             d.volts = msg[1].asFloat;
@@ -265,6 +302,14 @@ var addOSCDeviceListeners = {|d|
                 oy = ry;
                 oz = rz;
 
+
+                // Velocity
+                deltaTime = time - ~devices.at(addr.port+i).sensors.lastTimestamp;
+                deltaVelocity = vec3Scale.(~devices.at(addr.port+i).sensors.accelEvent, deltaTime);
+                ~devices.at(addr.port+i).sensors.velocity = vec3Add.(~devices.at(addr.port+i).sensors.velocity, deltaVelocity);
+                ~devices.at(addr.port+i).sensors.velocity = vec3Scale.(~devices.at(addr.port+i).sensors.velocity, 0.3);
+
+                ~devices.at(addr.port+i).sensors.lastTimestamp = time;
             });
         }, pattern, address);
     });

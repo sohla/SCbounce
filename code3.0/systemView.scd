@@ -1,4 +1,5 @@
 var bh = 80;
+var hosts = "hostname -I".unixCmdGetStdOut;
 
 var cpu = UserView()
     .minWidth_(60)
@@ -6,9 +7,11 @@ var cpu = UserView()
     .animate_(true)
     .drawFunc_({|uv|
     ("CPU: "++s.peakCPU.asStringPrec(1)++"%").drawAtPoint(16@4, Font.default, Color.yellow);
-    ("UGens: "++s.numUGens).drawAtPoint(100@4, Font.default, Color.yellow);
-    ("Groups: "++s.numGroups).drawAtPoint(200@4, Font.default, Color.yellow);
-    ("Synths: "++s.numSynths).drawAtPoint(300@4, Font.default, Color.yellow);
+    ("Hosting: "++hosts).drawAtPoint(100@4, Font.default, Color.yellow);
+    ("Port: "++NetAddr.	localAddr.port).drawAtPoint(400@4, Font.default, Color.yellow);
+    ("UGens: "++s.numUGens).drawAtPoint(500@4, Font.default, Color.yellow);
+    ("Groups: "++s.numGroups).drawAtPoint(600@4, Font.default, Color.yellow);
+    ("Synths: "++s.numSynths).drawAtPoint(700@4, Font.default, Color.yellow);
 });
 
 var meterView = View()

@@ -76,7 +76,7 @@ var interpretPersonality = {|d|
         //------------------------------------------------------------
         // process data->model
         ~processDeviceData = {|d|
-            ~model.accelMass = d.sensors.accelEvent.sumabs * 0.33; // scale it
+            ~model.accelMass = d.sensors.accelEvent.sum * 0.33; // scale it
             ~model.rrateMass = d.sensors.rrateEvent.sumabs;
             ~model.accelMassFiltered = ~smooth.(
                 ~model.accelMass,
