@@ -1,12 +1,19 @@
 var m = ~model;
+
+m.rrateMassFilteredAttack = 0.3;
+m.rrateMassFilteredDecay = 0.1;
+m.accelMassFilteredAttack = 0.99;
+m.accelMassFilteredDecay = 0.2;
+
+
 SynthDef(\wingChimes1, {
-	|freq = 1000, pulseFreq = 10, amp = 0, rq = 0.001, att = 0.1, dec = 1.3, sus = 0, rel = 2, gate = 1, numHarms = 200|
+	|freq = 1000, pulseFreq = 10, amp = 0, rq = 0.001, att = 0.03, dec = 1.3, sus = 0.8, rel = 1, gate = 1, numHarms = 20|
 	var env = EnvGen.kr(Env.adsr(att, dec, sus, rel), gate: gate, doneAction: 2);
 	var snd = BPF.ar(
 		in: WhiteNoise.ar(Blip.ar(pulseFreq, numHarms, 0.7) + LFPulse.ar(pulseFreq,0,1,0.2)),
 		freq: [freq, freq + 5],
-		rq: Lag.kr(rq, 1));
-	snd = snd * env * Lag.kr(amp, 1) * 20;
+		rq: Lag.kr(rq, 0.2));
+	snd = snd * env * Lag.kr(amp, 0.2) * 20;
 	snd = Clip.ar(snd, -0.5, 0.5);
 	Out.ar(0, snd);
 }).add;
@@ -19,24 +26,24 @@ SynthDef(\wingChimes1, {
 			\octave, Pwhite(1,3),
 			\root, Pseq([0,3,-4, -1, 3].stutter(24),inf),
 			// \pulseFreq, Pwhite(3, 7),
-			\numHarms, 10,
+			\numHarms, 1,
 			\func, Pfunc({|e| ~onEvent.(e)}),
 			
 			\type, \customEvent,
-			\duration, 2.7,
-			\sx, Pwhite(295,305),
-			\sy, Pwhite(285,295),
+			\duration, 1.7,
+			\sx, Pwhite(0,0),
+			\sy, Pwhite(0,0),
 			\ex, Pkey(\sx),
 			\ey, Pkey(\sy),
-			\startWidth, 2,
-			\endWidth, 8,
+			\startWidth, 3,
+			\endWidth, 1,
 			\startSize, 10,
 			\endSize, 220,
 			\shape, \circle,
 			\rotation, Pseg(Pseq([-pi, pi], inf), 80, \linear, inf),
 	  	// \startColor, Pfunc{|e|Color.hsv(e.octave.linlin(3,6,0.2,0.23),0.6,0.8)},
 	  	\startColor, Pfunc{|e|Color.hsv(e.root.linlin(-4,3,0.0,0.49),0.9,0.9)},
-			\endColor, Pfunc{|e|Color.hsv(e.root.linlin(-4,3,0.5,0.99),0.6,0.7)},
+			\endColor, Pfunc{|e|Color.hsv(e.root.linlin(-4,3,0.5,0.99),0.3,0.9).alpha_(0.0)},
 			
       // \endColor: Color.blue.alpha_(0.4),
 			\args, #[],
@@ -54,25 +61,27 @@ SynthDef(\wingChimes1, {
 };
 //------------------------------------------------------------
 ~next = {|d|
-	var dur = 0.3;// * 2.pow(m.accelMassFiltered.linlin(0,4,0,4).floor).reciprocal;
+	var dur = 0.3 * 2.pow(m.accelMassFiltered.linlin(0,4,0,4).floor).reciprocal;
 	var rq = m.accelMassFiltered.linexp(0,4,0.1,0.0005);
 	var amp = m.accelMassFiltered.linexp(0,4,0.05,1);
 	var sp = m.accelMassFiltered.lincurve(0,2.5,1,5);
+	var pf = m.accelMassFiltered.lincurve(0,2.5,1,12);
 	var rr = 3.rrand(7);
+
+	Pdef(m.ptn).set(\viewID, d.port);
 
 	Pdef(m.ptn).set(\modulation, (
 			type: \radial,
-			freq: rr ,
-			amp: 1,
+			freq: rr * 3,
+			amp: 4,
 			harmonics: 2
 	));
 
-	Pdef(m.ptn).set(\viewID, d.port);
-	Pdef(m.ptn).set(\pulseFreq, 3.rrand(7));
+	Pdef(m.ptn).set(\pulseFreq, 20);
 	Pdef(m.ptn).set(\dur, dur);
 	Pdef(m.ptn).set(\rq, rq);
-	Pdef(m.ptn).set(\amp, amp * 1);
-	if(m.accelMass > 0.08,{
+	Pdef(m.ptn).set(\amp, amp * 2);
+	if(m.accelMass > 0.04,{
 		if( Pdef(m.ptn).isPlaying.not,{
 			Pdef(m.ptn).resume(quant:[0.2,0,0,0]);
 		});

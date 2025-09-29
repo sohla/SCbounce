@@ -1,5 +1,10 @@
 var m = ~model;
 var synth;
+m.rrateMassFilteredAttack = 0.3;
+m.rrateMassFilteredDecay = 0.1;
+m.accelMassFilteredAttack = 0.2;
+m.accelMassFilteredDecay = 0.04;
+
 
 //------------------------------------------------------------
 SynthDef(\pluck1, { |out=0, amp=0, pch=30, frq=30, gate=0 |
@@ -28,7 +33,7 @@ SynthDef(\pluck1, { |out=0, amp=0, pch=30, frq=30, gate=0 |
 	synth.set(\pch,pch);
 	synth.set(\frq,frq);
 
-	if(m.accelMass < 0.05,{
+	if(m.accelMass < 0.005,{
 		synth.set(\amp,0);
 	},{
 		synth.set(\amp,0.7);

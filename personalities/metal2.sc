@@ -134,7 +134,7 @@ SynthDef(\sheet2, { |out, frq=111, gate=0, amp = 0, pchx=0|
       \octave, Pseq([3,4,5], inf),
     //   \dur, Pseq([0.4/3,0.4/2].stutter(12), inf),
       \degree, Pseq([0,-15,21,-7,5].stutter(2), inf),
-      \amp, 0.2,
+      \amp, 0.1,
       \pan, Pwhite(-0.6, 0.6),
       \model, 1,//Prand([0, 1, 2,3,4,5,6], inf),
       \strikePos, Pwhite(0.1, 0.3),
