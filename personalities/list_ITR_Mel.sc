@@ -1,0 +1,33 @@
+(
+	[
+		"silence",
+		"bongo1",
+		"bongo2",
+		"funMelody",
+		"funBass",
+		"melodicPerc",
+		"harp1",
+		"rain1",
+		"thunder",
+		"bells",
+		"fuckYes",
+		"brenton1",
+		"brenton2",
+		"violin1",
+		"violin2",
+		"drumkit",
+		"drumkit2",
+		"drumkit3",
+		"cymbals1",
+		"metal1",
+		"metal2",
+		"gendy1",
+		"gendy2",
+		"pluck1",
+		"pluck2",
+		"inABottle",
+		"silence",
+]
+
+)
+
