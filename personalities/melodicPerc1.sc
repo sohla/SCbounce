@@ -6,8 +6,7 @@ m.accelMassFilteredDecay = 0.9;
 
 SynthDef(\tick, {
 		|out=0, gate=1, amp=0.3, pan=0, dcy=0.2, curve=40|
-
-		var sig = PinkNoise.ar(EnvGen.ar(Env.perc(0.002,dcy,1,curve.neg), gate, doneAction:2));
+		var sig = PinkNoise.ar(EnvGen.ar(Env.perc(0.02,dcy,1,curve.neg), gate, doneAction:2));
 		Out.ar(out, Pan2.ar(sig,pan,amp))
 }).add;
 
@@ -68,9 +67,9 @@ SynthDef(\melodicPerc, {
 	Pdef(tp,
 		Pbind(
 			\instrument, \tick,
-			\octave, Pseq([3,4,5,6].stutter(1)+3, inf),
+			\octave, Pseq([3,4,5,6].stutter(1), inf),
 			\dur, 0.22,
-			\pan, Pwhite(-1,1),
+			\pan, Pwhite(-0.1,0.1),
 			\amp, Pwhite(0.1,0.2, inf),
 			\args, #[]
 		);
@@ -103,7 +102,7 @@ SynthDef(\melodicPerc, {
 	var dur = m.accelMassFiltered.linlin(0,2.5,0,2).round;
 	var dr = m.accelMassFiltered.lincurve(0,2.5,0.001,0.3,5);
 	var decay = d.sensors.gyroEvent.z.abs.linlin(0.2,0.8,1.0,0.2);
-	var curve = d.sensors.gyroEvent.z.abs.linlin(0.0,1.0,40.0,10.0);
+	var curve = d.sensors.gyroEvent.z.abs.linlin(0.0,1.0,30.0,7.0);
 
   Pdef(tp).set(\curve, curve);
 

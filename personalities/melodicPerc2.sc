@@ -56,9 +56,7 @@ SynthDef(\melodicPerc, {
 			\instrument, \melodicPerc,
 			\scale, Scale.major,
 			\octave, Pseq([8,9,9,8].stutter(1), inf),
-            \note, 0,
-			// \root, 0,//Pseq([0,1,5,4,-2,5,7,8,4,-2].stutter(24), inf),
-			\legato, 0.1,
+            \note, Pseq([0], inf),
 			\amp, Pwhite(0.1,0.2, inf)*0.08,
             \func, Pfunc({|e| ~onEvent.(e)}),
 			\args, #[]
@@ -72,8 +70,7 @@ SynthDef(\melodicPerc, {
 			\octave, Pseq([7,8,8,7].stutter(1), inf),
 			\dur, 0.11,
             \decay, 0.3,
-			\pan,-1,
-			// \amp, Pwhite(0.1,0.2, inf) * 0.1,
+			\pan,Pseg( Pseq([-1,1], inf),Pseq([1,1],inf), \sine, inf),
 			\args, #[]
 		);
 	);
@@ -110,7 +107,7 @@ SynthDef(\melodicPerc, {
 	var dr = m.accelMassFiltered.lincurve(0,2.5,0.001,0.3,5);
 	var decay = d.sensors.gyroEvent.z.abs.linlin(0.2,0.8,2.0,1.0);
 	var curve = d.sensors.gyroEvent.z.abs.linlin(0.0,1.0,40.0,10.0);
-	var amp = (d.sensors.gyroEvent.z/pi).lincurve(-1.0,1.0,0.0,0.1);
+	var amp = (d.sensors.gyroEvent.z/pi).lincurve(-1.0,1.0,0.0,0.4);
 	var frq = m.accelMassFiltered.lincurve.lincurve(0.0,2.5,100,14000,-3);
 
     Pdef(tp).set(\curve, curve);
