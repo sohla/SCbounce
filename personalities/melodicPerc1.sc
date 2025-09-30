@@ -1,5 +1,6 @@
 var m = ~model;
 var synth;
+var tp =  (m.ptn++"tick");
 m.accelMassFilteredAttack = 0.7;
 m.accelMassFilteredDecay = 0.9;
 
@@ -48,20 +49,23 @@ SynthDef(\melodicPerc, {
 
 
 ~init = ~init <> {
+
 	Pdef(m.ptn,
 		Pbind(
 			\instrument, \melodicPerc,
 			\scale, Scale.major,
 			\octave, Pseq([3,6,5,4].stutter(1), inf),
-			\note, Pseq([0,1,5,4,-2,5,7,8,4,-2].stutter(24), inf),
+			\note,0,
+			\root, Pseq([0,1,5,4,-2,5,7,8,4,-2].stutter(24), inf),
 			\legato, 0.1,
-			\amp, Pwhite(0.1,0.2, inf)*0.5,
+			\amp, Pwhite(0.1,0.2, inf)*0.8,
+			\func, Pfunc({|e| ~onEvent.(e)}),
 			\args, #[]
 		);
 	);
 
 
-	Pdef(\tick,
+	Pdef(tp,
 		Pbind(
 			\instrument, \tick,
 			\octave, Pseq([3,4,5,6].stutter(1)+3, inf),
@@ -74,11 +78,11 @@ SynthDef(\melodicPerc, {
 
 
 	Pdef(m.ptn).play(quant:0.22);
-	Pdef(\tick).play(quant:0.22);
+	Pdef(tp).play(quant:0.22);
 };
 ~deinit = ~deinit <> {
 	Pdef(m.ptn).remove;
-	Pdef(\tick).remove;
+	Pdef(tp).remove;
 };
 
 //------------------------------------------------------------
@@ -87,11 +91,7 @@ SynthDef(\melodicPerc, {
 
 // example feeding the community
 ~onEvent = {|e|
-	if(e.root != m.com.root,{
-		// "key change".postln;
-		Pdef(m.ptn).reset;
-	});
-	Pdef(m.ptn).set(\root, m.com.root);
+	m.com.root = e.root;
 };
 
 
@@ -102,17 +102,17 @@ SynthDef(\melodicPerc, {
 
 	var dur = m.accelMassFiltered.linlin(0,2.5,0,2).round;
 	var dr = m.accelMassFiltered.lincurve(0,2.5,0.001,0.3,5);
-  var decay = d.sensors.gyroEvent.z.abs.linlin(0.2,0.8,1.0,0.1);
-  var curve = d.sensors.gyroEvent.z.abs.linlin(0.0,1.0,40.0,10.0);
+	var decay = d.sensors.gyroEvent.z.abs.linlin(0.2,0.8,1.0,0.2);
+	var curve = d.sensors.gyroEvent.z.abs.linlin(0.0,1.0,40.0,10.0);
 
-  Pdef(\tick).set(\curve, curve);
+  Pdef(tp).set(\curve, curve);
 
-  Pdef(m.ptn).set(\dur, 0.44 / 2.pow(dur));
+  	Pdef(m.ptn).set(\dur, 0.44 / 2.pow(dur));
 	Pdef(m.ptn).set(\decay, decay);
 	Pdef(m.ptn).set(\dr, dr);
 	// Pdef(m.ptn).set(\dist, dr*10);
 
-	if(m.accelMassFiltered > 0.1,{
+	if(m.accelMassFiltered > 0.2,{
 		if( Pdef(m.ptn).isPlaying.not,{
 			Pdef(m.ptn).resume(quant:0.22);
 		});

@@ -1,11 +1,13 @@
 (
 	[
 		"silence",
+		"melodicPerc1",
+		"melodicPerc2",
+		"velocity1",
+		"velocity2",
 		"bongo1",
-		"bongo2",
 		"funMelody",
 		"funBass",
-		"melodicPerc",
 		"harp1",
 		"rain1",
 		"thunder",
