@@ -103,7 +103,7 @@ SynthDef(\melodicPerc, {
 //------------------------------------------------------------
 ~next = {|d|
 
-	var dur = m.accelMassFiltered.linlin(0,2.5,0,2).round;
+	var dur = m.accelMassFiltered.linlin(0,2.0,0,2).round;
 	var dr = m.accelMassFiltered.lincurve(0,2.5,0.001,0.3,5);
 	var decay = d.sensors.gyroEvent.z.abs.linlin(0.2,0.8,2.0,1.0);
 	var curve = d.sensors.gyroEvent.z.abs.linlin(0.0,1.0,40.0,10.0);

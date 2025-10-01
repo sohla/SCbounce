@@ -165,17 +165,42 @@ var angleDiff = { |newAngle, oldAngle|
 
 //------------------------------------------------------------
 // Convert quaternion to Euler angles (matches your Quaternion.sc asEuler)
-var quatToEuler = { |quat|
-    var q = [quat.w, quat.x, quat.y, quat.z];
-    var euler = Array.newClear(3);
+// var quatToEuler = { |quat|
+//     var q = [quat.w, quat.x, quat.y, quat.z];
+//     var euler = Array.newClear(3);
     
-    euler[0] = atan2( (2 * q[1] * q[2]) - (2 * q[0] * q[3]), (2 * q[0]*q[0]) + (2 * q[1] * q[1]) - 1); // psi
-    euler[1] = asin( (2 * q[1] * q[3]) + (2 * q[0] * q[2])).neg; // theta
-    euler[2] = atan2( (2 * q[2] * q[3]) - (2 * q[0] * q[1]), (2 * q[0] * q[0]) + (2 * q[3] * q[3]) - 1); // phi
+//     euler[0] = atan2( (2 * q[1] * q[2]) - (2 * q[0] * q[3]), (2 * q[0]*q[0]) + (2 * q[1] * q[1]) - 1); // psi
+//     euler[1] = asin( (2 * q[1] * q[3]) + (2 * q[0] * q[2])).neg; // theta
+//     euler[2] = atan2( (2 * q[2] * q[3]) - (2 * q[0] * q[1]), (2 * q[0] * q[0]) + (2 * q[3] * q[3]) - 1); // phi
+    
+//     euler
+// };
+
+
+var quatToEuler = { |quat|
+    var w = quat.w, x = quat.x, y = quat.y, z = quat.z;
+    var euler = Array.newClear(3);
+    var sinr_cosp, cosr_cosp, sinp, siny_cosp, cosy_cosp;
+    
+    // Roll (x-axis rotation)
+    sinr_cosp = 2.0 * ((w * x) + (y * z));
+    cosr_cosp = 1.0 - (2.0 * ((x * x) + (y * y)));
+    euler[0] = atan2(sinr_cosp, cosr_cosp);
+    
+    // Pitch (y-axis rotation)
+    sinp = 2.0 * ((w * y) - (z * x));
+    euler[1] = if(sinp.abs >= 1,
+        { (pi / 2) * sinp.sign },  // gimbal lock handling
+        { asin(sinp) }
+    );
+    
+    // Yaw (z-axis rotation)
+    siny_cosp = 2.0 * ((w * z) + (x * y));
+    cosy_cosp = 1.0 - (2.0 * ((y * y) + (z * z)));
+    euler[2] = atan2(siny_cosp, cosy_cosp);
     
     euler
 };
-
 //------------------------------------------------------------
 // Calibrate device orientation - stores current quaternion as reference
 var calibrateDevice = { |devicePort|

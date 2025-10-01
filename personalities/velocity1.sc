@@ -13,6 +13,7 @@ m.rrateMassFilteredDecay = 0.2;
 SynthDef(\noise, { |out=0, frq=10000, gate=0, amp = 0, atk=0.02, sus=0.02, rel=0.9, lag=0.05, pch =1|
 	var env = EnvGen.ar(Env.adsr(atk,0.3,sus,rel), gate, doneAction:Done.freeSelf) * 10;
     var sig = DynKlank.ar(`[[50,100,200,400] * pch, [1,0.4,0.2,0.1], [1, 0.6, 0.3, 0.1]], WhiteNoise.ar(0.1));
+    // var sig = WhiteNoise.ar(4);
     sig = LPF.ar(sig, frq.lag(0.3)) * env * amp.lag(lag);
 	Out.ar(out, sig!2);
 }).add;
@@ -35,7 +36,7 @@ SynthDef(\noise, { |out=0, frq=10000, gate=0, amp = 0, atk=0.02, sus=0.02, rel=0
 //------------------------------------------------------------
 ~next = {|d|
 	// var amp = d.sensors.velocity.sum.abs.lincurve(0,0.03,0.0,1.0,-2);
-	var amp = m.accelMassFiltered.lincurve(0,2.5,0.0,0.2,-3);
+	var amp = m.accelMassFiltered.lincurve(0,2.5,0.0,0.3,-3);
     var ud = (d.sensors.gyroEvent.z / pi).lincurve(-0.8,0.5,13000,400,-2);
     
 
@@ -56,7 +57,7 @@ SynthDef(\noise, { |out=0, frq=10000, gate=0, amp = 0, atk=0.02, sus=0.02, rel=0
         synth.set(\lag,0.01);
     });
 
-    synth.set(\amp, amp);
+    synth.set(\amp, amp*1.5);
     synth.set(\frq, ud);
 };
 

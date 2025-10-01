@@ -70,7 +70,7 @@ SynthDef(\melodicPerc, {
 			\octave, Pseq([3,4,5,6].stutter(1), inf),
 			\dur, 0.22,
 			\pan, Pwhite(-0.1,0.1),
-			\amp, Pwhite(0.1,0.2, inf),
+			\amp, Pwhite(0.1,0.2, inf) ,
 			\args, #[]
 		);
 	);

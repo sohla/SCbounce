@@ -23,7 +23,8 @@ var addThreeDeeView = { |d|
 	graph1.add(cube = Canvas3DItem.cube()
 		.color_(d.color.alpha_(1))
 		.width_(2)
-		.transform(Canvas3D.mScale(0.4,0.5,1))
+		.transform(Canvas3D.mScale(1.0,0.4,0.5))
+		// .transform(Canvas3D.mScale(1.0,1.0,1.0))
 	);
 
 	graph1.add(accelX = Canvas3DItem.cube()
@@ -47,9 +48,9 @@ var addThreeDeeView = { |d|
 	graph1.animate(renderRate) {|t|
 		var sz = 0.1;
 		var tr = [
-			d.sensors.gyroEvent.x,
-			d.sensors.gyroEvent.y,
-			d.sensors.gyroEvent.z
+			(d.sensors.gyroEvent.x + pi.half).wrap(-pi,pi),
+			(d.sensors.gyroEvent.y).wrap(-pi.half,pi.half) * 1.neg,
+			(d.sensors.gyroEvent.z - pi.half).wrap(-pi,pi) * 1.neg
 		];
 
 		cube.transforms = [
