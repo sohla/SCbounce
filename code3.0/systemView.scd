@@ -6,7 +6,7 @@ var cpu = UserView()
     .maxHeight_(20)
     .animate_(true)
     .drawFunc_({|uv|
-    ("CPU: "++s.peakCPU.asStringPrec(1)++"%").drawAtPoint(16@4, Font.default, Color.yellow);
+    ("CPU: "++s.peakCPU.asStringPrec(3)++"%").drawAtPoint(16@4, Font.default, Color.yellow);
     ("Hosting: "++hosts).drawAtPoint(100@4, Font.default, Color.yellow);
     ("Port: "++NetAddr.	localAddr.port).drawAtPoint(400@4, Font.default, Color.yellow);
     ("UGens: "++s.numUGens).drawAtPoint(500@4, Font.default, Color.yellow);

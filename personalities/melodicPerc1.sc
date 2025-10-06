@@ -5,45 +5,33 @@ m.accelMassFilteredAttack = 0.7;
 m.accelMassFilteredDecay = 0.9;
 
 SynthDef(\tick, {
-		|out=0, gate=1, amp=0.3, pan=0, dcy=0.2, curve=40|
+		|out=0, gate=1, amp=0.3, pan=0, dcy=0.2, curve=40, ff = 4444|
 		var sig = PinkNoise.ar(EnvGen.ar(Env.perc(0.02,dcy,1,curve.neg), gate, doneAction:2));
+		sig = Resonz.ar(sig, ff, 0.1, 3);
 		Out.ar(out, Pan2.ar(sig,pan,amp))
 }).add;
 
-SynthDef(\melodicPerc, {
-    |out=0, freq=50, tension=0.1, decay=0.5, clickLevel=0.3, amp=0.9, dist = 15, dr = 0.003, gate=1|
-    var pitch_contour, drum_osc, click_osc, drum_env, click_env, sig, pch, sub;
-
-    // Pitch envelope
-    pitch_contour = Line.kr(10, 0, 0.02);
-
-    // Drum oscillator
-
+SynthDef(\melodicPerc, {|out=0, freq=50, tension=0.1, decay=0.5, clickLevel=0.3, amp=0.9, dist = 15, dr = 0.003, gate=1|
+	var pitch_contour, drum_osc, click_osc, drum_env, click_env, sig, pch, sub;
+	pitch_contour = Line.kr(10, 0, 0.02);
 	pch = freq * (1 + (pitch_contour * tension));
 	drum_osc = SinOsc.ar([pch,pch*1.002], LFNoise2.ar([4,5],7,-7),0.5);
 	sub = SinOsc.ar(freq * 0.25,0,3);
-    // Click oscillator
-    click_osc = LPF.ar(WhiteNoise.ar(1), 1100);
-
-    // Drum envelope
-    drum_env = EnvGen.ar(
-        Env.perc(attackTime: 0.003, releaseTime: decay, curve: -4),
-				gate
-				// doneAction: Done.freeSelf	
-    );
-
-    // Click envelope
-    click_env = EnvGen.ar(
-        Env.perc(attackTime: 0.001, releaseTime: dr),
-        levelScale: clickLevel
-    );
+	click_osc = LPF.ar(WhiteNoise.ar(1), 3100);
+	drum_env = EnvGen.ar(
+			Env.perc(attackTime: 0.003, releaseTime: decay, curve: -4),
+			gate
+	);
+	click_env = EnvGen.ar(
+			Env.perc(attackTime: 0.001, releaseTime: dr),
+			levelScale: clickLevel
+	);
 	sig = (drum_osc * drum_env) + (click_osc * click_env);
 	sig = (sig * dist).tanh.distort;
 	sig = sig + (sub * drum_env);
 
 	DetectSilence.ar(sig, doneAction:2);
-    // Mix and output
-    Out.ar(out, Pan2.ar(sig,0,amp))
+	Out.ar(out, Pan2.ar(sig,0,amp))
 }).add;
 
 
@@ -70,7 +58,7 @@ SynthDef(\melodicPerc, {
 			\octave, Pseq([3,4,5,6].stutter(1), inf),
 			\dur, 0.22,
 			\pan, Pwhite(-0.1,0.1),
-			\amp, Pwhite(0.1,0.2, inf) ,
+			\amp, Pwhite(0.8,0.9, inf),
 			\args, #[]
 		);
 	);
@@ -99,14 +87,16 @@ SynthDef(\melodicPerc, {
 //------------------------------------------------------------
 ~next = {|d|
 
-	var dur = m.accelMassFiltered.linlin(0,2.5,0,2).round;
+	var dur = m.accelMassFiltered.lincurve(0,2.5,0,2,1).round;
 	var dr = m.accelMassFiltered.lincurve(0,2.5,0.001,0.3,5);
 	var decay = d.sensors.gyroEvent.z.abs.linlin(0.2,0.8,1.0,0.2);
-	var curve = d.sensors.gyroEvent.z.abs.linlin(0.0,1.0,30.0,7.0);
+	var curve = (d.sensors.gyroEvent.y / pi.half).linlin(-1.0,1.0,50.0,1.0);
+	var ff = (d.sensors.gyroEvent.y / pi.half).lincurve(-1.0,1.0,40.0,10000.0, 3);
 
   Pdef(tp).set(\curve, curve);
+  Pdef(tp).set(\ff, ff);
 
-  	Pdef(m.ptn).set(\dur, 0.44 / 2.pow(dur));
+  Pdef(m.ptn).set(\dur, 0.44 / 2.pow(dur));
 	Pdef(m.ptn).set(\decay, decay);
 	Pdef(m.ptn).set(\dr, dr);
 	// Pdef(m.ptn).set(\dist, dr*10);

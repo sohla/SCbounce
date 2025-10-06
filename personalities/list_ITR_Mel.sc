@@ -1,6 +1,11 @@
 (
 	[
 		"silence",
+		"mel1",
+		"mel2",
+		"mel3",
+		"mel4",
+		"brenton4",
 		"melodicPerc1",
 		"melodicPerc2",
 		"velocity1",

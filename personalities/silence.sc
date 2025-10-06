@@ -1,8 +1,8 @@
 var m = ~model;
 m.accelMassFilteredAttack = 0.7;
-m.accelMassFilteredDecay = 0.99;
-m.rrateMassFilteredAttack = 0.99;
-m.rrateMassFilteredDecay = 0.99;
+m.accelMassFilteredDecay = 0.2;
+m.rrateMassFilteredAttack = 0.7;
+m.rrateMassFilteredDecay = 0.2;
 
 //------------------------------------------------------------
 
@@ -25,27 +25,28 @@ m.rrateMassFilteredDecay = 0.99;
 ~plotMin = -1;
 ~plotMax = 1;
 ~plot = { |d,p|
-	// [0.2,0.4,0.6];
-	// [d.sensors.rrateEvent.x, d.sensors.rrateEvent.y, d.sensors.rrateEvent.z];
-	// [d.sensors.accelEvent.x, d.sensors.accelEvent.y, d.sensors.accelEvent.z] * 0.5;
-	// [m.accelMass.abs - m.accelMass, m.accelMass - m.accelMass.abs];
-	// [d.sensors.velocity.sum.abs * 30 ,m.accelMass];// compare these values we can get direction?
 
-	// [d.sensors.velocity.sum * 30, d.sensors.velocity.sum.abs * 30];
+	// [yellow, magenta, cyan]
 
+	// Velocity
+	// [d.sensors.velocity.x, d.sensors.velocity.y, d.sensors.velocity.z] * 30;
+	
+	// Acceleration
+	// [d.sensors.accelEvent.x, d.sensors.accelEvent.y, d.sensors.accelEvent.z] * 0.1;
+	// [m.accelMass, m.accelMassFiltered] * 0.2;
 
-	// // [((m.accelMassFiltered - m.accelMassFiltered.abs)-(m.accelMassFiltered.abs - m.accelMassFiltered)).abs, m.accelMassFiltered.abs];
-	// [m.rrateMassFiltered];
-	// [m.rrateMassFiltered, m.rrateMassThreshold, m.accelMassAmp];
+	// Rotation
+	// [d.sensors.rrateEvent.x, d.sensors.rrateEvent.y, d.sensors.rrateEvent.z].abs;
+	// [[d.sensors.rrateEvent.x, d.sensors.rrateEvent.y, d.sensors.rrateEvent.z].sumabs];
+	// [m.rrateMass, m.rrateMassFiltered];
+
+	// Gyro
 	// [(d.sensors.gyroEvent.x / pi)];//roll
 	// [(d.sensors.gyroEvent.y / pi.half)];//up down
 	// [(d.sensors.gyroEvent.z / pi)];//left right
+	[(d.sensors.gyroEvent.x / pi), (d.sensors.gyroEvent.y / pi.half), (d.sensors.gyroEvent.z / pi)];
 
-	[(d.sensors.gyroEvent.x / pi), (d.sensors.gyroEvent.y / pi.half), (d.sensors.gyroEvent.z / pi)];//gyro
-
-	// [d.sensors.rotateEvent.x, d.sensors.rotateEvent.y, d.sensors.rotateEvent.z];
-	// [d.sensors.rrateEvent.x, d.sensors.rrateEvent.y, d.sensors.rrateEvent.z] * 4;
-	// [d.sensors.accelEvent.x, d.sensors.accelEvent.y, d.sensors.accelEvent.z] * 0.1;
+	// [(d.sensors.gyroEvent.y / pi.half).lincurve(-1.0,1.0,-1.0,1.0,3)];
 
 
 };
