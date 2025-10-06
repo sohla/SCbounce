@@ -37,10 +37,9 @@ SynthDef(\noise, { |out=0, frq=10000, gate=0, amp = 0, atk=0.02, sus=0.9, rel=0.
 
 //------------------------------------------------------------
 ~next = {|d|
-	// var amp = d.sensors.velocity.sum.abs.lincurve(0,0.03,0.0,1.0,-2);
+
 	var amp = m.accelMassFiltered.lincurve(0,2.5,0.0,0.1,-3);
-    var ud = (d.sensors.gyroEvent.z / pi).lincurve(-0.8,0.5,13000,400,-2);
-    
+    var ud = (d.sensors.gyroEvent.y / pi.half).linexp(-0.8,0.9,400,10000);
 
     if(amp<0.02,{
         amp=0;

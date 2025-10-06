@@ -69,8 +69,8 @@ SynthDef(\melodicPerc, {
 			\instrument, \tick,
 			\octave, Pseq([7,8,8,7].stutter(1), inf),
 			\dur, 0.11,
-            \decay, 0.3,
-			\pan,Pseg( Pseq([-1,1], inf),Pseq([1,1],inf), \sine, inf),
+    	\decay, 0.3,
+			//\pan,Pseg( Pseq([-1,1], inf),Pseq([1,1],inf), \sine, inf),
 			\args, #[]
 		);
 	);
@@ -107,14 +107,16 @@ SynthDef(\melodicPerc, {
 	var dr = m.accelMassFiltered.lincurve(0,2.5,0.001,0.3,5);
 	var decay = d.sensors.gyroEvent.z.abs.linlin(0.2,0.8,2.0,1.0);
 	var curve = d.sensors.gyroEvent.z.abs.linlin(0.0,1.0,40.0,10.0);
-	var amp = (d.sensors.gyroEvent.z/pi).lincurve(-1.0,1.0,0.0,0.4);
+	var amp = (d.sensors.gyroEvent.y/pi.half).lincurve(-1.0,1.0,0.0,0.4);
 	var frq = m.accelMassFiltered.lincurve.lincurve(0.0,2.5,100,14000,-3);
+	var pan = (d.sensors.gyroEvent.z/pi).linlin(-1.0,1.0,1.0,-1.0);
 
     Pdef(tp).set(\curve, curve);
     Pdef(tp).set(\amp,amp);
     Pdef(tp).set(\frq,frq);
+		Pdef(tp).set(\pan, pan);
     
-    Pdef(m.ptn).set(\dur, 0.44 / 2.pow(dur));
+  Pdef(m.ptn).set(\dur, 0.44 / 2.pow(dur));
 	Pdef(m.ptn).set(\decay, decay);
 	Pdef(m.ptn).set(\dr, dr);
 	// Pdef(m.ptn).set(\dist, dr*10);

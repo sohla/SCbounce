@@ -2,10 +2,10 @@ var m = ~model;
 var synth;
 var index =0;
 var trig = false;
-var notes = [12,11,9,7,12,11,9,14,12,11,9,7,5,4,2]+24;
+var notes = [12,11,9,7,12,11,9,7,14,12,11,9,7,5,4,2]+24;
 var note = notes[0];
 m.accelMassFilteredAttack = 0.99;
-m.accelMassFilteredDecay = 0.3;
+m.accelMassFilteredDecay = 0.2;
 m.rrateMassFilteredAttack = 0.3;
 m.rrateMassFilteredDecay = 0.2;
 
@@ -21,12 +21,10 @@ SynthDef(\noise, { |out=0, frq=10000, gate=0, amp = 0, atk=0.02, sus=0.02, rel=0
 //------------------------------------------------------------
 ~init = ~init <> {
 	synth = Synth(\noise, [\frq, 1000, \gate, 1]);
-
 };
 //------------------------------------------------------------
 ~deinit = ~deinit <> {
     synth.set(\gate, 0);
-
 };
 
 //------------------------------------------------------------
@@ -37,7 +35,7 @@ SynthDef(\noise, { |out=0, frq=10000, gate=0, amp = 0, atk=0.02, sus=0.02, rel=0
 ~next = {|d|
 	// var amp = d.sensors.velocity.sum.abs.lincurve(0,0.03,0.0,1.0,-2);
 	var amp = m.accelMassFiltered.lincurve(0,2.5,0.0,0.3,-3);
-    var ud = (d.sensors.gyroEvent.z / pi).lincurve(-0.8,0.5,13000,400,-2);
+    var ud = (d.sensors.gyroEvent.y / pi.half).linexp(-0.8,0.9,400,10000);
     
 
     if(amp<0.03,{
@@ -77,7 +75,7 @@ SynthDef(\noise, { |out=0, frq=10000, gate=0, amp = 0, atk=0.02, sus=0.02, rel=0
 	// // [((m.accelMassFiltered - m.accelMassFiltered.abs)-(m.accelMassFiltered.abs - m.accelMassFiltered)).abs, m.accelMassFiltered.abs];
 	// [m.rrateMassFiltered];
 	// [m.rrateMassFiltered, m.rrateMassThreshold, m.accelMassAmp];
-	[d.sensors.gyroEvent.z] / pi;
+	[d.sensors.gyroEvent.y / pi.half];
 	// [d.sensors.rotateEvent.x, d.sensors.rotateEvent.y, d.sensors.rotateEvent.z];
 	// [d.sensors.rrateEvent.x, d.sensors.rrateEvent.y, d.sensors.rrateEvent.z] * 4;
 	// [d.sensors.accelEvent.x, d.sensors.accelEvent.y, d.sensors.accelEvent.z] * 0.1;

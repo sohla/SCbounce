@@ -6,7 +6,7 @@ var frame = 0;
 var synth, bassSynth;
 var dur = 0.11;
 var notes = [0,2,5,7,9,11,12,14,12,11] + 1;
-var bass = [2,9,5,12,5,9,2] + 1;
+var bass = [2,9,5,12,5,9,2].stutter(2) + 1;
 var root = [0];
 var offset = 0;
 var bassCount = 0;
@@ -179,7 +179,7 @@ SynthDef(\funBass, {
 //------------------------------------------------------------
 ~next = {|d|
 
-	var move = m.accelMassFiltered.lincurve(0,3,3,notes.size,2);
+	var move = m.accelMassFiltered.lincurve(0,3.5,2000,notes.size,2);
 	var amp = m.accelMassFiltered.lincurve(0,2.4,-50,-8,-1);
 	var ff = m.rrateMassFiltered.lincurve(0.0,2.0,200,2000,-3); //left right
 	var step = d.sensors.gyroEvent.x.linlin(-0.8,0.8,0,3).floor; //up down
@@ -217,7 +217,7 @@ SynthDef(\funBass, {
 		});
 	});
 
-	if(m.accelMassFiltered > 2.1, {
+	if(m.accelMassFiltered > 5, {
 		if(TempoClock.beats > (lastTime + (dur*4)),{
 			var n = bass[0] + root[0];
    			var event = (

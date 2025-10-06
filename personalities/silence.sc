@@ -37,9 +37,12 @@ m.rrateMassFilteredDecay = 0.99;
 	// // [((m.accelMassFiltered - m.accelMassFiltered.abs)-(m.accelMassFiltered.abs - m.accelMassFiltered)).abs, m.accelMassFiltered.abs];
 	// [m.rrateMassFiltered];
 	// [m.rrateMassFiltered, m.rrateMassThreshold, m.accelMassAmp];
-	[(d.sensors.gyroEvent.x / pi)];//roll
+	// [(d.sensors.gyroEvent.x / pi)];//roll
 	// [(d.sensors.gyroEvent.y / pi.half)];//up down
 	// [(d.sensors.gyroEvent.z / pi)];//left right
+
+	[(d.sensors.gyroEvent.x / pi), (d.sensors.gyroEvent.y / pi.half), (d.sensors.gyroEvent.z / pi)];//gyro
+
 	// [d.sensors.rotateEvent.x, d.sensors.rotateEvent.y, d.sensors.rotateEvent.z];
 	// [d.sensors.rrateEvent.x, d.sensors.rrateEvent.y, d.sensors.rrateEvent.z] * 4;
 	// [d.sensors.accelEvent.x, d.sensors.accelEvent.y, d.sensors.accelEvent.z] * 0.1;
