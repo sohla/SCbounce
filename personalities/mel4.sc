@@ -4,6 +4,8 @@ var buffer;
 
 m.accelMassFilteredAttack = 0.99;
 m.accelMassFilteredDecay = 0.8;
+m.rrateMassFilteredAttack = 0.7;
+m.rrateMassFilteredDecay = 0.2;
 
 //------------------------------------------------------------
 SynthDef(\bufGrain, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=440,
@@ -12,12 +14,8 @@ SynthDef(\bufGrain, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=440
 	var lr = rate * BufRateScale.kr(bufnum) * (freq/440.0);
 	var env = EnvGen.kr(Env.adsr(attack, decay, sustain, release), gate, doneAction:2);
 	var sig = Splay.arFill(2,{|i|
-		Warp1.ar(2, bufnum, start, rate * (i+1) , 0.3, windowRandRatio:0.3)},
-	1,1,0);
-    // sig = RLPF.ar(sig, cutoff, rq) + sub;
-		// sig = Resonz.ar(sig, rezf.lag(0.4), 0.05, 5)* amp.lag(0.9);
-		// sig = AllpassN.ar(sig, 0.1, [0.09, 0.08], 8);
-		// sig = JPverb.ar(sig,1, modDepth: 0.1, modFreq: 4.0, low: 1.0);
+			Warp1.ar(2, bufnum, start, rate * (i+1) , 0.3, -1, 8, windowRandRatio:0.3)
+	},1,1,0);
   sig = Compander.ar(sig, sig,
         thresh: 0.01,
         slopeBelow: 1,

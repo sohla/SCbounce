@@ -1,6 +1,7 @@
 (
 	[
 		"silence",
+		"melbb1",
 		"mel1",
 		"mel2",
 		"mel3",

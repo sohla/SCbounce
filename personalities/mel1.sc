@@ -8,16 +8,14 @@ m.accelMassFilteredDecay = 0.8;
 
 //------------------------------------------------------------
 SynthDef(\stereoSampler1, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=440,
-    attack=0.01, decay=0.1, sustain=0.3, release=0.2, gate=1,cutoff=20000, rq=0.9|
-
-	  var lr = rate * BufRateScale.kr(bufnum) * (freq/440.0);
-    var env = EnvGen.kr(Env.adsr(attack, decay, sustain, release), gate, timeScale: 2,doneAction: 2);
+	attack=0.01, decay=0.1, sustain=0.3, release=0.2, gate=1,cutoff=20000, rq=0.9|
+	var lr = rate * BufRateScale.kr(bufnum) * (freq/440.0);
+	var env = EnvGen.kr(Env.adsr(attack, decay, sustain, release), gate, timeScale: 2,doneAction: 2);
 	var sig = PlayBuf.ar(2, bufnum, rate: [lr, lr * 1.003], startPos: start * BufFrames.kr(bufnum), loop: 0);
-	// var osc = SinOsc.ar((60 - 24 + rate.ratiomidi).midicps * [1,1.03], 0, 0.4 + (sig * 0.5)).distort;
-    sig = RLPF.ar(sig, cutoff, rq);// + osc;
-    sig = Balance2.ar(sig[0], sig[1], pan, amp * env);
+	sig = RLPF.ar(sig, cutoff, rq);// + osc;
+	sig = Balance2.ar(sig[0], sig[1], pan, amp * env);
 	sig = LeakDC.ar(sig);
-    Out.ar(out, sig);
+	Out.ar(out, sig);
 }).add;
 
 //------------------------------------------------------------
@@ -33,7 +31,7 @@ SynthDef(\stereoSampler1, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, fr
 			Pbind(
 				\instrument, \stereoSampler1,
 				\bufnum, buf,
-				\octave, Pxrand([3], inf),
+				\octave, Pxrand([0,1,2,1], inf),
 				\note, Pwhite(33,33, inf).floor,
 				\start,Pwhite(0.0,0.1),
 				\attack,0.1,
