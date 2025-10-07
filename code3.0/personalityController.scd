@@ -8,8 +8,8 @@ var personalityDir = "~/Develop/SuperCollider/Projects/SCbounce/personalities/";
 // var defaultPersonality = "1. Start";
 // var defaultList = "list_brenton.sc";
 
-// var list = "list_ITR_Mel.sc";
-var list = "list_tests.sc";
+var list = "list_ITR_Mel.sc";
+// var list = "list_tests.sc";
 
 var defaultLists = [
     list,

@@ -57,8 +57,12 @@ SynthDef(\stereoSampler1, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, fr
 };
 ~deinit = ~deinit <> {
 	Pdef(m.ptn).remove;
-	postf("buffer dealloc [%] \n", buffer);
-	buffer.free;
+	fork{
+		1.0.yield;
+		postf("buffer dealloc [%] \n", buffer);
+		buffer.free;
+		s.sync;
+	};
 };
 
 //------------------------------------------------------------

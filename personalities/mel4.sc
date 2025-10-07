@@ -41,15 +41,18 @@ SynthDef(\bufGrain, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=440
 };
 
 ~deinit = ~deinit <> {
-	// synth.free;
+
+	synth.onFree({
+		postf("buffer dealloc [%] \n", buffer);
+		buffer.free;
+	});	
 	synth.set(\gate, 0);
-	buffer.free;
 };
 //------------------------------------------------------------
 ~next = {|d|
 	var amp = m.accelMassFiltered.linlin(0,2,0.00001,1);
 	var start = (d.sensors.gyroEvent.z / pi).lincurve(-1.0,1.0,0.0,1.0,0);
-  var rate =  (d.sensors.gyroEvent.y / pi.half).lincurve(-1.0,1.0,0.2,2.0,0);
+  var rate =  (d.sensors.gyroEvent.y / pi.half).lincurve(-1.0,1.0,0.1,2.0,0);
 
 	if(amp < 0.001, {amp = 0});
 
