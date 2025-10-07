@@ -1,10 +1,10 @@
 var m = ~model;
-var bi = 0;
-var dur = 0.14 * 1;
-var limit = 8;
+var bi = [5,14].choose;
+var dur = 0.085;
+var limit = 0;
 ~buffers;
 m.accelMassFilteredAttack = 0.99;
-m.accelMassFilteredDecay = 0.9;
+m.accelMassFilteredDecay = 0.3;
 m.rrateMassFilteredAttack = 0.9;
 m.rrateMassFilteredDecay = 0.9;
 
@@ -14,7 +14,7 @@ SynthDef(\drumkit, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 	var lr = rate * BufRateScale.kr(bufnum);
 	var cd = BufDur.kr(bufnum);
   var env = EnvGen.kr(Env.adsr(attack, decay, sustain, release), gate, doneAction: 2);
-	var sig = PlayBuf.ar(2, bufnum, rate: [lr, lr * 1] * (octave * 12).midiratio, startPos: start * BufFrames.kr(bufnum), loop: 0) * 10;
+	var sig = PlayBuf.ar(1, bufnum, rate: [lr, lr * 1] * (octave * 12).midiratio, startPos: start * BufFrames.kr(bufnum), loop: 0) * 10;
     sig = RHPF.ar(sig, cutoff, rq);
 		sig = Compander.ar(sig, sig,
         thresh: -5.dbamp,
@@ -31,6 +31,8 @@ SynthDef(\drumkit, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 ~init = ~init <> {
 
 	var folder  = PathName("~/Downloads/melSamples/melbb");
+	// var folder  = PathName("~/Downloads/yourDNASamples/drums");
+
 	postf("loading samples : % \n", folder);
 
 	~buffers = folder.entries.collect({ |path,i|
@@ -42,23 +44,35 @@ SynthDef(\drumkit, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 		});
 	});
 
+
+  Event.addEventType(\customBeatEvent, {
+    ~cnt = ~cnt.mod((8/~subdiv));
+    // (~subdiv).postln;
+    if(~cnt == 0,{
+      ~type = \note;
+      currentEnvironment.play;
+      // "-------".postln;
+    });
+  });
+
 	Pdef(m.ptn,
 		Pbind(
 			\instrument, \drumkit,			
+      \type, \customBeatEvent,
 			\bufnum, Pfunc{
         bi = bi + 1;
-				if(bi >= (limit),{bi=0});
+				if(bi >= (~buffers.size-1),{bi=0});
 				~buffers[bi];
 			},
 			\octave, Pseq([0].stutter(8), inf),
 			\start, 0,
 			\note, Pseq([30], inf),
-			\dur, dur,//Pseq([1,Rest(1),2,2,1,Rest(1),1] * dur, inf),
-      \legato, 0.1,
-      \rate, 0.5,//Pseq([-12, -9, -5,-2,0].midiratio.stutter(12), inf),
+			\dur, dur,
 			\pan, Pwhite(-0.4,0.4),
 			\attack, 0.02,
-			// \release,0.2,
+      // \release, 0.03,
+      \cnt, Pseries(0,1, inf),
+      \func, Pfunc({|e| ~onEvent.(e)}),
 			\args, #[],
 		)
 	);
@@ -69,6 +83,8 @@ SynthDef(\drumkit, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 };
 
 ~deinit = ~deinit <> {
+  
+  Event.removeEventType(\customBeatEvent);
 	Pdef(m.ptn).remove;
 
 	~buffers.do({|buf|
@@ -78,23 +94,25 @@ SynthDef(\drumkit, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 	});
 };
 
+//------------------------------------------------------------
+~onEvent = {|e|
+
+  true
+};
 
 //------------------------------------------------------------
 ~next = {|d|
 
-	var rel = (d.sensors.gyroEvent.y / pi.half).clip(-0.5,0.5).lincurve(-0.5,0.5,0.3,0.01,3);
-	var amp = m.accelMassFiltered.lincurve(0,2.5,0.2,1, -1);
-	Pdef(m.ptn).set(\amp, amp);
-	Pdef(m.ptn).set(\release, rel);
+  var ud = m.accelMassFiltered.lincurve(0.0,2.5,0,3,8).round;
+  var rate = (d.sensors.gyroEvent.y / pi.half).clip(-0.5,0.5).lincurve(-0.5,0.5,-1,2,-1).floor;
 
-	// bi = (d.sensors.gyroEvent.y.abs / pi) * (~buffers.size-1);
-	// bi = bi.asInteger;
-	// bi = [0,1,10].choose;
+  Pdef(m.ptn).set(\subdiv,2.pow(ud));
+  Pdef(m.ptn).set(\amp,1);
+  Pdef(m.ptn).set(\rate,2.pow(rate));
 
-	if(m.rrateMassFiltered > 0.01,{
+	if(m.accelMassFiltered > 0.05,{
 		if( Pdef(m.ptn).isPlaying.not,{
-      bi = 8;
-			Pdef(m.ptn).play(quant:dur*1);
+			Pdef(m.ptn).resume(quant:dur);
 		});
 	},{
 		if( Pdef(m.ptn).isPlaying,{
