@@ -2,9 +2,12 @@ var m = ~model;
 var bi = 0;
 var dur = 0.14 * 1;
 var limit = 8;
+var step = 1;
+var lastTime=0;
+
 ~buffers;
 m.accelMassFilteredAttack = 0.99;
-m.accelMassFilteredDecay = 0.9;
+m.accelMassFilteredDecay = 0.5;
 m.rrateMassFilteredAttack = 0.9;
 m.rrateMassFilteredDecay = 0.9;
 
@@ -14,7 +17,7 @@ SynthDef(\drumkit, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 	var lr = rate * BufRateScale.kr(bufnum);
 	var cd = BufDur.kr(bufnum);
   var env = EnvGen.kr(Env.adsr(attack, decay, sustain, release), gate, doneAction: 2);
-	var sig = PlayBuf.ar(2, bufnum, rate: [lr, lr * 1] * (octave * 12).midiratio, startPos: start * BufFrames.kr(bufnum), loop: 0) * 10;
+	var sig = PlayBuf.ar(1, bufnum, rate: [lr, lr * 1] * (octave * 12).midiratio, startPos: start * BufFrames.kr(bufnum), loop: 0) * 10;
     sig = RHPF.ar(sig, cutoff, rq);
 		sig = Compander.ar(sig, sig,
         thresh: -5.dbamp,
@@ -31,6 +34,8 @@ SynthDef(\drumkit, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 ~init = ~init <> {
 
 	var folder  = PathName("~/Downloads/melSamples/melbb");
+		// var folder  = PathName("~/Downloads/yourDNASamples/drums");
+
 	postf("loading samples : % \n", folder);
 
 	~buffers = folder.entries.collect({ |path,i|
@@ -46,30 +51,56 @@ SynthDef(\drumkit, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 		Pbind(
 			\instrument, \drumkit,			
 			\bufnum, Pfunc{
-        bi = bi + 1;
-				if(bi >= (limit),{bi=0});
+        bi = bi + step;
+				if(bi >= (7),{bi=0});
 				~buffers[bi];
 			},
 			\octave, Pseq([0].stutter(8), inf),
-			\start, 0,
+			\start, 0.05,
 			\note, Pseq([30], inf),
-			\dur, dur,//Pseq([1,Rest(1),2,2,1,Rest(1),1] * dur, inf),
-      \legato, 0.1,
-      \rate, 0.5,//Pseq([-12, -9, -5,-2,0].midiratio.stutter(12), inf),
+			// \dur, dur,
 			\pan, Pwhite(-0.4,0.4),
 			\attack, 0.02,
-			// \release,0.2,
+
 			\args, #[],
 		)
 	);
 
+
+	Pdef(\shaker,
+		Pbind(
+			\instrument, \drumkit,			
+			\bufnum, Pfunc{
+				~buffers[1];
+			},
+			\octave, Pseq([0].stutter(8), inf),
+			\start, Pwhite(0.15,0.3),
+			\note, Pseq([30], inf),
+			\rate, Pxrand([0.5,1], inf),
+			\dur, dur,
+			\cnt, Pseries(0,1, inf),
+			\clk, Pfunc({TempoClock.beats}),
+			\pan, Pwhite(-0.4,0.4),
+			\attack, 0.07,
+			\legato, 0.2,
+			\release, Pwhite(0.1,0.9),
+			\func, Pfunc({|e| ~onEvent.(e)}),
+			\args, #[],
+		)
+	);
+
+
 	Pdef(m.ptn).play(quant:dur);
 	Pdef(m.ptn).set(\bufnum, ~buffers[0]);
+
+	Pdef(\shaker).play(quant:dur);
+
 
 };
 
 ~deinit = ~deinit <> {
 	Pdef(m.ptn).remove;
+	Pdef(\shaker).remove;
 
 	~buffers.do({|buf|
 		buf.free;
@@ -78,22 +109,42 @@ SynthDef(\drumkit, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 	});
 };
 
+//------------------------------------------------------------
+~onEvent = {|e|
+	
+	if(e.clk > (lastTime + (0.14 * 2)),{
+		lastTime = e.clk;
+		if(m.accelMassFiltered > 1.5,{
+				dur = 0.14/2;
+		},{
+				dur = 0.14
+		});
+
+	});
+  true
+};
 
 //------------------------------------------------------------
 ~next = {|d|
 
 	var rel = (d.sensors.gyroEvent.y / pi.half).clip(-0.5,0.5).lincurve(-0.5,0.5,0.3,0.01,3);
-	var amp = m.accelMassFiltered.lincurve(0,2.5,0.2,1, -1);
-	Pdef(m.ptn).set(\amp, amp);
+	var amp = m.accelMassFiltered.lincurve(0,1.0,0.2,1, -1);
+	var roll = (d.sensors.gyroEvent.x / pi).lincurve(-0.2,0.4,1,2,-2) * 0.5;
+	var sa = m.rrateMassFiltered.lincurve(0,0.3,0.1,0.35, -1);
+
+
+	Pdef(m.ptn).set(\amp, amp * 0.5);
 	Pdef(m.ptn).set(\release, rel);
+	Pdef(m.ptn).set(\rate, roll);
+	step = 2.pow(m.accelMassFiltered.lincurve(0,1.0,-1,0, -1));
 
-	// bi = (d.sensors.gyroEvent.y.abs / pi) * (~buffers.size-1);
-	// bi = bi.asInteger;
-	// bi = [0,1,10].choose;
+	Pdef(\shaker).set(\amp, sa);	
+	Pdef(m.ptn).set(\dur, dur);	
 
-	if(m.rrateMassFiltered > 0.01,{
+
+	if(m.accelMassFiltered > 0.1,{
 		if( Pdef(m.ptn).isPlaying.not,{
-      bi = 8;
+      // bi = 8;
 			Pdef(m.ptn).play(quant:dur*1);
 		});
 	},{
@@ -115,12 +166,12 @@ SynthDef(\drumkit, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 	
 	// Acceleration
 	// [d.sensors.accelEvent.x, d.sensors.accelEvent.y, d.sensors.accelEvent.z] * 0.1;
-	// [m.accelMass, m.accelMassFiltered] * 0.2;
+	[m.accelMass, m.accelMassFiltered];
 
 	// Rotation
 	// [d.sensors.rrateEvent.x, d.sensors.rrateEvent.y, d.sensors.rrateEvent.z].abs;
 	// [[d.sensors.rrateEvent.x, d.sensors.rrateEvent.y, d.sensors.rrateEvent.z].sumabs];
-	[m.rrateMass, m.rrateMassFiltered];
+	// [m.rrateMass, m.rrateMassFiltered];
 
 	// Gyro
 	// [(d.sensors.gyroEvent.x / pi)];//roll

@@ -14,7 +14,7 @@ SynthDef(\drumkit, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 	var lr = rate * BufRateScale.kr(bufnum);
 	var cd = BufDur.kr(bufnum);
   var env = EnvGen.kr(Env.adsr(attack, decay, sustain, release), gate, doneAction: 2);
-	var sig = PlayBuf.ar(2, bufnum, rate: [lr, lr * 1] * (octave * 12).midiratio, startPos: start * BufFrames.kr(bufnum), loop: 0) * 10;
+	var sig = PlayBuf.ar(1, bufnum, rate: [lr, lr * 1] * (octave * 12).midiratio, startPos: start * BufFrames.kr(bufnum), loop: 0) * 10;
     sig = RHPF.ar(sig, cutoff, rq);
 		sig = Compander.ar(sig, sig,
         thresh: -5.dbamp,
@@ -30,8 +30,8 @@ SynthDef(\drumkit, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 //--------------------------------------
 ~init = ~init <> {
 
-	var folder  = PathName("~/Downloads/melSamples/melbb");
-	// var folder  = PathName("~/Downloads/yourDNASamples/drums");
+	// var folder  = PathName("~/Downloads/melSamples/melbb");
+	var folder  = PathName("~/Downloads/yourDNASamples/drums");
 
 	postf("loading samples : % \n", folder);
 
@@ -72,7 +72,7 @@ SynthDef(\drumkit, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 			\dur, dur,
 			\pan, Pwhite(-0.4,0.4),
 			\attack, 0.02,
-      // \release, 0.03,
+      \release, 0.3,
       \cnt, Pseries(0,1, inf),
       \func, Pfunc({|e| ~onEvent.(e)}),
 			\args, #[],
@@ -105,14 +105,16 @@ SynthDef(\drumkit, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 //------------------------------------------------------------
 ~next = {|d|
 
-  var ud = m.accelMassFiltered.lincurve(0.0,2.5,0,3,8).round;
-  var rate = (d.sensors.gyroEvent.y / pi.half).clip(-0.5,0.5).lincurve(-0.5,0.5,-1,2,-1).floor;
+  // var ud = m.accelMassFiltered.lincurve(0.0,3.0,0,3,2).round;
+  var ud = (d.sensors.gyroEvent.y / pi.half).clip(-0.5,0.5).lincurve(-0.5,0.5,0,3,1).round;
+  // var ud = m.rrateMassFiltered.lincurve(0.0,0.2,0,3,8).round;
+  var rate = (d.sensors.gyroEvent.y / pi.half).clip(-0.5,0.5).lincurve(-0.5,0.5,-1,1,-1).floor;
 
   Pdef(m.ptn).set(\subdiv,2.pow(ud));
-  Pdef(m.ptn).set(\amp,1);
+  Pdef(m.ptn).set(\amp,0.5);
   Pdef(m.ptn).set(\rate,2.pow(rate));
 
-	if(m.accelMassFiltered > 0.05,{
+	if(m.accelMassFiltered > 0.1,{
 		if( Pdef(m.ptn).isPlaying.not,{
 			Pdef(m.ptn).resume(quant:dur);
 		});
@@ -135,12 +137,12 @@ SynthDef(\drumkit, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 	
 	// Acceleration
 	// [d.sensors.accelEvent.x, d.sensors.accelEvent.y, d.sensors.accelEvent.z] * 0.1;
-	// [m.accelMass, m.accelMassFiltered] * 0.2;
+	[m.accelMass, m.accelMassFiltered];
 
 	// Rotation
 	// [d.sensors.rrateEvent.x, d.sensors.rrateEvent.y, d.sensors.rrateEvent.z].abs;
 	// [[d.sensors.rrateEvent.x, d.sensors.rrateEvent.y, d.sensors.rrateEvent.z].sumabs];
-	[m.rrateMass, m.rrateMassFiltered];
+	// [m.rrateMass, m.rrateMassFiltered];
 
 	// Gyro
 	// [(d.sensors.gyroEvent.x / pi)];//roll
