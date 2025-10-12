@@ -25,6 +25,11 @@ var getCPUInstant = {
         // Update GUI
     }.defer;
 };
+var getTemp = {
+    var result = "cat /sys/class/thermal/thermal_zone0/temp".unixCmdGetStdOut;
+    var temp = result.asInteger / 1000.0; // Convert millidegrees to degrees
+    temp.postln;
+};
 
 var serverView = UserView()
     .minWidth_(60)
@@ -48,6 +53,7 @@ var serverView = UserView()
 			// 	}.defer;
 			// };
 			// getCPUInstant.();
+			// getTemp.();
 			("Server: "++s.peakCPU.asStringPrec(3)++"%").drawAtPoint(6@4, Font.default, Color.yellow);
 			("Hosting: "++hosts).drawAtPoint(110@4, Font.default, Color.yellow);
 			("Port: "++NetAddr.	localAddr.port).drawAtPoint(350@4, Font.default, Color.yellow);
