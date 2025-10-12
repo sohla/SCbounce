@@ -125,19 +125,20 @@ SynthDef(\funBass, {
 		Pbind(
 			\type, \customEvent,
 			\shape, \line,
-			\startSize, 330,
-			\duration, 0.8,
-			\endSize, 30,
-			\startWidth, 2,
-			\rotation,pi.half + Pwhite(-0.4,0.4),
+			\startSize, 30,
+			\duration, 1.2,
+			\endSize, 1430,
+			\startWidth, 10,
+			\endWidth, 1,
+			\rotation,pi.half + Pwhite(-0.1,0.1),
 			\fill, true,
 			\instrument, \stereoSampler,
 			\dur, Pslide([dur,dur,dur,dur,dur,dur,dur,dur,dur,dur], inf, Pkey(\range), 0, 0),
 			\note, Pslide(notes, inf, Pkey(\range), 0, offset),
-			\sx, 0,
-			\sy, 1.0 -  (Pkey(\note) * 0.15),
-			\ex, 0,
-			\ey, Pkey(\sy),
+			\sx, (Pkey(\note) * 0.08) - 0.5,
+			\sy, 0,
+			\ex, Pkey(\sx),
+			\ey, 0,
 			\octave, 5,//Pwhite(5,7),
 			\func, Pfunc({|e| ~onEvent.(e)}),
 			\args, #[]
@@ -187,7 +188,7 @@ SynthDef(\funBass, {
 	Pdef(m.ptn).set(\viewID, d.port);
 	// Pdef(m.ptn).set(\startColor, Color.hsv((frame/40.0).mod(1.0),0.5,1.0,1.0));
 	// Pdef(m.ptn).set(\endColor, Color.hsv((frame/40.0).mod(1.0),0.5,1.0,0.0));
-	Pdef(m.ptn).set(\startColor, Color.yellow.alpha_(amp.dbamp));
+	Pdef(m.ptn).set(\startColor, Color.yellow.alpha_(amp.dbamp + 0.1));
 	Pdef(m.ptn).set(\endColor, Color.red.alpha_(0));
 	// Pdef(m.ptn).set(\modulation, (
 	// 		type: \radial,
@@ -224,10 +225,10 @@ SynthDef(\funBass, {
 				type: \customVisualEvent,
 				amp: 0,
 				viewID: d.port,
-				shape: \triangle,
+				shape: \circle,
 				fill: false,
-				startSize: 40 * amp.dbamp,
-				endSize: 300 * amp.dbamp,
+				startSize: 4 * amp.dbamp,
+				endSize: 400 * amp.dbamp,
 				duration: 3.4,
 				sizeEnv: Env([0,1], [1], [-3]),
 				startColor: Color.new255(255, 55, 200, 255),

@@ -10,17 +10,17 @@ m.rrateMassFilteredAttack = 0.3;
 m.rrateMassFilteredDecay = 0.2;
 
 //------------------------------------------------------------
-SynthDef(\noise, { |out=0, frq=10000, gate=0, amp = 0, atk=0.02, sus=0.02, rel=0.9, lag=0.05, pch =1|
-	var env = EnvGen.ar(Env.adsr(atk,0.3,sus,rel), gate, doneAction:Done.freeSelf) * 10;
+SynthDef(\noise, { |out=0, frq=1000, gate=1, amp = 0.0, atk=0.02, sus=0.8, rel=1.3, lag=0.05, pch=1|
+	var env = EnvGen.ar(Env.adsr(atk,0.3,sus,rel), gate, doneAction:Done.freeSelf) * 0.5;
     var sig = DynKlank.ar(`[[50,100,200,400] * pch, [1,0.4,0.2,0.1], [1, 0.6, 0.3, 0.1]], WhiteNoise.ar(0.1));
     // var sig = WhiteNoise.ar(4);
     sig = LPF.ar(sig, frq.lag(0.3)) * env * amp.lag(lag);
-	Out.ar(out, sig!2);
+	Out.ar(out, sig.tanh!2);
 }).add;
 
 //------------------------------------------------------------
 ~init = ~init <> {
-	synth = Synth(\noise, [\frq, 1000, \gate, 1]);
+	synth = Synth(\noise, [\frq, 1000]);
 };
 //------------------------------------------------------------
 ~deinit = ~deinit <> {
@@ -37,7 +37,6 @@ SynthDef(\noise, { |out=0, frq=10000, gate=0, amp = 0, atk=0.02, sus=0.02, rel=0
 	var amp = m.accelMassFiltered.lincurve(0,2.5,0.0,0.3,-3);
     var ud = (d.sensors.gyroEvent.y / pi.half).linexp(-0.8,0.9,400,10000);
     
-
     if(amp<0.025,{
         amp=0;
         synth.set(\lag,0.8);
@@ -50,17 +49,16 @@ SynthDef(\noise, { |out=0, frq=10000, gate=0, amp = 0, atk=0.02, sus=0.02, rel=0
             index = index + 1;
             notes = notes.rotate(-1);
             note = notes[0];
-            synth.set(\pch, note.midiratio);
         });
+        synth.set(\pch, note.midiratio);
         synth.set(\lag,0.01);
     });
-
     synth.set(\amp, amp*1.5);
     synth.set(\frq, ud);
 };
 
 //------------------------------------------------------------
-~plotMin = -1;
+~plotMin = -1;  
 ~plotMax = 1;
 ~plot = { |d,p|
 	//[0.2,0.4,0.6];

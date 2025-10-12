@@ -44,11 +44,11 @@ SynthDef(\drumkit, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 		Pbind(
 			\instrument, \drumkit,			
       \type, \customVisualEvent,
-	  \shape, \star,
-			\sx, Pwhite(250,350),
-			\sy, 300,
+		  \shape, \circle,
+			\sx, Pwhite(-0.3,0.3),
+			\sy, 0,
 			\ex, Pkey(\sx),
-			\ey, 380,
+			\ey, 0,
 			// \startSize, 40,
 			\endSize, 30,
 			\rotation, pi / Pwhite(1.7,2.3),
@@ -93,12 +93,11 @@ SynthDef(\drumkit, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 
 	var rate = m.rrateMassFiltered.linlin(0,1,1,1.4);
 	var amp = m.accelMassFiltered.lincurve(0,1.5,0.02,1, 2);
+
 	Pdef(m.ptn).set(\amp, amp * 6);
 	Pdef(m.ptn).set(\rate, rate);
-
-
 	Pdef(m.ptn).set(\viewID, d.port);
-  Pdef(m.ptn).set(\startSize, 40 + (160 * amp));
+  Pdef(m.ptn).set(\startSize, 10 + (100 * amp));
 
 	Pdef(m.ptn).set(\modulation, (
 			type: \radial,
