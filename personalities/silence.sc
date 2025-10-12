@@ -46,6 +46,8 @@ m.rrateMassFilteredDecay = 0.2;
 	// [(d.sensors.gyroEvent.z / pi)];//left right
 	// [(d.sensors.gyroEvent.x / pi), (d.sensors.gyroEvent.y / pi.half), (d.sensors.gyroEvent.z / pi)];
 
+	// [m.gyroXFiltered, m.gyroYFiltered, m.gyroZFiltered];
+
 	// [(d.sensors.gyroEvent.y / pi.half).lincurve(-1.0,1.0,-1.0,1.0,3)];
 
 

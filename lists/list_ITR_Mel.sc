@@ -1,6 +1,7 @@
 (
 	[
 		"silence",
+		"temp_synth",
 		"melbb2",
 		"melbb1",
 		"mel1",
