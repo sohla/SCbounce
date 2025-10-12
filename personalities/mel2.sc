@@ -68,13 +68,13 @@ SynthDef(\pullstretchMonoQ, {|out, amp = 1, buffer = 0, envbuf = -1, pch = 1.0, 
 	var speed= m.accelMassFiltered.lincurve(0.5,2.5,0.01,1,-2);
 	var rate = m.accelMassFiltered.linlin(0,1,0.9,1.4);
 	var pan = (d.sensors.gyroEvent.z / pi).linlin(-1,1,-1,1);
-	var pch = (d.sensors.gyroEvent.x / pi).linlin(-1,1,0,1).round * 12;
+	var pch = (d.sensors.gyroEvent.z / pi).linlin(-1,1,0,1).round * 12;
 
 	if(amp < 0.01, {amp = 0});
 
 	synth.set(\pch, pch.midiratio);
 	synth.set(\speed, speed);
-	synth.set(\amp, amp * 4);
+	synth.set(\amp, amp * 7);
 	synth.set(\pan, pan);
 };
 //------------------------------------------------------------

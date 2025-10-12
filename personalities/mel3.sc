@@ -11,7 +11,7 @@ SynthDef(\bufGrain, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=440
 
 	var lr = rate * BufRateScale.kr(bufnum) * (freq/440.0);
 	var env = EnvGen.kr(Env.adsr(attack, decay, sustain, release), gate, doneAction:2);
-	var sub = LFTri.ar(66*rate*2,0,0.9).tanh;
+	var sub = LFTri.ar(66*rate*2,0,0.3).tanh;
 	var sig = Splay.arFill(8,{|i|
 		Warp1.ar(2, bufnum, start, rate * (i+1) , 0.3, windowRandRatio:0.3)},
 	1,1,0);

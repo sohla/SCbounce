@@ -34,10 +34,10 @@ SynthDef(\stereoSampler1, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, fr
 				\octave, Pxrand([0,1,2,1], inf),
 				\note, Pwhite(33,33, inf).floor,
 				\start,Pwhite(0.0,0.1),
-				\attack,0.1,
+				\attack,0.01,
 				\decay, 0.2,
 				\sustain,0.1,
-				\release,0.5,
+				\release,0.3,
 				\rate, Pseq(
 					(
 						[0,1,4,5,7,8,7,5,4,5,4,1,4,1,0,0].stutter(4)
@@ -66,15 +66,15 @@ SynthDef(\stereoSampler1, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, fr
 //------------------------------------------------------------
 ~next = {|d|
 
-	var dur = m.accelMassFiltered.linlin(0,1,0.5,0.1);
+	var dur = m.accelMassFiltered.lincurve(0,1,0.4,0.1,-2);
 	var start = (d.sensors.gyroEvent.x / 2pi).lincurve(0.0,1.0,0.1,0.9,0);
 	var amp = m.accelMassFiltered.lincurve(0,2.5,0,1,-5);
 	var rate= m.accelMass.linlin(0,1,0,2);
 
-	if(amp < 0.07, {amp = 0});
+	if(amp < 0.02, {amp = 0});
 
 	Pdef(m.ptn).set(\dur, dur);
-	Pdef(m.ptn).set(\amp, amp );
+	Pdef(m.ptn).set(\amp, amp * 0.6);
  	// Pdef(m.ptn).set(\start, start.linlin(0,1,0,1));
 
 };

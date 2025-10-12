@@ -1,7 +1,7 @@
 var m = ~model;
 var synth;
 // var notes = [30,37,42,46,49,54,56,59,63,66];
-var notes = [30,37,42,46] +5;
+var notes = [30,37,42,46,47,49] +5;
 m.accelMassFilteredAttack = 0.99;
 m.accelMassFilteredDecay = 0.8;
 // gentle
@@ -44,12 +44,12 @@ var amp = m.accelMassFiltered.linlin(0,1.5,0.001,1.0);
   	var index = d.sensors.gyroEvent.y.linlin(pi.half.neg,pi.half,0,notes.size).floor;
 	var freq = notes[index].midicps;
 	if(amp < 0.02, { amp = 0 });
-	if(amp > 0.9, { amp = 0.7 });
+	if(amp > 0.9, { amp = 0.9 });
 
 	if(filterFreq < 400, { filterFreq = 400 });
 	if(filterFreq > 9.2e3, { filterFreq = 9.2e3 });
 
-	synth.set(\amp, amp * 0.2);
+	synth.set(\amp, amp * 1.2);
   synth.set(\filterFreq, filterFreq);
   synth.set(\detune, detune);
   synth.set(\freq, freq);

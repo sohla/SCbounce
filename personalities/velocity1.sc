@@ -38,7 +38,7 @@ SynthDef(\noise, { |out=0, frq=10000, gate=0, amp = 0, atk=0.02, sus=0.02, rel=0
     var ud = (d.sensors.gyroEvent.y / pi.half).linexp(-0.8,0.9,400,10000);
     
 
-    if(amp<0.03,{
+    if(amp<0.025,{
         amp=0;
         synth.set(\lag,0.8);
         if(trig, {

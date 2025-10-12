@@ -129,7 +129,7 @@ SynthDef(\drumkit, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 
 	var rel = (d.sensors.gyroEvent.y / pi.half).clip(-0.5,0.5).lincurve(-0.5,0.5,0.3,0.01,3);
 	var amp = m.accelMassFiltered.lincurve(0,1.0,0.2,1, -1);
-	var roll = (d.sensors.gyroEvent.x / pi).lincurve(-0.2,0.4,1,2,-2) * 0.5;
+	var roll = (d.sensors.gyroEvent.x / pi).lincurve(-0.2,0.4,1,4,-2) * 0.5;
 	var sa = m.rrateMassFiltered.lincurve(0,0.3,0.1,0.35, -1);
 
 
@@ -138,11 +138,11 @@ SynthDef(\drumkit, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 	Pdef(m.ptn).set(\rate, roll);
 	step = 2.pow(m.accelMassFiltered.lincurve(0,1.0,-1,0, -1));
 
-	Pdef(\shaker).set(\amp, sa);	
+	Pdef(\shaker).set(\amp, sa*1);	
 	Pdef(m.ptn).set(\dur, dur);	
 
 
-	if(m.accelMassFiltered > 0.1,{
+	if(m.accelMassFiltered > 0.07,{
 		if( Pdef(m.ptn).isPlaying.not,{
       // bi = 8;
 			Pdef(m.ptn).play(quant:dur*1);

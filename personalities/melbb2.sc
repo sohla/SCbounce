@@ -14,7 +14,7 @@ SynthDef(\drumkit, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 	var lr = rate * BufRateScale.kr(bufnum);
 	var cd = BufDur.kr(bufnum);
   var env = EnvGen.kr(Env.adsr(attack, decay, sustain, release), gate, doneAction: 2);
-	var sig = PlayBuf.ar(1, bufnum, rate: [lr, lr * 1] * (octave * 12).midiratio, startPos: start * BufFrames.kr(bufnum), loop: 0) * 10;
+	var sig = PlayBuf.ar(2, bufnum, rate: [lr, lr * 1] * (octave * 12).midiratio, startPos: start * BufFrames.kr(bufnum), loop: 0) * 10;
     sig = RHPF.ar(sig, cutoff, rq);
 		sig = Compander.ar(sig, sig,
         thresh: -5.dbamp,
@@ -30,8 +30,8 @@ SynthDef(\drumkit, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 //--------------------------------------
 ~init = ~init <> {
 
-	// var folder  = PathName("~/Downloads/melSamples/melbb");
-	var folder  = PathName("~/Downloads/yourDNASamples/drums");
+	var folder  = PathName("~/Downloads/melSamples/melbb");
+	// var folder  = PathName("~/Downloads/yourDNASamples/drums");
 
 	postf("loading samples : % \n", folder);
 
@@ -114,7 +114,7 @@ SynthDef(\drumkit, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
   Pdef(m.ptn).set(\amp,0.5);
   Pdef(m.ptn).set(\rate,2.pow(rate));
 
-	if(m.accelMassFiltered > 0.1,{
+	if(m.accelMassFiltered > 0.2,{
 		if( Pdef(m.ptn).isPlaying.not,{
 			Pdef(m.ptn).resume(quant:dur);
 		});
