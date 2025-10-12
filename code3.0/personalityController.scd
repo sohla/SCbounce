@@ -1,3 +1,4 @@
+var listsDir = "~/Develop/SuperCollider/Projects/SCbounce/lists/";//RPI
 var personalityDir = "~/Develop/SuperCollider/Projects/SCbounce/personalities/";//RPI
 // var personalityDir = "~/Develop/SuperCollider/Projects/scbounce/personalities/"; //laptop
 // var personalityDir = "~/Develop/SuperCollider/oscMusic/personalities/"; //mac mini cabin
@@ -30,7 +31,7 @@ var com = (
 // 
 //------------------------------------------------------------
 var loadPersonalityList = {|i|
-    var path = PathName.new(personalityDir++defaultLists[i]);
+    var path = PathName.new(listsDir++defaultLists[i]);
     var file = File.new(path.asAbsolutePath,"r");
     var str = file.readAllString;
     // var time = File.mtime(path.asAbsolutePath);
