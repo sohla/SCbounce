@@ -7,7 +7,7 @@ var addThreeDeeView = { |d|
 	var as = 0.2;
 
 	graph1 = Canvas3D()
-		.scale_(200)
+		.scale_(280)
 		.background_(Color.black)
 		.perspective_(0.75)
 		.transforms_([Canvas3D.mRotateZ(0),Canvas3D.mTranslate(0,0,0)])

@@ -73,12 +73,11 @@ var addDetailView = {|d|
 			[
 				[addThreeDeeView.(d), columns:2],
 			],
+			// [
+			// 	[addTitleView.(d), columns:2],
+			// ],
 			[
-				[addTitleView.(d), columns:2],
-			],
-			[
-				addPrevButton.(d),
-				addNextButton.(d),
+				[HLayout(addPrevButton.(d),addTitleView.(d), addNextButton.(d)), columns:2],
 			]
 			
 		));

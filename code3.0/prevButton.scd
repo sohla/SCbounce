@@ -1,6 +1,7 @@
 var addPrevButton = { |d|
 	var button = Button()
-		// .maxWidth_(120)
+		.minWidth_(120)
+		.maxWidth_(120)
 		.minHeight_(100)
 		.font_(Font(size:64))
 		.states_([
