@@ -1,18 +1,61 @@
 var bh = 80;
 var hosts = "hostname -I".unixCmdGetStdOut;
 
-var cpu = UserView()
+
+var updateCPU = {
+    var pipe;
+    
+    // Use a single command that doesn't sleep (faster)
+    pipe = Pipe.new("top -bn2 -d0.1 | grep '^%Cpu' | tail -n1 | awk '{print \"Total CPU: \" 100-$8 \"%\"}'", "r");
+    
+    {
+        var result = pipe.getLine;
+        pipe.close;
+        result.postln;
+        // Update GUI here
+    }.defer;
+};
+
+var getCPUInstant = {
+    var result = "cat /proc/loadavg".unixCmdGetStdOut;
+    var load = result.split($ )[0].asFloat * 100 / 4; // Assuming 4 cores
+    
+    {
+        ("CPU Load: " ++ load.round(0.1) ++ "%").postln;
+        // Update GUI
+    }.defer;
+};
+
+var serverView = UserView()
     .minWidth_(60)
     .maxHeight_(20)
+		.frameRate_(10)
     .animate_(true)
     .drawFunc_({|uv|
-    ("CPU: "++s.peakCPU.asStringPrec(3)++"%").drawAtPoint(16@4, Font.default, Color.yellow);
-    ("Hosting: "++hosts).drawAtPoint(100@4, Font.default, Color.yellow);
-    ("Port: "++NetAddr.	localAddr.port).drawAtPoint(400@4, Font.default, Color.yellow);
-    ("UGens: "++s.numUGens).drawAtPoint(500@4, Font.default, Color.yellow);
-    ("Groups: "++s.numGroups).drawAtPoint(600@4, Font.default, Color.yellow);
-    ("Synths: "++s.numSynths).drawAtPoint(700@4, Font.default, Color.yellow);
+			// fork {
+			// 	var str = "mpstat -P ALL 1 1 | awk '/Average:/ && $2 ~ /[0-9]/ {printf \"Core %s: %.1f%% \", $2, 100-$NF}'";
+			// 	var tot = "grep '^cpu ' /proc/stat > /tmp/cpu1; sleep 1; grep '^cpu ' /proc/stat > /tmp/cpu2; paste /tmp/cpu1 /tmp/cpu2 | awk '{user1=$2; nice1=$3; sys1=$4; idle1=$5; iowait1=$6; irq1=$7; soft1=$8; user2=$13; nice2=$14; sys2=$15; idle2=$16; iowait2=$17; irq2=$18; soft2=$19; total1=user1+nice1+sys1+idle1+iowait1+irq1+soft1; total2=user2+nice2+sys2+idle2+iowait2+irq2+soft2; total_diff=total2-total1; idle_diff=idle2-idle1; usage=100*(total_diff-idle_diff)/total_diff; printf \"Total CPU: %.1f%%\\n\", usage}'";			
+			// 	var perCoreResult, totalResult;
+				
+			// 	perCoreResult = str.unixCmdGetStdOut;
+			// 	totalResult = tot.unixCmdGetStdOut;
+				
+			// 	{
+			// 		perCoreResult.postln;
+			// 		totalResult.postln;
+			// 		// (perCoreResult).drawAtPoint(750@4, Font.default, Color.yellow);
+			// 		// (totalResult).drawAtPoint(1150@4, Font.default, Color.yellow);
+			// 	}.defer;
+			// };
+			// getCPUInstant.();
+			("Server: "++s.peakCPU.asStringPrec(3)++"%").drawAtPoint(6@4, Font.default, Color.yellow);
+			("Hosting: "++hosts).drawAtPoint(110@4, Font.default, Color.yellow);
+			("Port: "++NetAddr.	localAddr.port).drawAtPoint(350@4, Font.default, Color.yellow);
+			("UGens: "++s.numUGens).drawAtPoint(450@4, Font.default, Color.yellow);
+			("Groups: "++s.numGroups).drawAtPoint(550@4, Font.default, Color.yellow);
+			("Synths: "++s.numSynths).drawAtPoint(650@4, Font.default, Color.yellow);
 });
+
 
 var meterView = View()
 	.minWidth_(140);
@@ -72,7 +115,7 @@ var freeAllNodes = Button()
 
 var systemView = {
 	View().layout_(VLayout(
-		cpu,
+		serverView,
 		GridLayout.columns(
 			[
 				networkReset,
