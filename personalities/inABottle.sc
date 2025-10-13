@@ -34,7 +34,7 @@ SynthDef(\inabottle, { |out, frq=111, gate=0, amp = 0, dust=10, tone = 0.8, bits
 ~next = {|d|
 
 	var amp = m.accelMassFiltered.lincurve(0,2.5,0.0,1.0,-3);
-  var tone = d.sensors.gyroEvent.z.lincurve(-1,1,0.1,0.91,-3);
+  var tone = m.gyroZFiltered.lincurve(-1,1,0.1,0.91,-3);
   var bits = m.rrateMassFiltered.lincurve(0,1.5,0.01,0.09,-3);
 
 	synth.set(\amp, amp * 3);

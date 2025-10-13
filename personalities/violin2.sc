@@ -4,6 +4,11 @@ var buffer;
 
 m.accelMassFilteredAttack = 0.9;
 m.accelMassFilteredDecay = 0.9;
+m.rrateMassFilteredAttack = 0.7;
+m.rrateMassFilteredDecay = 0.3;
+m.gyroFilteredAttack = 0.7;
+m.gyroFilteredDecay = 0.7;
+
 
 //------------------------------------------------------------
 SynthDef(\monoSampler, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=440,
@@ -71,8 +76,8 @@ SynthDef(\pullstretchMonoQ, {|out, amp = 1, buffer = 0, envbuf = -1, pch = 1.0, 
 ~next = {|d|
 	var amp = m.accelMass.linlin(0,2,0.00001,1);
 	var speed= m.accelMassFiltered.lincurve(0.5,2.5,0.01,2,-2);
-	var rate = d.sensors.gyroEvent.y.linlin(-1,1,1,2).asInteger;
-	var pan = d.sensors.gyroEvent.z.linlin(-1,1,-1,1);
+	var rate = m.gyroYFiltered.linlin(-1,1,1,2).asInteger;
+	var pan = m.gyroZFiltered.linlin(-1,1,-1,1);
 
 	if(amp < 0.01, {amp = 0});
 

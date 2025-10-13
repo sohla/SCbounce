@@ -4,6 +4,10 @@ var buffer;
 
 m.accelMassFilteredAttack = 0.9;
 m.accelMassFilteredDecay = 0.08;
+m.rrateMassFilteredAttack = 0.9;
+m.rrateMassFilteredDecay = 0.9;
+m.gyroFilteredAttack = 0.7;
+m.gyroFilteredDecay = 0.7;
 
 //------------------------------------------------------------
 SynthDef(\bufGrain, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=440,
@@ -41,8 +45,8 @@ SynthDef(\bufGrain, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=440
 //------------------------------------------------------------
 ~next = {|d|
 	var amp = m.accelMassFiltered.linlin(0,2,0.00001,1);
-	var start = (d.sensors.gyroEvent.z / pi).lincurve(0.0,1.0,0.28,0.5333,0);
-	var rezf = (d.sensors.gyroEvent.y / pi).lincurve(0.0,1.0,130,260*3,0);
+	var rezf = m.gyroYFiltered.lincurve(0.0,1.0,130,260*3,0);
+	var start = m.gyroZFiltered.lincurve(0.0,1.0,0.28,0.5333,0);
 
 	if(amp < 0.04, {amp = 0});
 

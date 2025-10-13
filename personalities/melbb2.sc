@@ -7,6 +7,8 @@ m.accelMassFilteredAttack = 0.99;
 m.accelMassFilteredDecay = 0.3;
 m.rrateMassFilteredAttack = 0.9;
 m.rrateMassFilteredDecay = 0.9;
+m.gyroFilteredAttack = 0.7;
+m.gyroFilteredDecay = 0.7;
 
 //------------------------------------------------------------
 SynthDef(\drumkit, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
@@ -105,10 +107,8 @@ SynthDef(\drumkit, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 //------------------------------------------------------------
 ~next = {|d|
 
-  // var ud = m.accelMassFiltered.lincurve(0.0,3.0,0,3,2).round;
-  var ud = (d.sensors.gyroEvent.y / pi.half).clip(-0.5,0.5).lincurve(-0.5,0.5,0,3,1).round;
-  // var ud = m.rrateMassFiltered.lincurve(0.0,0.2,0,3,8).round;
-  var rate = (d.sensors.gyroEvent.y / pi.half).clip(-0.5,0.5).lincurve(-0.5,0.5,-1,1,-1).floor;
+  var ud = m.gyroYFiltered.clip(-0.5,0.5).lincurve(-0.5,0.5,0,3,1).round;
+  var rate = m.gyroYFiltered.clip(-0.5,0.5).lincurve(-0.5,0.5,-1,1,-1).floor;
 
   Pdef(m.ptn).set(\subdiv,2.pow(ud));
   Pdef(m.ptn).set(\amp,0.5);

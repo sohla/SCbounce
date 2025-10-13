@@ -41,7 +41,7 @@ SynthDef(\miniMoog, {
   var detune = m.accelMassFiltered.linlin(0,2.5,0.1,0.2);
   var filterFreq = m.rrateMassFiltered.linexp(0,1,400,9.2e3);
 	
-  var index = d.sensors.gyroEvent.y.linlin(-1,1,0,notes.size-1).floor;
+  var index = m.gyroYFiltered.linlin(-1,1,0,notes.size-1).floor;
 	var freq = notes[index].midicps;
 
 	if(filterFreq < 400, { filterFreq = 400 });

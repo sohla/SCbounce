@@ -90,8 +90,8 @@ SynthDef(\melodicPerc, {|out=0, freq=50, tension=0.1, decay=0.5, clickLevel=0.3,
 	var dur = m.accelMassFiltered.lincurve(0,2.5,0,2,1).round;
 	var dr = m.accelMassFiltered.lincurve(0,2.5,0.001,0.3,5);
 	var decay = d.sensors.gyroEvent.z.abs.linlin(0.2,0.8,1.0,0.2);
-	var curve = (d.sensors.gyroEvent.y / pi.half).linlin(-1.0,1.0,50.0,1.0);
-	var ff = (d.sensors.gyroEvent.y / pi.half).lincurve(-1.0,1.0,40.0,10000.0, 3);
+	var curve = m.gyroYFiltered.linlin(-1.0,1.0,50.0,1.0);
+	var ff = m.gyroYFiltered.lincurve(-1.0,1.0,40.0,10000.0, 3);
 
   Pdef(tp).set(\curve, curve);
   Pdef(tp).set(\ff, ff);

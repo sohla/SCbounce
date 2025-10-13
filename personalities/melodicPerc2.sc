@@ -91,11 +91,11 @@ SynthDef(\melodicPerc, {|out=0, freq=50, tension=0.1, decay=0.5, clickLevel=0.3,
 
 	var dur = m.accelMassFiltered.lincurve(0,2.0,0,2,1).round;
 	var dr = m.accelMassFiltered.lincurve(0,2.5,0.001,0.3,5);
-	var decay = d.sensors.gyroEvent.z.abs.linlin(0.2,0.8,2.0,1.0);
-	var curve = d.sensors.gyroEvent.z.abs.linlin(0.0,1.0,40.0,10.0);
-	var amp = (d.sensors.gyroEvent.y/pi.half).lincurve(-1.0,1.0,0.0,0.4);
-	var frq = (d.sensors.gyroEvent.x/pi).lincurve(-0.5,0.5,100,8000,0);
-	var pan = (d.sensors.gyroEvent.z/pi).linlin(-1.0,1.0,1.0,-1.0);
+	var frq = m.gyroXFiltered.lincurve(-0.5,0.5,100,8000,0);
+	var amp = m.gyroYFiltered.lincurve(-1.0,1.0,0.0,0.4);
+	var pan = m.gyroZFiltered.linlin(-1.0,1.0,1.0,-1.0);
+	var decay = m.gyroZFiltered.abs.linlin(0.2,0.8,2.0,1.0);
+	var curve = m.gyroZFiltered.abs.linlin(0.0,1.0,40.0,10.0);
 
 	Pdef(tp).set(\curve, curve);
 	Pdef(tp).set(\amp,amp);

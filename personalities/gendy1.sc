@@ -41,7 +41,7 @@ var amp = m.accelMassFiltered.linlin(0,1.5,0.001,1.0);
   var detune = m.accelMassFiltered.linlin(0,2.5,0.1,0.2);
   var filterFreq = m.rrateMassFiltered.linexp(0,1,400,9.2e3);
 	
-  	var index = d.sensors.gyroEvent.y.linlin(pi.half.neg,pi.half,0,notes.size).floor;
+  var index = m.gyroYFiltered.linlin(pi.half.neg,pi.half,0,notes.size).floor;
 	var freq = notes[index].midicps;
 	if(amp < 0.02, { amp = 0 });
 	if(amp > 0.9, { amp = 0.9 });

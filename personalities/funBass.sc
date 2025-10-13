@@ -1,8 +1,15 @@
 var m = ~model;
 var synth;
 var note = 43+24;
+
 m.accelMassFilteredAttack = 0.1;
 m.accelMassFilteredDecay = 0.99;
+m.rrateMassFilteredAttack = 0.7;
+m.rrateMassFilteredDecay = 0.3;
+m.gyroFilteredAttack = 0.7;
+m.gyroFilteredDecay = 0.7;
+
+//------------------------------------------------------------
 
 SynthDef(\funBass, {
     |out=0, freq = 440, gate = 1, amp = 0.8, filtFreq = 2000, filtRes = 0.5, envAtk = 0.01, envDec = 0.1, envSus = 0.7, envRel = 4.2, rm = 0.5|

@@ -40,6 +40,8 @@ m.accelMassFilteredAttack = 0.99;
 m.accelMassFilteredDecay = 0.5;
 m.rrateMassFilteredAttack = 0.7;
 m.rrateMassFilteredDecay = 0.3;
+m.gyroFilteredAttack = 0.7;
+m.gyroFilteredDecay = 0.7;
 
 //------------------------------------------------------------
 SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, start=0, pan=0, freq=440,
@@ -128,14 +130,14 @@ SynthDef(\funBass, {
 			\startSize, 30,
 			\duration, 1.2,
 			\endSize, 1430,
-			\startWidth, 10,
+			// \startWidth, 10,
 			\endWidth, 1,
 			\rotation,pi.half + Pwhite(-0.1,0.1),
 			\fill, true,
 			\instrument, \stereoSampler,
 			\dur, Pslide([dur,dur,dur,dur,dur,dur,dur,dur,dur,dur], inf, Pkey(\range), 0, 0),
 			\note, Pslide(notes, inf, Pkey(\range), 0, offset),
-			\sx, (Pkey(\note) * 0.08) - 0.5,
+			\sx, (Pkey(\note) * 0.1) - 0.8,
 			\sy, 0,
 			\ex, Pkey(\sx),
 			\ey, 0,
@@ -183,11 +185,12 @@ SynthDef(\funBass, {
 	var move = m.accelMassFiltered.lincurve(0,3.5,2000,notes.size,2);
 	var amp = m.accelMassFiltered.lincurve(0,1.4,-40,-3,-1);
 	var ff = m.rrateMassFiltered.lincurve(0.0,2.0,200,2000,-3); //left right
-	var step = d.sensors.gyroEvent.x.linlin(-0.8,0.8,0,3).floor; //up down
+	var step = m.gyroXFiltered.linlin(-0.8,0.8,0,3).floor; //up down
 
 	Pdef(m.ptn).set(\viewID, d.port);
 	// Pdef(m.ptn).set(\startColor, Color.hsv((frame/40.0).mod(1.0),0.5,1.0,1.0));
 	// Pdef(m.ptn).set(\endColor, Color.hsv((frame/40.0).mod(1.0),0.5,1.0,0.0));
+	Pdef(m.ptn).set(\startWidth, amp.dbamp * 10);
 	Pdef(m.ptn).set(\startColor, Color.yellow.alpha_(amp.dbamp + 0.1));
 	Pdef(m.ptn).set(\endColor, Color.red.alpha_(0));
 	// Pdef(m.ptn).set(\modulation, (
@@ -226,13 +229,13 @@ SynthDef(\funBass, {
 				amp: 0,
 				viewID: d.port,
 				shape: \circle,
-				fill: false,
+				fill: true,
 				startSize: 4 * amp.dbamp,
 				endSize: 400 * amp.dbamp,
 				duration: 3.4,
 				sizeEnv: Env([0,1], [1], [-3]),
-				startColor: Color.new255(255, 55, 200, 255),
-				endColor: Color.new255(255, 255, 0, 0),
+				startColor: Color.red.alpha_(0.7),
+				endColor: Color.yellow.alpha_(0.0),
 				startWidth: 10,
 				endWidth: 1,
 				sx: 0,
@@ -242,9 +245,9 @@ SynthDef(\funBass, {
 				rotation: pi/2.rrand(5),
 				modulation: (
 					type: \radial,
-					freq: 90,
+					freq: 5,
 					amp: amp.dbamp.squared * 20,
-					harmonics:5
+					harmonics:2
 				),
 			);
 

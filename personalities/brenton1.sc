@@ -5,6 +5,8 @@ m.rrateMassFilteredAttack = 0.99;
 m.rrateMassFilteredDecay = 0.6;
 m.accelMassFilteredAttack = 0.99;
 m.accelMassFilteredDecay = 0.8;
+m.gyroFilteredAttack = 0.7;
+m.gyroFilteredDecay = 0.7;
 
 //------------------------------------------------------------
 SynthDef(\stereoSampler1, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=440,
@@ -62,7 +64,7 @@ SynthDef(\stereoSampler1, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, fr
 ~next = {|d|
 
 	var dur = m.accelMassFiltered.linlin(0,1,0.5,0.1);
-	var start = (d.sensors.gyroEvent.x / 2pi).lincurve(0.0,1.0,0.1,0.9,0);
+	var start = m.gyroXFiltered.lincurve(0.0,1.0,0.1,0.9,0);
 	var amp = m.accelMassFiltered.lincurve(0,2.5,0,1,-5);
 	var rate= m.accelMass.linlin(0,1,0,2);
 

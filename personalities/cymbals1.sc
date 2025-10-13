@@ -5,6 +5,11 @@ var dur = 0.11;
 ~buffers;
 m.accelMassFilteredAttack = 0.99;
 m.accelMassFilteredDecay = 0.9;
+m.rrateMassFilteredAttack = 0.7;
+m.rrateMassFilteredDecay = 0.3;
+m.gyroFilteredAttack = 0.7;
+m.gyroFilteredDecay = 0.7;
+
 
 //------------------------------------------------------------
 SynthDef(\drumkit, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
@@ -53,8 +58,8 @@ SynthDef(\drumkit, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 			\endSize, 30,
 			\rotation, pi / Pwhite(1.7,2.3),
 			\fill, true,
-			\startColor, Color.hsv(0.1,1,1.0,1),
-			\endColor, Color.hsv(0.2,1,1.0,0.0),
+			\startColor, Color.hsv(0.6,1,1.0,1),
+			\endColor, Color.hsv(0.8,1,1.0,0.0),
       \duration, 0.4,
 
 			\bufnum, Pfunc{
