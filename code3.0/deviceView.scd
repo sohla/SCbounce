@@ -20,36 +20,42 @@ var deviceView = {
 		.layout_(GridLayout.new()
 			.hSpacing_(spacing)
 			.vSpacing_(spacing)
-			.margins_([spacing,spacing,spacing,spacing])
+			.margins_([spacing,spacing,spacing])
 		);
 	contentView
 };
 
-var addDeviceView = { |d|
-	var batteryView = UserView()
+var addBatteryView = { |d|
+	UserView()
 		.animate_(true)
+		.background_(Color.black)
+		.maxHeight_(40)
 		.frameRate_(60)
 		.clearOnRefresh_(true)
 		.drawFunc_({
-				Pen.stringAtPoint("Battery: " ++ d.charge.asInteger ++ "%", Rect(0,0,50,20), Font(size:16), d.color);
+				Pen.stringAtPoint("Battery: ", Point(5,5), Font(size:12), Color.grey);
+				Pen.stringAtPoint(""++d.charge.asInteger ++ "%", Point(5,20), Font(size:12), Color.grey);
 		});
+};
 
-	View()
-		.maxHeight_(30)
-		.layout_(HLayout(
-			UserView(),
-			StaticText()	
-					.stringColor_(d.color)
-					.align_(\left)
-					.font_(Font(size:16))
-					.maxWidth_(360)
-					.maxHeight_(30)
-					.string_("DEVICE:" ++ d.index + "   IP:" ++ d.ip + "   Port:" ++ d.port.asString),
+var addIDView = {|d|
+	StaticText()	
+		.stringColor_(Color.grey)
+		.background_(Color.black)
+		.align_(\left)
+		.font_(Font(size:12))
+		.maxHeight_(40)
+		.string_(" DEVICE:\n" ++ " " ++ d.index);
+};
 
-			batteryView
-
-		));
-
+var addNetView = {|d|
+	StaticText()	
+		.stringColor_(Color.grey)
+		.background_(Color.black)
+		.align_(\left)
+		.font_(Font(size:12))
+		.maxHeight_(40)
+		.string_(" " ++ d.ip ++ "\n" ++ " " ++ d.port.asString);
 };
 
 var addDetailView = {|d|
@@ -57,22 +63,23 @@ var addDetailView = {|d|
 	var gl;
 	var numDevices = contentView.children.size;
 	var view = View()
-		.background_(Color.black)
 		.layout_(gl = GridLayout.rows(
 			[
 				View().maxHeight_(140)
 			],
 			[
-				[addThreeDeeView.(d), columns:3],
+				[HLayout(addIDView.(d), addNetView.(d), addBatteryView.(d)).spacing_(2), columns:2],									
 			],
 			[
-				[addDeviceView.(d), columns:3]
+				[addThreeDeeView.(d), columns:2],
 			],
+			// [
+			// 	[addTitleView.(d), columns:2],
+			// ],
 			[
-				addPrevButton.(d),
-				addTitleView.(d),
-				addNextButton.(d),
+				[HLayout(addPrevButton.(d),addTitleView.(d), addNextButton.(d)), columns:2],
 			]
+			
 		));
 		// .mouseDownAction_({false})
 		// .mouseUpAction_({false});
@@ -85,9 +92,10 @@ var addDetailView = {|d|
 		// 	NetAddr("127.0.0.1", 57120).sendMsg("/airkit/calibrate", d.port);
 		// });
 
-	gl.addSpanning(addPlotterView.(d,view), 0, 0, 1, 3);
+	gl.addSpanning(addPlotterView.(d,view), 0, 0, 1, 2);
 	// add device view
-	contentView.layout.add(view, (numDevices/2).floor, numDevices%2);	
+	// contentView.layout.add(view, (numDevices/2).floor, numDevices%2);	
+	contentView.layout.add(view, 0, numDevices);	
 
 };
 deviceView;

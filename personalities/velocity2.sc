@@ -8,9 +8,11 @@ m.accelMassFilteredAttack = 0.99;
 m.accelMassFilteredDecay = 0.3;
 m.rrateMassFilteredAttack = 0.3;
 m.rrateMassFilteredDecay = 0.2;
+m.gyroFilteredAttack = 0.7;
+m.gyroFilteredDecay = 0.7;
 
 //------------------------------------------------------------
-SynthDef(\noise, { |out=0, frq=10000, gate=0, amp = 0, atk=0.02, sus=0.9, rel=0.9, lag=0.05, pch =1|
+SynthDef(\noise, { |out=0, frq=10000, gate=0, amp = 0, atk=0.02, sus=0.9, rel=1.4, lag=0.05, pch =1|
 	// var env = EnvGen.ar(Env.asr(atk,sus,rel), gate, doneAction:Done.freeSelf);
 	var env = EnvGen.ar(Env.adsr(atk,0.03,sus,rel), gate, doneAction:Done.freeSelf);
    var sig = DynKlank.ar(`[[50,100,200,400] * pch, [1,0.4,0.2,0.1], [1, 0.6, 0.3, 0.1]], WhiteNoise.ar(0.1));
@@ -37,10 +39,9 @@ SynthDef(\noise, { |out=0, frq=10000, gate=0, amp = 0, atk=0.02, sus=0.9, rel=0.
 
 //------------------------------------------------------------
 ~next = {|d|
-	// var amp = d.sensors.velocity.sum.abs.lincurve(0,0.03,0.0,1.0,-2);
+
 	var amp = m.accelMassFiltered.lincurve(0,2.5,0.0,0.1,-3);
-    var ud = (d.sensors.gyroEvent.z / pi).lincurve(-0.8,0.5,13000,400,-2);
-    
+    var ud = m.gyroYFiltered.linexp(-0.8,0.9,400,10000);
 
     if(amp<0.02,{
         amp=0;

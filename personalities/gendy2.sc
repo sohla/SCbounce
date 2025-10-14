@@ -1,7 +1,7 @@
 var m = ~model;
 var synth;
 // var notes = [30,37,42,46,49,54,56,59,63,66];
-var notes = [30,32,34,35] + 24 + 5;
+var notes = [30,32,34,35,37] + 24 + 5;
 m.accelMassFilteredAttack = 0.99;
 m.accelMassFilteredDecay = 0.8;
 
@@ -41,7 +41,7 @@ SynthDef(\miniMoog, {
   var detune = m.accelMassFiltered.linlin(0,2.5,0.1,0.2);
   var filterFreq = m.rrateMassFiltered.linexp(0,1,400,9.2e3);
 	
-  var index = d.sensors.gyroEvent.y.linlin(-1,1,0,notes.size-1).floor;
+  var index = m.gyroYFiltered.linlin(-1,1,0,notes.size-1).floor;
 	var freq = notes[index].midicps;
 
 	if(filterFreq < 400, { filterFreq = 400 });
@@ -49,7 +49,7 @@ SynthDef(\miniMoog, {
 
 	if(amp < 0.02, { amp = 0 });
 	if(amp > 0.9, { amp = 0.9 });
-	synth.set(\amp, amp * 0.25);
+	synth.set(\amp, amp * 1.5);
   synth.set(\filterFreq, filterFreq);
   synth.set(\detune, detune);
   synth.set(\freq, freq);

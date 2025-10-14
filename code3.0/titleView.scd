@@ -1,8 +1,8 @@
 var addTitleView = { |d|
 	var button = Button()
 		.minWidth_(100)
-		.minHeight_(120)
-		.font_(Font(size:48))
+		.minHeight_(100)
+		.font_(Font(size:40))
 		.states_([
 			[d.name,Color.black,Color.white.alpha_(0.8)],
 			[d.name,Color.black,Color.white.alpha_(0.1)],

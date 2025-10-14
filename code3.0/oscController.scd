@@ -298,7 +298,7 @@ var addOSCDeviceListeners = {|d|
                 r = quatToEuler.value(qe);
                 tr = [r[0],r[1],r[2]];
 
-                // Store Gyro.
+                // Store Gyro. in radians
                 ~devices.at(addr.port+i).sensors.gyroEvent = (
                     \x:tr[0].asFloat,
                     \y:tr[1].asFloat,

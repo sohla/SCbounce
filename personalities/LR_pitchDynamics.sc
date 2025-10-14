@@ -10,7 +10,10 @@ m.rrateMassFilteredDecay = 0.5;
 SynthDef(\template, {
     |out=0, gate=1, freq=111, amp=0.3, atk=0.001, rel=0.4|
 	var env = EnvGen.ar(Env.perc(atk, rel), gate, doneAction:2);
-	var sig = SinOsc.ar(freq * [1.0,1.0027]);
+	var sig = Splay.arFill(2,{|i|
+	 	LFSaw.ar(freq * [1.0 + ((i+1) * 0.009),1.0027 + ((i+1) * 0.007)]  * 0.5, 0 , 1 / 2.pow(i+1));
+	});
+
 	Out.ar(out, sig * env * amp);
 }).add;
 
@@ -21,8 +24,7 @@ SynthDef(\template, {
 		Pbind(
 			\instrument, \template,
 			\scale, Scale.major,
-            \octave, 4,
-			// \note, Pseq([0,4,7,4,2], inf),
+    	// \octave, 4,
 			\legato, 1,
 			\func, Pfunc({|e| ~onEvent.(e)}),
 			\args, #[]
@@ -46,15 +48,13 @@ SynthDef(\template, {
 //------------------------------------------------------------
 ~next = {|d|
 
-	var dur = 0.2;
-    var cs = [0,3,7,8];
-    // var cs = [0,2,4,5,7,9,11,12];
-    // var cs = [0,4,7,11];
-    var notes = cs ++ (cs + 12);
-    var index = (d.sensors.gyroEvent.y/pi).linlin(-0.5,0.5,0,notes.size); //left right
-	var amp = m.accelMassFiltered.lincurve(0,2.5,-28,-13,-3);
-	var atk = m.accelMassFiltered.lincurve(0,2.5,0.03,0.0001,-3);
-	var rel = m.accelMassFiltered.lincurve(0,2.5,0.2,1.0,-1);
+	var dur = 0.15;
+  var cs = [0,3,7,8];
+  var notes = cs ++ (cs + 12);
+	var index = (d.sensors.gyroEvent.z / pi).linlin(-1.0,1.0,notes.size,0); //left right
+	var amp = m.accelMassFiltered.lincurve(0,2.5,-29,-15,-3);
+	var atk = m.accelMassFiltered.lincurve(0,2.5,0.7,0.003,-5);
+	var rel = m.accelMassFiltered.lincurve(0,2.5,0.01,2.3,-1);
 
 	Pdef(m.ptn).set(\dur, dur);
 	Pdef(m.ptn).set(\note, notes[index.floor]);
@@ -77,26 +77,27 @@ SynthDef(\template, {
 ~plotMin = -1;
 ~plotMax = 1;
 ~plot = { |d,p|
+	// [yellow, cyan , magenta]??
 
-	// ACCEL
-	// [m.accelMass * 0.1, m.accelMassFiltered.linlin(0,3,0,1)];
+	// Velocity
+	// [d.sensors.velocity.x, d.sensors.velocity.y, d.sensors.velocity.z] * 30;
 	
-	// ROTATE
-	// [m.rrateMass, m.rrateMassFiltered.linlin(0,1,0,1)];
+	// Acceleration
+	// [d.sensors.accelEvent.x, d.sensors.accelEvent.y, d.sensors.accelEvent.z] * 0.1;
+	// [m.accelMass, m.accelMassFiltered] * 0.2;
 
-	// X axis
-	// [d.sensors.gyroEvent.x/pi]; // norm
-	
-	// Y axis
-	// [d.sensors.gyroEvent.y/pi]; // norm
+	// Rotation
+	// [d.sensors.rrateEvent.x, d.sensors.rrateEvent.y, d.sensors.rrateEvent.z].abs;
+	// [[d.sensors.rrateEvent.x, d.sensors.rrateEvent.y, d.sensors.rrateEvent.z].sumabs];
+	[m.rrateMass, m.rrateMassFiltered];
 
-	// Z axis
-	// [d.sensors.gyroEvent.z/(pi/2)]; // norm
+	// Gyro
+	// [(d.sensors.gyroEvent.x / pi)];//roll
+	// [(d.sensors.gyroEvent.y / pi.half)];//up down
+	// [(d.sensors.gyroEvent.z / pi)];//left right
+	// [(d.sensors.gyroEvent.x / pi), (d.sensors.gyroEvent.y / pi.half), (d.sensors.gyroEvent.z / pi)];
 
-	// device [I• ]
-	[(d.sensors.gyroEvent.x/pi).linlin(-0.8,0.8,0.9,-0.9)]  //up down
-	// [(d.sensors.gyroEvent.y/pi).linlin(-0.4,0.4,0.9,-0.9)]  //left right
-	// [(d.sensors.gyroEvent.z/(pi/2)).linlin(-0.3,1.0,-0.9,0.9)]  //wrist rotate
+	// [(d.sensors.gyroEvent.y / pi.half).lincurve(-1.0,1.0,-1.0,1.0,3)];
 
 
 };

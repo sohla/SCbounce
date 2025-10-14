@@ -5,6 +5,11 @@ var dur = 0.11;
 ~buffers;
 m.accelMassFilteredAttack = 0.99;
 m.accelMassFilteredDecay = 0.9;
+m.rrateMassFilteredAttack = 0.7;
+m.rrateMassFilteredDecay = 0.3;
+m.gyroFilteredAttack = 0.7;
+m.gyroFilteredDecay = 0.7;
+
 
 //------------------------------------------------------------
 SynthDef(\drumkit, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
@@ -44,17 +49,17 @@ SynthDef(\drumkit, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 		Pbind(
 			\instrument, \drumkit,			
       \type, \customVisualEvent,
-	  \shape, \star,
-			\sx, Pwhite(250,350),
-			\sy, 300,
+		  \shape, \circle,
+			\sx, Pwhite(-0.3,0.3),
+			\sy, 0,
 			\ex, Pkey(\sx),
-			\ey, 380,
+			\ey, 0,
 			// \startSize, 40,
 			\endSize, 30,
 			\rotation, pi / Pwhite(1.7,2.3),
 			\fill, true,
-			\startColor, Color.hsv(0.1,1,1.0,1),
-			\endColor, Color.hsv(0.2,1,1.0,0.0),
+			\startColor, Color.hsv(0.6,1,1.0,1),
+			\endColor, Color.hsv(0.8,1,1.0,0.0),
       \duration, 0.4,
 
 			\bufnum, Pfunc{
@@ -92,13 +97,12 @@ SynthDef(\drumkit, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 ~next = {|d|
 
 	var rate = m.rrateMassFiltered.linlin(0,1,1,1.4);
-	var amp = m.accelMassFiltered.lincurve(0,2.5,0.02,1, 2);
-	Pdef(m.ptn).set(\amp, amp * 3);
+	var amp = m.accelMassFiltered.lincurve(0,1.5,0.02,1, 2);
+
+	Pdef(m.ptn).set(\amp, amp * 6);
 	Pdef(m.ptn).set(\rate, rate);
-
-
 	Pdef(m.ptn).set(\viewID, d.port);
-  Pdef(m.ptn).set(\startSize, 40 + (160 * amp));
+  Pdef(m.ptn).set(\startSize, 10 + (100 * amp));
 
 	Pdef(m.ptn).set(\modulation, (
 			type: \radial,
@@ -112,7 +116,7 @@ SynthDef(\drumkit, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 	// bi = bi.asInteger;
 	// bi = [0,1].choose;
   bi = ~buffers.size.rand;
-	if(m.accelMassFiltered > 0.05,{
+	if(m.accelMassFiltered > 0.04,{
 		if( Pdef(m.ptn).isPlaying.not,{
 			Pdef(m.ptn).resume(quant:dur*2);
 		});

@@ -1,6 +1,13 @@
 var m = ~model;
 
+m.accelMassFilteredAttack = 0.99;
+m.accelMassFilteredDecay = 0.5;
+m.rrateMassFilteredAttack = 0.7;
+m.rrateMassFilteredDecay = 0.3;
+m.gyroFilteredAttack = 0.7;
+m.gyroFilteredDecay = 0.7;
 
+//------------------------------------------------------------
 SynthDef(\funMelody, {
     |out=0, freq = 440, gate = 1, amp = 0.8, filtFreq = 2000, filtRes = 0.5, envAtk = 0.01, envDec = 0.1, envSus = 0.7, envRel = 0.2, pan = 0.0|
     var osc1, osc2, osc3, env, filter, output;
@@ -15,8 +22,6 @@ SynthDef(\funMelody, {
     Out.ar(out, Balance2.ar(filter[0],filter[1],pan));
 }).add;
 
-//------------------------------------------------------------
-// intial state
 //------------------------------------------------------------
 ~init = ~init <> {
 	Pdef(m.ptn,
@@ -45,24 +50,17 @@ SynthDef(\funMelody, {
 };
 
 //------------------------------------------------------------
-// triggers
-//------------------------------------------------------------
 
 ~onEvent = {|e|
 	Pdef(m.ptn).set(\root, m.com.root);
 };
 
-~onHit = {|state|
-};
-
-//------------------------------------------------------------
-// do all the work(logic) taking data in and playing pattern/synth
 //------------------------------------------------------------
 ~next = {|d|
 
 	// var dur = 0.5 * 2.pow(m.accelMassFiltered.linexp(0,3,0,5).floor).reciprocal;
 	var dur = 0.5 * 2.pow(m.accelMassFiltered.lincurve(0,2.5,0,3,-1).floor).reciprocal;
-	var oct = d.sensors.gyroEvent.z.linlin(-1,1,3,7).floor;
+	var oct = m.gyroZFiltered.linlin(-1,1,3,7).floor;
 
 	Pdef(m.ptn).set(\dur, dur);
 	Pdef(m.ptn).set(\filtFreq, m.accelMassFiltered.linexp(0,3,180,14000));
@@ -83,8 +81,6 @@ SynthDef(\funMelody, {
 ~nextMidiOut = {|d|
 };
 
-//------------------------------------------------------------
-// plot with min and max
 //------------------------------------------------------------
 ~plotMin = -1;
 ~plotMax = 1;

@@ -8,6 +8,8 @@ var beat = 0.2;
 
 m.accelMassFilteredAttack = 0.9;
 m.accelMassFilteredDecay = 0.38;
+m.rrateMassFilteredAttack = 0.9;
+m.rrateMassFilteredDecay = 0.5;
 
 //------------------------------------------------------------
 SynthDef(\simple, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=440,

@@ -7,7 +7,7 @@ var addThreeDeeView = { |d|
 	var as = 0.2;
 
 	graph1 = Canvas3D()
-		.scale_(220)
+		.scale_(280)
 		.background_(Color.black)
 		.perspective_(0.75)
 		.transforms_([Canvas3D.mRotateZ(0),Canvas3D.mTranslate(0,0,0)])
@@ -26,7 +26,7 @@ var addThreeDeeView = { |d|
 		.transform(Canvas3D.mScale(1.0,0.4,0.5))
 		// .transform(Canvas3D.mScale(1.0,1.0,1.0))
 	);
-
+//Color.yellow,Color.magenta,Color.cyan,Color.red,Color.green,Color.blue
 	graph1.add(accelX = Canvas3DItem.cube()
 		.color_(Color.yellow(0.9))
 		.width_(1)
@@ -59,21 +59,22 @@ var addThreeDeeView = { |d|
 			Canvas3D.mRotateZ(tr[2]),
 		];
 
-		accelY.transforms = [
-			Canvas3D.mScale(0.01,(d.sensors.accelEvent.y),sz),
+		accelX.transforms = [
+			Canvas3D.mScale(d.sensors.accelEvent.x,sz,sz),
 			Canvas3D.mRotateX(tr[0]),
 			Canvas3D.mRotateY(tr[1]),
 			Canvas3D.mRotateZ(tr[2]),
 		];
 
-		accelX.transforms = [
-			Canvas3D.mScale((d.sensors.accelEvent.z),sz,sz),
+		accelY.transforms = [
+			Canvas3D.mScale(sz,sz,d.sensors.accelEvent.y),
 			Canvas3D.mRotateX(tr[0]),
 			Canvas3D.mRotateY(tr[1]),
 			Canvas3D.mRotateZ(tr[2]),
 		];
+
 		accelZ.transforms = [
-			Canvas3D.mScale(sz,sz,(d.sensors.accelEvent.x)),
+			Canvas3D.mScale(sz,d.sensors.accelEvent.z,sz),
 			Canvas3D.mRotateX(tr[0]),
 			Canvas3D.mRotateY(tr[1]),
 			Canvas3D.mRotateZ(tr[2]),

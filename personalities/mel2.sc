@@ -4,11 +4,10 @@ var buffer;
 
 m.accelMassFilteredAttack = 0.9;
 m.accelMassFilteredDecay = 0.9;
-m.rrateMassFilteredAttack = 0.7;
-m.rrateMassFilteredDecay = 0.3;
+m.rrateMassFilteredAttack = 0.9;
+m.rrateMassFilteredDecay = 0.9;
 m.gyroFilteredAttack = 0.7;
 m.gyroFilteredDecay = 0.7;
-
 
 //------------------------------------------------------------
 SynthDef(\monoSampler, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=440,
@@ -29,33 +28,25 @@ SynthDef(\monoSampler, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=
     Out.ar(out, sig * amp);
 }).add;
 
-SynthDef(\pullstretchMonoQ, {|out, amp = 1, buffer = 0, envbuf = -1, pch = 1.0, div=1, speed = 0.01, splay = 0.4 ,pan=0, rate=1|
-	var pos;
-	// var mx,my;
-	var sp;
-	var mas;
+SynthDef(\pullstretchMonoQ, {|out, amp = 1, buffer = 0, envbuf = -1, pch = 1.0, div=1, speed = 0.01, splay = 0.4 ,pan=0, gate=1|
 	var len = BufDur.kr(buffer) / div;
-	var lfo = LFSaw.kr( (1.0/len) * speed ,1,0.5,0.5);
-	// my = MouseY.kr(0.01,1,1.0);//splay
-
-
-	sp = Splay.arFill(4,
-		{ |i| Warp1.ar(1, buffer, lfo.linlin(0,1,0.05,0.95), rate,splay, envbuf, 8, 0.3, 4)  },
+	var lfo = LFSaw.kr( (1.0/len) * speed ,1).range(0.0,0.7);
+	var sp = Splay.arFill(4,
+		{ |i| Warp1.ar(1, buffer, lfo.linlin(0,1,0.05,0.95), pch * (0.125/2) * (2*(i+1)),splay, envbuf, 8, 0.1 * (i+1), 4)  },
 			1,
 			1,
 			0
 	) ;
-
-	mas = HPF.ar(sp,245);
-
-  mas = FreeVerb.ar(mas,0.5);
-
-	Out.ar(out,Pan2.ar(mas[0],pan)* amp.lag(1));
+	var env = EnvGen.ar(Env.adsr(0.4,0.1,0.9,2.0), gate, doneAction:2);
+	var mas = HPF.ar(sp,45);
+	Out.ar(out,Pan2.ar(mas[0],pan)* amp.lag(1) * env);
 }).add;
 //------------------------------------------------------------
 ~init = ~init <> {
 	// var path = PathName("~/Downloads/yourDNASamples/HK laughing2-glued.wav");
-	var path = PathName("~/Downloads/yourDNASamples/violin/Violin_04.wav");
+	// var path = PathName("~/Downloads/yourDNASamples/brenton/BrentonVoice_05.wav");
+	var path = PathName("~/Downloads/melSamples/mel_sing_dry-004.wav");
+	
 
 	// var path = PathName("~/Downloads/yourDNASamples/HK lots of teddies.wav");
 	postf("loading sample : % \n", path.fileName);
@@ -67,23 +58,27 @@ SynthDef(\pullstretchMonoQ, {|out, amp = 1, buffer = 0, envbuf = -1, pch = 1.0, 
 };
 
 ~deinit = ~deinit <> {
-	synth.free;
-	buffer.free;
+	synth.onFree({
+		postf("buffer dealloc [%] \n", buffer);
+		buffer.free;
+	});	
+	synth.set(\gate, 0);
 };
 
 
 //------------------------------------------------------------
 ~next = {|d|
 	var amp = m.accelMass.linlin(0,2,0.00001,1);
-	var speed= m.accelMassFiltered.lincurve(0.5,2.5,0.01,2,-2);
-	var rate = m.gyroYFiltered.linlin(-1,1,1,2).asInteger;
+	var speed= m.accelMassFiltered.lincurve(0.5,2.5,0.01,1,-2);
+	var rate = m.accelMassFiltered.linlin(0,1,0.9,1.4);
 	var pan = m.gyroZFiltered.linlin(-1,1,-1,1);
+	var pch = m.gyroZFiltered.linlin(-1,1,0,1).round * 12;
 
 	if(amp < 0.01, {amp = 0});
 
-	synth.set(\rate, rate);
+	synth.set(\pch, pch.midiratio);
 	synth.set(\speed, speed);
-	synth.set(\amp, amp * 10);
+	synth.set(\amp, amp * 7);
 	synth.set(\pan, pan);
 };
 //------------------------------------------------------------

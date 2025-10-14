@@ -90,8 +90,8 @@ SynthDef(\drumkit, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
   
 	Pdef(m.ptn).set(\amp, amp);
 	Pdef(m.ptn).set(\rate, rate);
-	bi = (d.sensors.gyroEvent.y.abs / pi) * (~buffers.size-1);
-	bi = bi.asInteger;
+	// bi = (d.sensors.gyroEvent.y.abs / pi) * (~buffers.size-1);
+	// bi = bi.asInteger;
 	bi = [10,11,12,13].choose;//14
 
 	if(m.accelMassFiltered > 0.1,{

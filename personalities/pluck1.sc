@@ -36,7 +36,7 @@ SynthDef(\pluck1, { |out=0, amp=0, pch=30, frq=30, gate=0 |
 	if(m.accelMass < 0.005,{
 		synth.set(\amp,0);
 	},{
-		synth.set(\amp,0.7);
+		synth.set(\amp,0.5);
 	});
 
 };
