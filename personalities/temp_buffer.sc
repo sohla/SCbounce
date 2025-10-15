@@ -14,7 +14,7 @@ m.gyroFilteredDecay = 0.7;
 SynthDef(\sampler, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=440, attack=0.01, decay=0.1, sustain=0.9, release=0.2, gate=1,cutoff=20000, rq=1, loop=1|
 	var lr = rate * BufRateScale.kr(bufnum) * (freq/440.0);
   var env = EnvGen.kr(Env.adsr(attack, decay, sustain, release), gate, doneAction: 2);
-	var sig = PlayBuf.ar(2, bufnum, rate: lr * [1,1.07], startPos: start * BufFrames.kr(bufnum), loop: loop);
+	var sig = PlayBuf.ar(2, bufnum, rate: lr, startPos: start * BufFrames.kr(bufnum), loop: loop);
     sig = RLPF.ar(sig, cutoff, rq);
     sig = Balance2.ar(sig[0], sig[1], pan,  env);
 		sig = Compander.ar(sig, sig,
@@ -28,7 +28,8 @@ SynthDef(\sampler, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=440,
 }).add;
 //------------------------------------------------------------
 ~init = ~init <> {
-	var path = PathName("~/Downloads/yourDNASamples/violin/Violin_02.wav");
+	// var path = PathName("~/Downloads/yourDNASamples/violin/Violin_02.wav");
+	var path = PathName("~/Downloads/melSamples/hello/mel_hello2.wav");
 	postf("loading sample : % \n", path.fileName);
 
 	buffer = Buffer.read(s, path.fullPath, action:{ |buf|
@@ -48,11 +49,12 @@ SynthDef(\sampler, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=440,
 //------------------------------------------------------------
 ~next = {|d|
   var notes = [60,62,64,66,68];
-	var amp = m.gyroXFiltered.lincurve(-0.0,0.3,-90,-2,-9);
+	var amp = m.accelMassFiltered.lincurve(0.0,1.5,-70,8,-3);
 	var pan = m.gyroZFiltered.fold(-0.5,0.5).lincurve(-0.5,0.5,1,-1,1);
 	var frq = m.gyroYFiltered.fold(-1,1).lincurve(-1,1,50,250,-4);
 	var ni = m.gyroYFiltered.fold(-1,1).lincurve(-1,1,0,notes.size,-2);
 
+  synth.set(\amp, amp.dbamp);
   synth.set(\pan, pan);
   synth.set(\freq, notes[ni.floor].midicps);
 
