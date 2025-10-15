@@ -27,21 +27,17 @@ SynthDef(\simple, {|out=0, amp=0.0, freq=440, attack=0.001, decay=0.03, sustain=
 
 //------------------------------------------------------------
 ~next = {|d|
-  var notes = [40,47,52,56,59,63,64];
+  	var notes = [40,47,52,56,59,63,64];
   // var notes = [40,45,52];
-  var roots = [0];
-	var amp = m.accelMassFiltered.lincurve(0.0,1.5,-90,-2,-3);
+	var roots = [0];
+	var amp = m.accelMassFiltered.lincurve(0.0,0.3,-50,-2,-3);
 	// var frq = ((d.sensors.gyroEvent.z / pi).fold(-0.5,0.5) * 2).lincurve(-1,1,50,250,-4);
 	// var frq = ([[(d.sensors.gyroEvent.x / pi).fold(-0.5,0.5) * 2, (d.sensors.gyroEvent.y / pi.half), (d.sensors.gyroEvent.z / pi).fold(-0.5,0.5) * 2].sum] / 3).lincurve(-1,1,50,250,-4);
-	var ni = m.gyroYFiltered.fold(-1,1).lincurve(-1,1,0,notes.size,-2);
-	var ri = (m.gyroZFiltered.fold(-0.5,0.5) * 2).lincurve(-1.0,1.0,0,roots.size,-2);
+	var ni = m.gyroYFiltered.fold(-1,1).lincurve(-0.3,0.3,0,notes.size-1,-2);
+	var ri = (m.gyroZFiltered.fold(-0.5,0.5) * 2).lincurve(-1.0,1.0,0,roots.size-1,-2);
 
-  synth.set(\amp, amp.dbamp);
-
-	// if(m.gyroYFiltered * (m.gyroXFiltered.round) > 0,{
+  	synth.set(\amp, amp.dbamp);
   	synth.set(\freq, (notes[ni.floor] + roots[ri.floor]).midicps);
-	// });
-
 
 };
 //------------------------------------------------------------

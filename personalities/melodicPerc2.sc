@@ -41,8 +41,8 @@ SynthDef(\melodicPerc, {|out=0, freq=50, tension=0.1, decay=0.5, clickLevel=0.3,
 		Pbind(
 			\instrument, \melodicPerc,
 			\scale, Scale.major,
-			\octave, Pseq([8,9,9,8].stutter(1)-2, inf),
-    	\note, Pseq([0], inf),
+			\octave, Pseq([6,8,5,9,5,6].stutter(2)-2, inf),
+    	\note, Pseq([0,4,11,2,7], inf),
 			\amp, Pwhite(0.1,0.2, inf)*0.08,
       \func, Pfunc({|e| ~onEvent.(e)}),
 			\args, #[]
@@ -89,8 +89,8 @@ SynthDef(\melodicPerc, {|out=0, freq=50, tension=0.1, decay=0.5, clickLevel=0.3,
 //------------------------------------------------------------
 ~next = {|d|
 
-	var dur = m.accelMassFiltered.lincurve(0,2.0,0,2,1).round;
-	var dr = m.accelMassFiltered.lincurve(0,2.5,0.001,0.3,5);
+	var dur = m.accelMassFiltered.lincurve(0,0.5,0,2,1).round;
+	var dr = m.accelMassFiltered.lincurve(0,1.3,0.001,0.3,5);
 	var frq = m.gyroXFiltered.lincurve(-0.5,0.5,100,8000,0);
 	var amp = m.gyroYFiltered.lincurve(-1.0,1.0,0.0,0.4);
 	var pan = m.gyroZFiltered.linlin(-1.0,1.0,1.0,-1.0);
@@ -107,7 +107,7 @@ SynthDef(\melodicPerc, {|out=0, freq=50, tension=0.1, decay=0.5, clickLevel=0.3,
 	Pdef(m.ptn).set(\dr, dr);
 	// Pdef(m.ptn).set(\dist, 1);
 
-	if(m.accelMassFiltered > 0.4,{
+	if(m.accelMassFiltered > 0.12,{
 		if( Pdef(m.ptn).isPlaying.not,{
 			Pdef(m.ptn).resume(quant:0.22);
 		});

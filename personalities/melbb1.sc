@@ -135,12 +135,12 @@ SynthDef(\drumkit, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 	var sa = m.rrateMassFiltered.lincurve(0,0.3,0.1,0.35, -1);
 
 
-	Pdef(m.ptn).set(\amp, amp * 0.5);
+	Pdef(m.ptn).set(\amp, amp * 0.3);
 	Pdef(m.ptn).set(\release, rel);
 	Pdef(m.ptn).set(\rate, roll);
 	step = 2.pow(m.accelMassFiltered.lincurve(0,1.0,-1,0, -1));
 
-	Pdef(\shaker).set(\amp, sa*1);	
+	Pdef(\shaker).set(\amp, sa*0.7);	
 	Pdef(m.ptn).set(\dur, dur);	
 
 

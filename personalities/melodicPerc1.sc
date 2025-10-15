@@ -6,7 +6,7 @@ m.accelMassFilteredDecay = 0.9;
 
 SynthDef(\tick, {
 		|out=0, gate=1, amp=0.3, pan=0, dcy=0.2, curve=40, ff = 4444|
-		var sig = PinkNoise.ar(EnvGen.ar(Env.perc(0.02,dcy,1,curve.neg), gate, doneAction:2));
+		var sig = PinkNoise.ar(EnvGen.ar(Env.perc(0.03,dcy,1,curve.neg), gate, doneAction:2));
 		sig = Resonz.ar(sig, ff, 0.1, 3);
 		Out.ar(out, Pan2.ar(sig,pan,amp))
 }).add;
@@ -56,7 +56,7 @@ SynthDef(\melodicPerc, {|out=0, freq=50, tension=0.1, decay=0.5, clickLevel=0.3,
 		Pbind(
 			\instrument, \tick,
 			\octave, Pseq([3,4,5,6].stutter(1), inf),
-			\dur, 0.22,
+			\dur, 0.22/2,
 			\pan, Pwhite(-0.1,0.1),
 			\amp, Pwhite(0.8,0.9, inf),
 			\args, #[]
@@ -87,8 +87,8 @@ SynthDef(\melodicPerc, {|out=0, freq=50, tension=0.1, decay=0.5, clickLevel=0.3,
 //------------------------------------------------------------
 ~next = {|d|
 
-	var dur = m.accelMassFiltered.lincurve(0,2.5,0,2,1).round;
-	var dr = m.accelMassFiltered.lincurve(0,2.5,0.001,0.3,5);
+	var dur = m.accelMassFiltered.lincurve(0,0.8,0,2,-1).round;
+	var dr = m.accelMassFiltered.lincurve(0,1.5,0.001,0.3,5);
 	var decay = d.sensors.gyroEvent.z.abs.linlin(0.2,0.8,1.0,0.2);
 	var curve = m.gyroYFiltered.linlin(-1.0,1.0,50.0,1.0);
 	var ff = m.gyroYFiltered.lincurve(-1.0,1.0,40.0,10000.0, 3);
@@ -101,7 +101,7 @@ SynthDef(\melodicPerc, {|out=0, freq=50, tension=0.1, decay=0.5, clickLevel=0.3,
 	Pdef(m.ptn).set(\dr, dr);
 	// Pdef(m.ptn).set(\dist, dr*10);
 
-	if(m.accelMassFiltered > 0.2,{
+	if(m.accelMassFiltered > 0.11,{
 		if( Pdef(m.ptn).isPlaying.not,{
 			Pdef(m.ptn).resume(quant:0.22);
 		});

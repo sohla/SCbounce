@@ -31,8 +31,8 @@ SynthDef(\bufGrain, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=440
 //------------------------------------------------------------
 ~init = ~init <> {
 	// var path = PathName("~/Downloads/yourDNASamples/brenton/BrentonVoice_09.wav");
-	var path = PathName("~/Downloads/melSamples/mel_mouth1.wav");
-	// var path = PathName("~/Downloads/melSamples/mel_mouth2.wav");
+	// var path = PathName("~/Downloads/melSamples/mel_mouth1.wav");
+	var path = PathName("~/Downloads/melSamples/mel_mouth2.wav");
 
 	postf("loading sample : % \n", path.fileName);
 	buffer = Buffer.read(s, path.fullPath, action:{ |buf|
@@ -55,11 +55,11 @@ SynthDef(\bufGrain, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=440
 	var rate =  m.gyroYFiltered.lincurve(-1.0,1.0,0.1,2.0,0);
 	var start = m.gyroZFiltered.lincurve(-1.0,1.0,0.0,1.0,0);
 
-	if(amp < 0.001, {amp = 0});
+	if(amp < 0.01, {amp = 0});
 
 	synth.set(\start, start);
 	synth.set(\rate, rate);
-	synth.set(\amp, amp * 30);
+	synth.set(\amp, amp * 70);
 
 };
 //------------------------------------------------------------
