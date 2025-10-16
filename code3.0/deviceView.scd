@@ -65,7 +65,7 @@ var addDetailView = {|d|
 	var view = View()
 		.layout_(gl = GridLayout.rows(
 			[
-				View().maxHeight_(140)
+				View().maxHeight_(120)
 			],
 			[
 				[HLayout(addIDView.(d), addNetView.(d), addBatteryView.(d)).spacing_(2), columns:2],									
@@ -73,14 +73,16 @@ var addDetailView = {|d|
 			[
 				[addThreeDeeView.(d), columns:2],
 			],
-			// [
-			// 	[addTitleView.(d), columns:2],
-			// ],
 			[
-				[HLayout(addPrevButton.(d),addTitleView.(d), addNextButton.(d)), columns:2],
+				[addTitleView.(d), columns:2],
+			],
+			[
+				addPrevButton.(d),
+				addNextButton.(d)
+				// [HLayout(addPrevButton.(d),addTitleView.(d), addNextButton.(d)), columns:2],
 			]
 			
-		));
+		).hSpacing_(spacing).vSpacing_(spacing).margins_([0,0,0,0]));
 		// .mouseDownAction_({false})
 		// .mouseUpAction_({false});
 

@@ -308,7 +308,7 @@ var reLoadPersonality = { |port, index|
 
 OSCFunc({ |msg, time, addr, recvPort|
     loadPersonality.(msg[1], msg[2]);
-},'/airkit/loadPersonality', NetAddr("127.0.0.1", NetAddr.langPort));
+},'/airkit/loadPersonality'); //* not having an NetAddr makes this public ie. external control
 
 OSCFunc({ |msg, time, addr, recvPort|
     unLoadPersonality.(msg[1], msg[2]);

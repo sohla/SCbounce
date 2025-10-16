@@ -3,6 +3,7 @@
 		"silence",
 		"temp_synth",
 		"temp_buffer",
+		"temp_buffers",
 		"melbb2",
 		"melbb1",
 		"mel1",

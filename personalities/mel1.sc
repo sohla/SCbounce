@@ -40,6 +40,7 @@ SynthDef(\stereoSampler1, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, fr
 				\decay, 0.2,
 				\sustain,0.1,
 				\release,0.3,
+				// \rate, Pwhite(0.3,3.0),
 				\rate, Pseq(
 					(
 						[0,1,4,5,7,8,7,5,4,5,4,1,4,1,0,0].stutter(4)
@@ -68,7 +69,7 @@ SynthDef(\stereoSampler1, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, fr
 //------------------------------------------------------------
 ~next = {|d|
 
-	var dur = m.accelMassFiltered.lincurve(0,1,0.4,0.1,-2);
+	var dur = m.accelMassFiltered.lincurve(0,1,0.4,0.07,-2);
 	var start = m.gyroXFiltered.lincurve(0.0,1.0,0.1,0.9,0);
 	var amp = m.accelMassFiltered.lincurve(0,2.5,0,1,-5);
 	var rate= m.accelMass.linlin(0,1,0,2);
@@ -76,7 +77,7 @@ SynthDef(\stereoSampler1, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, fr
 	if(amp < 0.02, {amp = 0});
 
 	Pdef(m.ptn).set(\dur, dur);
-	Pdef(m.ptn).set(\amp, amp * 0.6);
+	Pdef(m.ptn).set(\amp, amp * 1.6);
  	// Pdef(m.ptn).set(\start, start.linlin(0,1,0,1));
 
 };

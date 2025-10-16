@@ -23,20 +23,21 @@ var visualView = {
 var addDeviceView = {|d|
 
 	var gl;
-	var tv = addTitleView.(d);
 	var numDevices = contentView.children.size;
 
 	var view = View()
 		.background_(Color.black)
 		.layout_(gl = GridLayout.rows(
 			[				
-				[renderer.(d), columns:3]
+				[renderer.(d), columns:2]
+			],[
+				[addTitleView.(d), columns:2],
 			],[
 				addPrevButton.(d),
-				tv,
 				addNextButton.(d),
 			]
-		))
+		).hSpacing_(spacing).vSpacing_(spacing).margins_([0,0,0,0]))
+
 		// .mouseDownAction_({false})
 		// .mouseUpAction_({false});
 
@@ -50,7 +51,8 @@ var addDeviceView = {|d|
 		});
 
 	// add device view
-	contentView.layout.add(view, (numDevices/2).floor, numDevices%2);	
+	// contentView.layout.add(view, (numDevices/2).floor, numDevices%2);	
+	contentView.layout.add(view, 0, numDevices);	
 
 };
 

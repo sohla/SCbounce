@@ -55,11 +55,11 @@ var serverView = UserView()
 			// getCPUInstant.();
 			// getTemp.();
 			("Server: "++s.peakCPU.asStringPrec(3)++"%").drawAtPoint(6@4, Font.default, Color.yellow);
-			("Hosting: "++hosts).drawAtPoint(110@4, Font.default, Color.yellow);
-			("Port: "++NetAddr.	localAddr.port).drawAtPoint(350@4, Font.default, Color.yellow);
-			("UGens: "++s.numUGens).drawAtPoint(450@4, Font.default, Color.yellow);
-			("Groups: "++s.numGroups).drawAtPoint(550@4, Font.default, Color.yellow);
-			("Synths: "++s.numSynths).drawAtPoint(650@4, Font.default, Color.yellow);
+			("UGens: "++s.numUGens).drawAtPoint(200@4, Font.default, Color.yellow);
+			("Groups: "++s.numGroups).drawAtPoint(300@4, Font.default, Color.yellow);
+			("Synths: "++s.numSynths).drawAtPoint(400@4, Font.default, Color.yellow);
+			("Port: "++NetAddr.	localAddr.port).drawAtPoint(500@4, Font.default, Color.yellow);
+			("Hosting: "++hosts).drawAtPoint(600@4, Font.default, Color.yellow);
 });
 
 

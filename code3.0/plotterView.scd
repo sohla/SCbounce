@@ -1,6 +1,6 @@
 var plotterView = {|data, parentView|
-	// var pv = UserView(parentView, parentView.bounds).backColor_(data.color.alpha_(0.5)).animate_(true).frameRate_(12);
-	var plotter = Plotter("plotter", parentView.bounds, parentView)
+	var rect = parentView.bounds;
+	var plotter = Plotter("plotter", rect, parentView)
 		.value_((0..50))
 		.minval_(-1.0)
 		.maxval_(1.0)
