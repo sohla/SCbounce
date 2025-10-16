@@ -2,7 +2,7 @@ var addTitleView = { |d|
 	var button = Button()
 		.minWidth_(100)
 		.minHeight_(100)
-		.font_(Font(size:40))
+		.font_(Font(size:40, bold:true	))
 		.states_([
 			[d.name, Color.black, d.color.alpha_(0.8)],
 			[d.name, Color.black.alpha_(0.5), Color.white.alpha_(0.1)],
@@ -24,7 +24,19 @@ var addTitleView = { |d|
 			}.defer;
 		});
 	},'/airkit/personalityName', NetAddr("127.0.0.1", NetAddr.langPort));
-	
+
+	OSCFunc({ |msg, time, addr, recvPort|
+		if(msg[1].asInteger == d.port, {
+			{ button.valueAction = 1 }.defer;
+		});
+	},'/airkit/mute');
+
+	OSCFunc({ |msg, time, addr, recvPort|
+		if(msg[1].asInteger == d.port, {
+			{ button.valueAction = 0 }.defer;
+		});
+	},'/airkit/unmute');
+
 	button
 };
 addTitleView
