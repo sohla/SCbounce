@@ -368,7 +368,7 @@ var addDevice = { |ip,port,index|
 
     // start listening to device data
     addOSCDeviceListeners.(d);
-    ["Connected:", NetAddr.new(ip,port).isConnected].postln;
+    // ["Connected:", NetAddr.new(ip,port).isConnected].postln;
 
     // hack : try and get color from config
     NetAddr.new(ip,port-index+1).sendMsg("/Config/GetConfig", 57120);

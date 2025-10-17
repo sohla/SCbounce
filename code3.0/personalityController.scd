@@ -224,7 +224,7 @@ var loadPersonality = { |port, index|
 
     NetAddr.new("127.0.0.1", 57120).sendMsg("/airkit/personalityName", d.port, d.name);
     d.env = interpretPersonality.(d);
-    ["TODO",d.enabled].postln;
+    // ["TODO",d.enabled].postln;
     d.env.use{
         Routine{
             s.sync;

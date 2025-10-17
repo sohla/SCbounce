@@ -50,9 +50,9 @@ SynthDef(\pullstretchStereo, {|out, amp = 1, bufnum = 0, envbuf = -1, pch = 1, d
 ~deinit = ~deinit <> {
 	synth.onFree({
     buffers.do({|buf|
+      postf("buffer dealloc [%] \n", buf);
       buf.free;
       // s.sync;
-      postf("buffer dealloc [%] \n", buf);
     });
 	});	
 	synth.set(\gate, 0);
