@@ -1,4 +1,4 @@
-var bh = 80;
+var bh = 100;
 var hosts = "hostname -I".unixCmdGetStdOut;
 
 
@@ -34,7 +34,7 @@ var getTemp = {
 var serverView = UserView()
     .minWidth_(60)
     .maxHeight_(20)
-		.frameRate_(10)
+	.frameRate_(10)
     .animate_(true)
     .drawFunc_({|uv|
 			// fork {
@@ -55,34 +55,45 @@ var serverView = UserView()
 			// getCPUInstant.();
 			// getTemp.();
 			("Server: "++s.peakCPU.asStringPrec(3)++"%").drawAtPoint(6@4, Font.default, Color.yellow);
-			("UGens: "++s.numUGens).drawAtPoint(200@4, Font.default, Color.yellow);
-			("Groups: "++s.numGroups).drawAtPoint(300@4, Font.default, Color.yellow);
-			("Synths: "++s.numSynths).drawAtPoint(400@4, Font.default, Color.yellow);
-			("Port: "++NetAddr.	localAddr.port).drawAtPoint(500@4, Font.default, Color.yellow);
-			("Hosting: "++hosts).drawAtPoint(600@4, Font.default, Color.yellow);
+			("UGens: "++s.numUGens).drawAtPoint(120@4, Font.default, Color.yellow);
+			("Groups: "++s.numGroups).drawAtPoint(200@4, Font.default, Color.yellow);
+			("Synths: "++s.numSynths).drawAtPoint(300@4, Font.default, Color.yellow);
+			("Hosting: "++hosts).drawAtPoint(400@4, Font.default, Color.yellow);
+			("Port: "++NetAddr.	localAddr.port).drawAtPoint(1000@4, Font.default, Color.yellow);
 });
 
 
+// var meterView = LevelIndicator()
+// 	.numTicks_(20)
+// 	.value_(0.5)
+// 	.warning_(-6.dbamp)
+// 	.critical_(-3.dbamp)
+// 	.minWidth_(140)
+// 	.maxWidth_(140);
+
 var meterView = View()
-	.minWidth_(140);
+	.minWidth_(140)
+	.maxWidth_(140);
 
 var nodeTree = View()
 	.background_(Color.black(0.25))
-	.minWidth_(600)
+	.minWidth_(700)
 	.maxHeight_(800);
 
-var shutdownButton = Button()
-		.maxWidth_(140)
+var turnOffButton = Button()
+		.font_(Font(size:18, bold:true))
+		// .maxWidth_(140)
 		.maxHeight_(bh)
-		.states_([["SHUTDOWN",Color.gray(0.5),Color.gray(0.25)]])
+		.states_([["TURN OFF",Color.black,Color.red(1)]])
 		.action_({
 				"sudo shutdown now".unixCmdGetStdOut;
 		});
 
 var quitButton = Button()
-		.maxWidth_(140)
+		.font_(Font(size:18, bold:false))
+		// .maxWidth_(140)
 		.maxHeight_(bh)
-		.states_([["QUIT",Color.gray(0.5),Color.gray(0.25)]])
+		.states_([["QUIT",Color.black,Color.white.alpha_(0.75)]])
 		.action_({
 				s.quit({
 					0.exit;
@@ -91,10 +102,11 @@ var quitButton = Button()
 
 
 var oscThruButton = Button()
-		.maxWidth_(140)
+		.font_(Font(size:18, bold:false))
+		// .maxWidth_(140)
 		.maxHeight_(bh)
 		.states_([
-			["OSC Thru",Color.gray(0.5),Color.gray(0.25)],
+			["OSC Thru",Color.black,Color.gray(0.5)],
 			["OSC Thru",Color.white(),Color.green(0.25)]
 			])
 		.action_({|b|
@@ -103,37 +115,36 @@ var oscThruButton = Button()
 
 
 var networkReset = Button()
-	.maxWidth_(140)
+	.font_(Font(size:18, bold:false))
+	// .maxWidth_(140)
 	.maxHeight_(bh)
-	.states_([["Network",Color.gray(0.5),Color.gray(0.25)]])
+	.states_([["Network",Color.black,Color.gray(0.5)]])
 	.action_({
 			("sudo systemctl restart NetworkManager").unixCmdGetStdOut();
 	});
 
 var freeAllNodes = Button()
-	.maxWidth_(140)
+	.font_(Font(size:18, bold:false))
+	// .maxWidth_(140)
 	.maxHeight_(bh)
-	.states_([["Free All Nodes",Color.gray(0.5),Color.gray(0.25)]])
+	.states_([["Free All Nodes",Color.black,Color.gray(0.5)]])
 	.action_({
-			s.freeAll;
+		s.freeAll;
 	});
-
 
 var systemView = {
 	View().layout_(VLayout(
-		serverView,
-		GridLayout.columns(
-			[
-				networkReset,
-				freeAllNodes,
-				oscThruButton,
-				quitButton,
-				shutdownButton,
-				meterView,
-
-			],[
-				[nodeTree, rows:4],
-			]
+		HLayout(View().maxWidth_(140), serverView),
+		HLayout(meterView, nodeTree),
+		HLayout(
+			View(),
+			networkReset,
+			oscThruButton,
+			View(),
+			freeAllNodes,
+			quitButton,
+			View(),
+			turnOffButton,
 		)
 	))
 };
