@@ -74,9 +74,9 @@ SynthDef(\drumkit, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 	Pdef(m.ptn).remove;
 
 	~buffers.do({|buf|
-		buf.free;
-		s.sync;
 		postf("buffer dealloc [%] \n", buf);
+		s.sync;
+		buf.free;
 	});
 	// synth.free;
 };

@@ -1,6 +1,7 @@
 (
 	[
 		"silence",
+		"button1",
 		"temp_synth",
 		"temp_buffer",
 		"temp_buffers",

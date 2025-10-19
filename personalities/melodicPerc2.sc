@@ -34,7 +34,7 @@ SynthDef(\melodicPerc, {|out=0, freq=50, tension=0.1, decay=0.5, clickLevel=0.3,
     Out.ar(out, Pan2.ar(sig,0,amp))
 }).add;
 
-
+//------------------------------------------------------------
 ~init = ~init <> {
 
 	Pdef(m.ptn,
@@ -71,10 +71,6 @@ SynthDef(\melodicPerc, {|out=0, freq=50, tension=0.1, decay=0.5, clickLevel=0.3,
 };
 
 //------------------------------------------------------------
-// triggers
-//------------------------------------------------------------
-
-// example feeding the community
 ~onEvent = {|e|
 	// if(e.root != m.com.root,{
 	// 	// "key change".postln;
@@ -83,9 +79,6 @@ SynthDef(\melodicPerc, {|out=0, freq=50, tension=0.1, decay=0.5, clickLevel=0.3,
 	Pdef(m.ptn).set(\root, m.com.root);
 };
 
-
-//------------------------------------------------------------
-// do all the work(logic) taking data in and playing pattern/synth
 //------------------------------------------------------------
 ~next = {|d|
 
@@ -118,12 +111,6 @@ SynthDef(\melodicPerc, {|out=0, freq=50, tension=0.1, decay=0.5, clickLevel=0.3,
 	});
 };
 
-~nextMidiOut = {|d|
-	// m.midiOut.control(m.midiChannel, 0, m.accelMassFiltered * 64 );
-};
-
-//------------------------------------------------------------
-// plot with min and max
 //------------------------------------------------------------
 ~plotMin = -1;
 ~plotMax = 1;
