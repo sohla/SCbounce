@@ -3,14 +3,8 @@ var personalityDir = "~/Develop/SuperCollider/Projects/SCbounce/personalities/";
 // var personalityDir = "~/Develop/SuperCollider/Projects/scbounce/personalities/"; //laptop
 // var personalityDir = "~/Develop/SuperCollider/oscMusic/personalities/"; //mac mini cabin
 
-// var defaultPersonality = "1. Start";
-// var defaultList = "list_yourDNA.sc";
-
-// var defaultPersonality = "1. Start";
-// var defaultList = "list_brenton.sc";
-
-var list = "list_ITR_Mel.sc";
-// var list = "list_tests.sc";
+// var list = "list_ITR_Mel.sc";
+var list = "list_yourDNA25.sc";
 
 var defaultLists = [
     list,

@@ -13,9 +13,6 @@ SynthDef(\insects, {
     reverbMix=0.6, reverbRoom=0.5, reverbDamp=0.5, temp = 1.43|
 
     var sig, env, filtered, reverbed;
-
-
-
   var modulator, mod1, mod2, mod3;
 
 	// repeat time is 0.7s: equates to 1.43 Hz.
@@ -84,7 +81,7 @@ SynthDef(\syntheticLeaf, {
 }).add;
 
 ~init = ~init <> {
-	synth = Synth(\insects, [\gate, 1, \amp, 0.02]);
+	synth = Synth(\insects, [\gate, 1, \amp, 0.004]);
 	synth2 = Synth(\syntheticLeaf, [\gate, 1]);
 };
 

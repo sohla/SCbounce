@@ -4,19 +4,19 @@ var note = 43;
 m.accelMassFilteredAttack = 0.8;
 m.accelMassFilteredDecay = 0.8;
 
-SynthDef(\funBass, {
-    |out=0, freq = 440, gate = 1, amp = 0.8, filtFreq = 2000, filtRes = 0.5, envAtk = 0.01, envDec = 0.1, envSus = 0.7, envRel = 4.2, rm = 0.5|
-    var osc1, osc2, osc3, env, filter, output;
+// SynthDef(\funBass, {
+//     |out=0, freq = 440, gate = 1, amp = 0.8, filtFreq = 2000, filtRes = 0.5, envAtk = 0.01, envDec = 0.1, envSus = 0.7, envRel = 4.2, rm = 0.5|
+//     var osc1, osc2, osc3, env, filter, output;
 
-    env = EnvGen.ar(Env.adsr(envAtk, envDec, envSus, envRel), gate, doneAction: Done.freeSelf);
-    osc1 = Saw.ar(freq, 1);
-    osc2 = Pulse.ar(freq * 0.99, 0.3, 1);
-    osc3 = SinOsc.ar(freq * 1.01, 0, 1);
-    output = Mix([osc1, osc2, osc3]) * env * amp;
-    filter = RLPF.ar(output, filtFreq, filtRes);
-		filter = [filter.distort, filter.tanh];
-    Out.ar(out, filter.softclip);
-}).add;
+//     env = EnvGen.ar(Env.adsr(envAtk, envDec, envSus, envRel), gate, doneAction: Done.freeSelf);
+//     osc1 = Saw.ar(freq, 1);
+//     osc2 = Pulse.ar(freq * 0.99, 0.3, 1);
+//     osc3 = SinOsc.ar(freq * 1.01, 0, 1);
+//     output = Mix([osc1, osc2, osc3]) * env * amp;
+//     filter = RLPF.ar(output, filtFreq, filtRes);
+// 		filter = [filter.distort, filter.tanh];
+//     Out.ar(out, filter.softclip);
+// }).add;
 
 SynthDef(\warmPadMove1, {
 	|out=0, gate=1, freq=440, amp=0.1,atk=0.03, dec=0.2, sus=0.8, rel=1.0,filtMin=500, filtMax=5000, filtSpeed=0.5,
@@ -71,37 +71,37 @@ SynthDef(\warmPadMove1, {
 }).add;
 
 
-SynthDef(\versatilePerc, {
-    |out=0, freq=50, tension=0.1, decay=0.5, clickLevel=0.5, amp=0.5, dist = 5|
-    var pitch_contour, drum_osc, click_osc, drum_env, click_env, sig, pch;
+// SynthDef(\versatilePerc, {
+//     |out=0, freq=50, tension=0.1, decay=0.5, clickLevel=0.5, amp=0.5, dist = 5|
+//     var pitch_contour, drum_osc, click_osc, drum_env, click_env, sig, pch;
 
-    // Pitch envelope
-    pitch_contour = Line.kr(1, 0, 0.02);
+//     // Pitch envelope
+//     pitch_contour = Line.kr(1, 0, 0.02);
 
-    // Drum oscillator
+//     // Drum oscillator
 
-	pch = freq * (1 + (pitch_contour * tension));
-	drum_osc = SinOsc.ar([pch,pch*1.004], LFNoise2.ar([4,5],10,-10),0.5);
+// 	pch = freq * (1 + (pitch_contour * tension));
+// 	drum_osc = SinOsc.ar([pch,pch*1.004], LFNoise2.ar([4,5],10,-10),0.5);
 
-    // Click oscillator
-    click_osc = LPF.ar(WhiteNoise.ar(1), 1500);
+//     // Click oscillator
+//     click_osc = LPF.ar(WhiteNoise.ar(1), 1500);
 
-    // Drum envelope
-    drum_env = EnvGen.ar(
-        Env.perc(attackTime: 0.005, releaseTime: decay, curve: -4),
-        doneAction: 2
-    );
+//     // Drum envelope
+//     drum_env = EnvGen.ar(
+//         Env.perc(attackTime: 0.005, releaseTime: decay, curve: -4),
+//         doneAction: 2
+//     );
 
-    // Click envelope
-    click_env = EnvGen.ar(
-        Env.perc(attackTime: 0.001, releaseTime: 0.01),
-        levelScale: clickLevel
-    );
-	sig = (drum_osc * drum_env) + (click_osc * click_env);
-	sig = (sig * dist).tanh.distort;
-    // Mix and output
-    Out.ar(out, Pan2.ar(sig,0,amp))
-}).add;
+//     // Click envelope
+//     click_env = EnvGen.ar(
+//         Env.perc(attackTime: 0.001, releaseTime: 0.01),
+//         levelScale: clickLevel
+//     );
+// 	sig = (drum_osc * drum_env) + (click_osc * click_env);
+// 	sig = (sig * dist).tanh.distort;
+//     // Mix and output
+//     Out.ar(out, Pan2.ar(sig,0,amp))
+// }).add;
 //------------------------------------------------------------
 // intial state
 //------------------------------------------------------------
@@ -154,14 +154,14 @@ SynthDef(\versatilePerc, {
 };
 
 // example feeding the community
-~onEvent = {|e|
-	if(e.root != m.com.root,{
-		// "key change".postln;
-		synth.set(\freq, (note + e.root).midicps);
-	});
-	m.com.root = e.root;
-	m.com.dur = e.dur;
-};
+// ~onEvent = {|e|
+// 	if(e.root != m.com.root,{
+// 		// "key change".postln;
+// 		synth.set(\freq, (note + e.root).midicps);
+// 	});
+// 	m.com.root = e.root;
+// 	m.com.dur = e.dur;
+// };
 
 ~onHit = {|state|
 };
@@ -211,8 +211,7 @@ SynthDef(\versatilePerc, {
 ~plot = { |d,p|
 	// [d.sensors.rrateEvent.x, m.rrateMass * 0.1, m.accelMassFiltered * 0.5];
 	// [m.accelMass * 0.1, m.accelMassFiltered * 0.1];
-	[m.rrateMassFiltered, m.rrateMassThreshold];
-	// [m.rrateMassFiltered, m.rrateMassThreshold, m.accelMassAmp];
+	[m.rrateMassFiltered];
 	// [d.sensors.gyroEvent.x, d.sensors.gyroEvent.y, d.sensors.gyroEvent.z];
 	// [d.sensors.rrateEvent.x, d.sensors.rrateEvent.y, d.sensors.rrateEvent.z];
 	// [d.sensors.accelEvent.x, d.sensors.accelEvent.y, d.sensors.accelEvent.z];
