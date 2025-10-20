@@ -190,10 +190,10 @@ Event.addEventType(\customVisualEvent, {
         \shape: ~shape ? \circle,
         \points: ~points,  // Optional custom points array
         \numPoints: ~numPoints, // Optional number of points to generate
-        \sx: ~sx ? 300,
-        \sy: ~sy ? 450,
-        \ex: ~ex ? 300,
-        \ey: ~ey ? 100,
+        \sx: ~sx ? 0.0,
+        \sy: ~sy ? 0.0,
+        \ex: ~ex ? 0.0,
+        \ey: ~ey ? 0.0,
         \xEnv: ~xEnv ? defaultEnv,
         \yEnv: ~yEnv ? defaultEnv,
         \startWidth: ~startWidth ? 1,

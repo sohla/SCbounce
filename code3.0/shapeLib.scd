@@ -186,7 +186,8 @@ var shapeLib = (
             var radius = size * (0.8 + (0.3 * sin(angle * 3)) + (0.15 * cos(angle * 5)));
             pos + (radius * cos(angle) @ (radius * sin(angle)));
         });
-    }
+    },
+ 
 );
 
 shapeLib

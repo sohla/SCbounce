@@ -1,6 +1,6 @@
 var m = ~model;
 var buffer;
-var dur = 0.15;
+var dur = 0.07;
 
 m.accelMassFilteredAttack = 0.99;
 m.accelMassFilteredDecay = 0.4;
@@ -14,7 +14,7 @@ m.gyroFilteredDecay = 0.7;
 SynthDef(\sampler, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=440, attack=0.01, decay=0.1, sustain=0.9, release=0.2, gate=1,cutoff=20000, rq=1, loop=1|
 	var lr = rate * BufRateScale.kr(bufnum) * (freq/440.0);
      var env = EnvGen.kr(Env.adsr(attack, decay, sustain, release), gate, doneAction: 2);
-	var sig = PlayBuf.ar(1, bufnum, rate: lr, startPos: start * BufFrames.kr(bufnum), loop: loop);
+	var sig = PlayBuf.ar(2, bufnum, rate: lr, startPos: start * BufFrames.kr(bufnum), loop: loop);
     sig = RLPF.ar(sig, cutoff, rq);
     // sig = Balance2.ar(sig[0], sig[1], pan);
 		sig = Compander.ar(sig, sig,
@@ -29,10 +29,11 @@ SynthDef(\sampler, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=440,
 //------------------------------------------------------------
 ~init = ~init <> {
 	// var path = PathName("~/Downloads/yourDNASamples/violin/Violin_02.wav");
-	// var path = PathName("~/Downloads/melSamples/hello/mel_hello3.wav");
-	var path = PathName("~/Downloads/yourDNASamples/TR laughing2.wav");
+	var path = PathName("~/Downloads/melSamples/hello/mel_hello3.wav");
+	// var path = PathName("~/Downloads/yourDNASamples/TR laughing2.wav");
 	// var path = PathName("~/Downloads/yourDNASamples/DC power of love.wav");
 
+    var w = 0.1;
 	postf("loading sample : % \n", path.fileName);
 
 	buffer = Buffer.read(s, path.fullPath, action:{ |buf|
@@ -48,6 +49,16 @@ SynthDef(\sampler, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=440,
 				\sustain,0.1,
 				\release,0.04,
 				\dur, dur,
+
+                \type, \customVisualEvent,
+                \cnt, Pseries(0,1, inf),
+                \sx, Pfunc({ |e| cos(e.cnt / 6) * w * 0.5}),
+                \sy, Pfunc({ |e| sin(e.cnt / 6) * w}),
+				\shape, \leaf,
+				\rotation, Pseg([0, 2pi], 2.5, 'lin', inf),
+	            \duration, 1,
+				\endSize, 2000,
+				\fill, true,
 				\args, #[],
 			)
 		);
@@ -67,17 +78,25 @@ SynthDef(\sampler, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=440,
 
 //------------------------------------------------------------
 ~next = {|d|
+	// var shapes = [\circle, \square, \line, \triangle, \star, \hexagon, \cross, \wave, \leaf, \spiral, \blobby];
     var pos = m.gyroYFiltered.fold(-1,1).lincurve(-1,1,0.0,1.0,0);
+    // var shape = m.gyroYFiltered.fold(-1,1).lincurve(-1,1,0.0,shapes.size-1,0).asInteger;
     var rate = m.gyroXFiltered.fold(-0.5,0.5).lincurve(-0.5,0.5,0.9,1.0,0);
     var amp = m.rrateMassFiltered.lincurve(0.0,0.5,0.0,4.0,-1);
+	var size = m.accelMassFiltered.lincurve(0.0,1.5,100,250,4);
 
     Pdef(m.ptn).set(\start, pos);
     Pdef(m.ptn).set(\rate, rate);
 
-    if(amp < 0.03, { amp = 0; });
+    if(amp < 0.2, { amp = 0; });
     Pdef(m.ptn).set(\amp, amp);
 
-    
+    Pdef(m.ptn).set(\viewID, d.port);
+	Pdef(m.ptn).set(\startColor, Color.yellow.alpha_(amp.min(0.5)));
+	Pdef(m.ptn).set(\endColor, Color.red.alpha_(0));
+	Pdef(m.ptn).set(\startSize, size);
+	// Pdef(m.ptn).set(\shape, shapes[shape]);
+
 	// if(m.accelMassFiltered > 0.11,{
 	// 	if( Pdef(m.ptn).isPlaying.not,{
 	// 		Pdef(m.ptn).resume(quant:dur);
@@ -87,6 +106,9 @@ SynthDef(\sampler, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=440,
 	// 		Pdef(m.ptn).pause();
 	// 	});
 	// });
+
+	Pdef(m.ptn).set(\viewID, d.port);
+
 
 };
 //------------------------------------------------------------
