@@ -242,9 +242,7 @@ var addOSCDeviceListeners = {|d|
 
         d.listeners.digiIn = OSCFunc({ |msg, time, addr, recvPort|
         if(~devices.at(addr.port+i) != nil,{
-            // [msg[1].asInteger,msg[2].asInteger].postln;
             ~devices.at(addr.port+i).sensors.digiInEvent[msg[1].asInteger] = msg[2].asInteger;
-            // devices.at(addr.port+i).sensors.digiInEvent.postln;
         });
         }, digiInBase.format(i+1), address);
 

@@ -1,10 +1,12 @@
 (
 	[
 		"silence",
+		"temp_pattern_buffers",
+		"temp_pattern_buffer",
 		"button1",
 		"temp_synth",
-		"temp_buffer",
-		"temp_buffers",
+		"temp_synth_buffer",
+		"temp_synth_buffers",
 		"melbb2",
 		"melbb1",
 		"mel1",

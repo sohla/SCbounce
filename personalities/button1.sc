@@ -135,7 +135,7 @@ SynthDef(\versatilePerc, {
   var bassLine = bassLines[0];
   // var ni = (d.sensors.gyroEvent.y / pi).lincurve(-1.0,1.0,0,notes.size,0).floor;//left/right
   // var ni = (d.sensors.gyroEvent.x / pi).lincurve(-1.0,1.0,notes.size,0,0).floor; //up/down
-  (d.  sensors.gyroEvent.z / pi).lincurve(-0.5,0.5,0,notes.size-1,1).asInteger.postln;
+  // (d.  sensors.gyroEvent.z / pi).lincurve(-0.5,0.5,0,notes.size-1,1).asInteger.postln;
 	// if(amp < 0.04, {amp = 0});
 
   synth.set(\amp, amp*0.8);
