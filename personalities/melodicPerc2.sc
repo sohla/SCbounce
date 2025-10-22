@@ -41,9 +41,10 @@ SynthDef(\melodicPerc, {|out=0, freq=50, tension=0.1, decay=0.5, clickLevel=0.3,
 		Pbind(
 			\instrument, \melodicPerc,
 			\scale, Scale.major,
+			\root,Pseq([0,3,-3].stutter(16), inf),
 			\octave, Pseq([6,8,5,9,5,6].stutter(2)-2, inf),
     	\note, Pseq([0,4,11,2,7], inf),
-			\amp, Pwhite(0.1,0.2, inf)*0.08,
+			\amp, Pwhite(0.1,0.2, inf)*0.4,
       \func, Pfunc({|e| ~onEvent.(e)}),
 			\args, #[]
 		);
@@ -91,7 +92,7 @@ SynthDef(\melodicPerc, {|out=0, freq=50, tension=0.1, decay=0.5, clickLevel=0.3,
 	var curve = m.gyroZFiltered.abs.linlin(0.0,1.0,40.0,10.0);
 
 	Pdef(tp).set(\curve, curve);
-	Pdef(tp).set(\amp,amp);
+	Pdef(tp).set(\amp,amp*3);
 	Pdef(tp).set(\frq,frq);
 	Pdef(tp).set(\pan, pan);
     

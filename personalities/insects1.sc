@@ -93,7 +93,7 @@ SynthDef(\syntheticLeaf, {
 //------------------------------------------------------------
 ~next = {|d|
 
-	var a = m.accelMassFiltered.lincurve(0,3,0.02,0.6,-2);
+	var a = m.accelMassFiltered.lincurve(0,3,0.02,1.2,-2);
     var f = (d.sensors.gyroEvent.x / pi).linlin(-1,1,1.13,1.56);
 	var pan = d.sensors.gyroEvent.z.linlin(-1,1,-0.3,0.3);
     

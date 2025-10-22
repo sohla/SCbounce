@@ -2,6 +2,8 @@
 	[
 
 	"silence",
+		"toot1",
+	"tramBell",
 		"temp_input",
 		"temp_pattern_buffers",
 		"temp_pattern_buffer",

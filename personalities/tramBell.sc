@@ -43,18 +43,18 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, fre
 //------------------------------------------------------------
 ~next = {|d|
 
-	var move = m.accelMassFiltered.linlin(0,3,0,1);
+	var move = m.accelMassFiltered.linlin(0,2,0,1);
 	var metal = m.accelMassFiltered.linlin(0,2.5,0.01,2);
-	var size = m.accelMassFiltered.linlin(0,2.5,0.1,1);
+	var amp = m.accelMassFiltered.lincurve(0,2.5,0,2,1);
 
-	if(move > 0.22, {
-		if(TempoClock.beats > (lastTime + 0.25),{
+	if(move > 0.12, {
+		if(TempoClock.beats > (lastTime + 0.2),{
 			lastTime = TempoClock.beats;
 			synth = Synth(\stereoSampler, [
-        \bufnum, buffer,
+        		\bufnum, buffer,
 				\gate, 1,
-        \rate, 1,
-				\amp, 0.3,
+        		\rate, 1,
+				\amp, amp,
 
 			]);
 			synth.server.sendBundle(1,[\n_set, synth.nodeID, \gate, 0]);
