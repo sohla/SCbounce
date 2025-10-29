@@ -1,6 +1,14 @@
 (
 	[
 		"silence",
+		"waves",
+		"nic1",
+		"nic2",
+		"nic3",
+		"aless2",
+		"aless3",
+		"aless4",
+
 		"melbb2",
 		"melbb1",
 		"mel1",
