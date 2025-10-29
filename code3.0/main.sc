@@ -66,7 +66,7 @@ var initGUI = {
 	CmdPeriod.doOnce({w.close});
 };
 
-s.volume = -8; // in db
+s.volume = -2; // in db
 s.options.blockSize = 128; 
 s.options.numBuffers = 2048;  // more buffers
 s.options.memSize = 65536;    // more memory

@@ -25,6 +25,7 @@ SynthDef(\stereoSampler1, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, fr
 
 	// var path = PathName("~/Downloads/yourDNASamples/brenton/BrentonVoice_02.wav");
 	var path = PathName("~/Downloads/melSamples/mel_sing_dry-005.wav");
+	// var path = PathName("~/Downloads/alessioSamples/ahAirEveryPig.wav");
 	postf("loading sample : % \n", path.fileName);
 
 	buffer = Buffer.read(s, path.fullPath, action:{ |buf|
@@ -35,7 +36,7 @@ SynthDef(\stereoSampler1, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, fr
 				\bufnum, buf,
 				\octave, Pxrand([0,1,2,1], inf),
 				\note, Pwhite(33,33, inf).floor,
-				\start,Pwhite(0.0,0.1),
+				\start,Pwhite(0.0,0.9),
 				\attack,0.01,
 				\decay, 0.2,
 				\sustain,0.1,
