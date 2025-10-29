@@ -21,8 +21,8 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, fre
 //------------------------------------------------------------
 ~init = ~init <> {
 
-	// var path = PathName("~/Downloads/yourDNASamples/STE-002.wav");
-	var path = PathName("~/Downloads/yourDNASamples/violin/Violin_04.wav");
+	var path = PathName("~/Downloads/yourDNASamples/STE-002.wav");
+	// var path = PathName("~/Downloads/yourDNASamples/violin/Violin_04.wav");
 	// var path = PathName("~/Downloads/yourDNASamples/STE-006.wav");
 	postf("loading sample : % \n", path.fileName);
 

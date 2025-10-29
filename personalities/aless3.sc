@@ -3,15 +3,15 @@ var bi = 0;
 var dur = 0.3 ;
 ~buffers;
 m.accelMassFilteredAttack = 0.99;
-m.accelMassFilteredDecay = 0.4;
+m.accelMassFilteredDecay = 0.5;
 
 //------------------------------------------------------------
 SynthDef(\drumkit, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
-    attack=0.1, decay=0.1, sustain=0.8, release=0.3, gate=1,cutoff=10, rq=1|
+    attack=0.01, decay=0.1, sustain=0.8, release=0.3, gate=1,cutoff=10, rq=1|
 	var lr = rate * BufRateScale.kr(bufnum);
 	var cd = BufDur.kr(bufnum);
   var env = EnvGen.kr(Env.adsr(attack, decay, sustain, release), gate, doneAction: 2);
-	var sig = PlayBuf.ar(1, bufnum, rate: [lr, lr * 0.97], startPos: start * BufFrames.kr(bufnum), loop: 0) ;
+	var sig = PlayBuf.ar(2, bufnum, rate: lr, startPos: start * BufFrames.kr(bufnum), loop: 0) ;
     sig = RHPF.ar(sig, cutoff, rq);
 		sig = Compander.ar(sig, sig,
         thresh: -15.dbamp,
@@ -20,7 +20,7 @@ SynthDef(\drumkit, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
         clampTime:  0.01,
         relaxTime:  0.01
 		) ;
-		sig = Mix.ar([sig * 10]).tanh;
+		sig = Mix.ar([sig * 10]).distort;
     sig = Balance2.ar(sig[0],sig[1], pan);
     Out.ar(out, sig * amp * env);
 }).add;
@@ -44,18 +44,16 @@ SynthDef(\drumkit, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 		Pbind(
 			\instrument, \drumkit,			
 			\bufnum, Pfunc{
-				// bi = bi + 1;
-				bi = ~buffers.size.rand;
+				bi = bi + 1;
+				// bi = ~buffers.size.rand;
 				if(bi >= (~buffers.size-1),{bi=0});
 				~buffers[bi];
 			},
-			\octave, Pseq([5].stutter(24), inf),
 			\start, 0.03,
-			\note, Pseq([30], inf),
 			// \dur, dur,//Pseq([1,Rest(1),2,2,1,Rest(1),1] * dur, inf),
 			\pan, Pwhite(-0.1,0.1),
-			\attack, 0.02,
-			\release,0.3,
+			// \attack, 0.002,
+			\release,0.1,
 			\args, #[],
 		)
 	);
@@ -67,12 +65,13 @@ SynthDef(\drumkit, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 
 ~deinit = ~deinit <> {
 	Pdef(m.ptn).remove;
-
+	{
 	~buffers.do({|buf|
 		buf.free;
 		s.sync;
 		postf("buffer dealloc [%] \n", buf);
 	});
+	}.defer(0.3);
 };
 
 
@@ -80,17 +79,22 @@ SynthDef(\drumkit, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 ~next = {|d|
 
 	var rate = m.rrateMassFiltered.linlin(0,1,0.6,3);
-	var amp = m.accelMassFiltered.lincurve(0,2.5,0.3,1, -1);
-	dur= m.accelMassFiltered.lincurve(0,1.5,0.6,0.04, -1);
-	Pdef(m.ptn).set(\amp, amp * 4);
-	Pdef(m.ptn).set(\rate, 1);
+	var amp = m.accelMassFiltered.lincurve(0,2.5,0.4,1, -2);
+	var notes = [0.3,0.4,0.8,0.0,0.7] + 0.4;
+	var amps = [3,1,0.7,0.4,0.2];
+	var index = m.gyroYFiltered.fold(-0.5,0.5).lincurve(-0.5,0.5,0,notes.size-1,-1).asInteger;
+	var attack = m.accelMassFiltered.lincurve(0.0,1.5,0.2,0.0002,-1);
+	dur= m.accelMassFiltered.lincurve(0,1.5,0.2,0.01, -1);
+	Pdef(m.ptn).set(\amp, amp * amps[index]);
+	Pdef(m.ptn).set(\rate, notes[index]);
 	Pdef(m.ptn).set(\dur, dur);
+	Pdef(m.ptn).set(\attack, attack);
 	// bi = (d.sensors.gyroEvent.y.abs / pi) * (~buffers.size-1);
 	// bi = bi.asInteger;
 	// bi = [0,1,10].choose;
-	if(m.accelMassFiltered > 0.03,{
+	if(m.accelMassFiltered > 0.1,{
 		if( Pdef(m.ptn).isPlaying.not,{
-			Pdef(m.ptn).resume(quant:dur);
+			Pdef(m.ptn).resume(quant:0);
 		});
 	},{
 		if( Pdef(m.ptn).isPlaying,{

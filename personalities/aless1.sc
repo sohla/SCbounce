@@ -1,9 +1,12 @@
 var m = ~model;
 var synth;
 var buffer;
+var notes = [-12,-8,-3,1,0];
+var note = notes[0];
+var trig = false;
 
 m.accelMassFilteredAttack = 0.98;
-m.accelMassFilteredDecay = 0.6;
+m.accelMassFilteredDecay = 0.3;
 m.rrateMassFilteredAttack = 0.9;
 m.rrateMassFilteredDecay = 0.9;
 m.gyroFilteredAttack = 0.7;
@@ -70,21 +73,50 @@ SynthDef(\pullstretchMonoQ, {|out, amp = 1, buffer = 0, envbuf = -1, pch = 1, di
 
 //------------------------------------------------------------
 ~next = {|d|
-	var amp = m.accelMassFiltered.linlin(0,2,0.00001,1);
-	var delta = m.gyroYFiltered.linlin(-1,1,-10,10).lcurve;
-	var speed = m.gyroXFiltered.fold(-0.5,0.5).linlin(-0.5,0.5,-10,10).lcurve.linlin(0,1,0.001,0.03);
+	// var amp = m.accelMassFiltered.linlin(0,2,0.00001,1);
+	// var delta = m.gyroYFiltered.linlin(-1,1,-10,10).lcurve;
+	// var speed = m.gyroXFiltered.fold(-0.5,0.5).linlin(-0.5,0.5,-10,10).lcurve.linlin(0,1,0.001,0.03);
 
-	if(amp < 0.01, {amp = 0});
+	// if(amp < 0.01, {amp = 0});
 
-	synth.set(\amp, amp * 5);
-	synth.set(\delta, delta);
+	// synth.set(\amp, amp * 5);
+	// synth.set(\delta, delta);
+	// synth.set(\speed, speed);
+	var amp = m.accelMassFiltered.lincurve(0,2,0.0,1,2);
+	var speed= m.gyroXFiltered.fold(-0.5,0.5).lincurve(-0.5,0.5,0.1,0.001,-1);
+	var rate = m.accelMassFiltered.linlin(0,1,0.9,1.4);
+	var pan = m.gyroZFiltered.linlin(-1,1,-1,1);
+	var pch = 12.midiratio;
+
+
+	if(amp < 0.01, {
+		amp = 0;
+	});
+
+	if(amp<0.015,{
+			amp=0;
+			// synth.set(\lag,0.8);
+			if(trig, {
+					trig = false;
+			});
+	},{
+			if(trig.not, {
+					trig = true;
+					notes = notes.rotate(-1);
+					note = notes[0];
+			});
+			synth.set(\pch, note.midiratio);
+			// synth.set(\lag,0.01);
+	});
+	// synth.set(\pch, pch);
 	synth.set(\speed, speed);
+	synth.set(\amp, amp);
+	// synth.set(\pan, pan);
 };
 //------------------------------------------------------------
 ~plotMin = -1;
 ~plotMax = 1;
 ~plot = { |d,p|
-// [yellow, cyan , magenta]??
 
 	// Velocity
 	// [d.sensors.velocity.x, d.sensors.velocity.y, d.sensors.velocity.z] * 30;
@@ -98,13 +130,17 @@ SynthDef(\pullstretchMonoQ, {|out, amp = 1, buffer = 0, envbuf = -1, pch = 1, di
 	// [[d.sensors.rrateEvent.x, d.sensors.rrateEvent.y, d.sensors.rrateEvent.z].sumabs];
 	// [m.rrateMass, m.rrateMassFiltered];
 
+
+	// [m.gyroXFiltered.fold(-0.5,0.5)];
 	// Gyro
 	// [(d.sensors.gyroEvent.x / pi)];//roll
 	// [(d.sensors.gyroEvent.y / pi.half)];//up down
 	// [(d.sensors.gyroEvent.z / pi)];//left right
-
 	// [m.gyroYFiltered.fold(-0.5,0.5).lincurve(-0.5,0.5,0,1,-1)];
 	[m.gyroXFiltered.fold(-0.5,0.5).linlin(-0.5,0.5,-10,10).lcurve];
+	// [(d.sensors.gyroEvent.x / pi), (d.sensors.gyroEvent.y / pi.half), (d.sensors.gyroEvent.z / pi)];
+
+	// [(d.sensors.gyroEvent.y / pi.half).lincurve(-1.0,1.0,-1.0,1.0,3)];
 	// [(d.sensors.gyroEvent.x / pi), (d.sensors.gyroEvent.y / pi.half), (d.sensors.gyroEvent.z / pi)];
 
 	// [(d.sensors.gyroEvent.y / pi.half).lincurve(-1.0,1.0,-1.0,1.0,3)];
