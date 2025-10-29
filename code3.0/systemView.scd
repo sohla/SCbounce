@@ -33,7 +33,7 @@ var getTemp = {
 
 var serverView = UserView()
     .minWidth_(60)
-    .maxHeight_(20)
+    .maxHeight_(30)
 	.frameRate_(10)
     .animate_(true)
     .drawFunc_({|uv|
