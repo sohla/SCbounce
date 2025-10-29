@@ -38,11 +38,8 @@ SynthDef(\pullstretchMonoQ, {|out, amp = 1, buffer = 0, envbuf = -1, pch = 1.0, 
 	var lfo = LFSaw.kr( (1.0/len) * speed ,1,0.5,0.5);
 	var env = EnvGen.ar(Env.adsr(0.4,0.1,0.9,4.0), gate, doneAction:2);
 
-	// my = MouseY.kr(0.01,1,1.0);//splay
-
-
 	sp = Splay.arFill(3,
-		{ |i| Warp1.ar(1, buffer, lfo.linlin(0,1,0.05,0.95), rate * (1/(i+dp)),splay, envbuf, 4, 0.1, 4, 1) },
+		{ |i| Warp1.ar(1, buffer, lfo.linlin(0,1,0.05,0.95), rate * (1/(i+dp)) * 0.5,splay, envbuf, 4, 0.1, 4, 1) },
 			1,
 			1,
 			0
@@ -82,26 +79,20 @@ SynthDef(\pullstretchMonoQ, {|out, amp = 1, buffer = 0, envbuf = -1, pch = 1.0, 
 ~next = {|d|
 	var amp = m.accelMassFiltered.linlin(0,2,0.00001,1);
 	var speed= m.accelMassFiltered.lincurve(0.5,2.5,0.01,2,-2);
-	var rate = m.gyroYFiltered.linlin(-1,1,1,2).asInteger;
+	var rate = m.gyroZFiltered.linlin(-1,1,1,2).round;
 	var pan = m.gyroZFiltered.linlin(-1,1,-1,1);
 	// var dp = m.gyroXFiltered.fold(-0.5,0.5).lincurve(-0.5,0.5,1,2,-1);
 
 	if(amp < 0.01, {amp = 0});
 
-	synth.set(\rate, -12.midiratio);
+	synth.set(\rate, rate);
 	// synth.set(\dp, dp);
 	synth.set(\amp, amp * 4);
-	// synth.set(\pan, pan);
+	synth.set(\pan, pan);
 };
 //------------------------------------------------------------
 ~plotMin = -1;
 ~plotMax = 1;
 ~plot = { |d,p|
-	[m.rrateMass * 0.1, m.rrateMassFiltered * 0.1];
-	// [m.accelMass * 0.3, m.accelMassFiltered * 0.5];
-	// [m.rrateMassFiltered, m.rrateMassThreshold];
-	// [m.rrateMassFiltered, m.rrateMassThreshold, m.accelMassAmp];
-	// [d.sensors.gyroEvent.x, d.sensors.gyroEvent.y, d.sensors.gyroEvent.z];
-	// [d.sensors.rrateEvent.x, d.sensors.rrateEvent.y, d.sensors.rrateEvent.z];
-	// [d.sensors.accelEvent.x, d.sensors.accelEvent.y, d.sensors.accelEvent.z];
+	[m.gyroZFiltered];
 };
