@@ -60,7 +60,7 @@ SynthDef(\miniMoogModel, { |freq = 440, amp = 0.5, gate = 1, pan = 0,
 
 	Pdef(m.ptn,
 		Pbind(
-			\instrument, Pseq([\blobblob2, \miniMoogModel], inf),
+			\instrument, Pseq([\blobblob2], inf),
 			\bufnum, Pfunc{
 				bi = bi + 1;
 				if(bi >= (buffers.size-1),{bi=0});

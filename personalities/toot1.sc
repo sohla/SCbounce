@@ -48,6 +48,7 @@ SynthDef(\sampler, {|bufnum=0, out=0, amp=2, rate=1, start=0, pan=0, freq=440, a
 
 //------------------------------------------------------------
 ~deinit = ~deinit <> {
+//check if synth	
 	synth.onFree({
     buffers.do({|buf|
       postf("buffer dealloc [%] \n", buf);

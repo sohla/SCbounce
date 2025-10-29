@@ -55,7 +55,7 @@ SynthDef(\noise, { |out=0, frq=1000, gate=1, amp = 0.0, atk=0.02, sus=0.8, rel=1
         synth.set(\pch, note.midiratio);
         synth.set(\lag,0.01);
     });
-    synth.set(\amp, amp*1.5);
+    synth.set(\amp, amp/2);
     synth.set(\frq, ud);
 };
 
