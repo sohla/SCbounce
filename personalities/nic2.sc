@@ -1,6 +1,7 @@
 var m = ~model;
 var bi = 0;
 var dur = 0.3 ;
+var localRoot = 0;
 ~buffers;
 m.accelMassFilteredAttack = 0.99;
 m.accelMassFilteredDecay = 0.2;
@@ -50,11 +51,9 @@ SynthDef(\drumkit, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 				~buffers[bi];
 			},
 			\start, 0.03,
-			// \legato,0.4,
-			// \dur, dur,//Pseq([1,Rest(1),2,2,1,Rest(1),1] * dur, inf),
 			\pan, Pwhite(-0.1,0.1),
-			// \attack, 0.002,
-			\release,0.01,
+			\root, Pseq([0,3].stutter(64), inf),
+			\func, Pfunc({|e|localRoot=e.root}),
 			\args, #[],
 		)
 	);
@@ -81,20 +80,20 @@ SynthDef(\drumkit, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 
 	var rate = m.rrateMassFiltered.linlin(0,1,0.6,3);
 	var amp = m.accelMassFiltered.lincurve(0,2.5,0.4,1, -2);
-	// var notes = [0.3,0.4,0.8,0.0,0.7] + 0.4;
-	var notes = [0,4,7,11];
-	// var notes = [2];
-	var amps = [2,1,1,1] * 1;
+	var notes = [0,4,7,11] + localRoot;
+	var amps = [2,1,1,1] * 0.5;
 	var index = m.gyroYFiltered.fold(-0.5,0.5).lincurve(-0.5,0.5,0,notes.size,-1).asInteger;
 	var attack = m.accelMassFiltered.lincurve(0.0,1.5,0.1,0.002,-1);
-	dur= m.accelMassFiltered.lincurve(0,1.5,0.1,0.06, -1);
+	var release = m.accelMassFiltered.lincurve(0.0,1.5,4.3,0.001,-1);
+
+	dur = m.accelMassFiltered.lincurve(0,1.5,0.2,0.06, -1);
+
 	Pdef(m.ptn).set(\amp, amp * amps[index]);
-	Pdef(m.ptn).set(\rate, notes[index].midiratio);
+	Pdef(m.ptn).set(\rate, (notes[index]).midiratio );
 	Pdef(m.ptn).set(\dur, dur);
 	Pdef(m.ptn).set(\attack, attack);
-	// bi = (d.sensors.gyroEvent.y.abs / pi) * (~buffers.size-1);
-	// bi = bi.asInteger;
-	// bi = [0,1,10].choose;
+	Pdef(m.ptn).set(\release, release);
+
 	if(m.accelMassFiltered > 0.1,{
 		if( Pdef(m.ptn).isPlaying.not,{
 			Pdef(m.ptn).resume(quant:0);
@@ -110,13 +109,6 @@ SynthDef(\drumkit, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 ~plotMin = -1;
 ~plotMax = 1;
 ~plot = { |d,p|
-	[m.rrateMass * 0.1, m.rrateMassFiltered * 0.1];
-	// [m.accelMass * 0.3, m.accelMassFiltered * 0.5];
-	// [m.rrateMassFiltered, m.rrateMassThreshold];
-	// [m.rrateMassFiltered, m.rrateMassThreshold, m.accelMassAmp];
-	// [d.sensors.gyroEvent.x, d.sensors.gyroEvent.y, d.sensors.gyroEvent.z];
-	// [d.sensors.rrateEvent.x, d.sensors.rrateEvent.y, d.sensors.rrateEvent.z];
-	// [d.sensors.accelEvent.x, d.sensors.accelEvent.y, d.sensors.accelEvent.z];
-
+	[m.gyroXFiltered.fold(-0.5,0.5).linlin(-0.5,0.5,-10,10).lcurve];
 
 };

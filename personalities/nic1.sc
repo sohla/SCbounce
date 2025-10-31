@@ -41,7 +41,7 @@ SynthDef(\pullstretchMonoQ, {|out, amp = 1, buffer = 0, envbuf = -1, pch = 1, di
 			0
 	) ;
 	var env = EnvGen.ar(Env.adsr(0.4,0.1,0.9,2.0), gate, doneAction:2);
-	var mas = HPF.ar(sp*3,45) * amp.lag(0.2);
+	var mas = HPF.ar(sp,45) * amp.lag(0.2);
 		mas = Compander.ar(mas, mas,
 						thresh: -32.dbamp,
 						slopeBelow: 1,
@@ -89,7 +89,7 @@ SynthDef(\pullstretchMonoQ, {|out, amp = 1, buffer = 0, envbuf = -1, pch = 1, di
 		amp = 0;
 	});
 
-	if(amp<0.015,{
+	if(amp<0.005,{
 			amp=0;
 			// synth.set(\lag,0.8);
 			if(trig, {

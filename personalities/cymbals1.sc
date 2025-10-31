@@ -116,7 +116,7 @@ SynthDef(\drumkit, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 	// bi = bi.asInteger;
 	// bi = [0,1].choose;
   bi = ~buffers.size.rand;
-	if(m.accelMassFiltered > 0.04,{
+	if(m.accelMassFiltered > 0.02,{
 		if( Pdef(m.ptn).isPlaying.not,{
 			Pdef(m.ptn).resume(quant:dur*2);
 		});

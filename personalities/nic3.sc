@@ -4,7 +4,7 @@ var buffer;
 
 var index =0;
 var trig = false;
-var notes = [0,-12];
+var notes = [-24,-12];
 var note = notes[0];
 m.accelMassFilteredAttack = 0.99;
 m.accelMassFilteredDecay = 0.5;
@@ -55,7 +55,7 @@ SynthDef(\noise, { |out=0, frq=1000, gate=1, amp = 0.0, atk=0.02, sus=0.8, rel=1
 
 	buffer = Buffer.read(s, path.fullPath, action:{ |buf|
 		postf("buffer alloc [%] \n", buf);
-		synth = Synth(\pullstretchMonoQ,[\buffer,buf,\pch,0.midiratio, \amp,0.0, \div, 10]);
+		synth = Synth(\pullstretchMonoQ,[\buffer,buf,\pch,-12.midiratio, \amp,0.0, \div, 10]);
 	});
 
 
@@ -98,7 +98,7 @@ SynthDef(\noise, { |out=0, frq=1000, gate=1, amp = 0.0, atk=0.02, sus=0.8, rel=1
         synth.set(\lag,0.1);
     });
 
-    synth.set(\amp, amp*5);
+    synth.set(\amp, amp * 0.5);
     // synth.set(\ffo, ffo);
     synth.set(\rfo, rfo);
     synth.set(\pos, pos);

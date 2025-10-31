@@ -15,20 +15,22 @@ SynthDef(\waves22, { |out=0, gate=1, amp = 0.0, lag=1,ff=200|
     var env = EnvGen.ar(Env.asr(1.3,1.0,8 ), gate, doneAction:2);
 
 	var spd = 0.03.rrand(0.09);//MouseY.kr(0.03,0.09);
-	// var nsa = RHPF.ar(BrownNoise.ar(0.1), LFSaw.ar(spd*2,1).linexp(-1,1,200,19000));
+	var air = RHPF.ar(PinkNoise.ar(0.1), LFNoise2.ar([1,2]).range(12000,15000));
+	var rum = RLPF.ar(BrownNoise.ar(0.1), LFNoise1.ar([3,5]).range(30,40));
 	var nsa = RHPF.ar(BrownNoise.ar(0.3), ff.lag(lag));
-	var sig = SinOsc.ar(spd,[0,1], nsa);
-	Out.ar(out, sig * env * amp.lag(lag));
+	var sig = SinOsc.ar(spd, LFCub.ar([0.2,0.1]).range(0,1), nsa);
+  var mix = sig * amp.lag(lag);
+	Out.ar(out, (mix + air + rum) * env);
 }).add;
 
 //------------------------------------------------------------
 ~init = ~init <> {
+  synth = Synth(\waves22);
+    
 };
 //------------------------------------------------------------
 ~deinit = ~deinit <> {
-  if(synth.isRunning,{
     synth.set(\gate, 0);
-  });
 };
 
 //------------------------------------------------------------
@@ -41,26 +43,26 @@ SynthDef(\waves22, { |out=0, gate=1, amp = 0.0, lag=1,ff=200|
 	var amp = m.accelMassFiltered.lincurve(0,2.5,0.0,1.0,-3);
   var ff = m.gyroYFiltered.linexp(-1.0,1.0,200,19000);
     
-    if(TempoClock.beats > (lastTime + 1),{
-			lastTime = TempoClock.beats;
+    // if(TempoClock.beats > (lastTime + 1),{
+		// 	lastTime = TempoClock.beats;
 
-      if(amp<0.025,{
-          // amp=0;
-          // synth.set(\lag,0.8);
-          if(trig, {
-                trig = false;
-                synth.set(\gate, 0);
-          });
-      },{
-          if(trig.not, {
-              trig = true;
-              synth = Synth(\waves22);
-              NodeWatcher.register(synth);
-              "next".postln;
-              //next
-          });
-      });
-    });
+    //   if(amp<0.025,{
+    //       // amp=0;
+    //       // synth.set(\lag,0.8);
+    //       if(trig, {
+    //             trig = false;
+    //             synth.set(\gate, 0);
+    //       });
+    //   },{
+    //       if(trig.not, {
+    //           trig = true;
+    //           synth = Synth(\waves22);
+    //           NodeWatcher.register(synth);
+    //           "next".postln;
+    //           //next
+    //       });
+    //   });
+    // });
 
     synth.set(\amp, amp);
     synth.set(\ff, ff);
