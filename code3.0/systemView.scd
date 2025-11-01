@@ -1,7 +1,6 @@
 var bh = 100;
 var hosts = "hostname -I".unixCmdGetStdOut;
 
-
 var updateCPU = {
     var pipe;
     
@@ -34,7 +33,7 @@ var getTemp = {
 var serverView = UserView()
     .minWidth_(60)
     .maxHeight_(30)
-	.frameRate_(10)
+		.frameRate_(10)
     .animate_(true)
     .drawFunc_({|uv|
 			// fork {
@@ -61,6 +60,7 @@ var serverView = UserView()
 			("Hosting: "++hosts).drawAtPoint(400@4, Font.default, Color.yellow);
 			("Port: "++NetAddr.	localAddr.port).drawAtPoint(1000@4, Font.default, Color.yellow);
 });
+
 
 
 // var meterView = LevelIndicator()
