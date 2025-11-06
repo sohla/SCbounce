@@ -56,7 +56,7 @@ SynthDef(\melodicPerc, {|out=0, freq=50, tension=0.1, decay=0.5, clickLevel=0.3,
 			\instrument, \tick,
 			\octave, Pseq([7,8,8,7].stutter(1), inf),
 			\dur, 0.11,
-    	\decay, 0.3,
+    		\decay, 0.3,
 			//\pan,Pseg( Pseq([-1,1], inf),Pseq([1,1],inf), \sine, inf),
 			\args, #[]
 		);

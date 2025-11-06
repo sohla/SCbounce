@@ -110,7 +110,10 @@ SynthDef(\sampler, {|bufnum=0, out=0, amp=2, rate=1, start=0, pan=0, freq=440, a
 	// [(d.sensors.gyroEvent.y / pi.half)];//up down
 	// [(d.sensors.gyroEvent.z / pi)];//left right
 
-  [m.gyroXFiltered, m.gyroYFiltered, m.gyroZFiltered];
+  // [m.gyroXFiltered, m.gyroYFiltered, m.gyroZFiltered];
+		[d.port,d.sensors.digiInEvent].postln;
+
+	[d.sensors.digiInEvent[0],d.sensors.rrateEvent.x];
 
 	// [(d.sensors.gyroEvent.y / pi.half).lincurve(-1.0,1.0,-1.0,1.0,3)];
 };

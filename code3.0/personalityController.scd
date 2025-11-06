@@ -9,10 +9,10 @@ var list = "list_ITR_Mel.sc";
 // var list = "list_yourDNA25.sc";
 
 var defaultLists = [
+    "list_ITR_Mel.sc",
+    "list_glenroy.sc",
     list,
-    list,
-    list,
-    list,
+    "list_yourDNA25.sc",
     list,
 ];
 
