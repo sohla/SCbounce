@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Synthesis Control UI</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            background: #0a0a0a;
+            color: #e0e0e0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            width: 100%;
+        }
+
+        .visualization {
+            width: 100%;
+            height: 500px;
+            background: #000;
+            border-radius: 8px;
+            margin-bottom: 40px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+
+        .slider-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .slider-label {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #888;
+        }
+
+        .slider-value {
+            font-weight: bold;
+            color: #fff;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .slider-container {
+            position: relative;
+            height: 40px;
+            display: flex;
+            align-items: center;
+        }
+
+        input[type="range"] {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            height: 4px;
+            background: #222;
+            outline: none;
+            border-radius: 2px;
+            cursor: pointer;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            background: #fff;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: transform 0.1s ease;
+        }
+
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            background: #fff;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: transform 0.1s ease;
+        }
+
+        input[type="range"]::-moz-range-thumb:hover {
+            transform: scale(1.2);
+        }
+
+        .slider-extremes {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            color: #555;
+            margin-top: 4px;
+            padding: 0 2px;
+        }
+
+        .title {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 24px;
+            letter-spacing: 2px;
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">SYNTHESIS CONTROL</h1>
+        
+        <div class="visualization">
+            <canvas id="canvas"></canvas>
+        </div>
+
+        <div class="controls">
+            <div class="slider-group">
+                <div class="slider-label">
+                    <span>Darkness / Brightness</span>
+                    <span class="slider-value" id="brightness-value">1.00</span>
+                </div>
+                <div class="slider-container">
+                    <input type="range" id="brightness" min="0" max="1" step="0.01" value="1.0">
+                </div>
+                <div class="slider-extremes">
+                    <span>Bright</span>
+                    <span>Dark</span>
+                </div>
+            </div>
+
+            <div class="slider-group">
+                <div class="slider-label">
+                    <span>Smooth / Texture</span>
+                    <span class="slider-value" id="texture-value">0.20</span>
+                </div>
+                <div class="slider-container">
+                    <input type="range" id="texture" min="0" max="1" step="0.01" value="0.2">
+                </div>
+                <div class="slider-extremes">
+                    <span>Textured</span>
+                    <span>Smooth</span>
+                </div>
+            </div>
+
+            <div class="slider-group">
+                <div class="slider-label">
+                    <span>Thinness / Thickness</span>
+                    <span class="slider-value" id="thickness-value">0.40</span>
+                </div>
+                <div class="slider-container">
+                    <input type="range" id="thickness" min="0" max="1" step="0.01" value="0.4">
+                </div>
+                <div class="slider-extremes">
+                    <span>Thick</span>
+                    <span>Thin</span>
+                </div>
+            </div>
+
+            <div class="slider-group">
+                <div class="slider-label">
+                    <span>Stillness / Motion</span>
+                    <span class="slider-value" id="motion-value">0.30</span>
+                </div>
+                <div class="slider-container">
+                    <input type="range" id="motion" min="0" max="1" step="0.01" value="0.3">
+                </div>
+                <div class="slider-extremes">
+                    <span>Motion</span>
+                    <span>Still</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Canvas setup
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        let width, height, centerX, centerY;
+
+        function resizeCanvas() {
+            const rect = canvas.getBoundingClientRect();
+            width = rect.width * window.devicePixelRatio;
+            height = rect.height * window.devicePixelRatio;
+            canvas.width = width;
+            canvas.height = height;
+            centerX = width / 2;
+            centerY = height / 2;
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        // Parameters
+        const params = {
+            brightness: 1.0,
+            texture: 0.2,
+            thickness: 0.4,
+            motion: 0.3
+        };
+
+        // Slider connections
+        const sliders = {
+            brightness: document.getElementById('brightness'),
+            texture: document.getElementById('texture'),
+            thickness: document.getElementById('thickness'),
+            motion: document.getElementById('motion')
+        };
+
+        const valueDisplays = {
+            brightness: document.getElementById('brightness-value'),
+            texture: document.getElementById('texture-value'),
+            thickness: document.getElementById('thickness-value'),
+            motion: document.getElementById('motion-value')
+        };
+
+        // Update parameters from sliders
+        Object.keys(sliders).forEach(key => {
+            sliders[key].addEventListener('input', (e) => {
+                params[key] = parseFloat(e.target.value);
+                valueDisplays[key].textContent = params[key].toFixed(2);
+            });
+        });
+
+        // Blob generation using mathematical control points
+        class Blob {
+            constructor(seed) {
+                this.seed = seed;
+                this.basePoints = 8; // Base number of control points
+                this.time = 0;
+                this.noiseOffset = seed * 1000;
+            }
+
+            // Simple noise function (replaced by sine-based pseudo-noise)
+            noise(x, y, t) {
+                const v = Math.sin(x * 0.5 + t) * 
+                         Math.cos(y * 0.7 + t * 0.8) * 
+                         Math.sin((x + y) * 0.3 + t * 0.5);
+                return (v + 1) / 2; // Normalize to 0-1
+            }
+
+            getControlPoints() {
+                const points = [];
+                // More texture = more control points (8 to 48)
+                const numPoints = this.basePoints + Math.floor(params.texture * 40);
+                
+                // Motion-based rotation offset for the entire shape
+                const motionAmount = 1 - params.motion; // 0=motion, 1=still
+                const rotationOffset = this.time * (1 - motionAmount) * 1.0; // Whole shape rotation
+                
+                for (let i = 0; i < numPoints; i++) {
+                    const angle = (i / numPoints) * Math.PI * 2 + rotationOffset; // Add rotation offset
+                    
+                    // Base radius - constant size, thickness only affects instancing
+                    const baseRadius = 140;
+                    
+                    // Base motion - smoothly fades in with texture
+                    const motionAmount = Math.pow(params.texture, 0.5); // Square root for smooth fade-in
+                    const baseMotion = motionAmount * (
+                        Math.sin(angle * 2 + this.time * 2) * 15 +
+                        Math.cos(angle * 3 + this.time * 1.5) * 10
+                    );
+                    
+                    // Texture creates random outward displacement - ROUGH variation
+                    // Use multiple frequencies for rough, non-smooth randomness
+                    const seedVal1 = Math.sin(i * 12.9898 + this.seed * 78.233) * 0.5 + 0.5;
+                    const seedVal2 = Math.sin(i * 45.164 + this.seed * 32.234) * 0.5 + 0.5;
+                    const seedVal3 = Math.sin(i * 91.327 + this.seed * 15.719) * 0.5 + 0.5;
+                    
+                    // Rough combination - no smoothing between values
+                    const roughRandom = (seedVal1 + seedVal2 * 0.5 + seedVal3 * 0.3) / 1.8;
+                    const randomDisplacement = roughRandom * params.texture * 108; // Doubled from 54 to 108
+                    
+                    const radius = baseRadius + baseMotion + randomDisplacement;
+                    
+                    points.push({
+                        x: centerX + Math.cos(angle) * radius,
+                        y: centerY + Math.sin(angle) * radius
+                    });
+                }
+                
+                return points;
+            }
+
+            draw() {
+                const points = this.getControlPoints();
+                
+                if (points.length < 3) return;
+
+                ctx.beginPath();
+                
+                // Texture controls whether we use smooth curves or straight lines
+                if (params.texture < 0.3) {
+                    // Smooth - use quadratic curves
+                    // Start at midpoint between first two points for seamless closure
+                    const startX = (points[0].x + points[1].x) / 2;
+                    const startY = (points[0].y + points[1].y) / 2;
+                    ctx.moveTo(startX, startY);
+                    
+                    // Draw curves through all points
+                    for (let i = 0; i < points.length; i++) {
+                        const next = points[(i + 1) % points.length];
+                        const nextNext = points[(i + 2) % points.length];
+                        
+                        const cpX = next.x;
+                        const cpY = next.y;
+                        const endX = (next.x + nextNext.x) / 2;
+                        const endY = (next.y + nextNext.y) / 2;
+                        
+                        ctx.quadraticCurveTo(cpX, cpY, endX, endY);
+                    }
+                } else {
+                    // Textured - use straight lines between control points
+                    ctx.moveTo(points[0].x, points[0].y);
+                    for (let i = 1; i < points.length; i++) {
+                        const point = points[i];
+                        ctx.lineTo(point.x, point.y);
+                    }
+                    ctx.closePath();
+                }
+                
+                return points;
+            }
+
+            update(deltaTime) {
+                // Motion parameter controls speed of animation
+                // Slider: 0 = still, 1 = motion (inverted for calculation)
+                const motionAmount = 1 - params.motion; // Invert: 0=motion, 1=still
+                this.time += deltaTime * (1 - motionAmount) * 12.0; // Doubled from 6.0 to 12.0
+            }
+        }
+
+        // Instance manager for thickness
+        class BlobSystem {
+            constructor() {
+                this.blobs = [];
+                this.maxBlobs = 250; // Reduced from 500 to 250 (half)
+                this.initializeBlobs();
+            }
+
+            initializeBlobs() {
+                for (let i = 0; i < this.maxBlobs; i++) {
+                    this.blobs.push(new Blob(i * 0.1));
+                }
+            }
+
+            getColor() {
+                // Brightness controls grayscale from black to white
+                // 0 = black, 1 = white
+                
+                const brightness = params.brightness;
+                const value = Math.floor(brightness * 255);
+                
+                return { r: value, g: value, b: value };
+            }
+
+            render() {
+                ctx.clearRect(0, 0, width, height);
+                
+                // Calculate how many instances to show based on thickness
+                // Slider: 0 = thin, 1 = thick (inverted for calculation)
+                const thicknessAmount = 1 - params.thickness; // Invert: 0=thick, 1=thin
+                const numInstances = Math.max(1, Math.floor(1 + (1 - thicknessAmount) * (this.maxBlobs - 1)));
+                
+                const color = this.getColor();
+                
+                // Draw instances from back to front
+                for (let i = 0; i < numInstances; i++) {
+                    const blob = this.blobs[i];
+                    
+                    // Normalize position in instance array (0 to 1)
+                    const normalizedIndex = i / Math.max(1, numInstances - 1);
+                    
+                    // Spread: THICK instances are more spread out, THIN instances are clustered
+                    const spreadAmount = params.thickness; // Use direct thickness value (not inverted)
+                    const spreadFactor = spreadAmount * 2.0; // 0 to 2.0
+                    // Each instance spreads progressively more - creates expanding distribution
+                    const spread = Math.pow(normalizedIndex, 1.5) * spreadFactor * 33.25; // Reduced from 66.5 to 33.25 (half)
+                    
+                    // Alpha: Each instance has unique alpha with variation
+                    // Base alpha depends on thickness - thin=higher alpha, thick=lower alpha for density
+                    const alphaThickness = 1 - params.thickness; // 0=thick, 1=thin
+                    const baseAlpha = alphaThickness * 0.5 + 0.15; // 0.15 to 0.65 range
+                    
+                    // Unique alpha per instance using seed variation
+                    const seedVariation = Math.sin(blob.seed * 12.9898 + blob.seed * 78.233) * 0.5 + 0.5; // 0 to 1
+                    const alphaVariation = seedVariation * 0.4 + 0.6; // 0.6 to 1.0 multiplier
+                    
+                    // Depth falloff - instances further back are slightly more transparent
+                    const depthFalloff = 1 - (normalizedIndex * 0.3);
+                    
+                    const alpha = baseAlpha * alphaVariation * depthFalloff;
+                    
+                    // Slight scale variation for depth
+                    const scale = 1 - (normalizedIndex) * 0.05;
+                    
+                    // Rotation for spreading instances
+                    const rotationAngle = normalizedIndex * Math.PI * 2 * spreadFactor * 2;
+                    
+                    // Motion also rotates the shape
+                    const motionAmount = 1 - params.motion; // 0=motion, 1=still
+                    const motionRotation = this.time * (1 - motionAmount) * 0.5; // Rotation speed based on motion
+                    
+                    ctx.save();
+                    
+                    // Apply spread offset in circular pattern FIRST
+                    const spreadX = Math.cos(rotationAngle) * spread;
+                    const spreadY = Math.sin(rotationAngle) * spread;
+                    
+                    // Translate to the spread position
+                    ctx.translate(centerX + spreadX, centerY + spreadY);
+                    
+                    // Apply motion-based rotation around this point
+                    ctx.rotate(motionRotation);
+                    
+                    // Apply scale
+                    ctx.scale(scale, scale);
+                    
+                    // Translate back so shape draws centered at rotation point
+                    ctx.translate(-centerX, -centerY);
+                    
+                    // Draw the shape as stroke
+                    const points = blob.draw();
+                    
+                    const lineWidth = 2; // Constant line width, not affected by texture
+                    ctx.lineWidth = lineWidth;
+                    ctx.strokeStyle = `rgba(${color.r}, ${color.g}, ${color.b}, ${alpha})`;
+                    ctx.stroke();
+                    
+                    ctx.restore();
+                }
+            }
+
+            update(deltaTime) {
+                this.blobs.forEach(blob => blob.update(deltaTime));
+            }
+        }
+
+        // Animation loop
+        const blobSystem = new BlobSystem();
+        let lastTime = performance.now();
+
+        function animate(currentTime) {
+            const deltaTime = (currentTime - lastTime) / 1000; // Convert to seconds
+            lastTime = currentTime;
+
+            blobSystem.update(deltaTime);
+            blobSystem.render();
+
+            requestAnimationFrame(animate);
+        }
+
+        animate(performance.now());
+    </script>
+</body>
+</html>
