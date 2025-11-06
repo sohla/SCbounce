@@ -241,7 +241,6 @@ var addOSCDeviceListeners = {|d|
         }, batteryBase.format(i+1), address);
 
         d.listeners.digiIn = OSCFunc({ |msg, time, addr, recvPort|
-        [d.port,i,msg[1].asInteger,msg[2].asInteger].postln;
           if(~devices.at(addr.port+i) != nil,{
             d.sensors.digiInEvent.put(msg[1].asInteger,msg[2].asInteger);
           });
