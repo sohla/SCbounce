@@ -4,7 +4,7 @@ var buffer;
 
 var index =0;
 var trig = false;
-var notes = [-24,-12];
+var notes = [0,-12] +10;
 var note = notes[0];
 m.accelMassFilteredAttack = 0.99;
 m.accelMassFilteredDecay = 0.5;
@@ -18,7 +18,7 @@ SynthDef(\pullstretchMonoQ, {|out, amp = 1, buffer = 0, envbuf = -1, pch = 1, di
 	var lfo = LFSaw.kr( (1.0/len) * speed ,1).range(0.0,0.99);
   var afo = LFCub.ar(ffo,0,rfo).range(1.0 - rfo,2.0 - rfo);
 	var sp = Splay.arFill(8,
-		{ |i| Warp1.ar(1, buffer, lfo.linlin(0,1,0.01,0.99), pch * (1 / ((i*delta)+1)) * [1] ,splay, envbuf, 8, 0.1 * (i+1), 4)  },
+		{ |i| Warp1.ar(1, buffer, lfo.linlin(0,1,0.01,0.89), pch * (1 / ((i*delta)+1)) * [1] ,splay, envbuf, 8, 0.1 * (i+1), 4)  },
 		// { |i| Warp1.ar(1, buffer, pos.lag(0.2) + LFNoise2.ar(1).range(0,0.03), pch.lag(0.4) * (1 / ((i*delta)+1)) * [1] ,splay, envbuf, 8, 0.1 * (i+1), 4)  },
 			1,
 			1,
@@ -98,7 +98,7 @@ SynthDef(\noise, { |out=0, frq=1000, gate=1, amp = 0.0, atk=0.02, sus=0.8, rel=1
         synth.set(\lag,0.1);
     });
 
-    synth.set(\amp, amp * 0.5);
+    synth.set(\amp, amp * 0.3);
     // synth.set(\ffo, ffo);
     synth.set(\rfo, rfo);
     synth.set(\pos, pos);

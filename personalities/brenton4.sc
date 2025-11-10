@@ -20,11 +20,11 @@ SynthDef(\bufGrain, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=440
 		Warp1.ar(2, bufnum, start, rate * (i+1) * 0.5, 0.3, windowRandRatio:0.3)},
 	1,1,0);
     sig = RLPF.ar(sig, cutoff, rq) + sub;
-		sig = Resonz.ar(sig, rezf.lag(0.4), 0.05, 5)* amp.lag(0.9);
+		// sig = Resonz.ar(sig, rezf.lag(0.4), 0.05, 5)* amp.lag(0.9);
 		// sig = AllpassN.ar(sig, 0.1, [0.09, 0.08], 8);
 		// sig = JPverb.ar(sig,1, modDepth: 0.1, modFreq: 4.0, low: 1.0);
 
-    Out.ar(out, sig[0] * env);
+    Out.ar(out, sig[0] * env* amp.lag(0.9));
 }).add;
 
 //------------------------------------------------------------
@@ -33,7 +33,7 @@ SynthDef(\bufGrain, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=440
 	postf("loading sample : % \n", path.fileName);
 	buffer = Buffer.read(s, path.fullPath, action:{ |buf|
 		postf("buffer alloc [%] \n", buf);
-		synth = Synth(\bufGrain,[\bufnum,buf, \rate, 1.1, \gate, 1 ]);
+		synth = Synth(\bufGrain,[\bufnum,buf, \rate, 1.1/2, \gate, 1 ]);
 	});
 };
 
@@ -46,13 +46,14 @@ SynthDef(\bufGrain, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=440
 ~next = {|d|
 	var amp = m.accelMassFiltered.linlin(0,2,0.00001,1);
 	var rezf = m.gyroYFiltered.lincurve(0.0,1.0,130,260*3,0);
-	var start = m.gyroZFiltered.lincurve(0.0,1.0,0.28,0.5333,0);
+	var start = m.gyroZFiltered.lincurve(0.0,1.0,0.28,0.4333,0);
+	// var start = m.gyroZFiltered.lincurve(-1.0,1.0,0.0,1.0,0);
 
 	if(amp < 0.04, {amp = 0});
 
 	synth.set(\rezf, rezf);
 	synth.set(\start, start);
-	synth.set(\amp, amp * 3.4);
+	synth.set(\amp, amp * 4.4);
 
 };
 //------------------------------------------------------------

@@ -4,7 +4,7 @@ var buffer;
 
 var index =0;
 var trig = false;
-var notes = [12,11,9,7,12,11,9,7,14,12,11,9,7,5,4,2]-36;
+var notes = [2];//[12,11,9,7,12,11,9,7,14,12,11,9,7,5,4,2]-15;
 var note = notes[0];
 m.accelMassFilteredAttack = 0.99;
 m.accelMassFilteredDecay = 0.5;
@@ -47,7 +47,7 @@ SynthDef(\noise, { |out=0, frq=1000, gate=1, amp = 0.0, atk=0.02, sus=0.8, rel=1
 
 //------------------------------------------------------------
 ~init = ~init <> {
-		var path = PathName("~/Downloads/alessioSamples/andHeLikesBandToys.wav");
+		var path = PathName("~/Downloads/alessioSamples/ararrrr2.wav");
 
 	// var path = PathName("~/Downloads/yourDNASamples/HK lots of teddies.wav");
 	postf("loading sample : % \n", path.fileName);
@@ -96,7 +96,7 @@ SynthDef(\noise, { |out=0, frq=1000, gate=1, amp = 0.0, atk=0.02, sus=0.8, rel=1
         synth.set(\lag,0.1);
     });
 
-    synth.set(\amp, amp*5);
+    synth.set(\amp, amp*3);
     synth.set(\ffo, ffo);
     synth.set(\rfo, rfo);
 };
