@@ -3,8 +3,8 @@ var synth;
 
 m.accelMassFilteredAttack = 0.9;
 m.accelMassFilteredDecay = 0.1;
-m.rrateMassFilteredAttack = 0.5;
-m.rrateMassFilteredDecay = 0.04;
+m.rrateMassFilteredAttack = 0.2;
+m.rrateMassFilteredDecay = 0.08;
 m.gyroFilteredAttack = 0.7;
 m.gyroFilteredDecay = 0.7;
 
@@ -12,8 +12,10 @@ m.gyroFilteredDecay = 0.7;
 SynthDef(\growl, {|out=0, amp=0.0, freq=66, attack=0.001, decay=0.03, sustain=0.8, release=0.59, gate=1, gr=1|
 	var env = EnvGen.kr(Env.adsr(attack, decay, sustain, release), gate, doneAction: Done.freeSelf);
 	var in = LocalIn.ar(2);
-	var sig = LFTri.ar(45*[1.0,1.003], 0, 2.0 + (in * gr));
+  var sub = SinOsc.ar(freq,0,0.1).tanh;
+	var sig = LFTri.ar(freq*[1.0,1.003], 0, 2.0 + (in * gr));
 	LocalOut.ar(sig);
+  sig = (sig *0.5) + sub;
   Out.ar(out, sig * env * amp.lag(0.1));
 }).add;
 
@@ -29,11 +31,12 @@ SynthDef(\growl, {|out=0, amp=0.0, freq=66, attack=0.001, decay=0.03, sustain=0.
 
 //------------------------------------------------------------
 ~next = {|d|
-  var amp = m.rrateMassFiltered.lincurve(0.0,0.1,-70,-2,-8);
+  var amp = m.rrateMassFiltered.lincurve(0.0,0.1,-70,-9,-8);
   var pos = (d.sensors.gyroEvent.z / pi).fold(-0.5,0.5) * 2;
   var gr = pos.lincurve(-1.0,1.0,0.0,2.0,-3);
   synth.set(\amp, amp.dbamp);
   synth.set(\gr, gr);
+  synth.set(\freq, ( m.com.root + 24).midicps)
 
 };
 //------------------------------------------------------------

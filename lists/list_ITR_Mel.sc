@@ -1,9 +1,6 @@
 (
 	[
 		"silence",
-		"button1",
-			"harp1",
-		"cymbals1",
 
 		"melChair1",
 
