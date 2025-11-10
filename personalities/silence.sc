@@ -2,7 +2,7 @@ var m = ~model;
 m.accelMassFilteredAttack = 0.7;
 m.accelMassFilteredDecay = 0.2;
 m.rrateMassFilteredAttack = 0.7;
-m.rrateMassFilteredDecay = 0.2;
+m.rrateMassFilteredDecay = 0.4;
 
 //------------------------------------------------------------
 
@@ -38,7 +38,8 @@ m.rrateMassFilteredDecay = 0.2;
 	// Rotation
 	// [d.sensors.rrateEvent.x, d.sensors.rrateEvent.y, d.sensors.rrateEvent.z].abs;
 	// [[d.sensors.rrateEvent.x, d.sensors.rrateEvent.y, d.sensors.rrateEvent.z].sumabs];
-	// [m.rrateMass, m.rrateMassFiltered];
+
+	[m.accelMassFiltered * 3, m.rrateMassFiltered * 10, (d.sensors.gyroEvent.z / pi).fold(-0.5,0.5) * 2];
 
 	// Gyro
 		// [(d.sensors.gyroEvent.x / pi).fold(-0.5,0.5) * 2];//roll
@@ -52,8 +53,8 @@ m.rrateMassFilteredDecay = 0.2;
 	// [m.gyroXFiltered, m.gyroYFiltered, m.gyroZFiltered];
 
 	// [(d.sensors.gyroEvent.y / pi.half).lincurve(-1.0,1.0,-1.0,1.0,3)];
-	[d.port,d.sensors.digiInEvent].postln;
-	[d.sensors.digiInEvent[0],m.gyroXFiltered, m.gyroYFiltered];
+	// [d.port,d.sensors.digiInEvent].postln;
+	// [d.sensors.digiInEvent[0],m.gyroXFiltered, m.gyroYFiltered];
 
 
 };

@@ -9,10 +9,10 @@ var list = "list_ITR_Mel.sc";
 // var list = "list_yourDNA25.sc";
 
 var defaultLists = [
-    "list_ITR_Mel.sc",
-    "list_glenroy.sc",
     list,
-    "list_yourDNA25.sc",
+    list,
+    list,
+    list,
     list,
 ];
 
@@ -115,6 +115,7 @@ var interpretPersonality = {|d|
                 ~model.gyroFilteredDecay
             );
             ~model.gyroZFiltered = ~smooth.(
+                // (d.sensors.gyroEvent.z / pi).fold(-0.5,0.5), // nice to have
                 d.sensors.gyroEvent.z / pi,
                 ~model.gyroZFiltered,
                 ~model.gyroFilteredAttack,

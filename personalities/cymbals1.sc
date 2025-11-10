@@ -48,7 +48,7 @@ SynthDef(\drumkit, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 	Pdef(m.ptn,
 		Pbind(
 			\instrument, \drumkit,			
-  		    \type, \customVisualEvent,
+  		    // \type, \customVisualEvent,
 			\shape, \circle,
 			\sx, Pwhite(-0.3,0.3),
 			\sy, 0,

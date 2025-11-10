@@ -118,7 +118,8 @@ SynthDef(\funBass, {
 				~rate = 1;
 		});
 			// ~instrument = \stereoSampler;
-			~type = \customVisualEvent;
+			// ~type = \customVisualEvent;
+			~type = \note;
 			currentEnvironment.play;
 		 	// ~bufnum.postln;
 	});
@@ -190,9 +191,11 @@ SynthDef(\funBass, {
 	Pdef(m.ptn).set(\viewID, d.port);
 	// Pdef(m.ptn).set(\startColor, Color.hsv((frame/40.0).mod(1.0),0.5,1.0,1.0));
 	// Pdef(m.ptn).set(\endColor, Color.hsv((frame/40.0).mod(1.0),0.5,1.0,0.0));
+
 	Pdef(m.ptn).set(\startWidth, amp.dbamp * 10);
 	Pdef(m.ptn).set(\startColor, Color.yellow.alpha_(amp.dbamp + 0.1));
 	Pdef(m.ptn).set(\endColor, Color.red.alpha_(0));
+
 	// Pdef(m.ptn).set(\modulation, (
 	// 		type: \radial,
 	// 		freq: 4 ,
@@ -225,7 +228,7 @@ SynthDef(\funBass, {
 		if(TempoClock.beats > (lastTime + (dur*4)),{
 			var n = bass[0] + root[0];
    			var event = (
-				type: \customVisualEvent,
+				// type: \customVisualEvent,
 				amp: 0,
 				viewID: d.port,
 				shape: \circle,

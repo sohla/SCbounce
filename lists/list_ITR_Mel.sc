@@ -1,6 +1,11 @@
 (
 	[
 		"silence",
+		"button1",
+			"harp1",
+		"cymbals1",
+
+		"melChair1",
 
 		"waves",
 		"rain1",
