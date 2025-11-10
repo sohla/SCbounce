@@ -27,13 +27,18 @@ var noteToMidi = { |noteName|
 };
 
 var folder = PathName("~/Downloads/yourDNASamples/harp");
-var samplesLib = folder.entries.collect({ |path|
-	var note = path.fileNameWithoutExtension.split($_).last;
-	var buffer = Buffer.read(s, path.fullPath, action:{ |buf|
-	});
-	postf("loading sample : % \n", path.fileNameWithoutExtension);
-	(name: path.fileNameWithoutExtension, buffer: buffer, midiNote: noteToMidi.(note))
-});
+var samplesLib;
+
+// scope issue!?!
+// var samplesLib = folder.entries.collect({ |path|
+// 	var note = path.fileNameWithoutExtension.split($_).last;
+// 	var buffer = Buffer.read(s, path.fullPath, action:{ |buf|
+// 		postf("buffer alloc [%] \n", buf);
+// 	});
+// 	postf("loading sample : % \n", path.fileNameWithoutExtension);
+// 	(name: path.fileNameWithoutExtension, buffer: buffer, midiNote: noteToMidi.(note))
+// });
+
 //------------------------------------------------------------
 
 m.accelMassFilteredAttack = 0.99;
@@ -87,6 +92,16 @@ SynthDef(\funBass, {
 		});
 		bufnum
 	};
+
+	samplesLib = folder.entries.collect({ |path|
+		var note = path.fileNameWithoutExtension.split($_).last;
+		var buffer = Buffer.read(s, path.fullPath, action:{ |buf|
+			postf("buffer alloc [%] \n", buf);
+		});
+		postf("loading sample : % \n", path.fileNameWithoutExtension);
+		(name: path.fileNameWithoutExtension, buffer: buffer, midiNote: noteToMidi.(note))
+	});
+
 	~playNote = {|note,root,octave, amp=0.1|
 			var n = note + root + (12 * octave);
 			var bufnum,rate;
