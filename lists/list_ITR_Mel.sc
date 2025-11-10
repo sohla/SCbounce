@@ -2,6 +2,9 @@
 	[
 		"silence",
 
+		"harp1",
+		"button1",
+		"cymbals1",
 		"melChair1",
 
 		"waves",

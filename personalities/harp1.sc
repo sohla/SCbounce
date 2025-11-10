@@ -133,8 +133,8 @@ SynthDef(\funBass, {
 				~rate = 1;
 		});
 			// ~instrument = \stereoSampler;
-			// ~type = \customVisualEvent;
-			~type = \note;
+			~type = \customVisualEvent;
+			// ~type = \note;
 			currentEnvironment.play;
 		 	// ~bufnum.postln;
 	});
@@ -239,7 +239,7 @@ SynthDef(\funBass, {
 		if(TempoClock.beats > (lastTime + (dur*4)),{
 			var n = bass[0] + root[0];
    			var event = (
-				// type: \customVisualEvent,
+				type: \customVisualEvent,
 				amp: 0,
 				viewID: d.port,
 				shape: \circle,

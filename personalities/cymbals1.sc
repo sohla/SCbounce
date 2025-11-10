@@ -48,7 +48,7 @@ SynthDef(\drumkit, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 	Pdef(m.ptn,
 		Pbind(
 			\instrument, \drumkit,			
-  		    // \type, \customVisualEvent,
+  		\type, \customVisualEvent,
 			\shape, \circle,
 			\sx, Pwhite(-0.3,0.3),
 			\sy, 0,
@@ -60,7 +60,7 @@ SynthDef(\drumkit, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 			\fill, true,
 			\startColor, Color.hsv(0.6,1,1.0,1),
 			\endColor, Color.hsv(0.8,1,1.0,0.0),
-      		\duration, 0.4,
+      \duration, 0.4,
 
 			\bufnum, Pfunc{
 				if(bi >= (~buffers.size-1),{bi=0});
@@ -101,15 +101,16 @@ SynthDef(\drumkit, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 
 	Pdef(m.ptn).set(\amp, amp * 6);
 	Pdef(m.ptn).set(\rate, rate);
-	Pdef(m.ptn).set(\viewID, d.port);
-  	Pdef(m.ptn).set(\startSize, 10 + (100 * amp));
 
-	Pdef(m.ptn).set(\modulation, (
-			type: \radial,
-			freq: 3 ,
-			amp: 3,
-			harmonics: 2
-	));
+	Pdef(m.ptn).set(\viewID, d.port);
+  // Pdef(m.ptn).set(\startSize, 10 + (100 * amp));
+
+	// Pdef(m.ptn).set(\modulation, (
+	// 		type: \radial,
+	// 		freq: 3 ,
+	// 		amp: 3,
+	// 		harmonics: 2
+	// ));
 
 
 	// bi = (d.sensors.gyroEvent.y.abs / pi) * (~buffers.size-1);

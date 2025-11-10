@@ -82,15 +82,15 @@ SynthDef(\versatilePerc, {
       // \decay, 0.2,
 
 
-			// \type, \customVisualEvent,
-			// \sx, Pseq([-1,1,1,-1] * 0.8, inf),
-			// \sy, Pseq([-1,-1,1,1] * 0.8, inf),
-			// \ex, Pseq([-1,1,1,-1] * 0.1, inf),
-			// \ey, Pseq([-1,-1,1,1] * 0.1, inf),
-			// \endSize, 1,
-      // \duration, 2.0,
-			// \fill, false,
-      // \startWidth, 3,
+			\type, \customVisualEvent,
+			\sx, Pseq([-1,1,1,-1] * 0.8, inf),
+			\sy, Pseq([-1,-1,1,1] * 0.8, inf),
+			\ex, Pseq([-1,1,1,-1] * 0.1, inf),
+			\ey, Pseq([-1,-1,1,1] * 0.1, inf),
+			\endSize, 1,
+      \duration, 2.0,
+			\fill, false,
+      \startWidth, 3,
       
 
 			\func, Pfunc({|e| ~onEvent.(e)}),
