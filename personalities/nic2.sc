@@ -2,7 +2,7 @@ var m = ~model;
 var bi = 0;
 var dur = 0.3 ;
 var localRoot = 0;
-~buffers;
+var buffers;
 m.accelMassFilteredAttack = 0.99;
 m.accelMassFilteredDecay = 0.2;
 
@@ -33,7 +33,7 @@ SynthDef(\drumkit, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 		var folder = PathName("~/Downloads/nicSamples/3_Bites/Percussive");
 	postf("loading samples : % \n", folder);
 
-	~buffers = folder.entries.collect({ |path,i|
+	buffers = folder.entries.collect({ |path,i|
 		Buffer.read(s, path.fullPath, action:{|buf|
 			postf("buffer alloc [%] \n", buf);
 			if(folder.entries.size - 1 == i,{
@@ -48,7 +48,7 @@ SynthDef(\drumkit, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 			\bufnum, Pfunc{
 				bi = bi + 1;
 				if(bi >= (9),{bi=0});
-				~buffers[bi];
+				buffers[bi];
 			},
 			\start, 0.03,
 			\pan, Pwhite(-0.1,0.1),
@@ -59,14 +59,14 @@ SynthDef(\drumkit, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 	);
 
 	Pdef(m.ptn).play(quant:dur);
-	Pdef(m.ptn).set(\bufnum, ~buffers[0]);
+	Pdef(m.ptn).set(\bufnum, buffers[0]);
 
 };
 
 ~deinit = ~deinit <> {
 	Pdef(m.ptn).remove;
 	{
-	~buffers.do({|buf|
+	buffers.do({|buf|
 		buf.free;
 		s.sync;
 		postf("buffer dealloc [%] \n", buf);

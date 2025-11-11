@@ -85,7 +85,7 @@ SynthDef(\pullstretchMonoQ, {|out, amp = 1, buffer = 0, envbuf = -1, pch = 1.0, 
 
 	if(amp < 0.01, {amp = 0});
 
-	synth.set(\rate, rate);
+	synth.set(\rate, rate * 1.214);
 	// synth.set(\dp, dp);
 	synth.set(\amp, amp * 4);
 	synth.set(\pan, pan);

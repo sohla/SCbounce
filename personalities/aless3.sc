@@ -6,7 +6,7 @@ m.accelMassFilteredAttack = 0.99;
 m.accelMassFilteredDecay = 0.5;
 
 //------------------------------------------------------------
-SynthDef(\drumkit, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
+SynthDef(\drumkit5, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
     attack=0.01, decay=0.1, sustain=0.8, release=0.3, gate=1,cutoff=10, rq=1|
 	var lr = rate * BufRateScale.kr(bufnum);
 	var cd = BufDur.kr(bufnum);
@@ -42,7 +42,7 @@ SynthDef(\drumkit, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 
 	Pdef(m.ptn,
 		Pbind(
-			\instrument, \drumkit,			
+			\instrument, \drumkit5,			
 			\bufnum, Pfunc{
 				bi = bi + 1;
 				// bi = ~buffers.size.rand;

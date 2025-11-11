@@ -11,7 +11,7 @@ m.gyroFilteredAttack = 0.7;
 m.gyroFilteredDecay = 0.7;
 
 //------------------------------------------------------------
-SynthDef(\drumkit, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
+SynthDef(\drumkit3, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
     attack=0.01, decay=0.1, sustain=0.8, release=0.3, gate=1,cutoff=40, rq=0.1, octave = 0|
 	var lr = rate * BufRateScale.kr(bufnum);
 	var cd = BufDur.kr(bufnum);
@@ -61,7 +61,7 @@ SynthDef(\drumkit, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 
 	Pdef(m.ptn,
 		Pbind(
-			\instrument, \drumkit,			
+			\instrument, \drumkit3,			
       \type, \customBeatEvent,
 			\bufnum, Pfunc{
         bi = bi + 1;

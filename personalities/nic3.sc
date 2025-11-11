@@ -7,13 +7,13 @@ var trig = false;
 var notes = [0,-12] +10;
 var note = notes[0];
 m.accelMassFilteredAttack = 0.99;
-m.accelMassFilteredDecay = 0.5;
+m.accelMassFilteredDecay = 0.8;
 m.rrateMassFilteredAttack = 0.3;
 m.rrateMassFilteredDecay = 0.2;
 m.gyroFilteredAttack = 0.7;
 m.gyroFilteredDecay = 0.7;
 
-SynthDef(\pullstretchMonoQ, {|out, amp = 1, buffer = 0, envbuf = -1, pch = 1, div=1, speed = 0.008, splay = 0.3,pan=0, gate=1, delta=0, lag=0.05, ffo=10, rfo=1,pos=0|
+SynthDef(\pullstretchMonoQ, {|out, amp = 1, buffer = 0, envbuf = -1, pch = 1, div=1, speed = 0.008, splay = 0.3,pan=0, gate=1, delta=0, lag=0.05, ffo=10 rfo=1,pos=0|
 	var len = BufDur.kr(buffer) / div;
 	var lfo = LFSaw.kr( (1.0/len) * speed ,1).range(0.0,0.99);
   var afo = LFCub.ar(ffo,0,rfo).range(1.0 - rfo,2.0 - rfo);
@@ -98,7 +98,7 @@ SynthDef(\noise, { |out=0, frq=1000, gate=1, amp = 0.0, atk=0.02, sus=0.8, rel=1
         synth.set(\lag,0.1);
     });
 
-    synth.set(\amp, amp * 0.3);
+    synth.set(\amp, amp * 0.2);
     // synth.set(\ffo, ffo);
     synth.set(\rfo, rfo);
     synth.set(\pos, pos);
