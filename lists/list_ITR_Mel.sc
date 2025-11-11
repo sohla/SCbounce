@@ -2,14 +2,12 @@
 	[
 		"silence",
 
-		"harp1",
-		"button1",
-		"cymbals1",
-		"melChair1",
-
-		"waves",
-		"rain1",
-		"thunder",
+		"melbb2",
+		"melbb1",
+		"mel1",
+		"mel2",
+		"mel3",
+		"mel4",
 
 		"nic1",
 		"nic2",
@@ -20,16 +18,13 @@
 		"aless3",
 		"aless4",
 
-		"melbb2",
-		"melbb1",
-		"mel1",
-		"mel2",
-		"mel3",
-		"mel4",
-
 		"brenton1",
 		"brenton2",
 		"brenton4",
+
+		"waves",
+		"rain1",
+		"thunder",
 
 		"funMelody",
 		"funBass",
@@ -61,7 +56,14 @@
 		
 		"bells",
 		"fuckYes",
+
 		"inABottle",
+
+		"harp1",
+		"button1",
+		"cymbals1",
+		"melChair1",
+
 	
 		"silence",
 ]
