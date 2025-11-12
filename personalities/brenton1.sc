@@ -9,7 +9,7 @@ m.gyroFilteredAttack = 0.7;
 m.gyroFilteredDecay = 0.7;
 
 //------------------------------------------------------------
-SynthDef(\stereoSampler1, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=440,
+SynthDef(\stereoSamplerB, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=440,
     attack=0.01, decay=0.1, sustain=0.3, release=0.2, gate=1,cutoff=20000, rq=0.9|
 
 	  var lr = rate * BufRateScale.kr(bufnum) * (freq/440.0);
@@ -19,7 +19,7 @@ SynthDef(\stereoSampler1, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, fr
     sig = RLPF.ar(sig, cutoff, rq) + osc;
     sig = Balance2.ar(sig[0], sig[1], pan, amp * env);
 	sig = LeakDC.ar(sig);
-    Out.ar(out, sig);
+    Out.ar(out, ((0)!0 ++ sig));
 }).add;
 
 //------------------------------------------------------------
@@ -32,7 +32,7 @@ SynthDef(\stereoSampler1, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, fr
 		postf("buffer alloc [%] \n", buf);
 		Pdef(m.ptn,
 			Pbind(
-				\instrument, \stereoSampler1,
+				\instrument, \stereoSamplerB,
 				\bufnum, buf,
 				\octave, Pxrand([1,2,3,6.9], inf),
 				\note, Pwhite(33,33, inf).floor,
