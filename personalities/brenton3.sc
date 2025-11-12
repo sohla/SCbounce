@@ -23,7 +23,7 @@ SynthDef(\pullstretchMonoQBBB, {|out, amp = 1, buffer = 0, envbuf = -1, pch = 1.
 	) ;
 	var mas = LPF.ar(sp,ff);
 	var sig = FreeVerb.ar(mas,0.5);
-	sig = Pan2.ar(sig[0],pan)* amp.lag(1);
+	sig = Pan2.ar(sig,pan)* amp.lag(1);
 	Out.ar(out, ((0)!0 ++ sig));
 }).add;
 //------------------------------------------------------------

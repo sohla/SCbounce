@@ -17,7 +17,7 @@ SynthDef(\stereoSamplerB, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, fr
 	var sig = PlayBuf.ar(2, bufnum, rate: [lr, lr * 1.003], startPos: start * BufFrames.kr(bufnum), loop: 0);
 	var osc = SinOsc.ar((29 + rate.ratiomidi).midicps * [1,1.03], 0, 0.1 + (sig * 0.5)).distort;
     sig = RLPF.ar(sig, cutoff, rq) + osc;
-    sig = Balance2.ar(sig[0], sig[1], pan, amp * env);
+    sig = Pan2.ar(sig, pan, amp * env);
 	sig = LeakDC.ar(sig);
     Out.ar(out, ((0)!0 ++ sig));
 }).add;
@@ -71,7 +71,7 @@ SynthDef(\stereoSamplerB, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, fr
 	if(amp < 0.07, {amp = 0});
 
 	Pdef(m.ptn).set(\dur, dur);
-	Pdef(m.ptn).set(\amp, amp *2);
+	Pdef(m.ptn).set(\amp, amp * 1);
  	Pdef(m.ptn).set(\start, start.linlin(0,1,0,1));
 
 };
