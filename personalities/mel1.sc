@@ -21,7 +21,7 @@ SynthDef(\stereoSampler1, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, fr
 	sig = Pan2.ar(hs + sig, pan, amp * env);
 	sig = FreeVerb.ar(sig,0.5,0.4);
 	sig = LeakDC.ar(sig);
-	Out.ar(out, sig);
+	Out.ar(out, ((0)!0 ++ sig));
 }).add;
 
 //------------------------------------------------------------

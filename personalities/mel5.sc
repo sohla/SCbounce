@@ -25,8 +25,8 @@ SynthDef(\bufGrainM, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=44
 		// sig = Resonz.ar(sig, rezf.lag(0.4), 0.05, 5)* amp.lag(0.9);
 		// sig = AllpassN.ar(sig, 0.1, [0.09, 0.08], 8);
 		// sig = JPverb.ar(sig,1, modDepth: 0.1, modFreq: 4.0, low: 1.0);
-
-    Out.ar(out, sig * env * amp);
+	sig = sig * env * amp;
+    Out.ar(out, ((0)!0 ++ sig));
 }).add;
 
 //------------------------------------------------------------

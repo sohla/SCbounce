@@ -20,18 +20,13 @@ SynthDef(\bufGrain, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=440
 		Warp1.ar(2, bufnum, start, rate * (i+1) , 0.3, windowRandRatio:0.3)},
 	1,1,0);
     sig = RLPF.ar(sig, cutoff, rq) + sub;
-		// sig = Resonz.ar(sig, rezf.lag(0.4), 0.05, 5)* amp.lag(0.9);
-		// sig = AllpassN.ar(sig, 0.1, [0.09, 0.08], 8);
-		// sig = JPverb.ar(sig,1, modDepth: 0.1, modFreq: 4.0, low: 1.0);
-
-    Out.ar(out, sig[0] * env * amp);
+	sig = sig[0] * env * amp;
+    Out.ar(out, ((0)!0 ++ sig));
 }).add;
 
 //------------------------------------------------------------
 ~init = ~init <> {
-	// var path = PathName("~/Downloads/yourDNASamples/brenton/BrentonVoice_09.wav");
 	var path = PathName("~/Downloads/melSamples/mel_sing_dry-005.wav");
-
 	postf("loading sample : % \n", path.fileName);
 	buffer = Buffer.read(s, path.fullPath, action:{ |buf|
 		postf("buffer alloc [%] \n", buf);
@@ -46,6 +41,7 @@ SynthDef(\bufGrain, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=440
 	});	
 	synth.set(\gate, 0);
 };
+
 //------------------------------------------------------------
 ~next = {|d|
 	var amp = m.accelMassFiltered.linlin(0,2,0.00001,1);
@@ -69,6 +65,4 @@ SynthDef(\bufGrain, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=440
 	// [m.rrateMassFiltered, m.rrateMassThreshold];
 	// [m.rrateMassFiltered, m.rrateMassThreshold, m.accelMassAmp];
 	[d.sensors.gyroEvent.x/pi];
-	// [d.sensors.rrateEvent.x, d.sensors.rrateEvent.y, d.sensors.rrateEvent.z];
-	// [d.sensors.accelEvent.x, d.sensors.accelEvent.y, d.sensors.accelEvent.z];
 };
