@@ -7,6 +7,10 @@
 		"brenton3",
 		"brenton4",
 
+		"waves",
+		"rain1",
+		"thunder",
+
 		"silence",
 	]
 
