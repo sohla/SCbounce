@@ -32,7 +32,7 @@ SynthDef(\pullstretchMonoQN, {|out, amp = 1, buffer = 0, envbuf = -1, pch = 1, d
 			relaxTime:  0.01
 	);
 
-	sig = Pan2.ar(mas,pan) * env;
+	sig = Pan2.ar(sig,pan) * env;
 	Out.ar(out, (0)!0 ++ sig);
 }).add;
 

@@ -24,8 +24,8 @@ SynthDef(\drumkit3, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
         slopeAbove: 0.5,
         clampTime:  0.01,
         relaxTime:  0.01
-		) ;
-		sig = Mix.ar([sig]);
+	);
+	sig = Mix.ar([sig]);
     sig = Balance2.ar(sig[0],sig[1], pan);
     Out.ar(out, ((0)!0 ++ sig) * amp * env);
 }).add;
@@ -33,8 +33,6 @@ SynthDef(\drumkit3, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 ~init = ~init <> {
 
 	var folder  = PathName("~/Downloads/melSamples/melbb");
-	// var folder  = PathName("~/Downloads/yourDNASamples/drums");
-
 	postf("loading samples : % \n", folder);
 
 	~buffers = folder.entries.collect({ |path,i|

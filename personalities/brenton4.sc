@@ -22,7 +22,7 @@ SynthDef(\bufGrain, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=440
 	var lfo = LFTri.ar(lfof);
     sig = RLPF.ar(sig, cutoff, rq) + sub;
 	sig = Resonz.ar(sig, rezf.lag(0.4) + lfo.range(0,900), 0.5, 5) * lfo.range(0.2,1);
-	sig = sig * env* amp.lag(0.9);
+	sig = sig * env * amp.lag(0.9);
     Out.ar(out, ((0)!0 ++ sig));
 }).add;
 
