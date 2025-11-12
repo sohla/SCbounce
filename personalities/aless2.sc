@@ -29,7 +29,7 @@ SynthDef(\monoSampler, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=
     Out.ar(out, sig * amp);
 }).add;
 
-SynthDef(\pullstretchMonoQ, {|out, amp = 1, buffer = 0, envbuf = -1, pch = 1.0, div=1, speed = 0.003, splay = 0.4 ,pan=0, rate=1, dp=1, gate=1|
+SynthDef(\pullstretchMonoQA, {|out, amp = 1, buffer = 0, envbuf = -1, pch = 1.0, div=1, speed = 0.003, splay = 0.4 ,pan=0, rate=1, dp=1, gate=1|
 	var pos;
 	// var mx,my;
 	var sp;
@@ -39,17 +39,17 @@ SynthDef(\pullstretchMonoQ, {|out, amp = 1, buffer = 0, envbuf = -1, pch = 1.0, 
 	var env = EnvGen.ar(Env.adsr(0.4,0.1,0.9,4.0), gate, doneAction:2);
 
 	sp = Splay.arFill(3,
-		{ |i| Warp1.ar(1, buffer, lfo.linlin(0,1,0.05,0.95), rate * (1/(i+dp)) * 0.5,splay, envbuf, 4, 0.1, 4, 1) },
+		{ |i| Warp1.ar(1, buffer, lfo.linlin(0,1,0.05,0.95), rate  * 0.25,splay, envbuf, 4, 0.1, 4, 1) },
 			1,
 			1,
 			0
 	) ;
 
 
-	mas = HPF.ar(sp * 2,45).distort.tanh;
+	mas = HPF.ar(sp * 2,25).distort.tanh;
   mas = FreeVerb.ar(mas,0.5);
 
-	Out.ar(out,Pan2.ar(mas[0],pan)* amp.lag(0.3) * env);
+	Out.ar(out,Pan2.ar(mas,pan)* amp.lag(0.3) * env);
 }).add;
 //------------------------------------------------------------
 ~init = ~init <> {
@@ -62,7 +62,7 @@ SynthDef(\pullstretchMonoQ, {|out, amp = 1, buffer = 0, envbuf = -1, pch = 1.0, 
 
 	buffer = Buffer.read(s, path.fullPath, action:{ |buf|
 		postf("buffer alloc [%] \n", buf);
-		synth = Synth(\pullstretchMonoQ,[\buffer,buf,\pch,0.midiratio, \amp,0.4, \div, 10]);
+		synth = Synth(\pullstretchMonoQA,[\buffer,buf,\pch,0.midiratio, \amp,0.4, \div, 10]);
 	});
 };
 
@@ -88,7 +88,7 @@ SynthDef(\pullstretchMonoQ, {|out, amp = 1, buffer = 0, envbuf = -1, pch = 1.0, 
 	synth.set(\rate, rate * 1.214);
 	// synth.set(\dp, dp);
 	synth.set(\amp, amp * 4);
-	synth.set(\pan, pan);
+	// synth.set(\pan, pan);
 };
 //------------------------------------------------------------
 ~plotMin = -1;

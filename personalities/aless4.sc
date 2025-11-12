@@ -96,7 +96,7 @@ SynthDef(\noise, { |out=0, frq=1000, gate=1, amp = 0.0, atk=0.02, sus=0.8, rel=1
         synth.set(\lag,0.1);
     });
 
-    synth.set(\amp, amp*1);
+    synth.set(\amp, amp*4);
     synth.set(\ffo, ffo);
     synth.set(\rfo, rfo);
 };

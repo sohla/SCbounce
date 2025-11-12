@@ -32,14 +32,14 @@ SynthDef(\pullstretchMonoQ, {|out, amp = 1, buffer = 0, envbuf = -1, pch = 1.0, 
 	var len = BufDur.kr(buffer) / div;
 	var lfo = LFSaw.kr( (1.0/len) * speed ,1).range(0.0,0.7);
 	var sp = Splay.arFill(4,
-		{ |i| Warp1.ar(1, buffer, lfo.linlin(0,1,0.05,0.95), pch * (0.125/2) * (2*(i+1)),splay, envbuf, 8, 0.1 * (i+1), 4)  },
+		{ |i| Warp1.ar(1, buffer, lfo.linlin(0,1,0.05,0.95), pch * (0.25/2) * (2*(i+1)),splay, envbuf, 8, 0.1 * (i+1), 4)  },
 			1,
 			1,
 			0
 	) ;
 	var env = EnvGen.ar(Env.adsr(0.4,0.1,0.9,2.0), gate, doneAction:2);
 	var mas = HPF.ar(sp,45);
-	Out.ar(out,Pan2.ar(mas[0],pan)* amp.lag(1) * env);
+	Out.ar(out,Pan2.ar(mas,pan)* amp.lag(1) * env);
 }).add;
 //------------------------------------------------------------
 ~init = ~init <> {
@@ -76,10 +76,10 @@ SynthDef(\pullstretchMonoQ, {|out, amp = 1, buffer = 0, envbuf = -1, pch = 1.0, 
 
 	if(amp < 0.01, {amp = 0});
 
-	synth.set(\pch, pch.midiratio);
+	synth.set(\pch, (pch + -4).midiratio);
 	synth.set(\speed, speed);
-	synth.set(\amp, amp * 7);
-	synth.set(\pan, pan);
+	synth.set(\amp, amp * 2);
+	// synth.set(\pan, pan);
 };
 //------------------------------------------------------------
 ~plotMin = -1;

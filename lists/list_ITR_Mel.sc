@@ -2,16 +2,18 @@
 	[
 		"silence",
 
-		"melbb2",
 		"melbb1",
+		"melbb2",
 		"mel1",
 		"mel2",
 		"mel3",
 		"mel4",
+		"mel5",
 
 		"nic1",
 		"nic2",
 		"nic3",
+		"nic4",
 
 		"aless1",
 		"aless2",
@@ -20,6 +22,7 @@
 
 		"brenton1",
 		"brenton2",
+		"brenton3",
 		"brenton4",
 
 		"waves",

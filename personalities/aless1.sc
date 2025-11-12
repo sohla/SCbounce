@@ -35,7 +35,7 @@ SynthDef(\pullstretchMonoQ, {|out, amp = 1, buffer = 0, envbuf = -1, pch = 1, di
 	var len = BufDur.kr(buffer) / div;
 	var lfo = LFSaw.kr( (1.0/len) * speed ,1).range(0.0,0.99);
 	var sp = Splay.arFill(8,
-		{ |i| Warp1.ar(1, buffer, lfo.linlin(0,1,0.01,0.99), pch * (1 / ((i*delta)+1)) * [1] ,splay, envbuf, 8, 0.1 * (i+1), 4)  },
+		{ |i| Warp1.ar(2, buffer, lfo.linlin(0,1,0.01,0.99), pch * (1 / ((i*delta)+1))  ,splay, envbuf, 8, 0.1 * (i+1), 4)  },
 			1,
 			1,
 			0
@@ -109,7 +109,7 @@ SynthDef(\pullstretchMonoQ, {|out, amp = 1, buffer = 0, envbuf = -1, pch = 1, di
 	});
 
 	synth.set(\speed, speed);
-	synth.set(\amp, amp * 1);
+	synth.set(\amp, amp * 3);
 	synth.set(\delta, delta);
 };
 //------------------------------------------------------------

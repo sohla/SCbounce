@@ -20,8 +20,8 @@ SynthDef(\drumkit5, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
         clampTime:  0.01,
         relaxTime:  0.01
 		) ;
-		sig = Mix.ar([sig * 1, sig.tanh * 4]);
-    sig = Balance2.ar(sig[0],sig[1], pan);
+	sig = Mix.ar([sig * 1, sig.tanh * 4]);
+    sig = Pan2.ar(sig, pan);
     Out.ar(out, sig * amp * env);
 }).add;
 //--------------------------------------
