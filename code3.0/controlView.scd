@@ -1,7 +1,6 @@
 var renderRate = 30;
 var spacing = 4;
 var contentView;
-var renderer = Require("renderer.scd");
 var addTitleView = Require("titleView.scd");
 var addPrevButton = Require("prevButton.scd");
 var addNextButton = Require("nextButton.scd");

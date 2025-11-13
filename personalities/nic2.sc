@@ -2,12 +2,12 @@ var m = ~model;
 var bi = 0;
 var dur = 0.3 ;
 var localRoot = 0;
-~buffers;
+var buffers;
 m.accelMassFilteredAttack = 0.99;
 m.accelMassFilteredDecay = 0.2;
 
 //------------------------------------------------------------
-SynthDef(\drumkit, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
+SynthDef(\drumkitNN, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
     attack=0.01, decay=0.1, sustain=0.8, release=0.3, gate=1,cutoff=10, rq=1|
 	var lr = rate * BufRateScale.kr(bufnum);
 	var cd = BufDur.kr(bufnum);
@@ -20,20 +20,18 @@ SynthDef(\drumkit, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
         slopeAbove: 0.5,
         clampTime:  0.01,
         relaxTime:  0.01
-		) ;
-		sig = Mix.ar([sig]);
-    sig = Balance2.ar(sig[0],sig[1], pan);
-    Out.ar(out, sig * amp * env);
+	);
+	sig = Mix.ar([sig]);
+    sig = Balance2.ar(sig[0],sig[1], pan) * amp * env;
+    Out.ar(out, ((0)!0 ++ sig));
 }).add;
+
 //--------------------------------------
 ~init = ~init <> {
 
-	// var folder  = PathName("~/Downloads/yourDNASamples/drums");
-		// var folder = PathName("~/Downloads/alessioSamples/vv");
-		var folder = PathName("~/Downloads/nicSamples/3_Bites/Percussive");
+	var folder = PathName("~/Downloads/nicSamples/3_Bites/Percussive");
 	postf("loading samples : % \n", folder);
-
-	~buffers = folder.entries.collect({ |path,i|
+	buffers = folder.entries.collect({ |path,i|
 		Buffer.read(s, path.fullPath, action:{|buf|
 			postf("buffer alloc [%] \n", buf);
 			if(folder.entries.size - 1 == i,{
@@ -44,11 +42,11 @@ SynthDef(\drumkit, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 
 	Pdef(m.ptn,
 		Pbind(
-			\instrument, \drumkit,			
+			\instrument, \drumkitNN,			
 			\bufnum, Pfunc{
 				bi = bi + 1;
 				if(bi >= (9),{bi=0});
-				~buffers[bi];
+				buffers[bi];
 			},
 			\start, 0.03,
 			\pan, Pwhite(-0.1,0.1),
@@ -59,16 +57,16 @@ SynthDef(\drumkit, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 	);
 
 	Pdef(m.ptn).play(quant:dur);
-	Pdef(m.ptn).set(\bufnum, ~buffers[0]);
+	Pdef(m.ptn).set(\bufnum, buffers[0]);
 
 };
 
 ~deinit = ~deinit <> {
 	Pdef(m.ptn).remove;
 	{
-	~buffers.do({|buf|
+	buffers.do({|buf|
 		buf.free;
-		s.sync;
+		// s.sync;
 		postf("buffer dealloc [%] \n", buf);
 	});
 	}.defer(0.3);

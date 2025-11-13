@@ -1,8 +1,8 @@
 (
 	[
 
-	"silence",
 	"wind1",
+	"silence",
   "rain1",
 	"thunder",
 	"magicWand2",

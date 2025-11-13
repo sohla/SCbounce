@@ -6,7 +6,7 @@ m.accelMassFilteredAttack = 0.99;
 m.accelMassFilteredDecay = 0.5;
 
 //------------------------------------------------------------
-SynthDef(\drumkit, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
+SynthDef(\drumkitAAA, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
     attack=0.01, decay=0.1, sustain=0.8, release=0.3, gate=1,cutoff=10, rq=1|
 	var lr = rate * BufRateScale.kr(bufnum);
 	var cd = BufDur.kr(bufnum);
@@ -20,15 +20,13 @@ SynthDef(\drumkit, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
         clampTime:  0.01,
         relaxTime:  0.01
 		) ;
-		sig = Mix.ar([sig * 1, sig.tanh * 4]);
-    sig = Balance2.ar(sig[0],sig[1], pan);
-    Out.ar(out, sig * amp * env);
+	sig = Mix.ar([sig * 1, sig.tanh * 4]);
+    sig = Pan2.ar(sig * amp * env, pan);
+    Out.ar(out, ((0)!0++ sig) );
 }).add;
 //--------------------------------------
 ~init = ~init <> {
-
-	// var folder  = PathName("~/Downloads/yourDNASamples/drums");
-		var folder = PathName("~/Downloads/alessioSamples/vv");
+	var folder = PathName("~/Downloads/alessioSamples/vv");
 	postf("loading samples : % \n", folder);
 
 	~buffers = folder.entries.collect({ |path,i|
@@ -42,7 +40,7 @@ SynthDef(\drumkit, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 
 	Pdef(m.ptn,
 		Pbind(
-			\instrument, \drumkit,			
+			\instrument, \drumkitAAA,			
 			\bufnum, Pfunc{
 				bi = bi + 1;
 				// bi = ~buffers.size.rand;

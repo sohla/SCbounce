@@ -241,9 +241,9 @@ var addOSCDeviceListeners = {|d|
         }, batteryBase.format(i+1), address);
 
         d.listeners.digiIn = OSCFunc({ |msg, time, addr, recvPort|
-        if(~devices.at(addr.port+i) != nil,{
-            ~devices.at(addr.port+i).sensors.digiInEvent[msg[1].asInteger] = msg[2].asInteger;
-        });
+          if(~devices.at(addr.port+i) != nil,{
+            d.sensors.digiInEvent.put(msg[1].asInteger,msg[2].asInteger);
+          });
         }, digiInBase.format(i+1), address);
 
         d.listeners.airware = OSCFunc({ |msg, time, addr, recvPort|
@@ -359,6 +359,7 @@ var addDevice = { |ip,port,index|
     d.index = index;
     d.listeners = Event.new(proto:listenersProto);
     d.sensors =  Event.new(proto:sensorsProto);
+    d.sensors.digiInEvent = Array.fill(4,0); // must allocate for each instance
 
     // global storage : port is the key
     ~devices.put(port,d);

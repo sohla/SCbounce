@@ -6,7 +6,9 @@ var views = Dictionary.new;
 var renderer = { |d|
 // var makeView = { |name, rect|
     // var visualEvents = List.new(20);
-
+    var updateViewX = {|view|
+    view.postln;
+    };
     // Define the updateView function for this specific view
     var updateView = {|view|
         var now = thisThread.seconds;

@@ -27,13 +27,18 @@ var noteToMidi = { |noteName|
 };
 
 var folder = PathName("~/Downloads/yourDNASamples/harp");
-var samplesLib = folder.entries.collect({ |path|
-	var note = path.fileNameWithoutExtension.split($_).last;
-	var buffer = Buffer.read(s, path.fullPath, action:{ |buf|
-	});
-	postf("loading sample : % \n", path.fileNameWithoutExtension);
-	(name: path.fileNameWithoutExtension, buffer: buffer, midiNote: noteToMidi.(note))
-});
+var samplesLib;
+
+// scope issue!?!
+// var samplesLib = folder.entries.collect({ |path|
+// 	var note = path.fileNameWithoutExtension.split($_).last;
+// 	var buffer = Buffer.read(s, path.fullPath, action:{ |buf|
+// 		postf("buffer alloc [%] \n", buf);
+// 	});
+// 	postf("loading sample : % \n", path.fileNameWithoutExtension);
+// 	(name: path.fileNameWithoutExtension, buffer: buffer, midiNote: noteToMidi.(note))
+// });
+
 //------------------------------------------------------------
 
 m.accelMassFilteredAttack = 0.99;
@@ -87,6 +92,16 @@ SynthDef(\funBass, {
 		});
 		bufnum
 	};
+
+	samplesLib = folder.entries.collect({ |path|
+		var note = path.fileNameWithoutExtension.split($_).last;
+		var buffer = Buffer.read(s, path.fullPath, action:{ |buf|
+			postf("buffer alloc [%] \n", buf);
+		});
+		postf("loading sample : % \n", path.fileNameWithoutExtension);
+		(name: path.fileNameWithoutExtension, buffer: buffer, midiNote: noteToMidi.(note))
+	});
+
 	~playNote = {|note,root,octave, amp=0.1|
 			var n = note + root + (12 * octave);
 			var bufnum,rate;
@@ -119,6 +134,7 @@ SynthDef(\funBass, {
 		});
 			// ~instrument = \stereoSampler;
 			~type = \customVisualEvent;
+			// ~type = \note;
 			currentEnvironment.play;
 		 	// ~bufnum.postln;
 	});
@@ -172,9 +188,8 @@ SynthDef(\funBass, {
 };
 
 //------------------------------------------------------------
-//------------------------------------------------------------
 ~onEvent = {|e|
-	m.com.root = e.root;
+	// m.com.root = bass[0];
 	frame = frame + 1;
 };
 
@@ -182,10 +197,14 @@ SynthDef(\funBass, {
 //------------------------------------------------------------
 ~next = {|d|
 
-	var move = m.accelMassFiltered.lincurve(0,3.5,2000,notes.size,2);
-	var amp = m.accelMassFiltered.lincurve(0,1.4,-40,-3,-1);
+	var move = m.accelMassFiltered.lincurve(0,2.5,1,notes.size,1);
+	var amp = m.accelMassFiltered.lincurve(0,1.4,-40,-8,-1);
 	var ff = m.rrateMassFiltered.lincurve(0.0,2.0,200,2000,-3); //left right
 	var step = m.gyroXFiltered.linlin(-0.8,0.8,0,3).floor; //up down
+	
+	Pdef(m.ptn).set(\range, move.floor);
+	Pdef(m.ptn).set(\amp, amp.dbamp);
+	Pdef(m.ptn).set(\root, root[0]);
 
 	Pdef(m.ptn).set(\viewID, d.port);
 	// Pdef(m.ptn).set(\startColor, Color.hsv((frame/40.0).mod(1.0),0.5,1.0,1.0));
@@ -200,12 +219,7 @@ SynthDef(\funBass, {
 	// 		harmonics: 2
 	// ));
 
-	Pdef(m.ptn).set(\range, move.floor);
-	Pdef(m.ptn).set(\amp, amp.dbamp);
-	Pdef(m.ptn).set(\root, root[0]);
 
-
-	
 	if(bassSynth.isPlaying,{
 		if(ff<0,{ff=200});
 		bassSynth.set(\filtFreq, ff);
@@ -253,7 +267,8 @@ SynthDef(\funBass, {
 
 			lastTime = TempoClock.beats;
 			~playNote.(n-12,0, 3,amp.dbamp * 0.08);
-			bassSynth = Synth(\funBass, [\freq, (n + 24).midicps, \gate,1, \amp, amp.dbamp * 0.19]);
+			m.com.root = n;
+			bassSynth = Synth(\funBass, [\freq, (n + 36).midicps, \gate,1, \amp, amp.dbamp * 0.19]);
 			NodeWatcher.register(bassSynth);
 			bassSynth.server.sendBundle(0.3,[\n_set, bassSynth.nodeID, \gate, 0]);
 			event.play;
