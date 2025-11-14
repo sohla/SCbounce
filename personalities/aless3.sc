@@ -77,7 +77,7 @@ SynthDef(\drumkitAAA, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440
 //------------------------------------------------------------
 ~next = {|d|
 
-	var rate = m.rrateMassFiltered.linlin(0,1,0.6,3);
+	var rate = m.rrateMassFiltered.linlin(0,0.5,0.6,3);
 	var amp = m.accelMassFiltered.lincurve(0,2.5,0.4,1, -2);
 	// var notes = [0.3,0.4,0.8,0.0,0.7] + 0.4;
 	var notes = [0.3,1,3,5,7,11];

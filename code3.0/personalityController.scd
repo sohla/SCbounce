@@ -10,8 +10,8 @@ var list = "list_ITR_Mel.sc";
 
 var defaultLists = [
     "list_ITR_Mel.sc",
-    "list_ITR_Brenton.sc",
     "list_ITR_Nic.sc",
+    "list_ITR_Brenton.sc",
     "list_ITR_Alessio.sc",
     "list_ITR_Mel.sc",
 ];
