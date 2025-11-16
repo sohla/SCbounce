@@ -3,6 +3,8 @@
 
 		"silence",
 
+		"temp_synth_4button",
+		
 		"toot1",
 		"tramBell",
 		
