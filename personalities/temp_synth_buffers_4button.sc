@@ -1,7 +1,7 @@
 var m = ~model;
 var synths = Array.newClear(4);
 var states = 0!4;
-var buffer;
+var buffers;
 
 m.accelMassFilteredAttack = 0.9;
 m.accelMassFilteredDecay = 0.1;
@@ -11,7 +11,7 @@ m.gyroFilteredAttack = 0.7;
 m.gyroFilteredDecay = 0.7;
 
 //------------------------------------------------------------
-SynthDef(\sampler, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=440, attack=0.01, decay=0.1, sustain=0.9, release=2.2, gate=1,cutoff=20000, rq=1, loop=1|
+SynthDef(\sampler, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=440, attack=0.01, decay=0.1, sustain=0.9, release=0.7, gate=1,cutoff=20000, rq=1, loop=1|
 	var lr = rate * BufRateScale.kr(bufnum) * (freq/440.0);
   var env = EnvGen.kr(Env.adsr(attack, decay, sustain, release), gate, doneAction: 2);
 	var sig = PlayBuf.ar(2, bufnum, rate: lr, startPos: start * BufFrames.kr(bufnum), loop: loop);
@@ -29,11 +29,14 @@ SynthDef(\sampler, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=440,
 
 //------------------------------------------------------------
 ~init = ~init <> {
-	var path = PathName("~/Downloads/yourDNASamples/TramBell_01.wav");
-	postf("loading sample : % \n", path.fileName);
-	buffer = Buffer.read(s, path.fullPath, action:{ |buf|
-		postf("buffer alloc [%] \n", buf);
-	});  
+	var folder  = PathName("~/Downloads/yourDNASamples/yawning");
+	postf("loading samples : % \n", folder);
+
+	buffers = folder.entries.collect({ |path,i|
+		Buffer.read(s, path.fullPath, action:{|buf|
+			postf("buffer alloc [%] \n", buf);
+		});
+	});
 };
 //------------------------------------------------------------
 ~deinit = ~deinit <> {
@@ -46,7 +49,7 @@ SynthDef(\sampler, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=440,
     if(d.sensors.digiInEvent[i] == 1, {
       if(o == 1,{
       	states[i] = 0;
-				synths.put(i, Synth(\sampler, [\bufnum, buffer, \rate, 1 + (0.1 * i)]));
+				synths.put(i, Synth(\sampler, [\bufnum, buffers[i]]));
       	// ["on",i].postln;
     	});
 		},{
