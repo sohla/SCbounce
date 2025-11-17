@@ -119,9 +119,8 @@ SynthDef(\versatilePerc, {
 	Pdef(m.ptn,
 		Pbind(
 			\instrument, \versatilePerc,
-			\note, Pseq([0,10,5,4,7,7,2,5,4,4,-2,2,0,0,0,0].stutter(2), inf),
+			\note, Pseq([0,10,5,4,7,7,2,5,4,4,-2,2,0,0,0,0].stutter(2) + 4, inf),
       \dur, Pseq([0.22,0.22,Rest(0.22),0.22,0.22,0.22], inf),
-			// \note, Pseq([5,9,4,2], inf),
 			\octave,Pseq([3,4].stutter(1),inf),
 			\root, Pseq([0,-2].stutter(64), inf),
 			\envAtk,0.001,

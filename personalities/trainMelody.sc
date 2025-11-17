@@ -27,7 +27,7 @@ SynthDef(\funMelody, {
 	Pdef(m.ptn,
 		Pbind(
 			\instrument, \funMelody,
-			\note, Pseq([12,14,10,7,0]-5, inf),
+			\note, Pseq([12,14,10,7,0]-1, inf),
 			// \octave,Pseq([5,6].stutter(2),inf),
 			// \root, Pseq([0].stutter(32), inf),
 			\envAtk, Pwhite(0.07,0.01, inf),
@@ -36,7 +36,7 @@ SynthDef(\funMelody, {
 			// \envRel,Pkey(\octave) * 0.4,
     		// \amp, Pkey(\octave).reciprocal * 0.13,
 			\pan, Pseq([-0.3,0.3], inf),
-    		\filtRes, 0.6,
+    		\filtRes, 0.8,
 			\func, Pfunc({|e| ~onEvent.(e)}),
 			\args, #[],
 		)
@@ -60,12 +60,13 @@ SynthDef(\funMelody, {
 
 	// var dur = 0.5 * 2.pow(m.accelMassFiltered.linexp(0,3,0,5).floor).reciprocal;
 	// var dur = 0.5 * 2.pow(m.accelMassFiltered.lincurve(0,2.5,0,3,-1).floor).reciprocal;
-	var oct = m.gyroYFiltered.linlin(-1,1,7,3).floor -1;
+	var oct = m.gyroYFiltered.linlin(-1,1,8,4).floor;
   var envRel = m.accelMassFiltered.lincurve(0,2,0.03,3.2,5);
-
+	var amp = m.accelMassFiltered.lincurve(0,2,0.001,0.1,-2);
+	
 	Pdef(m.ptn).set(\dur, dur);
-	Pdef(m.ptn).set(\filtFreq, m.accelMassFiltered.linexp(0,3,180,14000));
-	Pdef(m.ptn).set(\amp, m.accelMassFiltered.lincurve(0,2,0.2,0.1,-2));
+	Pdef(m.ptn).set(\filtFreq, m.accelMassFiltered.linexp(0,3,680,14000));
+	Pdef(m.ptn).set(\amp, amp);
 	Pdef(m.ptn).set(\octave,oct);
 	Pdef(m.ptn).set(\envRel,envRel);
 

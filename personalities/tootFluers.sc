@@ -13,10 +13,9 @@ m.gyroFilteredDecay = 0.7;
 //------------------------------------------------------------
 SynthDef(\sampler, {|bufnum=0, out=0, amp=1, rate=1, start=0, pan=0, freq=440, attack=0.01, decay=0.1, sustain=0.9, release=0.2, gate=1,cutoff=20000, rq=1, loop=1|
 	var lr = rate * BufRateScale.kr(bufnum) * (freq/440.0);
-    var env = EnvGen.kr(Env.adsr(attack, decay, sustain, release), gate, doneAction: 2);
+  var env = EnvGen.kr(Env.adsr(attack, decay, sustain, release), gate, doneAction: 2);
 	var sig = PlayBuf.ar(2, bufnum, rate: lr, startPos: start * BufFrames.kr(bufnum), loop: loop);
-    sig = RLPF.ar(sig, cutoff, rq);
-    // sig = Balance2.ar(sig[0], sig[1], pan);
+  sig = RLPF.ar(sig, cutoff, rq);
 	sig = Compander.ar(sig, sig,
 		thresh: -32.dbamp,
 		slopeBelow: 1,
@@ -25,15 +24,14 @@ SynthDef(\sampler, {|bufnum=0, out=0, amp=1, rate=1, start=0, pan=0, freq=440, a
 		relaxTime:  0.01
 	);
 	sig = sig!2 * amp * env;
-    Out.ar(out, (0)!0 ++ sig); // multi output
+  Out.ar(out, (0)!0 ++ sig); // multi output
 }).add;
 
 
 //------------------------------------------------------------
 ~init = ~init <> {
 
-	var folder  = PathName("~/Downloads/yourDNASamples/toots/Matty");
-	// var folder  = PathName("~/Downloads/yourDNASamples/drums");
+	var folder  = PathName("~/Downloads/yourDNASamples/toots/Fluers");
 	postf("loading samples : % \n", folder);
 
 	buffers = folder.entries.collect({ |path,i|
@@ -49,18 +47,15 @@ SynthDef(\sampler, {|bufnum=0, out=0, amp=1, rate=1, start=0, pan=0, freq=440, a
 
 //------------------------------------------------------------
 ~deinit = ~deinit <> {
-//check if synth	
-	
 	if(synth.notNil, {
 		synth.onFree({
 			buffers.do({|buf|
 			postf("buffer dealloc [%] \n", buf);
 			buf.free;
-			// s.sync;
 			});
 		});	
+    synth.set(\gate, 0);
 	});
-	synth.set(\gate, 0);
 };
 
 //------------------------------------------------------------
@@ -68,7 +63,7 @@ SynthDef(\sampler, {|bufnum=0, out=0, amp=1, rate=1, start=0, pan=0, freq=440, a
 
 	if(d.sensors.digiInEvent[0] == 1, {
     if(bl == false, {
-    var ndx = (buffers.size -1).rand;
+      var ndx = (buffers.size -1).rand;
       bl = true;
       synth = Synth(\sampler, [\bufnum, buffers[ndx], \gate, 1, \rate, ([0]).choose.midiratio, \amp, 0.5]);
     });
@@ -76,6 +71,7 @@ SynthDef(\sampler, {|bufnum=0, out=0, amp=1, rate=1, start=0, pan=0, freq=440, a
     if(bl == true,{
         bl = false;
         synth.set(\gate, 0);
+        synth = nil;
     });
  });
 };
@@ -84,28 +80,5 @@ SynthDef(\sampler, {|bufnum=0, out=0, amp=1, rate=1, start=0, pan=0, freq=440, a
 ~plotMax = 1;
 ~plot = { |d,p|
 
-	// [yellow, cyan , magenta]??
-
-	// Velocity
-	// [d.sensors.velocity.x, d.sensors.velocity.y, d.sensors.velocity.z] * 30;
-	
-	// Acceleration
-	// [d.sensors.accelEvent.x, d.sensors.accelEvent.y, d.sensors.accelEvent.z] * 0.1;
-	// [m.accelMass, m.accelMassFiltered];
-
-	// Rotation
-	// [d.sensors.rrateEvent.x, d.sensors.rrateEvent.y, d.sensors.rrateEvent.z].abs;
-	// [[d.sensors.rrateEvent.x, d.sensors.rrateEvent.y, d.sensors.rrateEvent.z].sumabs];
-	// [m.rrateMass, m.rrateMassFiltered];
-
-	// Gyro
-	// [(d.sensors.gyroEvent.x / pi)];//roll
-	// [(d.sensors.gyroEvent.x / pi), (d.sensors.gyroEvent.y / pi.half), (d.sensors.gyroEvent.z / pi)];
-	// [(d.sensors.gyroEvent.y / pi.half)];//up down
-	// [(d.sensors.gyroEvent.z / pi)];//left right
-
-  // [m.gyroXFiltered, m.gyroYFiltered, m.gyroZFiltered];
 	[d.sensors.digiInEvent[0],d.sensors.rrateEvent.x];
-
-	// [(d.sensors.gyroEvent.y / pi.half).lincurve(-1.0,1.0,-1.0,1.0,3)];
 };

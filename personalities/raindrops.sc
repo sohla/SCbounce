@@ -59,7 +59,7 @@ SynthDef(\raindrop, {
 
   // var dur = m.accelMassFiltered.lincurve(0,2.5,0.5,0.05,-3);
   // var dur = m.rrateMassFiltered.lincurve(0,1.0,0.5,0.05,-3);
-  var dur = m.gyroYFiltered.lincurve(-1.0,1.0,0.5,0.05);
+  var dur = m.gyroYFiltered.lincurve(-1.0,1.0,0.5,0.075);
   var amp = m.gyroYFiltered.lincurve(-1.0,1.0,0.0,0.5,-2);
 
   if(amp < 0.07, {amp = 0});

@@ -3,13 +3,30 @@
 
 		"silence",
 
-		"timWind1",
-		"harp2",
+		"train4Button",
+		"tootCaz",
+		"tootMtt",
+		"tootTims",
+		"tootHeathers",
+
+		"tootCarlos",
+		"tootEddie",
+		"tootEmmas",
+		"tootFluers",
+		"tootMatty",
+		"tootSam",
+		"tootTarago",
+
+
 
 		"trainMove",
 		"trainMelody",
 		"trainBass",
-		
+		"tramBell",
+
+		"timWind1",
+		"harp2",
+
 		"leaves",
 		"sheet2",
 		"raindrops",
@@ -17,13 +34,6 @@
 		"temp_synth_4button",
 		"temp_synth_buffer_4button",
 		"temp_synth_buffers_4button",
-		
-		"toot1",
-		"tramBell",
-		
-		"arialOstinato",
-		"magicWand2",
-
 		"temp_input",
 		"temp_pattern_buffers",
 		"temp_pattern_buffer",
