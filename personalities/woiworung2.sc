@@ -1,9 +1,9 @@
 var m = ~model;
 var isPlaying = false;
 var synth;
-var notes = 22 + [9,11,2+12,9,6,11,9,2+12,11,13];
-m.accelMassFilteredAttack = 0.99;
-m.accelMassFilteredDecay = 0.9;
+var notes = [48-12];//23 + [9,11,2+12,9,6,11,9,2+12,11,13];
+m.accelMassFilteredAttack = 0.6;
+m.accelMassFilteredDecay = 0.2;
 
 //------------------------------------------------------------
 SynthDef("woiworung2", {|out,freq = 1000, amp = 0.5, att = 0.02, dec = 0.3, sus = 1, rel = 5, gate = 1, fb = 1.2, ch=10|
@@ -34,20 +34,20 @@ SynthDef("woiworung2", {|out,freq = 1000, amp = 0.5, att = 0.02, dec = 0.3, sus 
 ~next = {|d|
 
 	var a = m.accelMassFiltered.linlin(0,1,0.0,0.6);
-	var ch = m.accelMassFiltered.linlin(0.0,2.5,0.02,29);
+	var ch = m.accelMassFiltered.linlin(0.0,2.5,0.02,44);
 	// var pchs = [0,12,24,36,48];
 	// var i = (d.sensors.gyroEvent.y.abs / pi) * (pchs.size);
 	if(a<0.01,{a=0});
 	if(a>0.9,{a=1.0});
-	synth.set(\amp, a * 0.2);
+	synth.set(\amp, a * 0.1);
 	synth.set(\ch, ch);
-
+	synth.set(\freq,(notes[0] + m.com.root).midicps);
 	a = m.accelMassFiltered * 0.1;
 	if(a < 0.003, {
 		if(isPlaying.not,{
 			isPlaying = true;
 			notes = notes.rotate(-1);
-			synth.set(\freq,notes[0].midicps);
+			// synth.set(\freq,(notes[0] + m.com.root).midicps);
 		})
 	},{
 		if(isPlaying,{
