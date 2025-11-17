@@ -27,13 +27,13 @@ SynthDef(\funMelody, {
 	Pdef(m.ptn,
 		Pbind(
 			\instrument, \funMelody,
-			\note, Pseq([12,10,7,0]-5, inf),
+			\note, Pseq([12,14,10,7,0]-5, inf),
 			// \octave,Pseq([5,6].stutter(2),inf),
 			// \root, Pseq([0].stutter(32), inf),
-			\envAtk, Pwhite(0.02,0.04, inf),
+			\envAtk, Pwhite(0.07,0.01, inf),
 			\envDec, Pwhite(0.2, 0.1, inf),
 			\envSus, 0.0,
-			\envRel,Pkey(\octave).squared * 0.03,
+			// \envRel,Pkey(\octave) * 0.4,
     		// \amp, Pkey(\octave).reciprocal * 0.13,
 			\pan, Pseq([-0.3,0.3], inf),
     		\filtRes, 0.6,
@@ -60,12 +60,14 @@ SynthDef(\funMelody, {
 
 	// var dur = 0.5 * 2.pow(m.accelMassFiltered.linexp(0,3,0,5).floor).reciprocal;
 	// var dur = 0.5 * 2.pow(m.accelMassFiltered.lincurve(0,2.5,0,3,-1).floor).reciprocal;
-	var oct = m.gyroZFiltered.linlin(-1,1,3,7).floor;
+	var oct = m.gyroYFiltered.linlin(-1,1,7,3).floor -1;
+  var envRel = m.accelMassFiltered.lincurve(0,2,0.03,3.2,5);
 
 	Pdef(m.ptn).set(\dur, dur);
 	Pdef(m.ptn).set(\filtFreq, m.accelMassFiltered.linexp(0,3,180,14000));
-	Pdef(m.ptn).set(\amp, m.accelMassFiltered.lincurve(0,2,0.11,0.045,-2));
+	Pdef(m.ptn).set(\amp, m.accelMassFiltered.lincurve(0,2,0.2,0.1,-2));
 	Pdef(m.ptn).set(\octave,oct);
+	Pdef(m.ptn).set(\envRel,envRel);
 
 	if(m.accelMass > 0.12,{
 		if( Pdef(~model.ptn).isPlaying.not,{

@@ -4,23 +4,9 @@ var note = 48;
 m.accelMassFilteredAttack = 0.8;
 m.accelMassFilteredDecay = 0.8;
 
-SynthDef(\funBass, {
-    |out=0, freq = 440, gate = 1, amp = 0.8, filtFreq = 2000, filtRes = 0.5, envAtk = 0.01, envDec = 0.1, envSus = 0.7, envRel = 4.2, rm = 0.5|
-    var osc1, osc2, osc3, env, filter, output;
-
-    env = EnvGen.ar(Env.adsr(envAtk, envDec, envSus, envRel), gate, doneAction: Done.freeSelf);
-    osc1 = Saw.ar(freq, 1);
-    osc2 = Pulse.ar(freq * 0.99, 0.3, 1);
-    osc3 = SinOsc.ar(freq * 1.01, 0, 1);
-    output = Mix([osc1, osc2, osc3]) * env * amp;
-    filter = RLPF.ar(output, filtFreq, filtRes);
-		filter = [filter.distort, filter.tanh];
-    Out.ar(out, filter.softclip);
-}).add;
-
 SynthDef(\warmPadMove2, {
 	|out=0, gate=1, freq=440, amp=0.1,atk=0.03, dec=0.2, sus=0.8, rel=1.0,filtMin=500, filtMax=5000, filtSpeed=0.5,
-	detuneAmount = 0.001,chorusRate=0.5, chorusDepth=0.01,pan=0, spread=0.2, lfoFreq=1|
+	detuneAmount = 1.001,chorusRate=0.5, chorusDepth=0.01,pan=0, spread=0.2, lfoFreq=1|
 
     var sig, env, filt, chorus, numVoices=8, sub;
 		var pulse = LFCub.ar(lfoFreq,pi,0.5,0.5);
@@ -60,7 +46,7 @@ SynthDef(\warmPadMove2, {
             0.1  // Shorter decay time for cleaner sound
         )
     });    // Final processing
-	sub = LFTri.ar(freq/2, pi, 0.3).tanh;
+	sub = LFTri.ar(freq * (3/2), pi, 13).tanh * 0.02;
 	sig = Mix([sig, chorus.sum]) / (numVoices + 2);
   // sig = sig * env * amp;
 
@@ -71,61 +57,10 @@ SynthDef(\warmPadMove2, {
 }).add;
 
 
-SynthDef(\versatilePerc, {
-    |out=0, freq=50, tension=0.1, decay=0.5, clickLevel=0.5, amp=0.5, dist = 5|
-    var pitch_contour, drum_osc, click_osc, drum_env, click_env, sig, pch;
-
-    // Pitch envelope
-    pitch_contour = Line.kr(1, 0, 0.02);
-
-    // Drum oscillator
-
-	pch = freq * (1 + (pitch_contour * tension));
-	drum_osc = SinOsc.ar([pch,pch*1.004], LFNoise2.ar([4,5],10,-10),0.5);
-
-    // Click oscillator
-    click_osc = LPF.ar(WhiteNoise.ar(1), 1500);
-
-    // Drum envelope
-    drum_env = EnvGen.ar(
-        Env.perc(attackTime: 0.005, releaseTime: decay, curve: -4),
-        doneAction: 2
-    );
-
-    // Click envelope
-    click_env = EnvGen.ar(
-        Env.perc(attackTime: 0.001, releaseTime: 0.01),
-        levelScale: clickLevel
-    );
-	sig = (drum_osc * drum_env) + (click_osc * click_env);
-	sig = (sig * dist).tanh.distort;
-    // Mix and output
-    Out.ar(out, Pan2.ar(sig,0,amp))
-}).add;
 //------------------------------------------------------------
 // intial state
 //------------------------------------------------------------
 ~init = ~init <> {
-
-	// Pdef(m.ptn,
-	// 	Pbind(
-	// 		\instrument, \versatilePerc,
-	// 		\note, Pseq([0,2,7,10,5], inf),
-	// 		// \note, Pseq([5,9,4,2], inf),
-	// 		\octave,Pseq([2,3,4].stutter(2),inf),
-	// 		\root, Pseq([0,3,-2,1,-1].stutter(32), inf),
-	// 		\envAtk,0.001,
-	// 		\envDec,0.3,
-	// 		\envSus, 0.0,
-	// 		\envRel,Pkey(\octave).squared * 0.05,
-  //  		\amp, 0.8,
-  //  		\filtRes, Pwhite(0.1,0.2),
-	// 		\func, Pfunc({|e| ~onEvent.(e)}),
-	// 		\args, #[],
-	// 	)
-	// );
-
-	// Pdef(m.ptn).play(quant:0.125);
 
 	synth = Synth(\warmPadMove2, [
 		\freq, note.midicps, 
@@ -138,7 +73,7 @@ SynthDef(\versatilePerc, {
     \filtSpeed, 0.1,
     \chorusRate, 0.001,
     \chorusDepth, 0.0001,
-		\detuneAmount, 0.0002
+		\detuneAmount, 0.0004
 	]);
 };
 
@@ -180,7 +115,7 @@ SynthDef(\versatilePerc, {
 	if(a>0.9,{a=0.9});
     
     synth.set(\freq, (note + m.com.root).midicps);
-	synth.set(\amp, a * 0.11);
+	synth.set(\amp, a * 0.31);
 	synth.set(\filtSpeed, filtSpeed);
 	synth.set(\lfoFreq, lfoFreq);
 

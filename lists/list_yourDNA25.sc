@@ -3,6 +3,10 @@
 
 		"silence",
 
+		"trainMove",
+		"trainMelody",
+		"trainBass",
+
 		"temp_synth_4button",
 		"temp_synth_buffer_4button",
 		"temp_synth_buffers_4button",
