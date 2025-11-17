@@ -3,7 +3,7 @@ var synth;
 var index =0;
 var trig = false;
 // var notes = [0,7,16,0,7,16,0,7,16,0,7,16,0,7,17,0,7,17,0,7,17,0,7,17];
-var notes = [0,3,2,-2,-4,-1];
+var notes = [-5];
 var note = notes[0];
 m.accelMassFilteredAttack = 0.99;
 m.accelMassFilteredDecay = 0.15;
@@ -46,7 +46,7 @@ SynthDef(\noise, { |out=0, frq=10000, gate=0, amp = 0, atk=0.02, sus=0.9, rel=1.
 
     if(amp<0.02,{
         amp=0;
-        synth.set(\lag,0.8);
+        synth.set(\lag,0.9);
         if(trig, {
             trig = false;
         });
@@ -58,7 +58,7 @@ SynthDef(\noise, { |out=0, frq=10000, gate=0, amp = 0, atk=0.02, sus=0.9, rel=1.
             note = notes[0];
             synth.set(\pch, note.midiratio);
         });
-        synth.set(\lag,0.01);
+        synth.set(\lag,0.3);
     });
 
     synth.set(\amp, amp);

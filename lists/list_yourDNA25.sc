@@ -3,9 +3,16 @@
 
 		"silence",
 
+		"timWind1",
+		"harp2",
+
 		"trainMove",
 		"trainMelody",
 		"trainBass",
+		
+		"leaves",
+		"sheet2",
+		"raindrops",
 
 		"temp_synth_4button",
 		"temp_synth_buffer_4button",
@@ -14,30 +21,6 @@
 		"toot1",
 		"tramBell",
 		
-		"velocity1",
-		"velocity2",
-  	"harp1",
-
-		"rain1",
-		"thunder",
-		"insects1",
-		"sheet2",
-		"timWind1",
-		"wind1",
-
-		"frog1",
-		"frog2",
-		"chicken1",
-		"chicken2",
-		"animalMat",
-		"quackQuack",
-		"heatherLaugh1",
-
-		"funMove1",
-		"funBass",
-		"funMelody",
-		"funMove2",
-
 		"arialOstinato",
 		"magicWand2",
 
@@ -47,6 +30,7 @@
 		"temp_synth",
 		"temp_synth_buffer",
 		"temp_synth_buffers",
+		"temp_pattern_synth",
 
 	]
 
