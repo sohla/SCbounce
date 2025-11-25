@@ -6,9 +6,20 @@ var personalityDir = "~/Develop/SuperCollider/Projects/SCbounce/personalities/";
 // var list = "list_ITR_Mel.sc";
 // var list = "list_glenroy.sc";
 // var list = "list_SiS_Alessio.sc";
-var list = "list_yourDNA25.sc";
 
-var defaultLists = list!5;
+// var list = "list_yourDNA25.sc";
+// var defaultLists = list!5;
+
+
+var defaultLists = [
+    "list_MIM25_James.sc",
+    "list_MIM25_Caz.sc",
+    "list_MIM25_Tim.sc",
+    "list_MIM25_Matt.sc",
+    "list_MIM25_Caz.sc",
+];
+
+
 
 // var defaultLists = [
 //     "list_ITR_Mel.sc",
