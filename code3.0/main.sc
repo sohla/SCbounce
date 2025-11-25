@@ -75,7 +75,7 @@ s.volume = -2; // in db
 s.options.blockSize = 128; 
 s.options.numBuffers = 2048;  // more buffers
 s.options.memSize = 65536;    // more memory
-s.options.numOutputBusChannels = 8; // for quad output
+s.options.numOutputBusChannels = 10; // for quad output
 
 MIDIIn.connectAll;
 
