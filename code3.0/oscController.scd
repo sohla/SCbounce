@@ -238,6 +238,7 @@ var addOSCDeviceListeners = {|d|
         d.listeners.battery = OSCFunc({ |msg, time, addr, recvPort|
             d.volts = msg[1].asFloat;
             d.charge = msg[2].asFloat;
+            // "battery [%]: %v %%".format(d.port,d.volts, d.charge).postln;
         }, batteryBase.format(i+1), address);
 
         d.listeners.digiIn = OSCFunc({ |msg, time, addr, recvPort|
