@@ -65,7 +65,7 @@ var addDetailView = {|d|
 	var view = View()
 		.layout_(gl = GridLayout.rows(
 			[
-				View().maxHeight_(120)
+				// View().maxHeight_(120)
 			],
 			[
 				[HLayout(addIDView.(d), addNetView.(d), addBatteryView.(d)).spacing_(2), columns:2],									
@@ -95,6 +95,7 @@ var addDetailView = {|d|
 		// });
 
 	// gl.addSpanning(addPlotterView.(d,view), 0, 0, 1, 2);
+
 	// add device view
 	// contentView.layout.add(view, (numDevices/2).floor, numDevices%2);	
 	contentView.layout.add(view, 0, numDevices);	
