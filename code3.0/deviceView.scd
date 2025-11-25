@@ -64,9 +64,9 @@ var addDetailView = {|d|
 	var numDevices = contentView.children.size;
 	var view = View()
 		.layout_(gl = GridLayout.rows(
-			[
-				View().maxHeight_(120)
-			],
+			// [
+			// 	View().maxHeight_(120)
+			// ],
 			[
 				[HLayout(addIDView.(d), addNetView.(d), addBatteryView.(d)).spacing_(2), columns:2],									
 			],
@@ -94,7 +94,8 @@ var addDetailView = {|d|
 		// 	NetAddr("127.0.0.1", 57120).sendMsg("/airkit/calibrate", d.port);
 		// });
 
-	gl.addSpanning(addPlotterView.(d,view), 0, 0, 1, 2);
+	// gl.addSpanning(addPlotterView.(d,view), 0, 0, 1, 2);
+
 	// add device view
 	// contentView.layout.add(view, (numDevices/2).floor, numDevices%2);	
 	contentView.layout.add(view, 0, numDevices);	
