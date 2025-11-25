@@ -70,7 +70,7 @@ SynthDef(\sampler, {|bufnum=0, out=0, amp=1, rate=1, start=0, pan=0, freq=440, a
     if(bl == false, {
     var ndx = (buffers.size -1).rand;
       bl = true;
-      synth = Synth(\sampler, [\bufnum, buffers[ndx], \gate, 1, \rate, ([-36]).choose.midiratio, \amp, 0.5]);
+      synth = Synth(\sampler, [\bufnum, buffers[ndx], \gate, 1, \rate, ([-36]).choose.midiratio, \amp, 4]);
     });
  },{
     if(bl == true,{

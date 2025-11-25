@@ -2,7 +2,7 @@ var m = ~model;
 var synth;
 var note = 48 + 4;
 m.accelMassFilteredAttack = 0.8;
-m.accelMassFilteredDecay = 0.8;
+m.accelMassFilteredDecay = 0.2;
 
 SynthDef(\warmPadMove2, {
 	|out=0, gate=1, freq=440, amp=0.1,atk=0.03, dec=0.2, sus=0.8, rel=1.0,filtMin=500, filtMax=5000, filtSpeed=0.5,
@@ -115,7 +115,7 @@ SynthDef(\warmPadMove2, {
 	if(a>0.9,{a=0.9});
     
     synth.set(\freq, (note + m.com.root).midicps);
-	synth.set(\amp, a * 0.31);
+	synth.set(\amp, a * 1.3);
 	synth.set(\filtSpeed, filtSpeed);
 	synth.set(\lfoFreq, lfoFreq);
 

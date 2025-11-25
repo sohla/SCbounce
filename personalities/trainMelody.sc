@@ -61,11 +61,11 @@ SynthDef(\funMelody, {
 	// var dur = 0.5 * 2.pow(m.accelMassFiltered.linexp(0,3,0,5).floor).reciprocal;
 	// var dur = 0.5 * 2.pow(m.accelMassFiltered.lincurve(0,2.5,0,3,-1).floor).reciprocal;
 	var oct = m.gyroYFiltered.linlin(-1,1,8,4).floor;
-  var envRel = m.accelMassFiltered.lincurve(0,2,0.03,3.2,5);
-	var amp = m.accelMassFiltered.lincurve(0,2,0.001,0.1,-2);
+  	var envRel = m.accelMassFiltered.lincurve(0,1,0.03,3.2,5);
+	var amp = m.accelMassFiltered.lincurve(0,2,0.001,0.2,-2);
 	
 	Pdef(m.ptn).set(\dur, dur);
-	Pdef(m.ptn).set(\filtFreq, m.accelMassFiltered.linexp(0,3,680,14000));
+	Pdef(m.ptn).set(\filtFreq, m.accelMassFiltered.linexp(0,1.5,680,14000));
 	Pdef(m.ptn).set(\amp, amp);
 	Pdef(m.ptn).set(\octave,oct);
 	Pdef(m.ptn).set(\envRel,envRel);
