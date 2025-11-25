@@ -34,7 +34,7 @@ SynthDef(\pullstretchMonoQ, {|out, amp = 1, buffer = 0, envbuf = -1, pch = 1, di
 			relaxTime:  0.01
 	);
 	sig = Pan2.ar(sig[0],pan) * env;
-	Out.ar(out, [0,((0)!0 ++ sig)]);
+	Out.ar(out, ((0)!0 ++ sig));
 }).add;
 //------------------------------------------------------------
 ~init = ~init <> {

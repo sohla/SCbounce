@@ -19,7 +19,7 @@ SynthDef(\pullstretchMonoQAA, {|out, amp = 1, buffer = 0, envbuf = -1, pch = 1.0
 	var lfo = LFSaw.kr( (1.0/len) * speed ,1,0.5,0.5);
 	var env = EnvGen.ar(Env.adsr(0.4,0.1,0.9,4.0), gate, doneAction:2);
 	var sp = Splay.arFill(3,
-		{ |i| Warp1.ar(1, buffer, lfo.linlin(0,1,0.05,0.95), rate  * 0.25,splay, envbuf, 4, 0.1, 4, 1) },
+		{ |i| Warp1.ar(1, buffer, lfo.linlin(0,1,0.05,0.95), rate,splay, envbuf, 4, 0.1, 4, 1) },
 			1,
 			1,
 			0
@@ -58,7 +58,7 @@ SynthDef(\pullstretchMonoQAA, {|out, amp = 1, buffer = 0, envbuf = -1, pch = 1.0
 
 	if(amp < 0.01, {amp = 0});
 
-	synth.set(\rate, rate * 1.214);
+	synth.set(\rate, 0.25 * 1.214);
 	// synth.set(\dp, dp);
 	synth.set(\amp, amp * 4);
 	// synth.set(\pan, pan);

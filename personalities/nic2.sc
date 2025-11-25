@@ -23,7 +23,7 @@ SynthDef(\drumkitNN, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 	);
 	sig = Mix.ar([sig]);
     sig = Balance2.ar(sig[0],sig[1], pan) * amp * env;
-    Out.ar(out, [0,((0)!0 ++ sig)]);
+    Out.ar(out, ((0)!0 ++ sig));
 }).add;
 
 //--------------------------------------
