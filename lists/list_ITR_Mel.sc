@@ -9,7 +9,6 @@
 		"mel3",
 		"mel4",
 		"mel5",
-		"melChair1",
 
 		"nic1",
 		"nic2",
