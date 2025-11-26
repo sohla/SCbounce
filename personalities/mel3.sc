@@ -1,9 +1,11 @@
 var m = ~model;
 var synth;
 var buffer;
+var lastTime = 0;
+var notes = [0,4,-3,-5];
 
 m.accelMassFilteredAttack = 0.7;
-m.accelMassFilteredDecay = 0.07;
+m.accelMassFilteredDecay = 0.8;
 m.rrateMassFilteredAttack = 0.9;
 m.rrateMassFilteredDecay = 0.9;
 m.gyroFilteredAttack = 0.7;
@@ -11,16 +13,16 @@ m.gyroFilteredDecay = 0.7;
 
 //------------------------------------------------------------
 SynthDef(\bufGrain, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=440,
-    attack=0.01, decay=0.1, sustain=0.8, release=5.2, gate=1,cutoff=20000, rq=1, rezf=200|
+    attack=0.01, decay=0.1, sustain=0.8, release=5.2, gate=1,cutoff=20000, rq=0.8, rezf=200|
 
 	var lr = rate * BufRateScale.kr(bufnum) * (freq/440.0);
 	var env = EnvGen.kr(Env.adsr(attack, decay, sustain, release), gate, doneAction:2);
-	var sub = LFTri.ar(66*rate*2,0,0.3).tanh;
+	var sub = LFTri.ar(66*rate*2,0,0.6).tanh;
 	var sig = Splay.arFill(8,{|i|
 		Warp1.ar(2, bufnum, start, rate * (i+1) , 0.3, windowRandRatio:0.3)},
 	1,1,0);
-    sig = RLPF.ar(sig, cutoff, rq) + sub;
-	sig = sig[0] * env * amp;
+    sig = RLPF.ar(sig, rezf.lag(1), rq) + sub;
+	sig = sig[0] * env * amp.lag(2);
     Out.ar(out, ((0)!0 ++ sig));
 }).add;
 
@@ -44,16 +46,24 @@ SynthDef(\bufGrain, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=440
 
 //------------------------------------------------------------
 ~next = {|d|
+	
 	var amp = m.accelMassFiltered.linlin(0,2,0.00001,1);
 	var start = m.gyroYFiltered.lincurve(-1.0,1.0,0.0,1.0,0);
-	var rezf = m.gyroZFiltered.lincurve(-1.0,1.0,130,260*3,0);
+	var rezf = m.gyroZFiltered.lincurve(-1.0,1.0,150,11600,0);
 
-	if(amp < 0.001, {amp = 0});
+	if(amp < 0.001, {
+		amp = 0;		
+	});
+	if(TempoClock.beats > (lastTime + 7),{
+		notes = notes.rotate(-1);
+		lastTime = TempoClock.beats;
+	});
+
 
 	synth.set(\rezf, rezf);
 	synth.set(\start, start);
-	synth.set(\amp, amp * 1);
-	synth.set(\rate, 0.25 * ((0).midiratio));
+	synth.set(\amp, amp * 2);
+	synth.set(\rate, 0.25 * (notes[0].midiratio));
 
 };
 //------------------------------------------------------------

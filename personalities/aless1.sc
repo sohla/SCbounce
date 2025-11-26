@@ -6,25 +6,25 @@ var note = notes[0];
 var trig = false;
 
 m.accelMassFilteredAttack = 0.98;
-m.accelMassFilteredDecay = 0.3;
+m.accelMassFilteredDecay = 0.8;
 m.rrateMassFilteredAttack = 0.9;
 m.rrateMassFilteredDecay = 0.9;
 m.gyroFilteredAttack = 0.7;
 m.gyroFilteredDecay = 0.7;
 
 //------------------------------------------------------------
-SynthDef(\pullstretchMonoQA, {|out, amp = 1, buffer = 0, envbuf = -1, pch = 1, div=1, speed = 0.008, splay = 0.3,pan=0, gate=1, delta=0|
+SynthDef(\pullstretchMonoQA, {|out, amp = 1, buffer = 0, envbuf = -1, pch = 1, div=1, speed = 0.008, splay = 0.3,pan=0, gate=1, delta=0, lof=16|
 	var len = BufDur.kr(buffer) / div;
 	var lfo = LFSaw.kr( (1.0/len) * speed ,1).range(0.0,0.99);
-	var sp = Splay.arFill(8,
+	var sp = Splay.arFill(2,
 		// { |i| Warp1.ar(2, buffer, lfo.linlin(0,1,0.01,0.99), pch * (1 / ((i*delta)+1))  ,splay, envbuf, 8, 0.1 * (i+1), 4)  },
-		{ |i| Warp1.ar(2, buffer, lfo.linlin(0,1,0.01,0.99), pch,splay, envbuf, 8, 0.1 * (i+1), 4)  },
+		{ |i| Warp1.ar(2, buffer, lfo.linlin(0,1,0.01,0.99), pch / (i+1),splay, envbuf, 8, 0.1 * (i+1), 4)  },
 			1,
 			1,
 			0
 	) ;
 	var env = EnvGen.ar(Env.adsr(0.4,0.1,0.9,2.0), gate, doneAction:2);
-	var mas = HPF.ar(sp * 6,45).tanh * amp.lag(0.2);
+	var mas = HPF.ar(sp,45).tanh * amp.lag(0.1);
 	var sig = Compander.ar(mas, mas,
 					thresh: -32.dbamp,
 					slopeBelow: 1,
@@ -32,8 +32,10 @@ SynthDef(\pullstretchMonoQA, {|out, amp = 1, buffer = 0, envbuf = -1, pch = 1, d
 					clampTime:  0.02,
 					relaxTime:  0.01
 			);
-
-	sig = Pan2.ar(sig[0],pan) * env;
+	var lo = Decay2.ar(LFSaw.ar(lof),0.005,0.002,0.039,0.5);
+	var pd = Pitch.kr(sig[0]);
+	// var sub = SinOsc.ar(pd[0] * 0.5 ,0, lo * pd[0][1]).tanh;
+	sig = Pan2.ar(sig, pan) * env * lo * 1.4;
 	Out.ar(out, ((0)!0 ++ sig));
 }).add;
 
@@ -61,14 +63,15 @@ SynthDef(\pullstretchMonoQA, {|out, amp = 1, buffer = 0, envbuf = -1, pch = 1, d
 
 	var delta = m.gyroYFiltered.linlin(-1,1,10,-10).lcurve;
 	var amp = m.accelMassFiltered.lincurve(0,1.5,0.0,1,1);
-	var speed= m.gyroXFiltered.fold(-0.5,0.5).lincurve(-0.5,0.5,0.1,0.001,-1);
+	var speed = m.gyroXFiltered.fold(-0.5,0.5).lincurve(-0.5,0.5,0.1,0.008,-1);
+	var lof = m.accelMassFiltered.lincurve(0,1.5,4,20,-1);
 
 
 	if(amp < 0.01, {
 		amp = 0;
 	});
 
-	if(amp<0.015,{
+	if(amp<0.006,{
 			amp=0;
 			// synth.set(\lag,0.8);
 			if(trig, {
@@ -85,8 +88,9 @@ SynthDef(\pullstretchMonoQA, {|out, amp = 1, buffer = 0, envbuf = -1, pch = 1, d
 	});
 
 	synth.set(\speed, speed);
-	synth.set(\amp, amp * 1);
+	synth.set(\amp, amp * 10);
 	synth.set(\delta, delta);
+	synth.set(\lof, lof);
 };
 //------------------------------------------------------------
 ~plotMin = -1;

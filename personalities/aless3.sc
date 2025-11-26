@@ -1,122 +1,129 @@
 var m = ~model;
-var bi = 0;
-var dur = 0.3 ;
-~buffers;
+var synth;
+var buffer;
+
+var index =0;
+var trig = false;
+var notes = [2]+0.1;//[12,11,9,7,12,11,9,7,14,12,11,9,7,5,4,2]-15;
+var note = notes[0];
 m.accelMassFilteredAttack = 0.99;
 m.accelMassFilteredDecay = 0.5;
+m.rrateMassFilteredAttack = 0.3;
+m.rrateMassFilteredDecay = 0.2;
+m.gyroFilteredAttack = 0.7;
+m.gyroFilteredDecay = 0.7;
+
+SynthDef(\pullstretchMonoQAF, {|out, amp = 1, buffer = 0, envbuf = -1, pch = 1, div=1, speed = 0.008, splay = 0.3,pan=0, gate=1, delta=0, lag=0.05, ffo=10, rfo=1|
+	var len = BufDur.kr(buffer) / div;
+	var lfo = LFSaw.kr( (1.0/len) * speed ,1).range(0.0,0.99);
+  var afo = LFCub.ar(ffo,0,rfo).range(1.0 - rfo,2.0 - rfo);
+	var sp = Splay.arFill(8,
+		{ |i| Warp1.ar(1, buffer, lfo.linlin(0,1,0.01,0.39), pch * (1 / ((i*delta)+1)) * [1] ,splay, envbuf, 8, 0.1 * (i+1), 4)  },
+			1,
+			1,
+			0
+	) ;
+	var env = EnvGen.ar(Env.adsr(0.4,0.1,0.9,2.0), gate, doneAction:2);
+	var mas = HPF.ar(sp,45).tanh * amp.lag(lag) * afo;
+	var sig = Compander.ar(mas, mas,
+			thresh: -32.dbamp,
+			slopeBelow: 1,
+			slopeAbove: 0.5,
+			clampTime:  0.02,
+			relaxTime:  0.01
+	);
+	sig = Pan2.ar(mas[0],pan) * env;
+	Out.ar(out, ((0)!0 ++ sig));
+}).add;
+//------------------------------------------------------------
+SynthDef(\noise, { |out=0, frq=1000, gate=1, amp = 0.0, atk=0.02, sus=0.8, rel=1.3, lag=0.05, pch=1|
+	var env = EnvGen.ar(Env.adsr(atk,0.3,sus,rel), gate, doneAction:Done.freeSelf) * 0.5;
+    var sig = DynKlank.ar(`[[50,100,200,400] * pch, [1,0.4,0.2,0.1], [1, 0.6, 0.3, 0.1]], WhiteNoise.ar(0.1));
+    // var sig = WhiteNoise.ar(4);
+    sig = LPF.ar(sig, frq.lag(0.3)) * env * amp.lag(lag);
+	Out.ar(out, sig.tanh!2);
+}).add;
 
 //------------------------------------------------------------
-SynthDef(\drumkitAAA, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
-    attack=0.01, decay=0.002, sustain=0.8, release=4.1, gate=1,cutoff=17000, rq=1|
-	var lr = rate * BufRateScale.kr(bufnum);
-	var cd = BufDur.kr(bufnum);
-  var env = EnvGen.kr(Env.adsr(attack, decay, sustain, release), gate, doneAction: 2);
-	var sig = PlayBuf.ar(2, bufnum, rate: [lr,lr/4], startPos: start * BufFrames.kr(bufnum), loop: 0) ;
-    sig = RLPF.ar(sig, cutoff, rq);
-		sig = Compander.ar(sig, sig,
-        thresh: -15.dbamp,
-        slopeBelow: 1,
-        slopeAbove: 0.5,
-        clampTime:  0.01,
-        relaxTime:  0.01
-		) ;
-	sig = Mix.ar([sig * 1, sig.tanh * 4]);
-    sig = Pan2.ar(sig * amp * env, pan);
-    Out.ar(out, ((0)!0++ sig) );
-}).add;
-//--------------------------------------
 ~init = ~init <> {
-	var folder = PathName("~/Downloads/alessioSamples/vv");
-	postf("loading samples : % \n", folder);
+		var path = PathName("~/Downloads/alessioSamples/ararrrr2.wav");
 
-	~buffers = folder.entries.collect({ |path,i|
-		Buffer.read(s, path.fullPath, action:{|buf|
-			postf("buffer alloc [%] \n", buf);
-			if(folder.entries.size - 1 == i,{
-				"samples loaded".postln;
-			});
-		});
+	// var path = PathName("~/Downloads/yourDNASamples/HK lots of teddies.wav");
+	postf("loading sample : % \n", path.fileName);
+
+	buffer = Buffer.read(s, path.fullPath, action:{ |buf|
+		postf("buffer alloc [%] \n", buf);
+		synth = Synth(\pullstretchMonoQAF,[\buffer,buf,\pch,0.midiratio, \amp,0.0, \div, 10]);
 	});
 
-	Pdef(m.ptn,
-		Pbind(
-			\instrument, \drumkitAAA,			
-			\bufnum, Pfunc{
-				bi = bi + 1;
-				// bi = ~buffers.size.rand;
-				if(bi >= (~buffers.size-1),{bi=0});
-				~buffers[bi];
-			},
-			\start, 0.03,
-			\legato,0.4,
-			// \dur, dur,//Pseq([1,Rest(1),2,2,1,Rest(1),1] * dur, inf),
-			\pan, Pwhite(-0.5,0.5),
-			// \attack, 0.002,
-			// \release,0.01,
-			\args, #[],
-		)
-	);
-
-	Pdef(m.ptn).play(quant:dur);
-	Pdef(m.ptn).set(\bufnum, ~buffers[0]);
 
 };
-
+//------------------------------------------------------------
 ~deinit = ~deinit <> {
-	Pdef(m.ptn).remove;
-	{
-	~buffers.do({|buf|
-		buf.free;
-		s.sync;
-		postf("buffer dealloc [%] \n", buf);
-	});
-	}.defer(0.3);
+	synth.onFree({
+		postf("buffer dealloc [%] \n", buffer);
+		buffer.free;
+	});	
+	synth.set(\gate, 0);
 };
 
+//------------------------------------------------------------
+~onEvent = {|e|
+};
 
 //------------------------------------------------------------
 ~next = {|d|
-
-	var rate = m.rrateMassFiltered.linlin(0,0.5,0.6,3);
-	var amp = m.accelMassFiltered.lincurve(0,2.5,0.4,1, -2);
-	// var notes = [0.3,0.4,0.8,0.0,0.7] + 0.4;
-	var notes = [1];//[0.3,1,3,5,7,11];
-	var amps = [3,1,0.7,0.4,0.2] * 1;
-	var index = m.gyroYFiltered.fold(-0.5,0.5).lincurve(-0.5,0.5,0,notes.size-1,-1).asInteger;
-	var attack = m.accelMassFiltered.lincurve(0.0,1.5,0.01,0.002,-1);
-	var release = m.accelMassFiltered.lincurve(0.0,1.5,2.0,0.1,-1);
-	dur= m.accelMassFiltered.lincurve(0,1.5,0.3,0.1, -3);
-	Pdef(m.ptn).set(\amp, amp * amps[index]);
-	Pdef(m.ptn).set(\rate, notes[index]);
-	Pdef(m.ptn).set(\dur, dur);
-	Pdef(m.ptn).set(\attack, attack);
-	Pdef(m.ptn).set(\release, release);
-	// bi = (d.sensors.gyroEvent.y.abs / pi) * (~buffers.size-1);
-	// bi = bi.asInteger;
-	// bi = [0,1,10].choose;
-	if(m.accelMassFiltered > 0.05,{
-		if( Pdef(m.ptn).isPlaying.not,{
-			Pdef(m.ptn).resume(quant:0);
-		});
+	// var amp = d.sensors.velocity.sum.abs.lincurve(0,0.03,0.0,1.0,-2);
+	var amp = m.accelMassFiltered.lincurve(0,2.5,0.0,1,-3);
+	var rfo = m.accelMassFiltered.lincurve(0,1.5,0.0,1,-3);
+  var ffo = m.gyroYFiltered.lincurve(-1.0,1,3,18,-3);
+    
+	if(amp<0.015,{
+			amp=0;
+			synth.set(\lag,0.8);
+			if(trig, {
+					trig = false;
+			});
 	},{
-		if( Pdef(m.ptn).isPlaying,{
-			Pdef(m.ptn).pause();
-		});
+			if(trig.not, {
+					trig = true;
+					index = index + 1;
+					notes = notes.rotate(-1);
+					note = notes[0];
+			});
+			synth.set(\pch, note.midiratio);
+			synth.set(\lag,0.1);
 	});
+
+	synth.set(\amp, amp*2);
+	synth.set(\ffo, ffo);
+	synth.set(\rfo, rfo);
 };
 
 //------------------------------------------------------------
-~plotMin = -1;
+~plotMin = -1;  
 ~plotMax = 1;
 ~plot = { |d,p|
-	[m.rrateMass * 0.1, m.rrateMassFiltered * 0.1];
-	// [m.accelMass * 0.3, m.accelMassFiltered * 0.5];
-	// [m.rrateMassFiltered, m.rrateMassThreshold];
-	// [m.rrateMassFiltered, m.rrateMassThreshold, m.accelMassAmp];
-	// [d.sensors.gyroEvent.x, d.sensors.gyroEvent.y, d.sensors.gyroEvent.z];
+	//[0.2,0.4,0.6];
 	// [d.sensors.rrateEvent.x, d.sensors.rrateEvent.y, d.sensors.rrateEvent.z];
-	// [d.sensors.accelEvent.x, d.sensors.accelEvent.y, d.sensors.accelEvent.z];
+	// [d.sensors.accelEvent.x, d.sensors.accelEvent.y, d.sensors.accelEvent.z] * 0.5;
+	// [m.accelMass.abs - m.accelMass, m.accelMass - m.accelMass.abs];
+	// [d.sensors.velocity.sum.abs * 30 ,m.accelMass];// compare these values we can get direction?
+
+	// [d.sensors.velocity.sum.abs.lincurve(0,0.03,0,1,-2)];
+
+
+	// // [((m.accelMassFiltered - m.accelMassFiltered.abs)-(m.accelMassFiltered.abs - m.accelMassFiltered)).abs, m.accelMassFiltered.abs];
+	// [m.rrateMassFiltered];
+	// [m.rrateMassFiltered, m.rrateMassThreshold, m.accelMassAmp];
+	[m.gyroYFiltered];
+	// [d.sensors.rotateEvent.x, d.sensors.rotateEvent.y, d.sensors.rotateEvent.z];
+	// [d.sensors.rrateEvent.x, d.sensors.rrateEvent.y, d.sensors.rrateEvent.z] * 4;
+	// [d.sensors.accelEvent.x, d.sensors.accelEvent.y, d.sensors.accelEvent.z] * 0.1;
 
 
 };
-Buffer.cachedBuffersDo(s, {|b|b.postln})
+
+
+
+
