@@ -2,12 +2,14 @@
 	[
 
 		"silence",
+		"timDrums",
+		"silence",
 		"tootEmmas",
 		"tootTims",
 		"silence",
-		"yawnTimBoy",
-		"silence",
 		"trainMelody",
+		"silence",
+		"yawnTimBoy",
 		"silence",
 		"timWind1",
 		"silence",

@@ -2,10 +2,11 @@
 	[
 
 		"silence",
-		"tootFluers",
-		"tootMatty",
-		"tootSam",
-		"tootTarago",
+		"welcome",
+		"silence",
+		"heatherLaugh1",
+		"silence",
+		"tootHMix",
 		"silence",
 		"train4Button",
 		"silence",

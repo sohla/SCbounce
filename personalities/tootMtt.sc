@@ -32,7 +32,7 @@ SynthDef(\sampler, {|bufnum=0, out=0, amp=1, rate=1, start=0, pan=0, freq=440, a
 //------------------------------------------------------------
 ~init = ~init <> {
 
-	var folder  = PathName("~/Downloads/yourDNASamples/bath/heyhey");
+	var folder  = PathName("~/Downloads/yourDNASamples/toots/Mtt");
 	// var folder  = PathName("~/Downloads/yourDNASamples/drums");
 	postf("loading samples : % \n", folder);
 
@@ -70,7 +70,7 @@ SynthDef(\sampler, {|bufnum=0, out=0, amp=1, rate=1, start=0, pan=0, freq=440, a
     if(bl == false, {
     var ndx = (buffers.size -1).rand;
       bl = true;
-      synth = Synth(\sampler, [\bufnum, buffers[ndx], \gate, 1, \rate, ([7]).choose.midiratio, \amp, 1]);
+      synth = Synth(\sampler, [\bufnum, buffers[ndx], \gate, 1, \rate, ([0]).choose.midiratio, \amp, 1]);
     });
  },{
     if(bl == true,{

@@ -115,7 +115,7 @@ SynthDef(\warmPadMove2, {
 	if(a>0.9,{a=0.9});
     
     synth.set(\freq, (note + m.com.root).midicps);
-	synth.set(\amp, a * 1.3);
+	synth.set(\amp, a * 0.8);
 	synth.set(\filtSpeed, filtSpeed);
 	synth.set(\lfoFreq, lfoFreq);
 

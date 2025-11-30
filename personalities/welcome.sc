@@ -1,7 +1,9 @@
 var m = ~model;
 var synths = Array.newClear(4);
 var states = 0!4;
-var buffers;
+var file  = PathName("~/Downloads/yourDNASamples/AcknowledgementOfCountry_Edit.wav");
+var sf = SoundFile.new(file.fullPath);
+var es = sf.cue;
 
 m.accelMassFilteredAttack = 0.9;
 m.accelMassFilteredDecay = 0.1;
@@ -11,55 +13,35 @@ m.gyroFilteredAttack = 0.7;
 m.gyroFilteredDecay = 0.7;
 
 //------------------------------------------------------------
-SynthDef(\sampler, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=440, attack=0.01, decay=0.1, sustain=0.9, release=3.7, gate=1,cutoff=20000, rq=1, loop=1|
-	var lr = rate * BufRateScale.kr(bufnum) * (freq/440.0);
-  var env = EnvGen.kr(Env.adsr(attack, decay, sustain, release), gate, doneAction: 2);
-	var sig = PlayBuf.ar(2, bufnum, rate: lr, startPos: start * BufFrames.kr(bufnum), loop: loop);
-    sig = RLPF.ar(sig, cutoff, rq);
-    sig = Balance2.ar(sig[0], sig[1], pan,  env);
-		sig = Compander.ar(sig, sig,
-						thresh: -32.dbamp,
-						slopeBelow: 1,
-						slopeAbove: 0.5,
-						clampTime:  0.02,
-						relaxTime:  0.01
-				);
-    Out.ar(out, sig * amp);
+SynthDef(\simple, {|out=0, amp=0.6, freq=440, attack=0.001, decay=0.03, sustain=0.8, release=0.59, gate=1|
+	var env = EnvGen.kr(Env.adsr(attack, decay, sustain, release), gate, doneAction: Done.freeSelf);
+	var sig = SinOsc.ar(freq,0,0.5)!2;
+    Out.ar(out, sig * env * amp);
 }).add;
 
 //------------------------------------------------------------
 ~init = ~init <> {
-	var folder  = PathName("~/Downloads/yourDNASamples/melbTrain");
-	postf("loading samples : % \n", folder);
-
-	buffers = folder.entries.collect({ |path,i|
-		Buffer.read(s, path.fullPath, action:{|buf|
-			postf("buffer alloc [%] \n", buf);
-		});
-	});
 };
 //------------------------------------------------------------
 ~deinit = ~deinit <> {
-	synths.do({|o|o?o.set(\gate, 0)});
+  if(es.isRunning == true, {es.stop});
+  sf.close;
 };
 
 //------------------------------------------------------------
 ~next = {|d|
-	var amps = [3,4.4,6,8];
+
   states.do({|o,i|
-	    if(d.sensors.digiInEvent[i] == 1, {
+    if(d.sensors.digiInEvent[3] == 1, {
       if(o == 1,{
-      	states[i] = 0;
-        //max 11
-				synths.put(i, Synth(\sampler, [\bufnum, buffers[i+0], \rate, 1, \amp, amps[i]]));
-      	// ["on",i].postln;
+      	states[i] = 2;
+        if(i==3,{
+          es.play;
+        });        
     	});
 		},{
       if(o == 0,{
       	states[i] = 1;
-				synths[i].set(\gate, 0);
-				synths[i] = nil;
-      	// ["off",i].postln;
     	});
 		});
   });

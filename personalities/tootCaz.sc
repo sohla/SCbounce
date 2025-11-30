@@ -32,8 +32,7 @@ SynthDef(\sampler, {|bufnum=0, out=0, amp=1, rate=1, start=0, pan=0, freq=440, a
 //------------------------------------------------------------
 ~init = ~init <> {
 
-	var folder  = PathName("~/Downloads/yourDNASamples/bath/caz");
-	// var folder  = PathName("~/Downloads/yourDNASamples/drums");
+	var folder  = PathName("~/Downloads/yourDNASamples/toots/Caz");
 	postf("loading samples : % \n", folder);
 
 	buffers = folder.entries.collect({ |path,i|
