@@ -107,7 +107,7 @@ SynthDef(\warmPadMove2, {
 ~next = {|d|
 
 	var dur = 0.5 * 2.pow(m.accelMassFiltered.linlin(0,3,0,2).floor).reciprocal;
-	var a = m.accelMassFiltered.lincurve(0,3,0,1,-6);
+	var a = m.accelMassFiltered.lincurve(0,1.5,0,1,-6);
 	var filtSpeed = m.accelMassFiltered.lincurve(0,2.5,0.1,20,3);
 	var lfoFreq = m.accelMassFiltered.lincurve(0,2.5,0.1,8,-1);
 
@@ -115,7 +115,7 @@ SynthDef(\warmPadMove2, {
 	if(a>0.9,{a=0.9});
     
     synth.set(\freq, (note + m.com.root).midicps);
-	synth.set(\amp, a * 0.8);
+	synth.set(\amp, a * 0.4);
 	synth.set(\filtSpeed, filtSpeed);
 	synth.set(\lfoFreq, lfoFreq);
 

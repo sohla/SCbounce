@@ -11,7 +11,7 @@ m.gyroFilteredAttack = 0.7;
 m.gyroFilteredDecay = 0.7;
 
 //------------------------------------------------------------
-SynthDef(\sampler, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=440, attack=0.01, decay=0.1, sustain=0.9, release=0.5, gate=1,cutoff=20000, rq=1, loop=1|
+SynthDef(\samplerHM, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=440, attack=0.01, decay=0.1, sustain=0.9, release=0.5, gate=1,cutoff=20000, rq=1, loop=1|
 	var lr = rate * BufRateScale.kr(bufnum) * (freq/440.0);
   var env = EnvGen.kr(Env.adsr(attack, decay, sustain, release), gate, doneAction: 2);
 	var sig = PlayBuf.ar(2, bufnum, rate: lr, startPos: start * BufFrames.kr(bufnum), loop: loop);
@@ -50,7 +50,7 @@ SynthDef(\sampler, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=440,
       if(o == 1,{
       	states[i] = 0;
         //max 11
-				synths.put(i, Synth(\sampler, [\bufnum, buffers[i+0], \rate, 1, \amp, 3]));
+				synths.put(i, Synth(\samplerHM, [\bufnum, buffers[i+0], \rate, 1, \amp, 1]));
       	// ["on",i].postln;
     	});
 		},{
