@@ -62,9 +62,9 @@ SynthDef(\raindrop, {
   var dur = m.gyroYFiltered.lincurve(-1.0,1.0,0.5,0.075);
   var amp = m.gyroYFiltered.lincurve(-1.0,1.0,0.0,1,-2);
 
-  if(amp < 0.07, {amp = 0});
+  if(amp < 0.27, {amp = 0});
   Pdef(m.ptn).set(\dur, dur);
-  Pdef(m.ptn).set(\amp, amp);
+  Pdef(m.ptn).set(\amp, amp*0.4);
 
  	// if(m.rrateMassFiltered > 0.03, {
 	// 	if( Pdef(m.ptn).isPlaying.not,{

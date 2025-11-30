@@ -11,7 +11,7 @@ m.gyroFilteredAttack = 0.7;
 m.gyroFilteredDecay = 0.7;
 
 //------------------------------------------------------------
-SynthDef(\samplerTZ, {|bufnum=0, out=0, amp=1, rate=1, start=0, pan=0, freq=440, attack=0.01, decay=0.1, sustain=0.9, release=0.2, gate=1,cutoff=20000, rq=1, loop=1|
+SynthDef(\samplerHS, {|bufnum=0, out=0, amp=1, rate=1, start=0, pan=0, freq=440, attack=0.1, decay=0.1, sustain=0.9, release=0.2, gate=1,cutoff=20000, rq=1, loop=1|
 	var lr = rate * BufRateScale.kr(bufnum) * (freq/440.0);
     var env = EnvGen.kr(Env.adsr(attack, decay, sustain, release), gate, doneAction: 2);
 	var sig = PlayBuf.ar(2, bufnum, rate: lr, startPos: start * BufFrames.kr(bufnum), loop: loop);
@@ -32,7 +32,9 @@ SynthDef(\samplerTZ, {|bufnum=0, out=0, amp=1, rate=1, start=0, pan=0, freq=440,
 //------------------------------------------------------------
 ~init = ~init <> {
 
-	var folder  = PathName("~/Downloads/yourDNASamples/toots/Caz");
+	// var folder  = PathName("~/Downloads/yourDNASamples/yawning/heyhey");
+	var folder  = PathName("~/Downloads/yourDNASamples/bath/heyhey");
+	// var folder  = PathName("~/Downloads/yourDNASamples/drums");
 	postf("loading samples : % \n", folder);
 
 	buffers = folder.entries.collect({ |path,i|
@@ -69,7 +71,7 @@ SynthDef(\samplerTZ, {|bufnum=0, out=0, amp=1, rate=1, start=0, pan=0, freq=440,
     if(bl == false, {
     var ndx = (buffers.size -1).rand;
       bl = true;
-      synth = Synth(\samplerTZ, [\bufnum, buffers[ndx], \gate, 1, \rate, ([0]).choose.midiratio, \amp, 0.3]);
+      synth = Synth(\samplerHS, [\bufnum, buffers[ndx], \gate, 1, \rate, ([5]).choose.midiratio, \amp, 0.4]);
     });
  },{
     if(bl == true,{

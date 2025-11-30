@@ -65,7 +65,7 @@ SynthDef(\samplerTM, {|bufnum=0, out=0, amp=1, rate=1, start=0, pan=0, freq=440,
     if(bl == false, {
       var ndx = (buffers.size -1).rand;
       bl = true;
-      synth = Synth(\samplerTM, [\bufnum, buffers[ndx], \gate, 1, \rate, ([0]).choose.midiratio, \amp, 0.5]);
+      synth = Synth(\samplerTM, [\bufnum, buffers[ndx], \gate, 1, \rate, ([0]).choose.midiratio, \amp, 0.3]);
     });
  },{
     if(bl == true,{
