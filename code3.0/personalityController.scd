@@ -16,7 +16,7 @@ var defaultLists = [
     "list_MIM25_Caz.sc",
     "list_MIM25_Tim.sc",
     "list_MIM25_Matt.sc",
-    "list_MIM25_Caz.sc",
+    "list_MIM25_Heather.sc",
 ];
 
 
