@@ -79,7 +79,7 @@ SynthDef(\monoSampler, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=
 	});
 
 
-	Pdef(pa).set(\amp, 0.5);
+	Pdef(pa).set(\amp, 0.25);
 	Pdef(pa).set(\start, start);
 	Pdef(pa).set(\dur,dur);
 	Pdef(pa).set(\release, rels[div.asInteger]);

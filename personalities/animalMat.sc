@@ -77,7 +77,7 @@ SynthDef(\stereoSamplerAM, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, f
 		});
 	});
 
-	Pdef(m.ptn).set(\amp, amp);
+	Pdef(m.ptn).set(\amp, amp*1);
 	Pdef(m.ptn).set(\dur, dur);
 	Pdef(m.ptn).set(\cutoff, co);
 	Pdef(m.ptn).set(\ts, leg);

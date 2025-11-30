@@ -48,7 +48,7 @@ SynthDef(\monoSampler, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=44
 				if(bi >= (buffers.size-1),{bi=0});
 				buffers[bi];
 			},
-			\dur, 0.2,
+			\dur, 0.25,
 			\octave, Pxrand([1,2], inf),
 			\rate, Pseq([0,7,12].midiratio, inf),
 			\legato, 0.5,

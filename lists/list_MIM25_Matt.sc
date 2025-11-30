@@ -9,8 +9,6 @@
 		"silence",
 		"trainBass",
 		"silence",
-		"woiworung2",
-		"silence",
 		"raindrops",
 		"silence",
 		"scrubADubDub",
