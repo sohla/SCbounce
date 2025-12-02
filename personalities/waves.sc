@@ -19,8 +19,11 @@ SynthDef(\waves22, { |out=0, gate=1, amp = 0.0, lag=1,ff=200|
 	var rum = RLPF.ar(BrownNoise.ar(0.1), LFNoise1.ar([3,5]).range(30,40));
 	var nsa = RHPF.ar(BrownNoise.ar(0.3), ff.lag(lag));
 	var sig = SinOsc.ar(spd, LFCub.ar([0.2,0.1]).range(0,1), nsa);
-  var mix = sig * amp.lag(lag);
-	Out.ar(out, (mix + air + rum) * env);
+  var mix = sig * amp.lag(lag) * env;
+  sig = (mix + air + rum);
+	// Out.ar(out, sig);
+	Out.ar(out, ((0)!4 ++ sig ++ ((0)!2) ++ sig));
+
 }).add;
 
 //------------------------------------------------------------

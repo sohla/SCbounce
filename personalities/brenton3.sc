@@ -2,7 +2,7 @@ var m = ~model;
 var synth;
 var buffer;
 var lastTime = 0;
-var notes = [0,-5,4,0]+0.21;
+var notes = [0,-5,4,0]+0.01;
 m.accelMassFilteredAttack = 0.9;
 m.accelMassFilteredDecay = 0.1;
 m.rrateMassFilteredAttack = 0.9;
@@ -24,7 +24,9 @@ SynthDef(\pullstretchMonoQBBB, {|out, amp = 1, buffer = 0, envbuf = -1, pch = 1.
 	var mas = LPF.ar(sp,ff);
 	var hp = HPF.ar(mas,500);
 	var sig = Pan2.ar(hp,0)* amp.lag(1);
-	Out.ar(out, ((0)!0 ++ sig));
+	// Out.ar(out, ((0)!0 ++ sig));
+	Out.ar(out, ((0)!4 ++ sig ++ ((0)!2) ++ sig));
+
 }).add;
 //------------------------------------------------------------
 ~init = ~init <> {
@@ -61,7 +63,7 @@ SynthDef(\pullstretchMonoQBBB, {|out, amp = 1, buffer = 0, envbuf = -1, pch = 1.
 
 	synth.set(\pch, notes[0].midiratio);
 	synth.set(\speed, speed);
-	synth.set(\amp, amp * 0.2);
+	synth.set(\amp, amp * 0.6);
 	synth.set(\ff, ff);
 };
 //------------------------------------------------------------

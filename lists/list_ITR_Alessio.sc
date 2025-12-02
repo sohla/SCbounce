@@ -12,7 +12,6 @@
 		"aless3",
 		"aless4",
 
-		"waves",
 		"rain1",
 		"thunder",
 

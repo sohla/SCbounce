@@ -20,7 +20,9 @@ SynthDef(\noise, { |out=0, frq=10000, gate=0, amp = 0, atk=0.02, sus=0.9, rel=1.
     // var sig = WhiteNoise.ar(0.5);
 
     sig = LPF.ar(sig, frq.lag(0.3)) * env * amp.lag(lag);
-	Out.ar(out, sig!2);
+	// Out.ar(out, sig!2);
+    	Out.ar(out, ((0)!2 ++ sig ++ ((0)!6) ++ sig));
+
 }).add;
 
 //------------------------------------------------------------

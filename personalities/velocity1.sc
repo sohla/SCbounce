@@ -17,7 +17,9 @@ SynthDef(\noise, { |out=0, frq=1000, gate=1, amp = 0.0, atk=0.02, sus=0.8, rel=1
     var sig = DynKlank.ar(`[[50,100,200,400] * pch, [1,0.4,0.2,0.1], [1, 0.6, 0.3, 0.1]], WhiteNoise.ar(0.1));
     // var sig = WhiteNoise.ar(4);
     sig = LPF.ar(sig, frq.lag(0.3)) * env * amp.lag(lag);
-	Out.ar(out, sig.tanh!2);
+	// Out.ar(out, sig.tanh!2);
+    Out.ar(out, ((0)!2 ++ sig ++ ((0)!6) ++ sig));
+
 }).add;
 
 //------------------------------------------------------------
@@ -55,7 +57,7 @@ SynthDef(\noise, { |out=0, frq=1000, gate=1, amp = 0.0, atk=0.02, sus=0.8, rel=1
         synth.set(\pch, note.midiratio);
         synth.set(\lag,0.01);
     });
-    synth.set(\amp, amp/2);
+    synth.set(\amp, amp * 1);
     synth.set(\frq, ud);
 };
 

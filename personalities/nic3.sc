@@ -4,7 +4,7 @@ var buffer;
 
 var index =0;
 var trig = false;
-var notes = [0,-12] +10+12;
+var notes = [0,-12] + 10 + 12 - 0.2;
 var note = notes[0];
 m.accelMassFilteredAttack = 0.99;
 m.accelMassFilteredDecay = 0.2;
@@ -34,7 +34,9 @@ SynthDef(\pullstretchMonoQ, {|out, amp = 1, buffer = 0, envbuf = -1, pch = 1, di
 			relaxTime:  0.01
 	);
 	sig = Pan2.ar(sig[0],pan) * env;
-	Out.ar(out, ((0)!0 ++ sig));
+	// Out.ar(out, ((0)!0 ++ sig));
+	Out.ar(out, ((0)!2 ++ sig ++ ((0)!4) ++ sig));
+
 }).add;
 //------------------------------------------------------------
 ~init = ~init <> {

@@ -6,7 +6,7 @@ var note = 0;
 var trig = false;
 
 m.accelMassFilteredAttack = 0.98;
-m.accelMassFilteredDecay = 0.3;
+m.accelMassFilteredDecay = 0.2;
 m.rrateMassFilteredAttack = 0.9;
 m.rrateMassFilteredDecay = 0.9;
 m.gyroFilteredAttack = 0.7;
@@ -16,7 +16,7 @@ m.gyroFilteredDecay = 0.7;
 SynthDef(\pullstretchMonoQN, {|out, amp = 1, buffer = 0, envbuf = -1, pch = 1, div=1, speed = 0.01, splay = 0.3,pan=0, gate=1, delta=0|
 	var len = BufDur.kr(buffer) / div;
 	var lfo = LFSaw.kr( (1.0/len) * speed ,1).range(0.0,0.99);
-	var sp = Splay.arFill(8,
+	var sp = Splay.arFill(2,
 		{ |i| Warp1.ar(1, buffer, lfo.linlin(0,1,0.01,0.99), pch * (1 / ((i*delta)+1)) ,splay, envbuf, 8, 0.1 * (i+1), 4)  },
 			1,
 			1,
@@ -33,7 +33,9 @@ SynthDef(\pullstretchMonoQN, {|out, amp = 1, buffer = 0, envbuf = -1, pch = 1, d
 	);
 
 	sig = Pan2.ar(sig,pan) * env;
-	Out.ar(out, (0)!0 ++ sig);
+	// Out.ar(out, (0)!0 ++ sig);
+	Out.ar(out, ((0)!2 ++ sig ++ ((0)!4) ++ sig));
+
 }).add;
 
 //------------------------------------------------------------
@@ -84,7 +86,7 @@ SynthDef(\pullstretchMonoQN, {|out, amp = 1, buffer = 0, envbuf = -1, pch = 1, d
 	});
 
 	// synth.set(\speed, speed);
-	synth.set(\amp, amp * 1);
+	synth.set(\amp, amp * 3);
 	synth.set(\delta, delta);
 };
 //------------------------------------------------------------

@@ -22,7 +22,9 @@ SynthDef(\pullstretchMonoQm2, {|out, amp = 1, buffer = 0, envbuf = -1, pch = 1.0
 	var env = EnvGen.ar(Env.adsr(0.4,0.1,0.9,2.0), gate, doneAction:2);
 	var mas = HPF.ar(sp,45);
 	var sig = Pan2.ar(mas,pan)* amp.lag(1) * env;
-	Out.ar(out, ((0)!0 ++ sig));
+	// Out.ar(out, ((0)!0 ++ sig));
+	Out.ar(out, ((0)!0 ++ sig ++ ((0)!6) ++ sig));
+
 }).add;
 
 //------------------------------------------------------------
@@ -52,7 +54,7 @@ SynthDef(\pullstretchMonoQm2, {|out, amp = 1, buffer = 0, envbuf = -1, pch = 1.0
 
 	if(amp < 0.01, {amp = 0});
 
-	synth.set(\pch, (pch + -4).midiratio);
+	synth.set(\pch, (0 + -2-12).midiratio);
 	synth.set(\speed, speed);
 	synth.set(\amp, amp * 2);
 };

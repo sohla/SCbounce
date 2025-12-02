@@ -2,13 +2,19 @@
 	[
 		"silence",
 
-		"melbb1",
-		"melbb2",
+		"mel4",
+		"mel3",
 		"mel1",
 		"mel2",
-		"mel3",
-		"mel4",
+		"rain1",
+
+
 		"mel5",
+
+		"melbb1",
+		"melbb2",
+
+		"thunder",
 
 		"nic1",
 		"nic2",
@@ -26,49 +32,7 @@
 		"aless3",
 		"aless4",
 
-		"waves",
-		"rain1",
-		"thunder",
 
-		"funMelody",
-		"funBass",
-		"velocity1",
-		"velocity2",
-		"drumkit",
-		"drumkit2",
-		"violin1",
-		"violin2",
-		"harp1",
-		"cymbals1",
-
-		
-		
-		"melodicPerc1",
-		"melodicPerc2",
-		
-		"metal1",
-		"metal2",
-		
-		"gendy1",
-		"gendy2",
-		
-		"pluck1",
-		"pluck2",
-		
-		"bongo1",
-		"drumkit3",
-		
-		"bells",
-		"fuckYes",
-
-		"inABottle",
-
-		"harp1",
-		"button1",
-		"cymbals1",
-		"melChair1",
-
-	
 		"silence",
 ]
 

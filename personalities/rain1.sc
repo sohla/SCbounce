@@ -13,7 +13,9 @@ SynthDef(\rainSampler, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0,
 	var sig = PlayBuf.ar(2, bufnum, rate: rate, startPos: start * BufFrames.kr(bufnum), loop: 1);
     sig = HPF.ar(sig, cutoff);
     sig = Balance2.ar(sig[0],sig[1], pan.lag(2), amp * env);
-    Out.ar(out, sig);
+    // Out.ar(out, sig);
+	Out.ar(out, ((0)!0 ++ sig ++ ((0)!6) ++ sig));
+
 }).add;
 
 //------------------------------------------------------------

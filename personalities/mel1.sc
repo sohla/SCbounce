@@ -19,9 +19,11 @@ SynthDef(\stereoSampler1, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, fr
 	var hs = RHPF.ar(sig, [6000,7000], 0.99,13).tanh;
 	sig = RLPF.ar(sig, cutoff, rq);// + osc;
 	sig = Pan2.ar(hs + sig, pan, amp * env);
-	sig = FreeVerb.ar(sig,0.5,0.4);
+	// sig = FreeVerb.ar(sig,0.5,0.4);
 	sig = LeakDC.ar(sig);
-	Out.ar(out, [((0)!0 ++ sig)]);
+	// Out.ar(out, [((0)!0 ++ sig)]);
+	Out.ar(out, ((0)!0 ++ sig ++ ((0)!6) ++ sig) * amp * env);
+
 }).add;
 
 //------------------------------------------------------------
@@ -80,7 +82,7 @@ SynthDef(\stereoSampler1, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, fr
 	if(amp < 0.02, {amp = 0});
 
 	Pdef(m.ptn).set(\dur, dur);
-	Pdef(m.ptn).set(\amp, amp * bal);
+	Pdef(m.ptn).set(\amp, amp * bal * 0.4);
 	Pdef(m.ptn).set(\range, range);
 	Pdef(m.ptn).set(\octave, octave);
 

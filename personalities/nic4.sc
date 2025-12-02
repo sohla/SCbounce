@@ -23,7 +23,8 @@ SynthDef(\bufGrainN, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=44
     sig = RLPF.ar(sig, cutoff, rq);
 	sig = Resonz.ar(sig, 100, 0.99, 7).tanh + sig;
 	sig = sig * env * amp;
-    Out.ar(out, ((0)!0 ++ sig));
+    // Out.ar(out, ((0)!0 ++ sig));
+	Out.ar(out, ((0)!2 ++ sig ++ ((0)!4) ++ sig));
 }).add;
 
 //------------------------------------------------------------

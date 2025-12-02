@@ -19,7 +19,11 @@ SynthDef(\stereoSamplerB, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, fr
     sig = RLPF.ar(sig, cutoff, rq) + osc;
     sig = Pan2.ar(sig, pan, amp * env);
 	sig = LeakDC.ar(sig);
-    Out.ar(out, [((0)!0 ++ sig)]);
+    // Out.ar(out, [((0)!0 ++ sig)]);
+	Out.ar(out, ((0)!4 ++ sig ++ ((0)!2) ++ sig));
+
+
+
 }).add;
 
 //------------------------------------------------------------
@@ -51,7 +55,7 @@ SynthDef(\stereoSamplerB, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, fr
 				\args, #[],
 			)
 		);
-		Pdef(m.ptn).play(quant:0.125);
+		Pdef(m.ptn).play(quant:0.2);
 	});
 };
 ~deinit = ~deinit <> {
@@ -70,8 +74,8 @@ SynthDef(\stereoSamplerB, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, fr
 
 	if(amp < 0.07, {amp = 0});
 
-	Pdef(m.ptn).set(\dur, dur);
-	Pdef(m.ptn).set(\amp, amp * 1);
+	Pdef(m.ptn).set(\dur, 0.2);
+	Pdef(m.ptn).set(\amp, amp * 0.3);
  	Pdef(m.ptn).set(\start, start.linlin(0,1,0,1));
 
 };

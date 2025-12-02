@@ -1,7 +1,7 @@
 var m = ~model;
 var buffers;
 var bi = 0;
-var dur = 0.15;
+var dur = 0.2;
 
 m.accelMassFilteredAttack = 0.9;
 m.accelMassFilteredDecay = 0.8;
@@ -18,8 +18,10 @@ SynthDef(\stereoSampler1, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, fr
 	var sig = PlayBuf.ar(2, bufnum, rate: [lr, lr * 1.003], startPos: start * BufFrames.kr(bufnum), loop: 0);
 	sig = RLPF.ar(sig, cutoff, rq);// + osc;
 	sig = Balance2.ar(sig[0], sig[1], pan, amp);
-	sig = LeakDC.ar(sig * env);
-	Out.ar(out, sig.tanh);
+	sig = LeakDC.ar(sig * env).tanh;
+	// Out.ar(out, sig.tanh);
+		Out.ar(out, ((0)!0 ++ sig ++ ((0)!6) ++ sig));
+
 }).add;
 
 
@@ -56,7 +58,7 @@ SynthDef(\stereoSampler1, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, fr
                         \args, #[],
                     )
                 );
-                Pdef(m.ptn).play(quant:0.125);
+                Pdef(m.ptn).play(quant:0.2);
 			});
 		});
 	});
@@ -87,7 +89,7 @@ SynthDef(\stereoSampler1, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, fr
     bi = index;
     
     if(amp < 0.02, { amp = 0; });
-		Pdef(m.ptn).set(\amp, amp * 5);	
+		Pdef(m.ptn).set(\amp, amp * 2);	
     Pdef(m.ptn).set(\start, start);
     Pdef(m.ptn).set(\cutoff, res);
     Pdef(m.ptn).set(\octave, octave);

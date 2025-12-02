@@ -26,7 +26,9 @@ SynthDef(\bufGrainM, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=44
 		// sig = AllpassN.ar(sig, 0.1, [0.09, 0.08], 8);
 		// sig = JPverb.ar(sig,1, modDepth: 0.1, modFreq: 4.0, low: 1.0);
 	sig = sig * env * amp;
-    Out.ar(out, ((0)!0 ++ sig));
+    // Out.ar(out, ((0)!0 ++ sig));
+	Out.ar(out, ((0)!0 ++ sig ++ ((0)!6) ++ sig));
+
 }).add;
 
 //------------------------------------------------------------

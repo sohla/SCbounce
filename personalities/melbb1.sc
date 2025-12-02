@@ -1,6 +1,6 @@
 var m = ~model;
 var bi = 0;
-var dur = 0.14 * 1;
+var dur = 0.2 * 1;
 var limit = 8;
 var step = 1;
 var lastTime=0;
@@ -30,8 +30,8 @@ SynthDef(\drumkit2, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 	);
 	sig = Mix.ar([sig]);
     sig = Balance2.ar(sig[0],sig[1], -1);
-    Out.ar(out, ((0)!0 ++ sig) * amp * env);
-    // Out.ar(out, ((0)!0 ++ sig ++ ((0)!0) ++ sig) * amp * env);
+    // Out.ar(out, ((0)!0 ++ sig) * amp * env);
+    Out.ar(out, ((0)!0 ++ sig ++ ((0)!6) ++ sig) * amp * env);
 
 }).add;
 //--------------------------------------
@@ -114,12 +114,12 @@ SynthDef(\drumkit2, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 //------------------------------------------------------------
 ~onEvent = {|e|
 	
-	if(e.clk > (lastTime + (0.14 * 2)),{
+	if(e.clk > (lastTime + (0.2 * 2)),{
 		lastTime = e.clk;
 		if(m.accelMassFiltered > 1.5,{
-				dur = 0.14/2;
+				dur = 0.2;
 		},{
-				dur = 0.14
+				dur = 0.2
 		});
 
 	});

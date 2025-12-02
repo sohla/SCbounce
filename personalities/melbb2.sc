@@ -27,7 +27,9 @@ SynthDef(\drumkit3, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 	);
 	sig = Mix.ar([sig]);
     sig = Balance2.ar(sig[0],sig[1], pan);
-    Out.ar(out, ((0)!0 ++ sig) * amp * env);
+    // Out.ar(out, ((0)!0 ++ sig) * amp * env);
+	Out.ar(out, ((0)!0 ++ sig ++ ((0)!6) ++ sig) * amp * env);
+
 }).add;
 //--------------------------------------
 ~init = ~init <> {
