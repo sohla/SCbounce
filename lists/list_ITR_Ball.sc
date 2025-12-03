@@ -1,6 +1,8 @@
 (
 	[
 		"silence",
+		"temp_pattern_buffer",
+		"harp1",
 		"ball1",
 
 		"rain1",

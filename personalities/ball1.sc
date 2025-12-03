@@ -1,7 +1,7 @@
 var m = ~model;
 var buffers;
 var bi = 0;
-var dur = 0.2;
+// var dur = 0.1;
 
 m.accelMassFilteredAttack = 0.9;
 m.accelMassFilteredDecay = 0.8;
@@ -11,13 +11,13 @@ m.gyroFilteredAttack = 0.7;
 m.gyroFilteredDecay = 0.7;
 
 //------------------------------------------------------------
-SynthDef(\stereoSampler1, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=440,
+SynthDef(\stereoSampler111, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=440,
 	attack=0.01, decay=0.1, sustain=0.3, release=0.2, gate=1,cutoff=20000, rq=0.9|
 	var lr = rate * BufRateScale.kr(bufnum) * (freq/440.0);
 	var env = EnvGen.kr(Env.adsr(attack, decay, sustain, release), gate, timeScale: 2,doneAction: 2);
-	var sig = PlayBuf.ar(2, bufnum, rate: [lr, lr * 1.003], startPos: start * BufFrames.kr(bufnum), loop: 0);
+	var sig = PlayBuf.ar(1, bufnum, rate: [lr, lr * 1.003], startPos: start * BufFrames.kr(bufnum), loop: 0);
 	sig = RLPF.ar(sig, cutoff, rq);// + osc;
-	sig = Balance2.ar(sig[0], sig[1], pan, amp);
+	sig = Pan2.ar(sig, pan, amp);
 	sig = LeakDC.ar(sig * env).tanh;
 	// Out.ar(out, sig.tanh);
 		Out.ar(out, ((0)!0 ++ sig ++ ((0)!6) ++ sig));
@@ -28,8 +28,8 @@ SynthDef(\stereoSampler1, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, fr
 //------------------------------------------------------------
 ~init = ~init <> {
 
-	// var folder  = PathName("~/Downloads/openLabSamples/cymbals");
-	var folder  = PathName("~/Downloads/melSamples");
+	var folder  = PathName("~/Downloads/openLabSamples/cymbals");
+	// var folder  = PathName("~/Downloads/melSamples");
 	// var folder = PathName("~/Downloads/yourDNASamples/blobblob");
 
 	postf("loading samples : % \n", folder);
@@ -41,14 +41,14 @@ SynthDef(\stereoSampler1, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, fr
 				"samples loaded".postln;
                 Pdef(m.ptn,
                     Pbind(
-                        \instrument, \stereoSampler1,
+                        \instrument, \stereoSampler111,
                         \bufnum, buf,
                         \note, 32,
                         \attack,0.01,
                         \decay, 0.3,
                         \sustain,0.1,
                         \release,0.1,
-                        \dur, dur,
+                        // \dur, 0.2,
                         \pan, Pwhite(-0.5,0.5),
                         \bufnum, Pfunc{
                             // bi = bi + 1;
@@ -83,16 +83,19 @@ SynthDef(\stereoSampler1, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, fr
     var start = m.gyroZFiltered.lincurve(-1,1,0.0,0.1,0);
     var index = m.gyroYFiltered.fold(-0.5,0.5).lincurve(-0.5,0.5,0,(buffers.size-1),0).asInteger;
     var res = m.gyroXFiltered.fold(-0.5,0.5).lincurve(-0.5,0.5,500,15000,-3);
-    var amp = m.accelMassFiltered.lincurve(0,1.5,0.002,1, 2);
-    var octave = m.gyroZFiltered.fold(-1,1).lincurve(-1,1,2,5,0).round;
-
-    bi = index;
+    var octave = m.gyroZFiltered.fold(-1,1).lincurve(-1,1,1,3,0).round;
     
+		// var dur = 0.04 + m.rrateMassFiltered.lincurve(0.0,0.3,0.2,0.1,0);
+		var dur = m.rrateMassFiltered.lincurve(0,0.6,0.4,0.125*0.25,-3);
+    var amp = m.rrateMassFiltered.lincurve(0,0.7,0.002,1, 2);
+    bi = index;
+		// m.rrateMassFiltered.postln;
+    Pdef(m.ptn).set(\dur, dur);
     if(amp < 0.02, { amp = 0; });
-		Pdef(m.ptn).set(\amp, amp * 2);	
+		Pdef(m.ptn).set(\amp, amp);	
     Pdef(m.ptn).set(\start, start);
     Pdef(m.ptn).set(\cutoff, res);
-    Pdef(m.ptn).set(\octave, octave);
+    Pdef(m.ptn).set(\octave, 3);
 };
 //------------------------------------------------------------
 ~plotMin = -1;
