@@ -11,19 +11,20 @@ m.gyroFilteredAttack = 0.7;
 m.gyroFilteredDecay = 0.7;
 
 //------------------------------------------------------------
-SynthDef(\pullstretchMonoQBBB, {|out, amp = 1, buffer = 0, envbuf = -1, pch = 1.0, div=1, speed = 0.01, splay = 0.4 ,pan=0, ff = 100|
+SynthDef(\pullstretchMonoQBBB, {|out, amp = 1, buffer = 0, envbuf = -1, pch = 1.0, div=1, speed = 0.01, splay = 0.4 ,pan=0, ff=100, gate=1|
 	var pos;
 	var len = BufDur.kr(buffer) / div;
+	var env = EnvGen.ar(Env.adsr(0.1,0.1,1.0,3.0), gate, doneAction:2);
 	var lfo = LFSaw.kr( (1.0/len) * speed ,1,0.5,0.5);
 	var sp = Splay.arFill(2,
-		{ |i| Warp1.ar(1, buffer, lfo.linlin(0,1,0.7,0.8), pch.lag(0.7) + (0.002 * (i+1)),splay, envbuf, 8, 0.3, 4)  },
+		{ |i| Warp1.ar(1, buffer, lfo.linlin(0,1,0.7,0.8), pch.lag(1.3) + (0.002 * (i+1)),splay, envbuf, 8, 0.3, 4)  },
 			1,
 			1,
 			0
 	) ;
 	var mas = LPF.ar(sp,ff);
 	var hp = HPF.ar(mas,500);
-	var sig = Pan2.ar(hp,0)* amp.lag(1);
+	var sig = Pan2.ar(hp,pan)* amp.lag(1) * env;
 	// Out.ar(out, ((0)!0 ++ sig));
 	Out.ar(out, ((0)!4 ++ sig ++ ((0)!2) ++ sig));
 
@@ -39,8 +40,12 @@ SynthDef(\pullstretchMonoQBBB, {|out, amp = 1, buffer = 0, envbuf = -1, pch = 1.
 };
 
 ~deinit = ~deinit <> {
-	synth.free;
-	buffer.free;
+	synth.onFree({
+		postf("buffer dealloc [%] \n", buffer);
+		buffer.free;
+	});	
+	synth.set(\gate, 0);
+
 };
 
 
@@ -55,7 +60,7 @@ SynthDef(\pullstretchMonoQBBB, {|out, amp = 1, buffer = 0, envbuf = -1, pch = 1.
 	if(amp < 0.02, {
 		amp = 0;
 	});
-		if(TempoClock.beats > (lastTime + 8),{
+		if(TempoClock.beats > (lastTime + 12),{
 			notes = notes.rotate(-1);
 			lastTime = TempoClock.beats;
 		});
@@ -63,7 +68,7 @@ SynthDef(\pullstretchMonoQBBB, {|out, amp = 1, buffer = 0, envbuf = -1, pch = 1.
 
 	synth.set(\pch, notes[0].midiratio);
 	synth.set(\speed, speed);
-	synth.set(\amp, amp * 0.6);
+	synth.set(\amp, amp * 0.3);
 	synth.set(\ff, ff);
 };
 //------------------------------------------------------------

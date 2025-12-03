@@ -1,6 +1,6 @@
 var m = ~model;
 var bi = 0;
-var dur = 0.2 * 1;
+var dur = 0.2;
 var limit = 8;
 var step = 1;
 var lastTime=0;
@@ -75,7 +75,7 @@ SynthDef(\drumkit2, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 			\bufnum, Pfunc{
 				~buffers[1];
 			},
-			\octave, Pseq([0].stutter(8), inf),
+			// \octave, Pseq([5].stutter(8), inf),
 			\start, Pwhite(0.15,0.3),
 			\note, Pseq([30], inf),
 			\rate, Pxrand([0.5,1], inf),
@@ -83,7 +83,7 @@ SynthDef(\drumkit2, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 			\cnt, Pseries(0,1, inf),
 			\clk, Pfunc({TempoClock.beats}),
 			\pan, Pwhite(-0.4,0.4),
-			\attack, 0.07,
+			\attack, Pwhite(0.002,0.01),
 			\legato, 0.2,
 			\release, Pwhite(0.1,0.9),
 			\func, Pfunc({|e| ~onEvent.(e)}),
@@ -104,11 +104,16 @@ SynthDef(\drumkit2, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 	Pdef(m.ptn).remove;
 	Pdef(\shaker).remove;
 
-	~buffers.do({|buf|
-		postf("buffer dealloc [%] \n", buf);
-		buf.free;
-		// s.sync;
-	});
+	fork{
+		1.0.yield;
+		~buffers.do({|buf|
+			postf("buffer dealloc [%] \n", buf);
+			buf.free;
+			// s.sync;
+		});
+		s.sync;
+	};
+
 };
 
 //------------------------------------------------------------
@@ -133,15 +138,18 @@ SynthDef(\drumkit2, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 	var amp = m.accelMassFiltered.lincurve(0,1.0,0.2,1, -1);
 	var roll = m.gyroXFiltered.lincurve(-0.2,0.4,1,4,-2) * 0.5;
 	var sa = m.rrateMassFiltered.lincurve(0,0.3,0.1,0.35, -1);
+	var oct = m.gyroYFiltered.lincurve(-1.0,1.0,0,4,-2);
 
 
+	Pdef(m.ptn).set(\dur, dur);	
 	Pdef(m.ptn).set(\amp, amp * 0.3);
 	Pdef(m.ptn).set(\release, rel);
 	Pdef(m.ptn).set(\rate, roll);
+	
 	step = 2.pow(m.accelMassFiltered.lincurve(0,1.0,-1,0, -1));
 
-	Pdef(\shaker).set(\amp, sa*0.7);	
-	Pdef(m.ptn).set(\dur, dur);	
+	Pdef(\shaker).set(\octave, oct);
+	Pdef(\shaker).set(\amp, sa*0.9);	
 
 
 	if(m.accelMassFiltered > 0.07,{

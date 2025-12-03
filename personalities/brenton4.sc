@@ -24,7 +24,7 @@ SynthDef(\bufGrain, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=440
 	sig = Resonz.ar(sig, rezf.lag(0.4) + lfo.range(0,900), 0.5, 5) * lfo.range(0.2,1);
 	sig = sig * env * amp.lag(0.9);
     // Out.ar(out, [((0)!0 ++ sig)]);
-	Out.ar(out, ((0)!4 ++ sig ++ ((0)!2) ++ sig));
+	Out.ar(out, ((0)!4 ++ sig ++ ((0)!2) ++ (sig*0.2)));
 	
 
 }).add;
@@ -40,9 +40,12 @@ SynthDef(\bufGrain, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=440
 };
 
 ~deinit = ~deinit <> {
-	// synth.free;
+	synth.onFree({
+		postf("buffer dealloc [%] \n", buffer);
+		buffer.free;
+	});	
 	synth.set(\gate, 0);
-	buffer.free;
+
 };
 //------------------------------------------------------------
 ~next = {|d|

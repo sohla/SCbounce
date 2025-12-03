@@ -2,16 +2,12 @@
 	[
 		"silence",
 		
-		"brenton3",
-		"thunder",
-		
-		
-		"brenton4",
-		"brenton1",
 		"brenton2",
-
-		"rain1",
-
+		"thunder",
+		"brenton4",
+		"brenton1",		
+		"brenton3",
+		
 		"silence",
 	]
 

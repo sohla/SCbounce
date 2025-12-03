@@ -3,6 +3,7 @@ var buffers;
 var synth;
 var lastTime=0;
 var index = 0;
+var loaded = false;
 
 m.accelMassFilteredAttack = 0.5;
 m.accelMassFilteredDecay = 0.9;
@@ -34,6 +35,7 @@ SynthDef(\thunderSampler, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0,
 			postf("buffer alloc [%] \n", buf);
 			if(folder.entries.size - 1 == i,{
 				"samples loaded".postln;
+				loaded = true;
 			});
 		});
 	});
@@ -69,19 +71,21 @@ SynthDef(\thunderSampler, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0,
 
 	var move = m.accelMassFiltered.linlin(0,3,0,1);
 	var amp = m.accelMassFiltered.lincurve(0,2.5,0.05,0.9,-2);
+	if(loaded == true,{
 
-	if(move > 0.05, {
-		if(TempoClock.beats > (lastTime + 0.35),{
-			lastTime = TempoClock.beats;
-			synth = Synth(\thunderSampler, [
-				\rate, 1,
-				\gate, 1,
-				\amp, amp,
-        \bufnum, buffers[index]
-			]);
-			synth.server.sendBundle(0.3,[\n_set, synth.nodeID, \gate, 0]);
-			index = index + 1;
-      if(index >= buffers.size,{ index = 3});
+		if(move > 0.05, {
+			if(TempoClock.beats > (lastTime + 0.35),{
+				lastTime = TempoClock.beats;
+				synth = Synth(\thunderSampler, [
+					\rate, 1,
+					\gate, 1,
+					\amp, amp,
+					\bufnum, buffers[index]
+				]);
+				synth.server.sendBundle(0.3,[\n_set, synth.nodeID, \gate, 0]);
+				index = index + 1;
+				if(index >= buffers.size,{ index = 3});
+			});
 		});
 	});
 };

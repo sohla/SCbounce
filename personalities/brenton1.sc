@@ -9,13 +9,13 @@ m.gyroFilteredAttack = 0.7;
 m.gyroFilteredDecay = 0.7;
 
 //------------------------------------------------------------
-SynthDef(\stereoSamplerB, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=440,
-    attack=0.01, decay=0.1, sustain=0.3, release=0.2, gate=1,cutoff=20000, rq=0.9|
+SynthDef(\stereoSamplerB, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=140,
+    attack=0.01, decay=0.1, sustain=0.3, release=0.2, gate=1,cutoff=20000, rq=0.09|
 
 	  var lr = rate * BufRateScale.kr(bufnum) * (freq/440.0);
     var env = EnvGen.kr(Env.adsr(attack, decay, sustain, release), gate, timeScale: 2,doneAction: 2);
 	var sig = PlayBuf.ar(2, bufnum, rate: [lr, lr * 1.003], startPos: start * BufFrames.kr(bufnum), loop: 0);
-	var osc = SinOsc.ar((29 + rate.ratiomidi).midicps * [1,1.03], 0, 0.1 + (sig * 0.5)).distort;
+	var osc = SinOsc.ar((17 + rate.ratiomidi).midicps * [1,1.03], 0, 0.5 + (sig * 0.2)).distort;
     sig = RLPF.ar(sig, cutoff, rq) + osc;
     sig = Pan2.ar(sig, pan, amp * env);
 	sig = LeakDC.ar(sig);
@@ -39,18 +39,18 @@ SynthDef(\stereoSamplerB, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, fr
 				\instrument, \stereoSamplerB,
 				\bufnum, buf,
 				\octave, Pxrand([1,2,3,6.9], inf),
-				\note, Pwhite(33,33, inf).floor,
+				\note, 33,
 				\decay, 0.2,
 				\sustain,0.1,
 				\release,0.2,
 				\rate, Pseq(
-					(
+					((
 						[0,1,4,5,7,8,7,5,4,5,4,1,4,1,0,0].stutter(4)
 						++ [0,1,4,5,7,8,7,5,4,5,4,1,4,1,0,0].stutter(4)
 						++ [12,10,8,12,10,7,5,4,5,8,7,5,4,1,0,0].stutter(4)
 						++ [12,10,8,12,10,7,5,5,4,1,5,4,1,4,1,0].stutter(4)
 					
-					).midiratio, inf),
+					)+7).midiratio, inf),
 				// \dur, Pseq([0.25], inf),
 				\args, #[],
 			)
@@ -60,8 +60,14 @@ SynthDef(\stereoSamplerB, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, fr
 };
 ~deinit = ~deinit <> {
 	Pdef(m.ptn).remove;
-	postf("buffer dealloc [%] \n", buffer);
-	buffer.free;
+
+	fork{
+		1.0.yield;
+		postf("buffer dealloc [%] \n", buffer);
+		buffer.free;
+		s.sync;
+	};
+
 };
 
 //------------------------------------------------------------

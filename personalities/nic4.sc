@@ -5,7 +5,7 @@ var lastTime = 0;
 var notes = [-2,7];
 
 m.accelMassFilteredAttack = 0.7;
-m.accelMassFilteredDecay = 0.2;
+m.accelMassFilteredDecay = 0.15;
 m.rrateMassFilteredAttack = 0.9;
 m.rrateMassFilteredDecay = 0.9;
 m.gyroFilteredAttack = 0.7;
@@ -16,15 +16,16 @@ SynthDef(\bufGrainN, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=44
     attack=0.01, decay=0.1, sustain=0.8, release=5.2, gate=1,cutoff=20000, rq=1, rezf=200|
 	var lr = rate * BufRateScale.kr(bufnum) * (freq/440.0);
 	var env = EnvGen.kr(Env.adsr(attack, decay, sustain, release), gate, doneAction:2);
-	var sub = LFTri.ar(66*rate*2,0,0.3).tanh;
+	var sub;
 	var sig = Splay.arFill(2,{|i|
 		Warp1.ar(2, bufnum, start , lr * 2 , 0.3, windowRandRatio:0.3)},
 	1,1,0);
-    sig = RLPF.ar(sig, cutoff, rq);
-	sig = Resonz.ar(sig, 100, 0.99, 7).tanh + sig;
+  sig = RLPF.ar(sig, cutoff, rq);
+	sig = Resonz.ar(sig, 120, 0.9, 17).tanh + sig;
+  sub = RLPF.ar(sig, 65,0.02) * env * amp * 0.2;
 	sig = sig * env * amp;
     // Out.ar(out, ((0)!0 ++ sig));
-	Out.ar(out, ((0)!2 ++ sig ++ ((0)!4) ++ sig));
+	Out.ar(out, ((0)!2 ++ sig ++ ((0)!4) ++ sub));
 }).add;
 
 //------------------------------------------------------------
@@ -66,7 +67,7 @@ SynthDef(\bufGrainN, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=44
 
 	synth.set(\cutoff, cutoff);
 	synth.set(\start, start);
-	synth.set(\amp, amp * 2);
+	synth.set(\amp, amp * 0.9);
 	synth.set(\rate, notes[0].midiratio);
 
 };

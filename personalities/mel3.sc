@@ -2,7 +2,7 @@ var m = ~model;
 var synth;
 var buffer;
 var lastTime = 0;
-var notes = [0,4,-3,-5] - 0.2;
+var notes = [2,0,4,-3,-5,0,4,-3] - 0.25;
 
 m.accelMassFilteredAttack = 0.7;
 m.accelMassFilteredDecay = 0.8;
@@ -23,8 +23,8 @@ SynthDef(\bufGrain, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=440
 	1,1,0);
     sig = RLPF.ar(sig, rezf.lag(1), rq) + sub;
 	sig = sig[0] * env * amp.lag(2);
-    Out.ar(out, ((0)!0 ++ sig));
-	// Out.ar(out, ((0)!0 ++ sig ++ ((0)!6) ++ sig));
+    // Out.ar(out, ((0)!0 ++ sig));
+	Out.ar(out, ((0)!0 ++ sig ++ ((0)!6) ++ sig));
 
 }).add;
 
@@ -64,7 +64,7 @@ SynthDef(\bufGrain, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=440
 
 	synth.set(\rezf, rezf);
 	synth.set(\start, start);
-	synth.set(\amp, amp * 3);
+	synth.set(\amp, amp * 2.0);
 	synth.set(\rate, 0.25 * (notes[0].midiratio));
 
 };

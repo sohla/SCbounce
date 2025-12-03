@@ -71,7 +71,7 @@ SynthDef(\drumkitNN, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 		// s.sync;
 		postf("buffer dealloc [%] \n", buf);
 	});
-	}.defer(0.3);
+	}.defer(2.3);
 };
 
 
@@ -86,17 +86,17 @@ SynthDef(\drumkitNN, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 	var attack = m.accelMassFiltered.lincurve(0.0,1.5,0.1,0.002,-1);
 	var release = m.accelMassFiltered.lincurve(0.0,1.5,4.3,0.001,-1);
 
-	dur = m.accelMassFiltered.lincurve(0,1.5,0.2,0.06, -1);
+	// dur = m.accelMassFiltered.lincurve(0,1.5,0.2,0.06, -1);
 
 	Pdef(m.ptn).set(\amp, amp * amps[index]);
 	Pdef(m.ptn).set(\rate, (notes[index]).midiratio );
-	Pdef(m.ptn).set(\dur, 0.2);
+	Pdef(m.ptn).set(\dur, dur);
 	Pdef(m.ptn).set(\attack, attack);
 	Pdef(m.ptn).set(\release, release);
 
 	if(m.accelMassFiltered > 0.1,{
 		if( Pdef(m.ptn).isPlaying.not,{
-			Pdef(m.ptn).resume(quant:0.2);
+			Pdef(m.ptn).resume(quant:dur);
 		});
 	},{
 		if( Pdef(m.ptn).isPlaying,{
