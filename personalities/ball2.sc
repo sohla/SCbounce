@@ -26,7 +26,7 @@ SynthDef(\sampler, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=440,
 				);
 
 			sig = sig * amp * env;
-				Out.ar(out, ((0)!0 ++ sig ++ ((0)!6) ++ sig));
+			Out.ar(out, ((0)!0 ++ sig ++ ((0)!6) ++ sig));
 
 }).add;
 //------------------------------------------------------------
@@ -48,7 +48,7 @@ SynthDef(\sampler, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=440,
 				\instrument, \sampler,
 				\bufnum, buf,
 				\octave, 3,
-				\note, Pseq([11].stutter(6) + 30, inf),
+				\note, Pseq([11].stutter(6) + 38, inf),
 				// \attack,0.1,
 				\decay, 0.1,
 				\sustain,0.01,
@@ -74,44 +74,14 @@ SynthDef(\sampler, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=440,
 
 //------------------------------------------------------------
 ~next = {|d|
-	// var shapes = [\circle, \square, \line, \triangle, \star, \hexagon, \cross, \wave, \leaf, \spiral, \blobby];
-	// var poss = [0.1,0.19,0.4,0.59];
-	// var poss = [0.1,0.2,0.3,0.4,0.5,0.6,0.7];
-	// var pos = m.gyroYFiltered.fold(-0.5,0.5).lincurve(-0.5,0.5,0,poss.size-1,0).round;
-	// var shape = m.gyroYFiltered.fold(-1,1).lincurve(-1,1,0.0,shapes.size-1,0).asInteger;
-	// var rate = m.gyroXFiltered.fold(-0.5,0.5).lincurve(-0.5,0.5,1.9,2.0,0);
-	// var size = m.accelMassFiltered.lincurve(0.0,1.5,100,250,4);
-	// var attack = m.accelMassFiltered.lincurve(0.0,1.5,0.1,0.01,2);
-
-	// var amp = m.rrateMassFiltered.lincurve(0.0,0.5,0.0,4.0,-1);
   var amp = m.rrateMassFiltered.lincurve(0,0.7,0.002,2, -1);
 	var start = m.gyroYFiltered.fold(-1,1).lincurve(-1,1,0.0,1.0,0);
 
-
 	Pdef(m.ptn).set(\start, start);
-	// Pdef(m.ptn).set(\attack, attack);
-	// Pdef(m.ptn).set(\rate, rate);
 
 	if(amp < 0.2, { amp = 0; });
 	Pdef(m.ptn).set(\amp, amp);
 
-	// Pdef(m.ptn).set(\viewID, d.port);
-	// Pdef(m.ptn).set(\startColor, Color.yellow.alpha_(amp.min(0.5)));
-	// Pdef(m.ptn).set(\endColor, Color.red.alpha_(0));
-	// Pdef(m.ptn).set(\startSize, size);
-	// Pdef(m.ptn).set(\shape, shapes[shape]);
-
-	// if(m.accelMassFiltered > 0.11,{
-	// 	if( Pdef(m.ptn).isPlaying.not,{
-	// 		Pdef(m.ptn).resume(quant:dur);
-	// 	});
-	// },{
-	// 	if( Pdef(m.ptn).isPlaying,{
-	// 		Pdef(m.ptn).pause();
-	// 	});
-	// });
-
-	// Pdef(m.ptn).set(\viewID, d.port);
 
 
 };

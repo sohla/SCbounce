@@ -2,7 +2,7 @@
 	[
 		"silence",
 		"ball2",
-		"harp1",
+		"ball3",
 
 
 		"silence",
