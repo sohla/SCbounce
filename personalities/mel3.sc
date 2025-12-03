@@ -2,7 +2,7 @@ var m = ~model;
 var synth;
 var buffer;
 var lastTime = 0;
-var notes = [2,0,4,-3,-5,0,4,-3] - 0.25;
+var notes = [2,0,4,-3,-5,0,4,-3] - 0.23;
 
 m.accelMassFilteredAttack = 0.7;
 m.accelMassFilteredDecay = 0.8;
@@ -17,12 +17,13 @@ SynthDef(\bufGrain, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=440
 
 	var lr = rate * BufRateScale.kr(bufnum) * (freq/440.0);
 	var env = EnvGen.kr(Env.adsr(attack, decay, sustain, release), gate, doneAction:2);
-	var sub = LFTri.ar(66*rate*2,0,0.6).tanh;
-	var sig = Splay.arFill(8,{|i|
-		Warp1.ar(2, bufnum, start, rate * (i+1) , 0.3, windowRandRatio:0.3)},
-	1,1,0);
-    sig = RLPF.ar(sig, rezf.lag(1), rq) + sub;
-	sig = sig[0] * env * amp.lag(2);
+	var sub = LFTri.ar(66*rate*4,0,0.1);
+	var sig = Splay.arFill(4,{|i|
+			Warp1.ar(2, bufnum, start, rate * (i+1) , 0.5, windowRandRatio:0.3)
+		},1,1,0);
+    sig = RLPF.ar(sig, rezf.lag(1), rq) + sub.tanh;
+		sig = LPF.ar(sig, 1000);
+		sig = sig * env * amp.lag(2);
     // Out.ar(out, ((0)!0 ++ sig));
 	Out.ar(out, ((0)!0 ++ sig ++ ((0)!6) ++ sig));
 
@@ -64,7 +65,7 @@ SynthDef(\bufGrain, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=440
 
 	synth.set(\rezf, rezf);
 	synth.set(\start, start);
-	synth.set(\amp, amp * 2.0);
+	synth.set(\amp, amp * 1.0);
 	synth.set(\rate, 0.25 * (notes[0].midiratio));
 
 };

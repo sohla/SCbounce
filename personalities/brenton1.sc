@@ -1,5 +1,6 @@
 var m = ~model;
 var buffer;
+var dur = 0.2;
 
 m.rrateMassFilteredAttack = 0.99;
 m.rrateMassFilteredDecay = 0.6;
@@ -15,7 +16,7 @@ SynthDef(\stereoSamplerB, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, fr
 	  var lr = rate * BufRateScale.kr(bufnum) * (freq/440.0);
     var env = EnvGen.kr(Env.adsr(attack, decay, sustain, release), gate, timeScale: 2,doneAction: 2);
 	var sig = PlayBuf.ar(2, bufnum, rate: [lr, lr * 1.003], startPos: start * BufFrames.kr(bufnum), loop: 0);
-	var osc = SinOsc.ar((17 + rate.ratiomidi).midicps * [1,1.03], 0, 0.5 + (sig * 0.2)).distort;
+	var osc = SinOsc.ar((17 + rate.ratiomidi).midicps * [1,1.03], 0, 0.9 + (sig * 0.2)).distort;
     sig = RLPF.ar(sig, cutoff, rq) + osc;
     sig = Pan2.ar(sig, pan, amp * env);
 	sig = LeakDC.ar(sig);
@@ -51,11 +52,11 @@ SynthDef(\stereoSamplerB, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, fr
 						++ [12,10,8,12,10,7,5,5,4,1,5,4,1,4,1,0].stutter(4)
 					
 					)+7).midiratio, inf),
-				// \dur, Pseq([0.25], inf),
+				\dur, Pseq([dur, dur], inf),
 				\args, #[],
 			)
 		);
-		Pdef(m.ptn).play(quant:0.2);
+		Pdef(m.ptn).play(quant:dur);
 	});
 };
 ~deinit = ~deinit <> {
@@ -80,7 +81,7 @@ SynthDef(\stereoSamplerB, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, fr
 
 	if(amp < 0.07, {amp = 0});
 
-	Pdef(m.ptn).set(\dur, 0.2);
+	// Pdef(m.ptn).set(\dur, 0.2);
 	Pdef(m.ptn).set(\amp, amp * 0.3);
  	Pdef(m.ptn).set(\start, start.linlin(0,1,0,1));
 

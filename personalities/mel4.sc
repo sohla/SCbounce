@@ -3,7 +3,7 @@ var synth;
 var buffer;
 
 m.accelMassFilteredAttack = 0.99;
-m.accelMassFilteredDecay = 0.8;
+m.accelMassFilteredDecay = 0.7;
 m.rrateMassFilteredAttack = 0.7;
 m.rrateMassFilteredDecay = 0.2;
 m.gyroFilteredAttack = 0.7;

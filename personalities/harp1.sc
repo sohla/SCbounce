@@ -4,9 +4,10 @@ var lastTime = 0;
 var frame = 0;
 
 var synth, bassSynth;
-var dur = 0.11;
-var notes = [0,2,5,7,9,11,12,14,12,11] + 1;
-var bass = [2,9,5,12,5,9,2].stutter(2) + 1;
+var dur = 0.07;
+// var notes = [0,2,5,7,9,11,12,14,12,11] + 0;
+var notes = [0,2,5,7,11,12,14,16] + 0;
+var bass = [2,9,5,12,5,9,2].stutter(2) +0;
 var root = [0];
 var offset = 0;
 var bassCount = 0;
@@ -43,8 +44,8 @@ var samplesLib;
 
 m.accelMassFilteredAttack = 0.99;
 m.accelMassFilteredDecay = 0.5;
-m.rrateMassFilteredAttack = 0.7;
-m.rrateMassFilteredDecay = 0.3;
+m.rrateMassFilteredAttack = 0.99;
+m.rrateMassFilteredDecay = 0.8;
 m.gyroFilteredAttack = 0.7;
 m.gyroFilteredDecay = 0.7;
 
@@ -55,8 +56,10 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, start=0, pan=0, freq=
     var env = EnvGen.kr(Env.new([0, 1, 1, 0], [attack, sustain, release]), doneAction: 2);
 	var sig = PlayBuf.ar(2, bufnum, rate: [lr, lr * 1.0017], startPos: start * BufFrames.kr(bufnum), loop: 0);
 	// sig = RLPF.ar(sig, cutoff, rq);
-    sig = Balance2.ar(sig[0], sig[1], pan, amp * env);
-    Out.ar(out, sig);
+    sig = Pan2.ar(sig, pan, amp * env);
+    // Out.ar(out, sig);
+		Out.ar(out, ( ((0)!8) ++ sig));
+
 }).add;
 
 
@@ -151,13 +154,13 @@ SynthDef(\funBass, {
 			\rotation,pi.half + Pwhite(-0.1,0.1),
 			\fill, true,
 			\instrument, \stereoSampler,
-			\dur, Pslide([dur,dur,dur,dur,dur,dur,dur,dur,dur,dur], inf, Pkey(\range), 0, 0),
+			// \dur, dur,//Pslide([dur,dur,dur,dur,dur,dur,dur,dur,dur,dur], inf, Pkey(\range), 0, 0),
 			\note, Pslide(notes, inf, Pkey(\range), 0, offset),
 			\sx, (Pkey(\note) * 0.1) - 0.8,
 			\sy, 0,
 			\ex, Pkey(\sx),
 			\ey, 0,
-			\octave, 5,//Pwhite(5,7),
+			// \octave, Pwhite(3,5),   
 			\func, Pfunc({|e| ~onEvent.(e)}),
 			\args, #[]
 
@@ -197,11 +200,17 @@ SynthDef(\funBass, {
 //------------------------------------------------------------
 ~next = {|d|
 
-	var move = m.accelMassFiltered.lincurve(0,2.5,1,notes.size,1);
-	var amp = m.accelMassFiltered.lincurve(0,1.4,-40,-8,-1);
+	// var move = m.accelMassFiltered.lincurve(0,2.5,1,notes.size,1);
+	var move = m.rrateMassFiltered.lincurve(0,0.8,1,notes.size,-2);
+	var amp = m.accelMassFiltered.lincurve(0,1.4,-60,-18,-1);
 	var ff = m.rrateMassFiltered.lincurve(0.0,2.0,200,2000,-3); //left right
 	var step = m.gyroXFiltered.linlin(-0.8,0.8,0,3).floor; //up down
+	// var step = m.rrateMassFiltered.linlin(0.0,0.8,0,3).floor; //up down
+	var dm = m.rrateMassFiltered.lincurve(0,0.8,2,1,-2);
+	var oct = m.rrateMassFiltered.lincurve(0,0.8,5,7,-2).asInteger;
 	
+	Pdef(m.ptn).set(\dur, dur * dm);
+	Pdef(m.ptn).set(\octave, oct);
 	Pdef(m.ptn).set(\range, move.floor);
 	Pdef(m.ptn).set(\amp, amp.dbamp);
 	Pdef(m.ptn).set(\root, root[0]);
@@ -234,7 +243,7 @@ SynthDef(\funBass, {
 			Pdef(m.ptn).pause();
 		});
 	});
-
+/*
 	if(m.accelMassFiltered > 1.2, {
 		if(TempoClock.beats > (lastTime + (dur*4)),{
 			var n = bass[0] + root[0];
@@ -277,6 +286,7 @@ SynthDef(\funBass, {
 
 		});
 	});
+	*/
 };
 
 //------------------------------------------------------------

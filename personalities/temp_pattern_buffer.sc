@@ -53,7 +53,7 @@ SynthDef(\sampler, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=440,
 				\decay, 0.1,
 				\sustain,0.01,
 				\release,0.1,
-				\dur, dur,
+				\dur, Pseq([dur * 1,dur * 1], inf),
 
 				\args, #[],
 			)
@@ -84,7 +84,7 @@ SynthDef(\sampler, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=440,
 	// var attack = m.accelMassFiltered.lincurve(0.0,1.5,0.1,0.01,2);
 
 	// var amp = m.rrateMassFiltered.lincurve(0.0,0.5,0.0,4.0,-1);
-    var amp = m.rrateMassFiltered.lincurve(0,0.7,0.002,2, -1);
+  var amp = m.rrateMassFiltered.lincurve(0,0.7,0.002,2, -1);
 	var start = m.gyroYFiltered.fold(-1,1).lincurve(-1,1,0.0,1.0,0);
 
 

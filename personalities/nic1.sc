@@ -1,7 +1,9 @@
 var m = ~model;
 var synth;
 var buffer;
-var notes = [0,-8,-3,1,0];
+var notes = [0,-7];
+var lastTime = 0;
+
 var trig = false;
 
 m.accelMassFilteredAttack = 0.98;
@@ -16,7 +18,7 @@ SynthDef(\pullstretchMonoQN, {|out, amp = 1, buffer = 0, envbuf = -1, pch = 1, d
 	var len = BufDur.kr(buffer) / div;
 	var lfo = LFSaw.kr( (1.0/len) * speed ,1).range(0.0,0.99);
 	var sp = Splay.arFill(2,
-		{ |i| Warp1.ar(1, buffer, lfo.linlin(0,1,0.01,0.89), pch.lag(1) * (1 / ((i*delta)+1)) ,splay, envbuf, 8, 0.1 * (i+1), 4)  },
+		{ |i| Warp1.ar(1, buffer, lfo.linlin(0,1,0.01,0.89), pch.lag(3) * (1 / ((i*delta)+1)) ,splay, envbuf, 8, 0.1 * (i+1), 4)  },
 			1,
 			1,
 			0
@@ -43,7 +45,7 @@ SynthDef(\pullstretchMonoQN, {|out, amp = 1, buffer = 0, envbuf = -1, pch = 1, d
 	postf("loading sample : % \n", path.fileName);
 	buffer = Buffer.read(s, path.fullPath, action:{ |buf|
 		postf("buffer alloc [%] \n", buf);
-		synth = Synth(\pullstretchMonoQN,[\buffer,buf, \amp,0.4, \div, 10]);
+		synth = Synth(\pullstretchMonoQN,[\buffer,buf, \amp,0.0, \div, 10]);
 	});
 };
 
@@ -68,7 +70,12 @@ SynthDef(\pullstretchMonoQN, {|out, amp = 1, buffer = 0, envbuf = -1, pch = 1, d
 		amp = 0;
 	});
 
-	synth.set(\pch, notes[0].midiratio);
+	if(TempoClock.beats > (lastTime + 14),{
+			notes = notes.rotate(-1);
+		lastTime = TempoClock.beats;
+	});
+
+	synth.set(\pch, notes[1].midiratio);
 
 	synth.set(\speed, speed);
 	synth.set(\amp, amp * 3);

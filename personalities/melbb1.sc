@@ -1,6 +1,6 @@
 var m = ~model;
 var bi = 0;
-var dur = 0.2;
+var dur = 0.4;
 var limit = 8;
 var step = 1;
 var lastTime=0;
@@ -137,7 +137,7 @@ SynthDef(\drumkit2, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 	var rel = m.gyroYFiltered.clip(-0.5,0.5).lincurve(-0.5,0.5,0.3,0.01,3);
 	var amp = m.accelMassFiltered.lincurve(0,1.0,0.2,1, -1);
 	var roll = m.gyroXFiltered.lincurve(-0.2,0.4,1,4,-2) * 0.5;
-	var sa = m.rrateMassFiltered.lincurve(0,0.3,0.1,0.35, -1);
+	var sa = m.rrateMassFiltered.lincurve(0,0.3,0.2,1.0, -1);
 	var oct = m.gyroYFiltered.lincurve(-1.0,1.0,0,4,-2);
 
 
@@ -149,7 +149,7 @@ SynthDef(\drumkit2, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 	step = 2.pow(m.accelMassFiltered.lincurve(0,1.0,-1,0, -1));
 
 	Pdef(\shaker).set(\octave, oct);
-	Pdef(\shaker).set(\amp, sa*0.9);	
+	Pdef(\shaker).set(\amp, sa);	
 
 
 	if(m.accelMassFiltered > 0.07,{
