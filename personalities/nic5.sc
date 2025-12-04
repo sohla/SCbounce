@@ -86,7 +86,7 @@ SynthDef(\pullstretchMonoQ, {|out, amp = 1, buffer = 0, envbuf = -1, pch = 1, di
         synth.set(\lag,0.1);
     });
 
-    synth.set(\amp, amp * 0.8);
+    synth.set(\amp, amp * 1.8);
     synth.set(\ffo, ffo);
     synth.set(\rfo, rfo);
     synth.set(\pos, pos);

@@ -74,13 +74,13 @@ SynthDef(\sampler, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=440,
 
 //------------------------------------------------------------
 ~next = {|d|
-  var amp = m.rrateMassFiltered.lincurve(0,0.7,0.002,2, -1);
+  var amp = m.rrateMassFiltered.lincurve(0,0.7,0.002,2.5, -1);
 	var start = m.gyroYFiltered.fold(-1,1).lincurve(-1,1,0.0,1.0,0);
 
 	Pdef(m.ptn).set(\start, start);
 
 	if(amp < 0.2, { amp = 0; });
-	Pdef(m.ptn).set(\amp, amp);
+	Pdef(m.ptn).set(\amp, amp*1.5);
 
 
 

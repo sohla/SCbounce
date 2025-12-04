@@ -36,7 +36,7 @@ SynthDef(\pullstretchMonoQBT, {|out, amp = 1, buffer = 0, envbuf = -1, pch = 1.0
 	postf("loading sample : % \n", path.fileName);
 	buffer = Buffer.read(s, path.fullPath, action:{ |buf|
 		postf("buffer alloc [%] \n", buf);
-		synth = Synth(\pullstretchMonoQBT,[\buffer,buf,\pch,0.midiratio, \amp,0.4, \div, 10]);
+		synth = Synth(\pullstretchMonoQBT,[\buffer,buf,\pch,0.midiratio, \amp,0.0, \div, 10]);
 	});
 };
 
@@ -62,7 +62,7 @@ SynthDef(\pullstretchMonoQBT, {|out, amp = 1, buffer = 0, envbuf = -1, pch = 1.0
 
 	synth.set(\pch, pch.midiratio);
 	synth.set(\speed, speed);
-	synth.set(\amp, amp * 4);
+	synth.set(\amp, amp * 2.0);
 	synth.set(\pan, pan);
 	synth.set(\ff, ff);
 };

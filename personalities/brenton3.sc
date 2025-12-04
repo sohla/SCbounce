@@ -68,7 +68,7 @@ SynthDef(\pullstretchMonoQBBB, {|out, amp = 1, buffer = 0, envbuf = -1, pch = 1.
 
 	synth.set(\pch, notes[0].midiratio);
 	synth.set(\speed, speed);
-	synth.set(\amp, amp * 0.3);
+	synth.set(\amp, amp * 0.7);
 	synth.set(\ff, ff);
 };
 //------------------------------------------------------------

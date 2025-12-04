@@ -78,7 +78,7 @@ SynthDef(\pullstretchMonoQN, {|out, amp = 1, buffer = 0, envbuf = -1, pch = 1, d
 	synth.set(\pch, notes[1].midiratio);
 
 	synth.set(\speed, speed);
-	synth.set(\amp, amp * 3);
+	synth.set(\amp, amp * 4);
 	synth.set(\delta, delta * 0.05);
 	synth.set(\ff, ff);
 };

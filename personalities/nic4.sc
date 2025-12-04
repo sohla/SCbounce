@@ -25,7 +25,7 @@ SynthDef(\bufGrainN, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=44
   sub = RLPF.ar(sig, 65,0.02) * env * amp * 0.2;
 	sig = sig * env * amp;
     // Out.ar(out, ((0)!0 ++ sig));
-	Out.ar(out, ((0)!2 ++ sig ++ ((0)!4) ++ sub));
+	Out.ar(out, ((0)!2 ++ sig ++ ((0)!2) ++ sub++ sub));
 }).add;
 
 //------------------------------------------------------------
@@ -67,7 +67,7 @@ SynthDef(\bufGrainN, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=44
 
 	synth.set(\cutoff, cutoff);
 	synth.set(\start, start);
-	synth.set(\amp, amp * 0.9);
+	synth.set(\amp, amp * 1.8);
 	synth.set(\rate, notes[0].midiratio);
 
 };
