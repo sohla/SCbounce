@@ -25,7 +25,7 @@ SynthDef(\bufGrain, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=440
 		sig = LPF.ar(sig, 1000);
 		sig = sig * env * amp.lag(2);
     // Out.ar(out, ((0)!0 ++ sig));
-	Out.ar(out, ((0)!0 ++ sig ++ ((0)!6) ++ sig));
+	Out.ar(out, ((0)!0 ++ sig ++ ((0)!4) ++ sig++ sig));
 
 }).add;
 

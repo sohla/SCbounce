@@ -62,9 +62,9 @@ SynthDef(\warmRichSynth, {
         cutoff * (1 + (filterEnv * filterEnvAmount)),
         resonance.linexp(0, 1, 1, 0.05)
     );
-    sig = sig * env * amp * 0.33;    
+    sig = sig * env * amp * 0.6;    
 	// Out.ar(out, DelayN.ar(sig,0.01,[0.007,0.009]));
-  Out.ar(out, ((0)!0 ++ sig ++ ((0)!6) ++ sig));
+  Out.ar(out, ((0)!0 ++ sig ++ ((0)!4) ++ sig++ sig));
 
 
 }).add;

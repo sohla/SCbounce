@@ -26,7 +26,7 @@ SynthDef(\sampler, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=440,
 				);
 
 			sig = sig * amp * env;
-			Out.ar(out, ((0)!0 ++ sig ++ ((0)!6) ++ sig));
+			Out.ar(out, ((0)!0 ++ sig ++ ((0)!4) ++ sig++ sig));
 
 }).add;
 //------------------------------------------------------------
