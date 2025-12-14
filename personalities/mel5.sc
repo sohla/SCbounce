@@ -69,7 +69,7 @@ SynthDef(\bufGrainMMM, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=
 
 	synth.set(\cutoff, cutoff);
 	synth.set(\start, start);
-	synth.set(\amp, amp * 0.4);
+	synth.set(\amp, amp * 0.8);
 	synth.set(\rate, notes[0].midiratio);
 
 

@@ -1,6 +1,6 @@
 var m = ~model;
 var bi = 0;
-var dur = 0.11;
+var dur = 0.2;
 
 ~buffers;
 m.accelMassFilteredAttack = 0.99;
@@ -102,7 +102,7 @@ SynthDef(\drumkit, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 	var rate = m.rrateMassFiltered.linlin(0,1,1,1.4);
 	var amp = m.accelMassFiltered.lincurve(0,1.5,0.02,1, 2);
 
-	Pdef(m.ptn).set(\amp, amp * 6);
+	Pdef(m.ptn).set(\amp, amp * 2);
 	Pdef(m.ptn).set(\rate, rate);
 
 	Pdef(m.ptn).set(\viewID, d.port);
@@ -120,7 +120,7 @@ SynthDef(\drumkit, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 	// bi = bi.asInteger;
 	// bi = [0,1].choose;
   bi = ~buffers.size.rand;
-	if(m.accelMassFiltered > 0.02,{
+	if(m.accelMassFiltered > 0.01,{
 		if( Pdef(m.ptn).isPlaying.not,{
 			Pdef(m.ptn).resume(quant:dur*2);
 		});
