@@ -3,17 +3,19 @@ var personalityDir = "~/Develop/SuperCollider/Projects/SCbounce/personalities/";
 // var personalityDir = "~/Develop/SuperCollider/Projects/scbounce/personalities/"; //laptop
 // var personalityDir = "~/Develop/SuperCollider/oscMusic/personalities/"; //mac mini cabin
 
-var list = "list_ITR_Mel.sc";
-// var list = "list_glenroy.sc";
+// var list = "list_ITR_Mel.sc";
 // var list = "list_SiS_Alessio.sc";
 // var list = "list_yourDNA25.sc";
 
-var defaultLists = [
-    "list_MM_Mel.sc",
-    "list_MM_Swan.sc",
-    "list_MM_Mel.sc",
-    "list_MM_Swan.sc",
-];
+var list = "list_glenroy.sc";
+var defaultLists = list!5;
+
+// var defaultLists = [
+//     "list_MM_Mel.sc",
+//     "list_MM_Swan.sc",
+//     "list_MM_Mel.sc",
+//     "list_MM_Swan.sc",
+// ];
 
 var com = (
     \root: 0,
