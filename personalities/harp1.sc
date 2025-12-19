@@ -268,7 +268,7 @@ SynthDef(\funBass, {
 		});
 	});
 
-	if(m.accelMassFiltered > 1.2, {
+	if(m.accelMassFiltered > 3.2, {
 		if(TempoClock.beats > (lastTime + (dur*4)),{
 			lastTime = TempoClock.beats;
 			~playNote.(n-12,0, 3,amp.dbamp * 0.04);
