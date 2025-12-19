@@ -1,15 +1,14 @@
 (
 	[
 
-	"wind1",
 	"silence",
+	"wind1",
   "rain1",
 	"thunder",
 	"magicWand2",
 	"arialOstinato",
   "harp1",
   "cymbals1",
-  "button1",
 	"frog2",
 	"funMove1",
 	"funBass",
@@ -24,6 +23,9 @@
   "melodicPerc2",
   "velocity1",
   "velocity2",
+  "temp_synth_4button",
+  "temp_synth_buffer_4button",
+  "button1",
 	"animalMat",
 	"quackQuack",
 	"chicken1",

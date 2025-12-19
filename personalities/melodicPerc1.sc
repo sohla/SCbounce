@@ -58,7 +58,7 @@ SynthDef(\melodicPerc, {|out=0, freq=50, tension=0.1, decay=0.5, clickLevel=0.3,
 			\octave, Pseq([3,4,5,6].stutter(1), inf),
 			\dur, 0.22/2,
 			\pan, Pwhite(-0.1,0.1),
-			\amp, Pwhite(0.8,0.9, inf),
+			\amp, Pwhite(0.3,0.4, inf),
 			\args, #[]
 		);
 	);

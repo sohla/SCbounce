@@ -198,7 +198,7 @@ SynthDef(\funBass, {
 ~next = {|d|
 
 	var move = m.accelMassFiltered.lincurve(0,2.5,1,notes.size,1);
-	var amp = m.accelMassFiltered.lincurve(0,1.4,-40,-8,-1);
+	var amp = m.accelMassFiltered.lincurve(0,1.4,-50,-14,-1);
 	var ff = m.rrateMassFiltered.lincurve(0.0,2.0,200,2000,-3); 
 	var wd = m.rrateMassFiltered.lincurve(0.0,2.0,10,0.1,-3); 
 	var step = m.gyroXFiltered.linlin(-0.8,0.8,0,3).floor; //up down
@@ -271,7 +271,7 @@ SynthDef(\funBass, {
 	if(m.accelMassFiltered > 1.2, {
 		if(TempoClock.beats > (lastTime + (dur*4)),{
 			lastTime = TempoClock.beats;
-			~playNote.(n-12,0, 3,amp.dbamp * 0.08);
+			~playNote.(n-12,0, 3,amp.dbamp * 0.04);
 			m.com.root = n;
 			bassSynth = Synth(\funBass, [\freq, (n + 24).midicps, \gate,1, \amp, amp.dbamp * 0.19]);
 			NodeWatcher.register(bassSynth);

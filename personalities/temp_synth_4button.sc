@@ -30,7 +30,7 @@ SynthDef(\simple, {|out=0, amp=0.6, freq=440, attack=0.001, decay=0.03, sustain=
     if(d.sensors.digiInEvent[i] == 1, {
       if(o == 1,{
       	states[i] = 0;
-				synths.put(i, Synth(\simple, [\freq, 100 * (i+1)]));
+				synths.put(i, Synth(\simple, [\freq, 100.rrand(1200) * (i+1)]));
       	// ["on",i].postln;
     	});
 		},{

@@ -29,7 +29,7 @@ SynthDef(\sampler, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=440,
 
 //------------------------------------------------------------
 ~init = ~init <> {
-	var path = PathName("~/Downloads/yourDNASamples/TramBell_01.wav");
+	var path = PathName("~/Downloads/melSamples/mel_sing_wet-001.wav");
 	postf("loading sample : % \n", path.fileName);
 	buffer = Buffer.read(s, path.fullPath, action:{ |buf|
 		postf("buffer alloc [%] \n", buf);
@@ -46,7 +46,7 @@ SynthDef(\sampler, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=440,
     if(d.sensors.digiInEvent[i] == 1, {
       if(o == 1,{
       	states[i] = 0;
-				synths.put(i, Synth(\sampler, [\bufnum, buffer, \rate, 1 + (0.1 * i)]));
+			synths.put(i, Synth(\sampler, [\bufnum, buffer, \rate, [0.25,0.5,2.0].choose + (0.1 * i), \start, 0.0.rrand(0.8)]));
       	// ["on",i].postln;
     	});
 		},{

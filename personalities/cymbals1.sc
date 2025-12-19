@@ -100,7 +100,7 @@ SynthDef(\drumkit, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 	var rate = m.rrateMassFiltered.linlin(0,1,1,1.4);
 	var amp = m.accelMassFiltered.lincurve(0,1.5,0.02,1, 2);
 
-	Pdef(m.ptn).set(\amp, amp * 6);
+	Pdef(m.ptn).set(\amp, amp * 1.5);
 	Pdef(m.ptn).set(\rate, rate);
 
 	Pdef(m.ptn).set(\viewID, d.port);
