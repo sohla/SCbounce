@@ -26,7 +26,7 @@ SynthDef(\grobt, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
         relaxTime:  0.01
 		);
 		sig = Mix.ar([sig]);
-    sig = Balance2.ar(sig[0],sig[1], pan);
+    sig = Pan2.ar(sig, pan);
     Out.ar(out, sig * amp * env);
 }).add;
 
@@ -73,7 +73,7 @@ SynthDef(\miniMoogModel, { |freq = 440, amp = 0.5, gate = 1, pan = 0,
 			},
 			\octave, Pseq([3,4].stutter(24), inf),
 			\rate, Pseq([0,-3,-5,4,7,9,12,0].midiratio, inf),
-			\amp, Pseq([1, 2, 2, 0.9,0.7,0.6 ,0.5 ,1] * 2, inf),
+			\amp, Pseq([1, 2, 2, 0.9,0.7,0.6 ,0.5 ,1] * 1, inf),
 			\subFreq,Pseq([45,55,440,80,45,70], inf),
 			\start, 0,
 			\legato, 0.3,
@@ -120,15 +120,21 @@ SynthDef(\miniMoogModel, { |freq = 440, amp = 0.5, gate = 1, pan = 0,
 
 
 	var sub = 2.pow(m.rrateMassFiltered.lincurve(0,0.2,0,2,-2).floor).reciprocal;
-	Pdef(m.ptn).set(\dur, 0.5 * sub);
-	if(m.rrateMassFiltered > 0.022,{
+	Pdef(m.ptn).set(\dur, 0.25 * sub);
+
+  if(d.sensors.digiInEvent[0] == 1, {
 		if( Pdef(m.ptn).isPlaying.not,{
-			Pdef(m.ptn).resume(quant:0.2);
+			Pdef(m.ptn).resume(quant:0);
 		});
 	},{
 		if( Pdef(m.ptn).isPlaying,{
 			Pdef(m.ptn).pause();
 		});
+	});
+
+
+	if(m.rrateMassFiltered > 0.022,{
+	},{
 	});
 };
 

@@ -18,6 +18,11 @@ var twoCh = (\x: 0, \y:0);
 var threeCh = (\x: 0, \y:0, \z:0);
 var fourCh = (\w: 0, \x: 0, \y:0, \z:0);
 
+var paramsProto = (
+    \volume: 0,
+    \sensitivity: 0,
+);
+
 var listenersProto = (
     \airware:nil,
     \battery:nil,
@@ -64,7 +69,8 @@ var deviceProto = (
     \sensors: Event.new(proto:sensorsProto),
     \sensorBus: Bus.control(s,7),
     \incPersonality: {},
-    \decPersonality: {};
+    \decPersonality: {},
+    \params: Event.new(proto:paramsProto),
 
 );
 
@@ -238,6 +244,7 @@ var addOSCDeviceListeners = {|d|
         d.listeners.battery = OSCFunc({ |msg, time, addr, recvPort|
             d.volts = msg[1].asFloat;
             d.charge = msg[2].asFloat;
+            // "battery [%]: %v %%".format(d.port,d.volts, d.charge).postln;
         }, batteryBase.format(i+1), address);
 
         d.listeners.digiIn = OSCFunc({ |msg, time, addr, recvPort|
@@ -359,6 +366,9 @@ var addDevice = { |ip,port,index|
     d.index = index;
     d.listeners = Event.new(proto:listenersProto);
     d.sensors =  Event.new(proto:sensorsProto);
+    d.params = Event.new(proto:paramsProto);
+    d.params.volume =  0.5;
+    d.params.sensitivity =  0.5;
     d.sensors.digiInEvent = Array.fill(4,0); // must allocate for each instance
 
     // global storage : port is the key

@@ -19,17 +19,20 @@ SynthDef(\simple, {|out=0, amp=0.0, freq=440, attack=0.001, decay=0.03, sustain=
 SynthDef(\input, {|out=0, amp=0.5, rt=1, attack=0.001, decay=0.03, sustain=0.8, release=2.59, gate=1, al=0.9|
 	var env = EnvGen.kr(Env.adsr(attack, decay, sustain, release), gate, doneAction: Done.freeSelf);
 	var src = SoundIn.ar(0)!2 * 1;
-	var sig = PitchShift.ar(src, 1.2, rt, [0.003, 0.008], 0.0, 1, src );
+	var flt = HPF.ar(src,120);
+	var li = LocalIn.ar(2) * 0.5;
+	var sig = PitchShift.ar(flt+li, 0.4*3, 1.4, [0.01, 0.012], 0.0, 1, src );
 	// var sig = FreqShift.ar(src, 200, SinOsc.ar(10).range(0,2pi), 1, src );
-	var dly = AllpassC.ar(sig,1.0,al.lag(0.3),1.0,0.5) + sig;
-    Out.ar(out, dly * env * amp);	
+	var dly = AllpassC.ar(flt,2.0,0.4,2.0,0.5) + sig;
+	LocalOut.ar(sig);
+  Out.ar(out, dly * env * amp);	
 
 }).add;
 
 
 //------------------------------------------------------------
 ~init = ~init <> {
-	synth = Synth(\input);
+	synth = Synth(\input,[\amp,0.06]);
 };
 
 //------------------------------------------------------------

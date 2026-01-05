@@ -1,5 +1,5 @@
 var m = ~model;
-
+var dur = 0.22/2;
 m.accelMassFilteredAttack = 0.99;
 m.accelMassFilteredDecay = 0.5;
 m.rrateMassFilteredAttack = 0.7;
@@ -17,9 +17,9 @@ SynthDef(\funMelody, {
     osc3 = SinOsc.ar(freq * 1.01, 0, 1.5);
     output = Mix([osc1, osc2, osc3]) * env * amp;
     filter = RLPF.ar(output, filtFreq, filtRes);
-		filter = ([filter, DelayN.ar(filter, 0.5, 0.5)+filter] * 2).tanh;
+		// filter = ([filter, DelayN.ar(filter, 0.5, 0.5)+filter] * 2).tanh;
 
-    Out.ar(out, Balance2.ar(filter[0],filter[1],pan));
+    Out.ar(out, Pan2.ar(filter,pan));
 }).add;
 
 //------------------------------------------------------------
@@ -52,14 +52,14 @@ SynthDef(\funMelody, {
 //------------------------------------------------------------
 
 ~onEvent = {|e|
-	Pdef(m.ptn).set(\root, m.com.root);
+	Pdef(m.ptn).set(\root, m.com.root+5);
 };
 
 //------------------------------------------------------------
 ~next = {|d|
 
 	// var dur = 0.5 * 2.pow(m.accelMassFiltered.linexp(0,3,0,5).floor).reciprocal;
-	var dur = 0.5 * 2.pow(m.accelMassFiltered.lincurve(0,2.5,0,3,-1).floor).reciprocal;
+	// var dur = 0.5 * 2.pow(m.accelMassFiltered.lincurve(0,2.5,0,3,-1).floor).reciprocal;
 	var oct = m.gyroZFiltered.linlin(-1,1,3,7).floor;
 
 	Pdef(m.ptn).set(\dur, dur);
@@ -69,7 +69,7 @@ SynthDef(\funMelody, {
 
 	if(m.accelMass > 0.12,{
 		if( Pdef(~model.ptn).isPlaying.not,{
-			Pdef(~model.ptn).resume(quant:0.125);
+			Pdef(~model.ptn).resume(quant:dur);
 		});
 	},{
 		if( Pdef(~model.ptn).isPlaying,{

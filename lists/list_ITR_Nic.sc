@@ -7,6 +7,10 @@
 		"nic3",
 		"nic4",
 
+		"waves",
+		"rain1",
+		"thunder",
+
 		"silence",
 ]
 

@@ -21,7 +21,7 @@ SynthDef(\stereoSampler1, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, fr
 	sig = Pan2.ar(hs + sig, pan, amp * env);
 	sig = FreeVerb.ar(sig,0.5,0.4);
 	sig = LeakDC.ar(sig);
-	Out.ar(out, ((0)!0 ++ sig));
+	Out.ar(out, [((0)!0 ++ sig)]);
 }).add;
 
 //------------------------------------------------------------
@@ -69,7 +69,7 @@ SynthDef(\stereoSampler1, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, fr
 //------------------------------------------------------------
 ~next = {|d|
 
-	var dur = m.accelMassFiltered.lincurve(0,1,0.4,0.07,-2);
+	var dur = m.accelMassFiltered.lincurve(0,0.5,0.4,0.07,-3);
 	var start = m.gyroXFiltered.lincurve(0.0,1.0,0.1,0.9,0);
 	var amp = m.accelMassFiltered.lincurve(0,2.5,0,1,-6);
 	var rate= m.accelMass.linlin(0,1,0,2);

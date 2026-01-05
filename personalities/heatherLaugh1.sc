@@ -44,6 +44,7 @@ SynthDef(\hl, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=440,
 				\sustain,0.4,
 				\decay, 0.01,
 				\release,0.0,
+				\start, Pwhite(0.0,0.4),	
 				// \dur, Pseq([0.3] , inf),
 				\amp,0.8,
 				\args, #[],
@@ -72,20 +73,31 @@ SynthDef(\hl, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=440,
 
 	Pdef(m.ptn).set(\pan, pan);
 	Pdef(m.ptn).set(\dur, dur);
-	Pdef(m.ptn).set(\start, start.linlin(0,1,0,0.9));
+	// Pdef(m.ptn).set(\start, start.linlin(0,1,0,0.9));
 
-	// if(amp < 0.15, {amp = 0});
-	// Pdef(m.ptn).set(\amp, amp * 0.3);
-	if(m.accelMassFiltered > 0.07,{
+	if(d.sensors.digiInEvent[0] == 1, {
 		if( Pdef(m.ptn).isPlaying.not,{
-			Pdef(m.ptn).resume(quant:0.5/3);
-			// Pdef(m.ptn).set(\start, start.linlin(0,1,0,0.9));
+			Pdef(m.ptn).resume(quant:0);
 		});
 	},{
 		if( Pdef(m.ptn).isPlaying,{
 			Pdef(m.ptn).pause();
 		});
 	});
+
+
+	// if(amp < 0.15, {amp = 0});
+	// Pdef(m.ptn).set(\amp, amp * 0.3);
+	// if(m.accelMassFiltered > 0.07,{
+	// 	if( Pdef(m.ptn).isPlaying.not,{
+	// 		Pdef(m.ptn).resume(quant:0.5/3);
+	// 		// Pdef(m.ptn).set(\start, start.linlin(0,1,0,0.9));
+	// 	});
+	// },{
+	// 	if( Pdef(m.ptn).isPlaying,{
+	// 		Pdef(m.ptn).pause();
+	// 	});
+	// });
 };
 
 //------------------------------------------------------------

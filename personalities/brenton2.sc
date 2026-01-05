@@ -25,7 +25,7 @@ SynthDef(\pullstretchMonoQB, {|out, amp = 1, buffer = 0, envbuf = -1, pch = 1.0,
 	var mas = HPF.ar(sp,245);
 	var sig = FreeVerb.ar(mas,0.5);
 	sig = Pan2.ar(sig,pan)* amp.lag(1);
-	Out.ar(out, ((0)!0 ++ sig));
+	Out.ar(out, [((0)!0 ++ sig)]);
 }).add;
 //------------------------------------------------------------
 ~init = ~init <> {
@@ -55,7 +55,7 @@ SynthDef(\pullstretchMonoQB, {|out, amp = 1, buffer = 0, envbuf = -1, pch = 1.0,
 
 	synth.set(\pch, pch.midiratio);
 	synth.set(\speed, speed);
-	synth.set(\amp, amp * 4);
+	synth.set(\amp, amp * 1);
 	synth.set(\pan, pan);
 };
 //------------------------------------------------------------
