@@ -49,6 +49,19 @@ SynthDef(\drumkit, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 	Pdef(m.ptn,
 		Pbind(
 			\instrument, \drumkit,			
+			\bufnum, Pfunc{
+				if(bi >= (~buffers.size-1),{bi=0});
+				~buffers[bi];
+			},
+			\octave, Pseq([5].stutter(24), inf),
+			\start, 0,
+			\note, Pseq([40], inf),
+			\dur, Pseq([1] * dur, inf),
+			\pan, Pwhite(-0.3,0.3),
+			\attack, 0.01,
+			\release,1.3,
+			\args, #[],
+
   		\type, \customVisualEvent,
 			\shape, \circle,
 			\sx, Pwhite(-0.02,0.02),
@@ -64,19 +77,6 @@ SynthDef(\drumkit, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 			// \startColor, Color.hsv(0.0,1,1.0,1),
 			// \endColor, Color.hsv(0.1,1,1.0,0.0),
       \duration, 0.3,
-
-			\bufnum, Pfunc{
-				if(bi >= (~buffers.size-1),{bi=0});
-				~buffers[bi];
-			},
-			\octave, Pseq([5].stutter(24), inf),
-			\start, 0,
-			\note, Pseq([40], inf),
-			\dur, Pseq([1] * dur, inf),
-			\pan, Pwhite(-0.3,0.3),
-			\attack, 0.01,
-			\release,1.3,
-			\args, #[],
 		)
 	);
 
