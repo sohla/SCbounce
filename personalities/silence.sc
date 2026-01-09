@@ -24,33 +24,42 @@ m.rrateMassFilteredDecay = 0.4;
 //------------------------------------------------------------
 ~next = {|d|
 
-// var ev = (
-// 		type: \customVisualEvent,
-// 		amp: 0,
-// 		viewID: d.port,
-// 		shape: \cirlce,
-// 		fill: false,
-// 		rotate: 0,
-// 		startSize: 100,
-// 		endSize: 200,
-// 		duration: 1,
-// 		startColor: Color.red,
-// 		endColor: Color.blue.alpha_(0),
-// 		startWidth: 10,
-// 		endWidth: 1,
-// 		sx: 0,
-// 		sy: 0,
-// 		ex: 0,
-// 		ey: 0,
-// 		rotation: 0,//TempoClock.beats.mod(pi) * 0.25,
-// 		modulation: (
-// 			type: \radial,
-// 			freq: 0.02,
-// 			amp: 0,
-// 			harmonics: 1
-// 		),
-// 	);
-// 	ev.play;
+	// Create multiple raindrops
+	5.do {
+		var xPos = 1.0.rand2; // Random horizontal position between -1 and 1
+		var dropSize = rrand(0.2, 3); // Small variation in size
+		var dropDuration = rrand(1.5, 2.5); // Slightly different fall speeds
+		var colorChoice = [
+			Color.green,
+			Color(0.0, 0.8, 0.3), // bright green
+			Color(0.2, 0.7, 0.5), // cyan-green
+			Color.blue,
+			Color(0.0, 0.5, 0.8), // light blue
+			Color.cyan
+		].choose;
+
+		var ev = (
+			type: \customVisualEvent,
+			amp: 0,
+			viewID: d.port,
+			shape: \circle,
+			fill: true,
+			rotate: 0,
+			startSize: dropSize,
+			endSize: dropSize * 0.8, // Slightly shrink as it falls
+			duration: dropDuration,
+			startColor: colorChoice.alpha_(1).lighten(Color.cyan),	
+			endColor: colorChoice.alpha_(0.2),
+			startWidth: 1,
+			endWidth: 1,
+			sx: xPos,
+			sy: -0.9, // Start at top
+			ex: xPos + rrand(-0.05, 0.05), // Slight horizontal drift
+			ey: 0.9, // Fall to bottom
+			rotation: 0,
+		);
+		ev.play;
+	};
 };
 
 //------------------------------------------------------------
