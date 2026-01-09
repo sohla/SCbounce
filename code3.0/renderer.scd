@@ -216,9 +216,12 @@ Event.addEventType(\customVisualEvent, {
         \modulation: ~modulation,  // Optional modulation settings
         \startTime: thisThread.seconds
     );
-    views[viewID][\visualEvents] = views[viewID][\visualEvents].add(event);
-    ~type = \note;
-    currentEnvironment.play;
+
+    if(views[viewID].isNil.not,{ // must check in case gui has not been fully built yet
+        views[viewID][\visualEvents] = views[viewID][\visualEvents].add(event);
+        ~type = \note;
+        currentEnvironment.play;
+    });
 });
 
 

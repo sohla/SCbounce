@@ -2,6 +2,7 @@
 	[
 
 	"silence",
+  "button1",
 	"wind1",
   "rain1",
 	"thunder",
@@ -25,7 +26,6 @@
   "velocity2",
   "temp_synth_4button",
   "temp_synth_buffer_4button",
-  "button1",
 	"animalMat",
 	"quackQuack",
 	"chicken1",

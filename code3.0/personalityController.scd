@@ -238,7 +238,7 @@ var loadPersonality = { |port, index|
     d.env.use{
         Routine{
             s.sync;
-            ~init.();
+            ~init.(d);
             s.sync;
         }.play;
     };
@@ -297,7 +297,7 @@ var reLoadPersonality = { |port, index|
     d.env.use{
         Routine{
             s.sync;
-            ~init.();
+            ~init.(d);
             s.sync;
         }.play;
     };

@@ -1,4 +1,5 @@
 var m = ~model;
+
 m.accelMassFilteredAttack = 0.7;
 m.accelMassFilteredDecay = 0.2;
 m.rrateMassFilteredAttack = 0.7;
@@ -7,7 +8,9 @@ m.rrateMassFilteredDecay = 0.4;
 //------------------------------------------------------------
 
 //------------------------------------------------------------
-~init = ~init <> {
+~init = ~init <> {|d|
+
+
 };
 //------------------------------------------------------------
 ~deinit = ~deinit <> {
@@ -15,10 +18,39 @@ m.rrateMassFilteredDecay = 0.4;
 
 //------------------------------------------------------------
 ~onEvent = {|e|
+
 };
 
 //------------------------------------------------------------
 ~next = {|d|
+
+// var ev = (
+// 		type: \customVisualEvent,
+// 		amp: 0,
+// 		viewID: d.port,
+// 		shape: \cirlce,
+// 		fill: false,
+// 		rotate: 0,
+// 		startSize: 100,
+// 		endSize: 200,
+// 		duration: 1,
+// 		startColor: Color.red,
+// 		endColor: Color.blue.alpha_(0),
+// 		startWidth: 10,
+// 		endWidth: 1,
+// 		sx: 0,
+// 		sy: 0,
+// 		ex: 0,
+// 		ey: 0,
+// 		rotation: 0,//TempoClock.beats.mod(pi) * 0.25,
+// 		modulation: (
+// 			type: \radial,
+// 			freq: 0.02,
+// 			amp: 0,
+// 			harmonics: 1
+// 		),
+// 	);
+// 	ev.play;
 };
 
 //------------------------------------------------------------
