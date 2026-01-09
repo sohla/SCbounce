@@ -24,41 +24,58 @@ m.rrateMassFilteredDecay = 0.4;
 //------------------------------------------------------------
 ~next = {|d|
 
-	// Create multiple raindrops
-	5.do {
-		var xPos = 1.0.rand2; // Random horizontal position between -1 and 1
-		var dropSize = rrand(0.2, 3); // Small variation in size
-		var dropDuration = rrand(1.5, 2.5); // Slightly different fall speeds
-		var colorChoice = [
-			Color.green,
-			Color(0.0, 0.8, 0.3), // bright green
-			Color(0.2, 0.7, 0.5), // cyan-green
-			Color.blue,
-			Color(0.0, 0.5, 0.8), // light blue
-			Color.cyan
-		].choose;
+	// Water droplet falling and creating ripples
+	var xPos = rrand(-0.6, 0.6); // Random horizontal position
+	var waterSurface = 0.2; // Where the water is
+	var dropSize = 3;
 
-		var ev = (
+	// Falling droplet
+	var droplet = (
+		type: \customVisualEvent,
+		amp: 0,
+		viewID: d.port,
+		shape: \circle,
+		fill: true,
+		rotate: 0,
+		startSize: dropSize,
+		endSize: dropSize,
+		duration: 1.2,
+		startColor: Color(0.3, 0.6, 0.9).alpha_(0.8),
+		endColor: Color(0.3, 0.6, 0.9).alpha_(0.8),
+		startWidth: 1,
+		endWidth: 1,
+		sx: xPos,
+		sy: -0.8, // Start at top
+		ex: xPos,
+		ey: waterSurface, // Fall to water surface
+		rotation: 0,
+	);
+	droplet.play;
+
+	// Expanding ripple circles at impact point
+	2.do { |i|
+		var ripple = (
 			type: \customVisualEvent,
 			amp: 0,
 			viewID: d.port,
 			shape: \circle,
-			fill: true,
+			fill: false,
 			rotate: 0,
-			startSize: dropSize,
-			endSize: dropSize * 0.8, // Slightly shrink as it falls
-			duration: dropDuration,
-			startColor: colorChoice.alpha_(1).lighten(Color.cyan),	
-			endColor: colorChoice.alpha_(0.2),
-			startWidth: 1,
-			endWidth: 1,
+			startSize: 5,
+			endSize: 80,
+			duration: 2.0 + (i * 0.3),
+			startColor: Color(0.2, 0.5, 0.8).alpha_(0.5),
+			endColor: Color(0.2, 0.5, 0.8).alpha_(0),
+			startWidth: 2,
+			endWidth: 0.5,
 			sx: xPos,
-			sy: -0.9, // Start at top
-			ex: xPos + rrand(-0.05, 0.05), // Slight horizontal drift
-			ey: 0.9, // Fall to bottom
+			sy: waterSurface, // At water surface
+			ex: xPos,
+			ey: waterSurface,
 			rotation: 0,
 		);
-		ev.play;
+		// Delay second ripple slightly
+		SystemClock.sched(1.2 + (i * 0.2), { ripple.play; nil });
 	};
 };
 
