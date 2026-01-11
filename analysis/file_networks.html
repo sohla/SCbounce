@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File Change Network Explorer</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #0a0a0a;
+            color: #e0e0e0;
+            overflow: hidden;
+        }
+        
+        #container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+        }
+        
+        #main-view {
+            flex: 1;
+            position: relative;
+            transition: margin-right 0.3s ease-in-out;
+        }
+        
+        #main-view.sidebar-open {
+            margin-right: 400px;
+        }
+        
+        #network-svg {
+            width: 100%;
+            height: 100%;
+            cursor: move;
+        }
+        
+        #controls {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(30, 30, 30, 0.95);
+            padding: 20px;
+            border-radius: 8px;
+            border: 2px solid #4CAF50;
+            z-index: 100;
+            min-width: 300px;
+        }
+        
+        #controls h1 {
+            color: #4CAF50;
+            font-size: 24px;
+            margin-bottom: 15px;
+        }
+        
+        #controls p {
+            color: #888;
+            font-size: 14px;
+            margin-bottom: 15px;
+            line-height: 1.4;
+        }
+        
+        .control-group {
+            margin-bottom: 15px;
+        }
+        
+        .control-group label {
+            display: block;
+            color: #ccc;
+            font-size: 13px;
+            margin-bottom: 5px;
+        }
+        
+        .control-group select, .control-group input {
+            width: 100%;
+            padding: 8px;
+            background: #333;
+            border: 1px solid #555;
+            border-radius: 4px;
+            color: #fff;
+            font-size: 13px;
+        }
+        
+        .control-group select:focus, .control-group input:focus {
+            border-color: #4CAF50;
+            outline: none;
+        }
+        
+        .stats {
+            background: #222;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 15px;
+        }
+        
+        .stats .stat-item {
+            display: flex;
+            justify-content: space-between;
+            margin: 5px 0;
+            font-size: 12px;
+        }
+        
+        .stats .stat-label {
+            color: #888;
+        }
+        
+        .stats .stat-value {
+            color: #4CAF50;
+            font-weight: bold;
+        }
+        
+        #sidebar {
+            width: 0;
+            background: rgba(30, 30, 30, 0.98);
+            border-left: 2px solid #4CAF50;
+            overflow-y: auto;
+            transition: width 0.3s ease-in-out;
+            z-index: 200;
+        }
+        
+        #sidebar.active {
+            width: 400px;
+        }
+        
+        #sidebar-content {
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        #sidebar h2 {
+            color: #4CAF50;
+            margin-bottom: 15px;
+            font-size: 20px;
+            border-bottom: 2px solid #4CAF50;
+            padding-bottom: 10px;
+        }
+        
+        #sidebar .file-info {
+            background: #222;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        #sidebar .file-path {
+            font-family: monospace;
+            color: #4CAF50;
+            font-size: 14px;
+            word-break: break-all;
+            margin-bottom: 10px;
+        }
+        
+        #sidebar .file-category {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .commit-item {
+            background: #333;
+            padding: 10px;
+            margin: 8px 0;
+            border-radius: 4px;
+            border-left: 3px solid #4CAF50;
+            font-size: 13px;
+        }
+        
+        .commit-hash {
+            font-family: monospace;
+            color: #888;
+            font-size: 11px;
+        }
+        
+        .commit-date {
+            color: #999;
+            font-size: 12px;
+            margin-top: 3px;
+        }
+        
+        .commit-author {
+            color: #4CAF50;
+            font-size: 12px;
+        }
+        
+        .commit-subject {
+            color: #e0e0e0;
+            margin-top: 5px;
+            line-height: 1.3;
+        }
+        
+        #close-sidebar {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: #444;
+            border: none;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        #close-sidebar:hover {
+            background: #555;
+        }
+        
+        /* Network styling */
+        .node {
+            cursor: pointer;
+            stroke-width: 2px;
+        }
+        
+        .node:hover {
+            stroke-width: 3px;
+            filter: brightness(1.3);
+        }
+        
+        .node.selected {
+            stroke: #fff;
+            stroke-width: 3px;
+        }
+        
+        .link {
+            stroke: #666;
+            stroke-opacity: 0.6;
+        }
+        
+        .link:hover {
+            stroke: #4CAF50;
+            stroke-opacity: 0.8;
+        }
+        
+        .link.highlighted {
+            stroke: #4CAF50;
+            stroke-opacity: 0.9;
+            stroke-width: 3px;
+        }
+        
+        .node-label {
+            fill: #fff;
+            font-size: 10px;
+            text-anchor: middle;
+            pointer-events: none;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+        
+        .legend {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(30, 30, 30, 0.95);
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #444;
+            z-index: 100;
+        }
+        
+        .legend h3 {
+            color: #4CAF50;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin: 5px 0;
+            font-size: 12px;
+        }
+        
+        .legend-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <div id="main-view">
+            <div id="controls">
+                <h1>File Networks</h1>
+                <p>Explore which files are frequently modified together in your git history.</p>
+                
+                <div class="control-group">
+                    <label for="layout-select">Layout Algorithm:</label>
+                    <select id="layout-select">
+                        <option value="force">Force-directed</option>
+                        <option value="circular">Circular</option>
+                        <option value="hierarchical">Hierarchical</option>
+                    </select>
+                </div>
+                
+                <div class="control-group">
+                    <label for="filter-category">Filter by Category:</label>
+                    <select id="filter-category">
+                        <option value="all">All Files</option>
+                    </select>
+                </div>
+                
+                <div class="control-group">
+                    <label for="min-connections">Minimum Connections:</label>
+                    <input type="range" id="min-connections" min="2" max="18" value="2">
+                    <span id="min-connections-value">2</span>
+                </div>
+                
+                <div class="stats">
+                    <div class="stat-item">
+                        <span class="stat-label">Files:</span>
+                        <span class="stat-value" id="stat-files">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Connections:</span>
+                        <span class="stat-value" id="stat-connections">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Total Commits:</span>
+                        <span class="stat-value" id="stat-commits">0</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="legend">
+                <h3>File Types</h3>
+                <div id="legend-items"></div>
+            </div>
+            
+            <svg id="network-svg"></svg>
+        </div>
+        
+        <div id="sidebar">
+            <button id="close-sidebar">✕ Close</button>
+            <div id="sidebar-content"></div>
+        </div>
+    </div>
+
+    <script>
+        let networkData = null;
+        let filteredData = null;
+        let svg, simulation, nodes, links, labels;
+        let selectedNode = null;
+        
+        // Color scheme for file categories
+        const categoryColors = {
+            'SuperCollider': '#FF6B6B',
+            'JavaScript': '#4ECDC4',
+            'Python': '#45B7D1',
+            'HTML': '#96CEB4',
+            'CSS': '#FFEAA7',
+            'Config': '#DDA0DD',
+            'Documentation': '#98D8C8',
+            'Audio': '#F7DC6F',
+            'Root': '#4CAF50',
+            'Other': '#95A5A6'
+        };
+        
+        // Initialize visualization
+        function initVisualization() {
+            svg = d3.select('#network-svg');
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+            
+            svg.attr('width', width).attr('height', height);
+            
+            // Add zoom behavior
+            const zoom = d3.zoom()
+                .scaleExtent([0.1, 4])
+                .on('zoom', (event) => {
+                    svg.select('g').attr('transform', event.transform);
+                });
+            
+            svg.call(zoom);
+            
+            // Create main group
+            const g = svg.append('g');
+            
+            // Create groups for links and nodes
+            g.append('g').attr('class', 'links');
+            g.append('g').attr('class', 'nodes');
+            g.append('g').attr('class', 'labels');
+        }
+        
+        // Filter data based on current settings
+        function filterData() {
+            if (!networkData) {
+                console.log('No network data available');
+                return;
+            }
+            
+            const categoryFilter = document.getElementById('filter-category').value;
+            const minConnections = parseInt(document.getElementById('min-connections').value);
+            
+            console.log('Filtering with category:', categoryFilter, 'minConnections:', minConnections);
+            
+            // Filter nodes
+            let filteredNodes = networkData.nodes;
+            if (categoryFilter !== 'all') {
+                filteredNodes = filteredNodes.filter(node => node.category === categoryFilter);
+                console.log('After category filter:', filteredNodes.length, 'nodes');
+            }
+            
+            // Filter edges based on minimum connections and available nodes
+            const nodeIds = new Set(filteredNodes.map(node => node.id));
+            const filteredEdges = networkData.edges.filter(edge => 
+                edge.weight >= minConnections && 
+                nodeIds.has(edge.source) && 
+                nodeIds.has(edge.target)
+            );
+            
+            console.log('After connection filter:', filteredEdges.length, 'edges');
+            
+            // Remove isolated nodes
+            const connectedNodeIds = new Set();
+            filteredEdges.forEach(edge => {
+                connectedNodeIds.add(edge.source);
+                connectedNodeIds.add(edge.target);
+            });
+            
+            filteredNodes = filteredNodes.filter(node => connectedNodeIds.has(node.id));
+            
+            console.log('Final result:', filteredNodes.length, 'nodes,', filteredEdges.length, 'edges');
+            
+            // If no nodes remain, show a message but don't break the visualization
+            if (filteredNodes.length === 0) {
+                console.log('No nodes match the current filter criteria');
+            }
+            
+            filteredData = {
+                nodes: filteredNodes,
+                edges: filteredEdges
+            };
+            
+            updateStats();
+            updateVisualization();
+        }
+        
+        // Update statistics display
+        function updateStats() {
+            if (!filteredData) return;
+            
+            document.getElementById('stat-files').textContent = filteredData.nodes.length;
+            document.getElementById('stat-connections').textContent = filteredData.edges.length;
+            document.getElementById('stat-commits').textContent = networkData.statistics.total_commits;
+        }
+        
+        // Update network visualization
+        function updateVisualization() {
+            if (!filteredData) {
+                console.log('No filtered data for visualization');
+                return;
+            }
+            
+            console.log('Updating visualization with', filteredData.nodes.length, 'nodes and', filteredData.edges.length, 'edges');
+            
+            if (filteredData.nodes.length === 0) {
+                console.log('No nodes to display - clearing visualization');
+                svg.select('.links').selectAll('*').remove();
+                svg.select('.nodes').selectAll('*').remove();
+                svg.select('.labels').selectAll('*').remove();
+                
+                // Add text message when no data
+                svg.select('g').selectAll('text.no-data').remove();
+                svg.select('g').append('text')
+                    .attr('class', 'no-data')
+                    .attr('x', width / 2)
+                    .attr('y', height / 2)
+                    .attr('text-anchor', 'middle')
+                    .attr('fill', '#888')
+                    .attr('font-size', '18px')
+                    .text('No connections match the current filter criteria');
+                
+                return;
+            } else {
+                // Remove no-data message if it exists
+                svg.select('g').selectAll('text.no-data').remove();
+            }
+            
+            const sidebarActive = document.getElementById('sidebar').classList.contains('active');
+            const width = sidebarActive ? window.innerWidth - 400 : window.innerWidth;
+            const height = window.innerHeight;
+            
+            console.log('Visualization dimensions:', width, 'x', height);
+            
+            // Clear previous visualization
+            svg.select('.links').selectAll('*').remove();
+            svg.select('.nodes').selectAll('*').remove();
+            svg.select('.labels').selectAll('*').remove();
+            
+            // Stop previous simulation
+            if (simulation) simulation.stop();
+            
+            // Create new simulation
+            const layoutType = document.getElementById('layout-select').value;
+            simulation = createSimulation(layoutType, width, height);
+            
+            // Create links
+            links = svg.select('.links')
+                .selectAll('line')
+                .data(filteredData.edges)
+                .enter()
+                .append('line')
+                .attr('class', 'link')
+                .style('stroke-width', d => Math.sqrt(d.weight))
+                .on('mouseover', function(event, d) {
+                    d3.select(this).classed('highlighted', true);
+                    showLinkTooltip(event, d);
+                })
+                .on('mouseout', function() {
+                    d3.select(this).classed('highlighted', false);
+                    hideTooltip();
+                });
+            
+            // Create nodes
+            nodes = svg.select('.nodes')
+                .selectAll('circle')
+                .data(filteredData.nodes)
+                .enter()
+                .append('circle')
+                .attr('class', 'node')
+                .attr('r', d => Math.sqrt(d.commit_count) + 3)
+                .style('fill', d => categoryColors[d.category] || categoryColors['Other'])
+                .style('stroke', d => d3.rgb(categoryColors[d.category] || categoryColors['Other']).darker(2))
+                .on('click', function(event, d) {
+                    selectNode(d);
+                    showFileDetails(d);
+                })
+                .on('mouseover', function(event, d) {
+                    d3.select(this).classed('selected', true);
+                    highlightConnections(d);
+                })
+                .on('mouseout', function() {
+                    d3.select(this).classed('selected', false);
+                    unhighlightConnections();
+                });
+            
+            // Create labels
+            labels = svg.select('.labels')
+                .selectAll('text')
+                .data(filteredData.nodes.filter(d => d.commit_count > 5)) // Only show labels for active files
+                .enter()
+                .append('text')
+                .attr('class', 'node-label')
+                .text(d => d.label)
+                .style('font-size', d => Math.min(12, Math.sqrt(d.commit_count) + 6) + 'px');
+            
+            // Add drag behavior
+            nodes.call(d3.drag()
+                .on('start', dragstarted)
+                .on('drag', dragged)
+                .on('end', dragended));
+            
+            // Update positions on tick
+            simulation.on('tick', () => {
+                if (links) {
+                    links
+                        .attr('x1', d => d.source.x)
+                        .attr('y1', d => d.source.y)
+                        .attr('x2', d => d.target.x)
+                        .attr('y2', d => d.target.y);
+                }
+                
+                if (nodes) {
+                    nodes
+                        .attr('cx', d => d.x)
+                        .attr('cy', d => d.y);
+                }
+                
+                if (labels) {
+                    labels
+                        .attr('x', d => d.x)
+                        .attr('y', d => d.y + 3);
+                }
+            });
+        }
+        
+        // Create simulation based on layout type
+        function createSimulation(layoutType, width, height) {
+            let sim;
+            
+            switch (layoutType) {
+                case 'force':
+                    sim = d3.forceSimulation(filteredData.nodes)
+                        .force('link', d3.forceLink(filteredData.edges).id(d => d.id).distance(50))
+                        .force('charge', d3.forceManyBody().strength(-200))
+                        .force('center', d3.forceCenter(width / 2, height / 2))
+                        .force('collision', d3.forceCollide().radius(d => Math.sqrt(d.commit_count) + 5));
+                    break;
+                    
+                case 'circular':
+                    // Position nodes in a circle
+                    const radius = Math.min(width, height) * 0.3;
+                    filteredData.nodes.forEach((node, i) => {
+                        const angle = (i / filteredData.nodes.length) * 2 * Math.PI;
+                        node.fx = width / 2 + radius * Math.cos(angle);
+                        node.fy = height / 2 + radius * Math.sin(angle);
+                    });
+                    
+                    sim = d3.forceSimulation(filteredData.nodes)
+                        .force('link', d3.forceLink(filteredData.edges).id(d => d.id).distance(30));
+                    break;
+                    
+                case 'hierarchical':
+                    // Simple hierarchical layout by category
+                    const categories = [...new Set(filteredData.nodes.map(d => d.category))];
+                    const categoryY = {};
+                    categories.forEach((cat, i) => {
+                        categoryY[cat] = (height / (categories.length + 1)) * (i + 1);
+                    });
+                    
+                    filteredData.nodes.forEach((node, i) => {
+                        node.fx = (width / (filteredData.nodes.length + 1)) * (i + 1);
+                        node.fy = categoryY[node.category];
+                    });
+                    
+                    sim = d3.forceSimulation(filteredData.nodes)
+                        .force('link', d3.forceLink(filteredData.edges).id(d => d.id).distance(40))
+                        .force('collision', d3.forceCollide().radius(d => Math.sqrt(d.commit_count) + 5));
+                    break;
+            }
+            
+            return sim;
+        }
+        
+        // Highlight connections when hovering over a node
+        function highlightConnections(node) {
+            const connectedEdges = filteredData.edges.filter(edge => 
+                edge.source === node || edge.target === node ||
+                edge.source.id === node.id || edge.target.id === node.id
+            );
+            
+            links.classed('highlighted', d => 
+                connectedEdges.includes(d)
+            );
+        }
+        
+        function unhighlightConnections() {
+            links.classed('highlighted', false);
+        }
+        
+        // Select a node and show its details
+        function selectNode(node) {
+            nodes.classed('selected', false);
+            nodes.filter(d => d.id === node.id).classed('selected', true);
+            selectedNode = node;
+        }
+        
+        // Show detailed information about a file
+        function showFileDetails(node) {
+            const sidebar = document.getElementById('sidebar');
+            const content = document.getElementById('sidebar-content');
+            
+            const categoryColor = categoryColors[node.category] || categoryColors['Other'];
+            
+            // Find connected files
+            const connections = filteredData.edges
+                .filter(edge => edge.source.id === node.id || edge.target.id === node.id)
+                .map(edge => {
+                    const other = edge.source.id === node.id ? edge.target : edge.source;
+                    return { file: other, weight: edge.weight };
+                })
+                .sort((a, b) => b.weight - a.weight);
+            
+            let html = `
+                <div class="file-info">
+                    <div class="file-path">${node.full_path}</div>
+                    <span class="file-category" style="background-color: ${categoryColor}20; color: ${categoryColor}; border: 1px solid ${categoryColor};">
+                        ${node.category}
+                    </span>
+                    <div style="color: #4CAF50; font-weight: bold; margin-top: 10px;">
+                        ${node.commit_count} commits
+                    </div>
+                </div>
+                
+                <h3 style="color: #4CAF50; margin-bottom: 10px;">Connected Files (${connections.length})</h3>
+            `;
+            
+            connections.slice(0, 10).forEach(conn => {
+                html += `
+                    <div style="background: #333; padding: 8px; margin: 5px 0; border-radius: 4px; font-size: 12px;">
+                        <div style="color: #4CAF50;">${conn.file.label}</div>
+                        <div style="color: #888;">${conn.weight} shared commits</div>
+                    </div>
+                `;
+            });
+            
+            html += `<h3 style="color: #4CAF50; margin: 20px 0 10px;">Recent Commits</h3>`;
+            
+            node.commits.slice(0, 10).forEach(commit => {
+                html += `
+                    <div class="commit-item">
+                        <div class="commit-hash">${commit.hash}</div>
+                        <div class="commit-date">${commit.date} • <span class="commit-author">${commit.author}</span></div>
+                        <div class="commit-subject">${commit.subject}</div>
+                        <div style="color: #666; font-size: 11px; margin-top: 3px;">${commit.files_count} files changed</div>
+                    </div>
+                `;
+            });
+            
+            content.innerHTML = html;
+            sidebar.classList.add('active');
+            document.getElementById('main-view').classList.add('sidebar-open');
+        }
+        
+        // Drag functions
+        function dragstarted(event, d) {
+            if (!event.active) simulation.alphaTarget(0.3).restart();
+            d.fx = d.x;
+            d.fy = d.y;
+        }
+        
+        function dragged(event, d) {
+            d.fx = event.x;
+            d.fy = event.y;
+        }
+        
+        function dragended(event, d) {
+            if (!event.active) simulation.alphaTarget(0);
+            d.fx = null;
+            d.fy = null;
+        }
+        
+        // Tooltip functions
+        function showLinkTooltip(event, link) {
+            // Simple tooltip - could be enhanced
+            console.log(`Connection: ${link.source.label} ↔ ${link.target.label} (${link.weight} commits)`);
+        }
+        
+        function hideTooltip() {
+            // Hide tooltip
+        }
+        
+        // Update legend
+        function updateLegend() {
+            const legendItems = document.getElementById('legend-items');
+            legendItems.innerHTML = '';
+            
+            const categories = [...new Set(networkData.nodes.map(n => n.category))];
+            categories.forEach(category => {
+                const color = categoryColors[category] || categoryColors['Other'];
+                legendItems.innerHTML += `
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: ${color};"></div>
+                        <span>${category}</span>
+                    </div>
+                `;
+            });
+        }
+        
+        // Event listeners
+        function setupEventListeners() {
+            document.getElementById('layout-select').addEventListener('change', updateVisualization);
+            document.getElementById('filter-category').addEventListener('change', filterData);
+            document.getElementById('min-connections').addEventListener('input', function() {
+                document.getElementById('min-connections-value').textContent = this.value;
+                console.log('Min connections changed to:', this.value);
+                filterData();
+            });
+            
+            document.getElementById('close-sidebar').addEventListener('click', function() {
+                document.getElementById('sidebar').classList.remove('active');
+                document.getElementById('main-view').classList.remove('sidebar-open');
+                if (selectedNode) {
+                    nodes.classed('selected', false);
+                    selectedNode = null;
+                }
+            });
+        }
+        
+        
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+            svg.attr('width', width).attr('height', height);
+            if (simulation) {
+                simulation.force('center', d3.forceCenter(width / 2, height / 2));
+                simulation.restart();
+            }
+        });
+        
+        // Load data and initialize
+        d3.json('file_networks.json').then(function(data) {
+            networkData = data;
+            
+            console.log('Raw data loaded:', data.nodes.length, 'nodes,', data.edges.length, 'edges');
+            console.log('Edge weight range:', Math.min(...data.edges.map(e => e.weight)), 'to', Math.max(...data.edges.map(e => e.weight)));
+            
+            // Populate category filter
+            const categorySelect = document.getElementById('filter-category');
+            data.statistics.categories.forEach(category => {
+                const option = document.createElement('option');
+                option.value = category;
+                option.textContent = category;
+                categorySelect.appendChild(option);
+            });
+            
+            // Initialize visualization
+            initVisualization();
+            updateLegend();
+            setupEventListeners();
+            
+            console.log('About to call initial filterData...');
+            filterData();
+            
+            console.log('File network visualization loaded');
+            console.log(`${data.nodes.length} files, ${data.edges.length} connections`);
+        }).catch(error => {
+            console.error('Error loading file network data:', error);
+        });
+    </script>
+</body>
+</html>
