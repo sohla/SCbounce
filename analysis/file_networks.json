@@ -1028,9 +1028,16 @@
       "id": "code3.0/personalityController.scd",
       "label": "personalityController.scd",
       "full_path": "code3.0/personalityController.scd",
-      "commit_count": 41,
+      "commit_count": 42,
       "category": "SuperCollider",
       "commits": [
+        {
+          "hash": "0961cfa8",
+          "date": "2026-01-09",
+          "author": "sohla",
+          "subject": "can have visuals at boot",
+          "files_count": 5
+        },
         {
           "hash": "8a6d9146",
           "date": "2025-12-19",
@@ -1964,6 +1971,197 @@
       ]
     },
     {
+      "id": "personalities/silence.sc",
+      "label": "silence.sc",
+      "full_path": "personalities/silence.sc",
+      "commit_count": 26,
+      "category": "SuperCollider",
+      "commits": [
+        {
+          "hash": "5d45bc8b",
+          "date": "2026-01-09",
+          "author": "sohla",
+          "subject": "waves",
+          "files_count": 1
+        },
+        {
+          "hash": "278a8faf",
+          "date": "2026-01-09",
+          "author": "sohla",
+          "subject": "rain and puddles",
+          "files_count": 1
+        },
+        {
+          "hash": "d99de0fb",
+          "date": "2026-01-09",
+          "author": "sohla",
+          "subject": "making visuals with claude",
+          "files_count": 2
+        },
+        {
+          "hash": "0961cfa8",
+          "date": "2026-01-09",
+          "author": "sohla",
+          "subject": "can have visuals at boot",
+          "files_count": 5
+        },
+        {
+          "hash": "f208afce",
+          "date": "2025-11-10",
+          "author": "sohla",
+          "subject": "removed vis & chair",
+          "files_count": 7
+        },
+        {
+          "hash": "ad7b77bc",
+          "date": "2025-11-10",
+          "author": "sohla",
+          "subject": "sil",
+          "files_count": 1
+        },
+        {
+          "hash": "10d1da82",
+          "date": "2025-11-07",
+          "author": "sohla",
+          "subject": "fixed digiIn array bug",
+          "files_count": 6
+        },
+        {
+          "hash": "1f739b1d",
+          "date": "2025-11-04",
+          "author": "sohla",
+          "subject": "5 devices",
+          "files_count": 3
+        },
+        {
+          "hash": "f826bc7e",
+          "date": "2025-10-15",
+          "author": "sohla",
+          "subject": "pre allessio",
+          "files_count": 7
+        },
+        {
+          "hash": "cf2cb140",
+          "date": "2025-10-13",
+          "author": "sohla",
+          "subject": "refactor gyro and added filter",
+          "files_count": 5
+        },
+        {
+          "hash": "9a498f1a",
+          "date": "2025-10-07",
+          "author": "sohla",
+          "subject": "melbb more",
+          "files_count": 4
+        },
+        {
+          "hash": "957bc85a",
+          "date": "2025-10-06",
+          "author": "sohla",
+          "subject": "pre mel vox session:",
+          "files_count": 10
+        },
+        {
+          "hash": "5d4a675c",
+          "date": "2025-10-06",
+          "author": "sohla",
+          "subject": "tweeks",
+          "files_count": 5
+        },
+        {
+          "hash": "e61d4ee0",
+          "date": "2025-10-01",
+          "author": "sohla",
+          "subject": "post mel, re-sorted out qauts!",
+          "files_count": 8
+        },
+        {
+          "hash": "895dfb3a",
+          "date": "2025-09-30",
+          "author": "sohla",
+          "subject": "tues am mel prep",
+          "files_count": 7
+        },
+        {
+          "hash": "ec20012f",
+          "date": "2025-09-29",
+          "author": "sohla",
+          "subject": "prep for Mel",
+          "files_count": 8
+        },
+        {
+          "hash": "45b03527",
+          "date": "2025-09-29",
+          "author": "sohla",
+          "subject": "playing with velocity",
+          "files_count": 4
+        },
+        {
+          "hash": "1ee390b2",
+          "date": "2025-08-25",
+          "author": "Steph OHara",
+          "subject": "improved rrate",
+          "files_count": 2
+        },
+        {
+          "hash": "e8b6cfba",
+          "date": "2025-08-25",
+          "author": "Steph OHara",
+          "subject": "looking at rotation",
+          "files_count": 2
+        },
+        {
+          "hash": "1a7e20fc",
+          "date": "2025-08-25",
+          "author": "Steph OHara",
+          "subject": "local quaternion maths",
+          "files_count": 3
+        },
+        {
+          "hash": "83cfc0b2",
+          "date": "2025-08-15",
+          "author": "sohla",
+          "subject": "enabled button working : but only stops calling ~next",
+          "files_count": 4
+        },
+        {
+          "hash": "1155ebd4",
+          "date": "2025-08-12",
+          "author": "sohla",
+          "subject": "need to fix enable bug : file watcher stops working",
+          "files_count": 4
+        },
+        {
+          "hash": "ae9d4fc0",
+          "date": "2025-05-12",
+          "author": "steph",
+          "subject": "new layout for details",
+          "files_count": 6
+        },
+        {
+          "hash": "6cebccbc",
+          "date": "2025-05-09",
+          "author": "steph",
+          "subject": "start refactor using internal OSC",
+          "files_count": 8
+        },
+        {
+          "hash": "0001c049",
+          "date": "2025-04-15",
+          "author": "steph",
+          "subject": "fixed view instancing",
+          "files_count": 5
+        },
+        {
+          "hash": "19054a49",
+          "date": "2024-11-18",
+          "author": "steph",
+          "subject": "prep for reh",
+          "files_count": 7
+        }
+      ]
+    },
+    {
       "id": "personalities/harp1.sc",
       "label": "harp1.sc",
       "full_path": "personalities/harp1.sc",
@@ -2304,169 +2502,6 @@
       ]
     },
     {
-      "id": "personalities/silence.sc",
-      "label": "silence.sc",
-      "full_path": "personalities/silence.sc",
-      "commit_count": 22,
-      "category": "SuperCollider",
-      "commits": [
-        {
-          "hash": "f208afce",
-          "date": "2025-11-10",
-          "author": "sohla",
-          "subject": "removed vis & chair",
-          "files_count": 7
-        },
-        {
-          "hash": "ad7b77bc",
-          "date": "2025-11-10",
-          "author": "sohla",
-          "subject": "sil",
-          "files_count": 1
-        },
-        {
-          "hash": "10d1da82",
-          "date": "2025-11-07",
-          "author": "sohla",
-          "subject": "fixed digiIn array bug",
-          "files_count": 6
-        },
-        {
-          "hash": "1f739b1d",
-          "date": "2025-11-04",
-          "author": "sohla",
-          "subject": "5 devices",
-          "files_count": 3
-        },
-        {
-          "hash": "f826bc7e",
-          "date": "2025-10-15",
-          "author": "sohla",
-          "subject": "pre allessio",
-          "files_count": 7
-        },
-        {
-          "hash": "cf2cb140",
-          "date": "2025-10-13",
-          "author": "sohla",
-          "subject": "refactor gyro and added filter",
-          "files_count": 5
-        },
-        {
-          "hash": "9a498f1a",
-          "date": "2025-10-07",
-          "author": "sohla",
-          "subject": "melbb more",
-          "files_count": 4
-        },
-        {
-          "hash": "957bc85a",
-          "date": "2025-10-06",
-          "author": "sohla",
-          "subject": "pre mel vox session:",
-          "files_count": 10
-        },
-        {
-          "hash": "5d4a675c",
-          "date": "2025-10-06",
-          "author": "sohla",
-          "subject": "tweeks",
-          "files_count": 5
-        },
-        {
-          "hash": "e61d4ee0",
-          "date": "2025-10-01",
-          "author": "sohla",
-          "subject": "post mel, re-sorted out qauts!",
-          "files_count": 8
-        },
-        {
-          "hash": "895dfb3a",
-          "date": "2025-09-30",
-          "author": "sohla",
-          "subject": "tues am mel prep",
-          "files_count": 7
-        },
-        {
-          "hash": "ec20012f",
-          "date": "2025-09-29",
-          "author": "sohla",
-          "subject": "prep for Mel",
-          "files_count": 8
-        },
-        {
-          "hash": "45b03527",
-          "date": "2025-09-29",
-          "author": "sohla",
-          "subject": "playing with velocity",
-          "files_count": 4
-        },
-        {
-          "hash": "1ee390b2",
-          "date": "2025-08-25",
-          "author": "Steph OHara",
-          "subject": "improved rrate",
-          "files_count": 2
-        },
-        {
-          "hash": "e8b6cfba",
-          "date": "2025-08-25",
-          "author": "Steph OHara",
-          "subject": "looking at rotation",
-          "files_count": 2
-        },
-        {
-          "hash": "1a7e20fc",
-          "date": "2025-08-25",
-          "author": "Steph OHara",
-          "subject": "local quaternion maths",
-          "files_count": 3
-        },
-        {
-          "hash": "83cfc0b2",
-          "date": "2025-08-15",
-          "author": "sohla",
-          "subject": "enabled button working : but only stops calling ~next",
-          "files_count": 4
-        },
-        {
-          "hash": "1155ebd4",
-          "date": "2025-08-12",
-          "author": "sohla",
-          "subject": "need to fix enable bug : file watcher stops working",
-          "files_count": 4
-        },
-        {
-          "hash": "ae9d4fc0",
-          "date": "2025-05-12",
-          "author": "steph",
-          "subject": "new layout for details",
-          "files_count": 6
-        },
-        {
-          "hash": "6cebccbc",
-          "date": "2025-05-09",
-          "author": "steph",
-          "subject": "start refactor using internal OSC",
-          "files_count": 8
-        },
-        {
-          "hash": "0001c049",
-          "date": "2025-04-15",
-          "author": "steph",
-          "subject": "fixed view instancing",
-          "files_count": 5
-        },
-        {
-          "hash": "19054a49",
-          "date": "2024-11-18",
-          "author": "steph",
-          "subject": "prep for reh",
-          "files_count": 7
-        }
-      ]
-    },
-    {
       "id": "personalities/list.sc",
       "label": "list.sc",
       "full_path": "personalities/list.sc",
@@ -2786,6 +2821,155 @@
       ]
     },
     {
+      "id": "code3.0/deviceView.scd",
+      "label": "deviceView.scd",
+      "full_path": "code3.0/deviceView.scd",
+      "commit_count": 20,
+      "category": "SuperCollider",
+      "commits": [
+        {
+          "hash": "d99de0fb",
+          "date": "2026-01-09",
+          "author": "sohla",
+          "subject": "making visuals with claude",
+          "files_count": 2
+        },
+        {
+          "hash": "ed1342b9",
+          "date": "2025-12-15",
+          "author": "steph",
+          "subject": "cleaning up ui",
+          "files_count": 2
+        },
+        {
+          "hash": "18d157e9",
+          "date": "2025-11-25",
+          "author": "sohla",
+          "subject": "fixes",
+          "files_count": 3
+        },
+        {
+          "hash": "01235e2f",
+          "date": "2025-11-25",
+          "author": "sohla",
+          "subject": "remove graph",
+          "files_count": 1
+        },
+        {
+          "hash": "99f089c9",
+          "date": "2025-11-17",
+          "author": "sohla",
+          "subject": "toots and trains",
+          "files_count": 21
+        },
+        {
+          "hash": "770fc957",
+          "date": "2025-10-16",
+          "author": "sohla",
+          "subject": "ui/ux",
+          "files_count": 8
+        },
+        {
+          "hash": "6c875f67",
+          "date": "2025-10-13",
+          "author": "sohla",
+          "subject": "button layout back to bottom",
+          "files_count": 5
+        },
+        {
+          "hash": "0153f5f6",
+          "date": "2025-10-07",
+          "author": "sohla",
+          "subject": "gui layout",
+          "files_count": 5
+        },
+        {
+          "hash": "175a93dc",
+          "date": "2025-08-27",
+          "author": "sohla",
+          "subject": "config hack : just wait a little",
+          "files_count": 2
+        },
+        {
+          "hash": "cc19ad6b",
+          "date": "2025-08-27",
+          "author": "sohla",
+          "subject": "stack layout of devices",
+          "files_count": 2
+        },
+        {
+          "hash": "024a4e08",
+          "date": "2025-08-27",
+          "author": "sohla",
+          "subject": "calibration tap",
+          "files_count": 3
+        },
+        {
+          "hash": "b1e45c77",
+          "date": "2025-08-22",
+          "author": "sohla",
+          "subject": "unload and reload personality / remove reload button!",
+          "files_count": 5
+        },
+        {
+          "hash": "8a03653e",
+          "date": "2025-08-22",
+          "author": "sohla",
+          "subject": "refactored 3d and plotter",
+          "files_count": 4
+        },
+        {
+          "hash": "86477e81",
+          "date": "2025-08-22",
+          "author": "sohla",
+          "subject": "prev and next button rf",
+          "files_count": 4
+        },
+        {
+          "hash": "803a49ae",
+          "date": "2025-08-22",
+          "author": "sohla",
+          "subject": "reload button rf",
+          "files_count": 3
+        },
+        {
+          "hash": "a9a09f94",
+          "date": "2025-08-22",
+          "author": "sohla",
+          "subject": "bat level update",
+          "files_count": 1
+        },
+        {
+          "hash": "c8cf84c3",
+          "date": "2025-08-19",
+          "author": "sohla",
+          "subject": "checking rt audio",
+          "files_count": 4
+        },
+        {
+          "hash": "1d2852bd",
+          "date": "2025-08-19",
+          "author": "sohla",
+          "subject": "tweeks",
+          "files_count": 4
+        },
+        {
+          "hash": "0c2985c4",
+          "date": "2025-08-18",
+          "author": "soh_la",
+          "subject": "ui and system ux",
+          "files_count": 7
+        },
+        {
+          "hash": "8713b79a",
+          "date": "2025-08-15",
+          "author": "sohla",
+          "subject": "refactor project",
+          "files_count": 9
+        }
+      ]
+    },
+    {
       "id": "code3.0/systemView.scd",
       "label": "systemView.scd",
       "full_path": "code3.0/systemView.scd",
@@ -2917,148 +3101,6 @@
           "author": "sohla",
           "subject": "sys view, fixing template, looking at details",
           "files_count": 7
-        },
-        {
-          "hash": "0c2985c4",
-          "date": "2025-08-18",
-          "author": "soh_la",
-          "subject": "ui and system ux",
-          "files_count": 7
-        },
-        {
-          "hash": "8713b79a",
-          "date": "2025-08-15",
-          "author": "sohla",
-          "subject": "refactor project",
-          "files_count": 9
-        }
-      ]
-    },
-    {
-      "id": "code3.0/deviceView.scd",
-      "label": "deviceView.scd",
-      "full_path": "code3.0/deviceView.scd",
-      "commit_count": 19,
-      "category": "SuperCollider",
-      "commits": [
-        {
-          "hash": "ed1342b9",
-          "date": "2025-12-15",
-          "author": "steph",
-          "subject": "cleaning up ui",
-          "files_count": 2
-        },
-        {
-          "hash": "18d157e9",
-          "date": "2025-11-25",
-          "author": "sohla",
-          "subject": "fixes",
-          "files_count": 3
-        },
-        {
-          "hash": "01235e2f",
-          "date": "2025-11-25",
-          "author": "sohla",
-          "subject": "remove graph",
-          "files_count": 1
-        },
-        {
-          "hash": "99f089c9",
-          "date": "2025-11-17",
-          "author": "sohla",
-          "subject": "toots and trains",
-          "files_count": 21
-        },
-        {
-          "hash": "770fc957",
-          "date": "2025-10-16",
-          "author": "sohla",
-          "subject": "ui/ux",
-          "files_count": 8
-        },
-        {
-          "hash": "6c875f67",
-          "date": "2025-10-13",
-          "author": "sohla",
-          "subject": "button layout back to bottom",
-          "files_count": 5
-        },
-        {
-          "hash": "0153f5f6",
-          "date": "2025-10-07",
-          "author": "sohla",
-          "subject": "gui layout",
-          "files_count": 5
-        },
-        {
-          "hash": "175a93dc",
-          "date": "2025-08-27",
-          "author": "sohla",
-          "subject": "config hack : just wait a little",
-          "files_count": 2
-        },
-        {
-          "hash": "cc19ad6b",
-          "date": "2025-08-27",
-          "author": "sohla",
-          "subject": "stack layout of devices",
-          "files_count": 2
-        },
-        {
-          "hash": "024a4e08",
-          "date": "2025-08-27",
-          "author": "sohla",
-          "subject": "calibration tap",
-          "files_count": 3
-        },
-        {
-          "hash": "b1e45c77",
-          "date": "2025-08-22",
-          "author": "sohla",
-          "subject": "unload and reload personality / remove reload button!",
-          "files_count": 5
-        },
-        {
-          "hash": "8a03653e",
-          "date": "2025-08-22",
-          "author": "sohla",
-          "subject": "refactored 3d and plotter",
-          "files_count": 4
-        },
-        {
-          "hash": "86477e81",
-          "date": "2025-08-22",
-          "author": "sohla",
-          "subject": "prev and next button rf",
-          "files_count": 4
-        },
-        {
-          "hash": "803a49ae",
-          "date": "2025-08-22",
-          "author": "sohla",
-          "subject": "reload button rf",
-          "files_count": 3
-        },
-        {
-          "hash": "a9a09f94",
-          "date": "2025-08-22",
-          "author": "sohla",
-          "subject": "bat level update",
-          "files_count": 1
-        },
-        {
-          "hash": "c8cf84c3",
-          "date": "2025-08-19",
-          "author": "sohla",
-          "subject": "checking rt audio",
-          "files_count": 4
-        },
-        {
-          "hash": "1d2852bd",
-          "date": "2025-08-19",
-          "author": "sohla",
-          "subject": "tweeks",
-          "files_count": 4
         },
         {
           "hash": "0c2985c4",
@@ -4050,6 +4092,134 @@
       ]
     },
     {
+      "id": "personalities/cymbals1.sc",
+      "label": "cymbals1.sc",
+      "full_path": "personalities/cymbals1.sc",
+      "commit_count": 17,
+      "category": "SuperCollider",
+      "commits": [
+        {
+          "hash": "e5274457",
+          "date": "2026-01-06",
+          "author": "sohla",
+          "subject": "refining",
+          "files_count": 1
+        },
+        {
+          "hash": "8a6d9146",
+          "date": "2025-12-19",
+          "author": "sohla",
+          "subject": "control and visual views are back",
+          "files_count": 6
+        },
+        {
+          "hash": "3774fd6d",
+          "date": "2025-12-19",
+          "author": "sohla",
+          "subject": "post glenroy",
+          "files_count": 11
+        },
+        {
+          "hash": "93059267",
+          "date": "2025-12-15",
+          "author": "sohla",
+          "subject": "dress reh ITR",
+          "files_count": 6
+        },
+        {
+          "hash": "7042a3a7",
+          "date": "2025-12-03",
+          "author": "sohla",
+          "subject": "some ball ideas",
+          "files_count": 6
+        },
+        {
+          "hash": "ff5f0e73",
+          "date": "2025-11-25",
+          "author": "sohla",
+          "subject": "branch for show",
+          "files_count": 11
+        },
+        {
+          "hash": "74282844",
+          "date": "2025-11-10",
+          "author": "sohla",
+          "subject": "fixed visuals",
+          "files_count": 7
+        },
+        {
+          "hash": "f208afce",
+          "date": "2025-11-10",
+          "author": "sohla",
+          "subject": "removed vis & chair",
+          "files_count": 7
+        },
+        {
+          "hash": "613cd997",
+          "date": "2025-10-31",
+          "author": "sohla",
+          "subject": "post 30 reh",
+          "files_count": 9
+        },
+        {
+          "hash": "e2fa7886",
+          "date": "2025-10-20",
+          "author": "sohla",
+          "subject": "debug buffers",
+          "files_count": 9
+        },
+        {
+          "hash": "770fc957",
+          "date": "2025-10-16",
+          "author": "sohla",
+          "subject": "ui/ux",
+          "files_count": 8
+        },
+        {
+          "hash": "38491bf9",
+          "date": "2025-10-13",
+          "author": "sohla",
+          "subject": "refactor persons",
+          "files_count": 26
+        },
+        {
+          "hash": "052f60ae",
+          "date": "2025-10-13",
+          "author": "sohla",
+          "subject": "layout and tweeks",
+          "files_count": 9
+        },
+        {
+          "hash": "b5bdb09c",
+          "date": "2025-10-12",
+          "author": "sohla",
+          "subject": "persons thurs",
+          "files_count": 19
+        },
+        {
+          "hash": "516e06bf",
+          "date": "2025-06-23",
+          "author": "steph",
+          "subject": "pre-nime",
+          "files_count": 17
+        },
+        {
+          "hash": "86ec2f5d",
+          "date": "2025-06-04",
+          "author": "steph",
+          "subject": "lab am prep",
+          "files_count": 12
+        },
+        {
+          "hash": "dc535d8a",
+          "date": "2025-06-02",
+          "author": "steph",
+          "subject": "cymbals / harp and vis fix",
+          "files_count": 12
+        }
+      ]
+    },
+    {
       "id": "personalities/pluck1.sc",
       "label": "pluck1.sc",
       "full_path": "personalities/pluck1.sc",
@@ -4434,127 +4604,6 @@
       ]
     },
     {
-      "id": "personalities/cymbals1.sc",
-      "label": "cymbals1.sc",
-      "full_path": "personalities/cymbals1.sc",
-      "commit_count": 16,
-      "category": "SuperCollider",
-      "commits": [
-        {
-          "hash": "8a6d9146",
-          "date": "2025-12-19",
-          "author": "sohla",
-          "subject": "control and visual views are back",
-          "files_count": 6
-        },
-        {
-          "hash": "3774fd6d",
-          "date": "2025-12-19",
-          "author": "sohla",
-          "subject": "post glenroy",
-          "files_count": 11
-        },
-        {
-          "hash": "93059267",
-          "date": "2025-12-15",
-          "author": "sohla",
-          "subject": "dress reh ITR",
-          "files_count": 6
-        },
-        {
-          "hash": "7042a3a7",
-          "date": "2025-12-03",
-          "author": "sohla",
-          "subject": "some ball ideas",
-          "files_count": 6
-        },
-        {
-          "hash": "ff5f0e73",
-          "date": "2025-11-25",
-          "author": "sohla",
-          "subject": "branch for show",
-          "files_count": 11
-        },
-        {
-          "hash": "74282844",
-          "date": "2025-11-10",
-          "author": "sohla",
-          "subject": "fixed visuals",
-          "files_count": 7
-        },
-        {
-          "hash": "f208afce",
-          "date": "2025-11-10",
-          "author": "sohla",
-          "subject": "removed vis & chair",
-          "files_count": 7
-        },
-        {
-          "hash": "613cd997",
-          "date": "2025-10-31",
-          "author": "sohla",
-          "subject": "post 30 reh",
-          "files_count": 9
-        },
-        {
-          "hash": "e2fa7886",
-          "date": "2025-10-20",
-          "author": "sohla",
-          "subject": "debug buffers",
-          "files_count": 9
-        },
-        {
-          "hash": "770fc957",
-          "date": "2025-10-16",
-          "author": "sohla",
-          "subject": "ui/ux",
-          "files_count": 8
-        },
-        {
-          "hash": "38491bf9",
-          "date": "2025-10-13",
-          "author": "sohla",
-          "subject": "refactor persons",
-          "files_count": 26
-        },
-        {
-          "hash": "052f60ae",
-          "date": "2025-10-13",
-          "author": "sohla",
-          "subject": "layout and tweeks",
-          "files_count": 9
-        },
-        {
-          "hash": "b5bdb09c",
-          "date": "2025-10-12",
-          "author": "sohla",
-          "subject": "persons thurs",
-          "files_count": 19
-        },
-        {
-          "hash": "516e06bf",
-          "date": "2025-06-23",
-          "author": "steph",
-          "subject": "pre-nime",
-          "files_count": 17
-        },
-        {
-          "hash": "86ec2f5d",
-          "date": "2025-06-04",
-          "author": "steph",
-          "subject": "lab am prep",
-          "files_count": 12
-        },
-        {
-          "hash": "dc535d8a",
-          "date": "2025-06-02",
-          "author": "steph",
-          "subject": "cymbals / harp and vis fix",
-          "files_count": 12
-        }
-      ]
-    },
-    {
       "id": "personalities/woiworung2.sc",
       "label": "woiworung2.sc",
       "full_path": "personalities/woiworung2.sc",
@@ -4793,6 +4842,120 @@
           "author": "Steph OHara",
           "subject": "brenton session build",
           "files_count": 12
+        }
+      ]
+    },
+    {
+      "id": "personalities/button1.sc",
+      "label": "button1.sc",
+      "full_path": "personalities/button1.sc",
+      "commit_count": 15,
+      "category": "SuperCollider",
+      "commits": [
+        {
+          "hash": "0961cfa8",
+          "date": "2026-01-09",
+          "author": "sohla",
+          "subject": "can have visuals at boot",
+          "files_count": 5
+        },
+        {
+          "hash": "74282844",
+          "date": "2025-11-10",
+          "author": "sohla",
+          "subject": "fixed visuals",
+          "files_count": 7
+        },
+        {
+          "hash": "f208afce",
+          "date": "2025-11-10",
+          "author": "sohla",
+          "subject": "removed vis & chair",
+          "files_count": 7
+        },
+        {
+          "hash": "21a5d7c4",
+          "date": "2025-10-20",
+          "author": "sohla",
+          "subject": "more template work",
+          "files_count": 7
+        },
+        {
+          "hash": "f04ff8f9",
+          "date": "2025-08-25",
+          "author": "sohla",
+          "subject": "testing on rpi",
+          "files_count": 2
+        },
+        {
+          "hash": "c679b021",
+          "date": "2025-08-22",
+          "author": "sohla",
+          "subject": "render x/y norm to size",
+          "files_count": 5
+        },
+        {
+          "hash": "86ec2f5d",
+          "date": "2025-06-04",
+          "author": "steph",
+          "subject": "lab am prep",
+          "files_count": 12
+        },
+        {
+          "hash": "c572e50f",
+          "date": "2025-06-03",
+          "author": "steph",
+          "subject": "tweaks network button and ui",
+          "files_count": 5
+        },
+        {
+          "hash": "ee37ec76",
+          "date": "2025-06-03",
+          "author": "steph",
+          "subject": "v1 of open lab",
+          "files_count": 5
+        },
+        {
+          "hash": "dc535d8a",
+          "date": "2025-06-02",
+          "author": "steph",
+          "subject": "cymbals / harp and vis fix",
+          "files_count": 12
+        },
+        {
+          "hash": "07fb3b30",
+          "date": "2025-05-20",
+          "author": "steph",
+          "subject": "yourDNA session",
+          "files_count": 19
+        },
+        {
+          "hash": "221f2cf5",
+          "date": "2025-05-15",
+          "author": "steph",
+          "subject": "single events work!",
+          "files_count": 4
+        },
+        {
+          "hash": "0eb345d4",
+          "date": "2025-05-08",
+          "author": "steph",
+          "subject": "look at axis and button",
+          "files_count": 2
+        },
+        {
+          "hash": "6c80e3da",
+          "date": "2025-05-08",
+          "author": "steph",
+          "subject": "workshop rpi",
+          "files_count": 8
+        },
+        {
+          "hash": "44c98be5",
+          "date": "2025-05-05",
+          "author": "steph",
+          "subject": "addded to main + button.sc",
+          "files_count": 5
         }
       ]
     },
@@ -5791,113 +5954,6 @@
           "author": "soh_la",
           "subject": "building sounds for brenton",
           "files_count": 12
-        }
-      ]
-    },
-    {
-      "id": "personalities/button1.sc",
-      "label": "button1.sc",
-      "full_path": "personalities/button1.sc",
-      "commit_count": 14,
-      "category": "SuperCollider",
-      "commits": [
-        {
-          "hash": "74282844",
-          "date": "2025-11-10",
-          "author": "sohla",
-          "subject": "fixed visuals",
-          "files_count": 7
-        },
-        {
-          "hash": "f208afce",
-          "date": "2025-11-10",
-          "author": "sohla",
-          "subject": "removed vis & chair",
-          "files_count": 7
-        },
-        {
-          "hash": "21a5d7c4",
-          "date": "2025-10-20",
-          "author": "sohla",
-          "subject": "more template work",
-          "files_count": 7
-        },
-        {
-          "hash": "f04ff8f9",
-          "date": "2025-08-25",
-          "author": "sohla",
-          "subject": "testing on rpi",
-          "files_count": 2
-        },
-        {
-          "hash": "c679b021",
-          "date": "2025-08-22",
-          "author": "sohla",
-          "subject": "render x/y norm to size",
-          "files_count": 5
-        },
-        {
-          "hash": "86ec2f5d",
-          "date": "2025-06-04",
-          "author": "steph",
-          "subject": "lab am prep",
-          "files_count": 12
-        },
-        {
-          "hash": "c572e50f",
-          "date": "2025-06-03",
-          "author": "steph",
-          "subject": "tweaks network button and ui",
-          "files_count": 5
-        },
-        {
-          "hash": "ee37ec76",
-          "date": "2025-06-03",
-          "author": "steph",
-          "subject": "v1 of open lab",
-          "files_count": 5
-        },
-        {
-          "hash": "dc535d8a",
-          "date": "2025-06-02",
-          "author": "steph",
-          "subject": "cymbals / harp and vis fix",
-          "files_count": 12
-        },
-        {
-          "hash": "07fb3b30",
-          "date": "2025-05-20",
-          "author": "steph",
-          "subject": "yourDNA session",
-          "files_count": 19
-        },
-        {
-          "hash": "221f2cf5",
-          "date": "2025-05-15",
-          "author": "steph",
-          "subject": "single events work!",
-          "files_count": 4
-        },
-        {
-          "hash": "0eb345d4",
-          "date": "2025-05-08",
-          "author": "steph",
-          "subject": "look at axis and button",
-          "files_count": 2
-        },
-        {
-          "hash": "6c80e3da",
-          "date": "2025-05-08",
-          "author": "steph",
-          "subject": "workshop rpi",
-          "files_count": 8
-        },
-        {
-          "hash": "44c98be5",
-          "date": "2025-05-05",
-          "author": "steph",
-          "subject": "addded to main + button.sc",
-          "files_count": 5
         }
       ]
     },
@@ -9358,6 +9414,71 @@
       ]
     },
     {
+      "id": "code3.0/renderer.scd",
+      "label": "renderer.scd",
+      "full_path": "code3.0/renderer.scd",
+      "commit_count": 8,
+      "category": "SuperCollider",
+      "commits": [
+        {
+          "hash": "0961cfa8",
+          "date": "2026-01-09",
+          "author": "sohla",
+          "subject": "can have visuals at boot",
+          "files_count": 5
+        },
+        {
+          "hash": "17016193",
+          "date": "2025-11-13",
+          "author": "steph",
+          "subject": "lappy",
+          "files_count": 4
+        },
+        {
+          "hash": "74282844",
+          "date": "2025-11-10",
+          "author": "sohla",
+          "subject": "fixed visuals",
+          "files_count": 7
+        },
+        {
+          "hash": "46d9871b",
+          "date": "2025-10-20",
+          "author": "sohla",
+          "subject": "templates and grafix",
+          "files_count": 3
+        },
+        {
+          "hash": "9dc2001b",
+          "date": "2025-08-22",
+          "author": "sohla",
+          "subject": "and size?",
+          "files_count": 1
+        },
+        {
+          "hash": "c679b021",
+          "date": "2025-08-22",
+          "author": "sohla",
+          "subject": "render x/y norm to size",
+          "files_count": 5
+        },
+        {
+          "hash": "d1293ac8",
+          "date": "2025-08-19",
+          "author": "sohla",
+          "subject": "sys view, fixing template, looking at details",
+          "files_count": 7
+        },
+        {
+          "hash": "8713b79a",
+          "date": "2025-08-15",
+          "author": "sohla",
+          "subject": "refactor project",
+          "files_count": 9
+        }
+      ]
+    },
+    {
       "id": "personalities/melodicPerc1.sc",
       "label": "melodicPerc1.sc",
       "full_path": "personalities/melodicPerc1.sc",
@@ -10802,67 +10923,39 @@
           "files_count": 11
         }
       ]
-    },
-    {
-      "id": "personalities/gen1.sc",
-      "label": "gen1.sc",
-      "full_path": "personalities/gen1.sc",
-      "commit_count": 7,
-      "category": "SuperCollider",
-      "commits": [
-        {
-          "hash": "9b2bf6f0",
-          "date": "2025-10-07",
-          "author": "sohla",
-          "subject": "removed old personalties",
-          "files_count": 49
-        },
-        {
-          "hash": "296ec29c",
-          "date": "2025-03-11",
-          "author": "soh_la",
-          "subject": "thinking remaking a generato for testing",
-          "files_count": 2
-        },
-        {
-          "hash": "4cca9063",
-          "date": "2024-04-30",
-          "author": "soh_la",
-          "subject": "explorztions",
-          "files_count": 4
-        },
-        {
-          "hash": "6ef39303",
-          "date": "2024-03-27",
-          "author": "soh_la",
-          "subject": "testing",
-          "files_count": 2
-        },
-        {
-          "hash": "4deccaaf",
-          "date": "2024-03-27",
-          "author": "soh_la",
-          "subject": "looking into using bus.control",
-          "files_count": 3
-        },
-        {
-          "hash": "72a47b50",
-          "date": "2024-03-27",
-          "author": "soh_la",
-          "subject": "refactor : looking into proto",
-          "files_count": 2
-        },
-        {
-          "hash": "2b780e19",
-          "date": "2024-03-22",
-          "author": "soh_la",
-          "subject": "generator device : basic functionaloity and graoh updates",
-          "files_count": 4
-        }
-      ]
     }
   ],
   "edges": [
+    {
+      "source": "code3.0/personalityController.scd",
+      "target": "code3.0/renderer.scd",
+      "weight": 3,
+      "label": "3 commits"
+    },
+    {
+      "source": "code3.0/personalityController.scd",
+      "target": "personalities/button1.sc",
+      "weight": 3,
+      "label": "3 commits"
+    },
+    {
+      "source": "code3.0/personalityController.scd",
+      "target": "personalities/silence.sc",
+      "weight": 9,
+      "label": "9 commits"
+    },
+    {
+      "source": "code3.0/renderer.scd",
+      "target": "personalities/button1.sc",
+      "weight": 3,
+      "label": "3 commits"
+    },
+    {
+      "source": "personalities/button1.sc",
+      "target": "personalities/silence.sc",
+      "weight": 2,
+      "label": "2 commits"
+    },
     {
       "source": "code3.0/main.sc",
       "target": "code3.0/oscController.scd",
@@ -12610,6 +12703,18 @@
       "label": "3 commits"
     },
     {
+      "source": "code3.0/main.sc",
+      "target": "code3.0/renderer.scd",
+      "weight": 3,
+      "label": "3 commits"
+    },
+    {
+      "source": "code3.0/renderer.scd",
+      "target": "personalities/harp1.sc",
+      "weight": 3,
+      "label": "3 commits"
+    },
+    {
       "source": "lists/list_ITR_Mel.sc",
       "target": "personalities/button1.sc",
       "weight": 3,
@@ -12644,18 +12749,6 @@
       "target": "personalities/inABottle.sc",
       "weight": 4,
       "label": "4 commits"
-    },
-    {
-      "source": "code3.0/personalityController.scd",
-      "target": "personalities/button1.sc",
-      "weight": 2,
-      "label": "2 commits"
-    },
-    {
-      "source": "code3.0/personalityController.scd",
-      "target": "personalities/silence.sc",
-      "weight": 8,
-      "label": "8 commits"
     },
     {
       "source": "lists/list_ITR_Mel.sc",
@@ -13420,12 +13513,6 @@
       "label": "4 commits"
     },
     {
-      "source": "personalities/gabe2.sc",
-      "target": "personalities/gen1.sc",
-      "weight": 2,
-      "label": "2 commits"
-    },
-    {
       "source": "code3.0/systemView.scd",
       "target": "personalities/silence.sc",
       "weight": 2,
@@ -13702,6 +13789,12 @@
       "label": "2 commits"
     },
     {
+      "source": "code3.0/renderer.scd",
+      "target": "personalities/template3.sc",
+      "weight": 2,
+      "label": "2 commits"
+    },
+    {
       "source": "personalities/harp1.sc",
       "target": "personalities/template3.sc",
       "weight": 5,
@@ -13738,10 +13831,22 @@
       "label": "4 commits"
     },
     {
+      "source": "code3.0/oscController.scd",
+      "target": "code3.0/renderer.scd",
+      "weight": 2,
+      "label": "2 commits"
+    },
+    {
       "source": "code3.0/personalityController.scd",
       "target": "personalities/template3.sc",
       "weight": 3,
       "label": "3 commits"
+    },
+    {
+      "source": "code3.0/renderer.scd",
+      "target": "code3.0/systemView.scd",
+      "weight": 2,
+      "label": "2 commits"
     },
     {
       "source": "code3.0/deviceView.scd",
@@ -14498,12 +14603,6 @@
       "target": "personalities/wingChimes1.sc",
       "weight": 2,
       "label": "2 commits"
-    },
-    {
-      "source": "code2.0/oscmusic.sc",
-      "target": "personalities/gen1.sc",
-      "weight": 6,
-      "label": "6 commits"
     },
     {
       "source": "synths/miniMoog.sc",
@@ -16632,12 +16731,12 @@
   ],
   "statistics": {
     "total_files": 100,
-    "total_edges": 961,
-    "total_commits": 487,
+    "total_edges": 967,
+    "total_commits": 494,
     "most_connected_files": [
       [
         "code2.0/oscmusic.sc",
-        354
+        348
       ],
       [
         "personalities/brenton1.sc",
@@ -16664,21 +16763,21 @@
         134
       ],
       [
+        "personalities/harp1.sc",
+        132
+      ],
+      [
         "personalities/list_yourDNA.sc",
         131
       ],
       [
-        "personalities/harp1.sc",
+        "code3.0/personalityController.scd",
         129
-      ],
-      [
-        "personalities/sheet2.sc",
-        127
       ]
     ],
     "categories": [
-      "SuperCollider",
-      "Root"
+      "Root",
+      "SuperCollider"
     ]
   },
   "filters": {
