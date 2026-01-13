@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SynthDef vs Mapping Code Analysis</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #1a1a1a;
+            color: #e0e0e0;
+            overflow: hidden;
+        }
+
+        #container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        #header {
+            background: #2a2a2a;
+            padding: 20px;
+            border-bottom: 2px solid #444;
+        }
+
+        #header h1 {
+            color: #4CAF50;
+            margin-bottom: 8px;
+            font-size: 24px;
+        }
+
+        #header p {
+            color: #888;
+            font-size: 14px;
+        }
+
+        #controls {
+            background: #2a2a2a;
+            padding: 15px 20px;
+            border-bottom: 2px solid #444;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        #controls label {
+            color: #888;
+            font-size: 13px;
+            font-weight: bold;
+        }
+
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 6px 12px;
+            border: 2px solid #444;
+            background: #2a2a2a;
+            color: #e0e0e0;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s;
+        }
+
+        .btn:hover {
+            border-color: #666;
+            background: #333;
+        }
+
+        .btn.active {
+            background: #4CAF50;
+            border-color: #4CAF50;
+            color: #1a1a1a;
+            font-weight: bold;
+        }
+
+        .toggle-btn {
+            padding: 8px 16px;
+            border: 2px solid #4CAF50;
+            background: #2a2a2a;
+            color: #4CAF50;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+
+        .toggle-btn:hover {
+            background: #4CAF50;
+            color: #1a1a1a;
+        }
+
+        #timeline-container {
+            background: #2a2a2a;
+            padding: 20px;
+            border-bottom: 2px solid #444;
+        }
+
+        #timeline-container h3 {
+            color: #888;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        #date-display {
+            color: #4CAF50;
+            font-size: 16px;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        #main-content {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        #visualization {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: auto;
+        }
+
+        #pie-container {
+            position: relative;
+        }
+
+        #stats-panel {
+            width: 350px;
+            background: #1e1e1e;
+            border-left: 2px solid #444;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        #stats-panel h2 {
+            color: #4CAF50;
+            font-size: 18px;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #444;
+        }
+
+        .stat-item {
+            background: #2a2a2a;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+        }
+
+        .stat-label {
+            color: #888;
+            font-size: 12px;
+            margin-bottom: 5px;
+        }
+
+        .stat-value {
+            color: #4CAF50;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .stat-breakdown {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid #444;
+        }
+
+        .stat-breakdown-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 8px 0;
+            font-size: 13px;
+        }
+
+        .stat-breakdown-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .color-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .synthdef-color { background: #2196F3; }
+        .mapping-color { background: #FF9800; }
+        .ambiguous-color { background: #9E9E9E; }
+
+        #sidebar {
+            width: 400px;
+            background: #1e1e1e;
+            border-left: 2px solid #444;
+            overflow-y: auto;
+            padding: 20px;
+            display: none;
+        }
+
+        #sidebar.active {
+            display: block;
+        }
+
+        #sidebar h2 {
+            color: #fff;
+            margin-bottom: 15px;
+            font-size: 20px;
+            border-bottom: 2px solid #4CAF50;
+            padding-bottom: 10px;
+        }
+
+        .commit-item {
+            background: #333;
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: 6px;
+            border-left: 3px solid #4CAF50;
+            transition: transform 0.2s;
+            cursor: pointer;
+        }
+
+        .commit-item.synthdef { border-left-color: #2196F3; }
+        .commit-item.mapping { border-left-color: #FF9800; }
+
+        .commit-item:hover {
+            transform: translateX(5px);
+            background: #3a3a3a;
+        }
+
+        .commit-hash {
+            color: #888;
+            font-family: monospace;
+            font-size: 12px;
+        }
+
+        .commit-date {
+            color: #999;
+            font-size: 13px;
+            margin-top: 4px;
+        }
+
+        .commit-subject {
+            color: #e0e0e0;
+            margin-top: 8px;
+            line-height: 1.4;
+        }
+
+        #close-sidebar {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: #444;
+            border: none;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        #close-sidebar:hover {
+            background: #555;
+        }
+
+        .tooltip {
+            position: fixed;
+            background: rgba(30, 30, 30, 0.95);
+            padding: 10px 15px;
+            border-radius: 6px;
+            border: 1px solid #4CAF50;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s;
+            font-size: 13px;
+            z-index: 100;
+            max-width: 300px;
+        }
+
+        .tooltip.visible {
+            opacity: 1;
+        }
+
+        .tooltip-title {
+            color: #4CAF50;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .tooltip-value {
+            color: #e0e0e0;
+        }
+
+        .pie-slice {
+            stroke: #1a1a1a;
+            stroke-width: 2;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        .pie-slice:hover {
+            opacity: 0.8;
+        }
+
+        .pie-label {
+            fill: #e0e0e0;
+            font-size: 14px;
+            font-weight: bold;
+            pointer-events: none;
+        }
+
+        .pie-percentage {
+            fill: #e0e0e0;
+            font-size: 18px;
+            font-weight: bold;
+            pointer-events: none;
+        }
+
+        .center-label {
+            fill: #888;
+            font-size: 14px;
+            text-anchor: middle;
+            pointer-events: none;
+        }
+
+        .center-value {
+            fill: #4CAF50;
+            font-size: 32px;
+            font-weight: bold;
+            text-anchor: middle;
+            pointer-events: none;
+        }
+
+        .timeline-axis {
+            color: #888;
+        }
+
+        .timeline-axis line,
+        .timeline-axis path {
+            stroke: #444;
+        }
+
+        .timeline-axis text {
+            fill: #888;
+            font-size: 11px;
+        }
+
+        .commit-dot {
+            fill: #4CAF50;
+            stroke: #1a1a1a;
+            stroke-width: 1;
+            opacity: 0.6;
+        }
+
+        .commit-dot.synthdef { fill: #2196F3; }
+        .commit-dot.mapping { fill: #FF9800; }
+        .commit-dot.mixed { fill: #9C27B0; }
+
+        .brush .selection {
+            fill: #4CAF50;
+            fill-opacity: 0.3;
+            stroke: #4CAF50;
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <div id="header">
+            <h1>SynthDef vs Mapping Code Analysis</h1>
+            <p>Personality files: Distinguishing audio synthesis code from sensor mapping code</p>
+        </div>
+
+        <div id="controls">
+            <div class="control-group">
+                <label>Granularity:</label>
+                <button class="btn" data-period="weekly">Weekly</button>
+                <button class="btn active" data-period="monthly">Monthly</button>
+            </div>
+
+            <div class="control-group">
+                <label>Metric:</label>
+                <button class="toggle-btn" id="metric-toggle">Lines of Code</button>
+            </div>
+        </div>
+
+        <div id="timeline-container">
+            <h3>Timeline</h3>
+            <svg id="timeline"></svg>
+            <div id="date-display">All Time</div>
+        </div>
+
+        <div id="main-content">
+            <div id="visualization">
+                <div id="pie-container">
+                    <svg id="pie-chart"></svg>
+                </div>
+            </div>
+
+            <div id="stats-panel">
+                <h2>Statistics</h2>
+                <div class="stat-item">
+                    <div class="stat-label">Period</div>
+                    <div class="stat-value" id="stat-period">All Time</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Total Commits</div>
+                    <div class="stat-value" id="stat-commits">0</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Code Breakdown</div>
+                    <div class="stat-breakdown">
+                        <div class="stat-breakdown-item">
+                            <div class="stat-breakdown-label">
+                                <span class="color-indicator synthdef-color"></span>
+                                <span>SynthDef</span>
+                            </div>
+                            <span id="stat-synthdef">0</span>
+                        </div>
+                        <div class="stat-breakdown-item">
+                            <div class="stat-breakdown-label">
+                                <span class="color-indicator mapping-color"></span>
+                                <span>Mapping</span>
+                            </div>
+                            <span id="stat-mapping">0</span>
+                        </div>
+                        <div class="stat-breakdown-item">
+                            <div class="stat-breakdown-label">
+                                <span class="color-indicator ambiguous-color"></span>
+                                <span>Ambiguous</span>
+                            </div>
+                            <span id="stat-ambiguous">0</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="sidebar">
+                <button id="close-sidebar">✕ Close</button>
+                <div id="sidebar-content"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="tooltip"></div>
+
+    <script>
+        let data = null;
+        let currentPeriod = 'monthly';
+        let currentMetric = 'lines';
+        let selectedDateRange = null;
+        let allCommits = [];
+
+        const colors = {
+            synthdef: '#2196F3',
+            mapping: '#FF9800',
+            ambiguous: '#9E9E9E'
+        };
+
+        // Load data
+        d3.json('personality_code_data.json').then(function(loadedData) {
+            data = loadedData;
+            allCommits = data.commits.map(c => ({
+                ...c,
+                datetime: new Date(c.datetime)
+            }));
+
+            console.log('Loaded data:', data.metadata);
+            initializeVisualization();
+        });
+
+        // Period buttons
+        document.querySelectorAll('.btn[data-period]').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.btn[data-period]').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                currentPeriod = this.dataset.period;
+                updateVisualization();
+            });
+        });
+
+        // Metric toggle
+        document.getElementById('metric-toggle').addEventListener('click', function() {
+            currentMetric = (currentMetric === 'lines') ? 'commits' : 'lines';
+            this.textContent = (currentMetric === 'lines') ? 'Lines of Code' : 'Number of Commits';
+            updatePieChart();
+        });
+
+        // Close sidebar
+        document.getElementById('close-sidebar').addEventListener('click', function() {
+            document.getElementById('sidebar').classList.remove('active');
+        });
+
+        function initializeVisualization() {
+            drawTimeline();
+            updateVisualization();
+        }
+
+        function drawTimeline() {
+            const container = document.getElementById('timeline-container');
+            const width = container.offsetWidth - 40;
+            const height = 100;
+
+            const svg = d3.select('#timeline')
+                .attr('width', width)
+                .attr('height', height);
+
+            svg.selectAll('*').remove();
+
+            if (allCommits.length === 0) return;
+
+            const dates = allCommits.map(c => c.datetime);
+            const minDate = d3.min(dates);
+            const maxDate = d3.max(dates);
+
+            const xScale = d3.scaleTime()
+                .domain([minDate, maxDate])
+                .range([0, width - 20]);
+
+            // Draw axis
+            const xAxis = d3.axisBottom(xScale)
+                .ticks(10)
+                .tickFormat(d3.timeFormat('%b %Y'));
+
+            svg.append('g')
+                .attr('class', 'timeline-axis')
+                .attr('transform', `translate(10, 60)`)
+                .call(xAxis);
+
+            // Draw commit dots
+            svg.selectAll('.commit-dot')
+                .data(allCommits)
+                .enter()
+                .append('circle')
+                .attr('class', d => {
+                    const s = d.changes.synthdef.lines_added;
+                    const m = d.changes.mapping.lines_added;
+                    if (s > 0 && m > 0) return 'commit-dot mixed';
+                    if (s > 0) return 'commit-dot synthdef';
+                    if (m > 0) return 'commit-dot mapping';
+                    return 'commit-dot';
+                })
+                .attr('cx', d => xScale(d.datetime) + 10)
+                .attr('cy', 30)
+                .attr('r', 3);
+
+            // Add brush for date range selection
+            const brush = d3.brushX()
+                .extent([[10, 10], [width - 10, 50]])
+                .on('end', brushed);
+
+            svg.append('g')
+                .attr('class', 'brush')
+                .call(brush);
+
+            function brushed(event) {
+                if (!event.selection) {
+                    selectedDateRange = null;
+                    document.getElementById('date-display').textContent = 'All Time';
+                } else {
+                    const [x0, x1] = event.selection;
+                    const d0 = xScale.invert(x0 - 10);
+                    const d1 = xScale.invert(x1 - 10);
+                    selectedDateRange = [d0, d1];
+                    document.getElementById('date-display').textContent =
+                        `${d3.timeFormat('%b %d, %Y')(d0)} - ${d3.timeFormat('%b %d, %Y')(d1)}`;
+                }
+                updateVisualization();
+            }
+        }
+
+        function getFilteredData() {
+            const aggregations = data.aggregations[currentPeriod];
+
+            if (!selectedDateRange) {
+                return aggregations;
+            }
+
+            // Filter aggregations by date range
+            return aggregations.filter(agg => {
+                const commits = agg.commits || [];
+                return commits.some(c => {
+                    const date = new Date(c.datetime);
+                    return date >= selectedDateRange[0] && date <= selectedDateRange[1];
+                });
+            });
+        }
+
+        function updateVisualization() {
+            const filteredData = getFilteredData();
+            updatePieChart(filteredData);
+            updateStats(filteredData);
+        }
+
+        function updatePieChart(filteredData = null) {
+            if (!filteredData) filteredData = getFilteredData();
+
+            // Aggregate totals
+            let synthdefValue = 0;
+            let mappingValue = 0;
+            let ambiguousValue = 0;
+
+            filteredData.forEach(period => {
+                if (currentMetric === 'lines') {
+                    synthdefValue += period.synthdef_lines;
+                    mappingValue += period.mapping_lines;
+                    ambiguousValue += period.ambiguous_lines;
+                } else {
+                    synthdefValue += period.synthdef_commits;
+                    mappingValue += period.mapping_commits;
+                    // For commits, mixed commits are included in both
+                }
+            });
+
+            const pieData = [
+                { label: 'SynthDef', value: synthdefValue, color: colors.synthdef, type: 'synthdef' },
+                { label: 'Mapping', value: mappingValue, color: colors.mapping, type: 'mapping' }
+            ];
+
+            if (ambiguousValue > 0) {
+                pieData.push({ label: 'Ambiguous', value: ambiguousValue, color: colors.ambiguous, type: 'ambiguous' });
+            }
+
+            drawPieChart(pieData);
+        }
+
+        function drawPieChart(pieData) {
+            const width = 500;
+            const height = 500;
+            const radius = Math.min(width, height) / 2 - 40;
+
+            const svg = d3.select('#pie-chart')
+                .attr('width', width)
+                .attr('height', height);
+
+            svg.selectAll('*').remove();
+
+            const g = svg.append('g')
+                .attr('transform', `translate(${width / 2}, ${height / 2})`);
+
+            const pie = d3.pie()
+                .value(d => d.value)
+                .sort(null);
+
+            const arc = d3.arc()
+                .innerRadius(radius * 0.5)
+                .outerRadius(radius);
+
+            const labelArc = d3.arc()
+                .innerRadius(radius * 0.75)
+                .outerRadius(radius * 0.75);
+
+            const total = d3.sum(pieData, d => d.value);
+
+            // Draw slices
+            const slices = g.selectAll('.pie-slice')
+                .data(pie(pieData))
+                .enter()
+                .append('path')
+                .attr('class', 'pie-slice')
+                .attr('d', arc)
+                .attr('fill', d => d.data.color)
+                .on('mouseover', function(event, d) {
+                    const percent = ((d.data.value / total) * 100).toFixed(1);
+                    showTooltip(event, `
+                        <div class="tooltip-title">${d.data.label}</div>
+                        <div class="tooltip-value">${d.data.value.toLocaleString()} ${currentMetric === 'lines' ? 'lines' : 'commits'}</div>
+                        <div class="tooltip-value">${percent}%</div>
+                    `);
+                })
+                .on('mouseout', hideTooltip)
+                .on('click', (event, d) => showCommitsOfType(d.data.type));
+
+            // Draw labels
+            g.selectAll('.pie-label')
+                .data(pie(pieData))
+                .enter()
+                .append('text')
+                .attr('class', 'pie-label')
+                .attr('transform', d => `translate(${labelArc.centroid(d)})`)
+                .attr('text-anchor', 'middle')
+                .text(d => d.data.label);
+
+            // Draw percentages on slices
+            g.selectAll('.pie-percentage')
+                .data(pie(pieData))
+                .enter()
+                .append('text')
+                .attr('class', 'pie-percentage')
+                .attr('transform', d => {
+                    const pos = arc.centroid(d);
+                    return `translate(${pos[0]}, ${pos[1]})`;
+                })
+                .attr('text-anchor', 'middle')
+                .attr('dy', '0.35em')
+                .text(d => {
+                    const percent = ((d.data.value / total) * 100).toFixed(0);
+                    return percent > 5 ? `${percent}%` : '';
+                });
+
+            // Center label
+            g.append('text')
+                .attr('class', 'center-label')
+                .attr('y', -10)
+                .text(currentMetric === 'lines' ? 'Total Lines' : 'Total Commits');
+
+            g.append('text')
+                .attr('class', 'center-value')
+                .attr('y', 25)
+                .text(total.toLocaleString());
+        }
+
+        function updateStats(filteredData) {
+            const totalCommits = d3.sum(filteredData, d => d.total_commits);
+            const synthdefLines = d3.sum(filteredData, d => d.synthdef_lines);
+            const mappingLines = d3.sum(filteredData, d => d.mapping_lines);
+            const ambiguousLines = d3.sum(filteredData, d => d.ambiguous_lines);
+
+            document.getElementById('stat-commits').textContent = totalCommits;
+            document.getElementById('stat-synthdef').textContent =
+                `${synthdefLines.toLocaleString()} lines`;
+            document.getElementById('stat-mapping').textContent =
+                `${mappingLines.toLocaleString()} lines`;
+            document.getElementById('stat-ambiguous').textContent =
+                `${ambiguousLines.toLocaleString()} lines`;
+
+            if (filteredData.length === 1) {
+                document.getElementById('stat-period').textContent = filteredData[0].period_label;
+            } else if (filteredData.length > 1) {
+                document.getElementById('stat-period').textContent =
+                    `${filteredData[0].period_label} - ${filteredData[filteredData.length - 1].period_label}`;
+            } else {
+                document.getElementById('stat-period').textContent = 'No Data';
+            }
+        }
+
+        function showCommitsOfType(type) {
+            const filteredData = getFilteredData();
+            const commits = [];
+
+            filteredData.forEach(period => {
+                period.commits.forEach(commit => {
+                    const s = commit.changes.synthdef.lines_added;
+                    const m = commit.changes.mapping.lines_added;
+
+                    let include = false;
+                    if (type === 'synthdef' && s > 0) include = true;
+                    if (type === 'mapping' && m > 0) include = true;
+                    if (type === 'ambiguous' && commit.changes.ambiguous.lines_added > 0) include = true;
+
+                    if (include) {
+                        commits.push({ ...commit, primaryType: type });
+                    }
+                });
+            });
+
+            // Remove duplicates
+            const uniqueCommits = Array.from(new Map(commits.map(c => [c.hash, c])).values());
+
+            // Sort by date
+            uniqueCommits.sort((a, b) => new Date(b.datetime) - new Date(a.datetime));
+
+            showSidebar(type, uniqueCommits);
+        }
+
+        function showSidebar(type, commits) {
+            const sidebar = document.getElementById('sidebar');
+            const content = document.getElementById('sidebar-content');
+
+            const typeLabel = type.charAt(0).toUpperCase() + type.slice(1);
+            const typeColor = colors[type];
+
+            let html = `
+                <h2 style="border-color: ${typeColor}">${typeLabel} Commits</h2>
+                <p style="color: #888; margin-bottom: 20px;">${commits.length} commits</p>
+            `;
+
+            commits.forEach(commit => {
+                html += `
+                    <div class="commit-item ${type}">
+                        <div class="commit-hash">${commit.hash}</div>
+                        <div class="commit-date">${commit.date} • ${commit.author}</div>
+                        <div class="commit-subject">${commit.subject}</div>
+                        <div style="margin-top: 8px; font-size: 12px; color: #888;">
+                            SynthDef: +${commit.changes.synthdef.lines_added} lines |
+                            Mapping: +${commit.changes.mapping.lines_added} lines
+                        </div>
+                    </div>
+                `;
+            });
+
+            content.innerHTML = html;
+            sidebar.classList.add('active');
+        }
+
+        const tooltip = d3.select('.tooltip');
+
+        function showTooltip(event, content) {
+            tooltip.html(content)
+                .style('left', (event.pageX + 10) + 'px')
+                .style('top', (event.pageY - 30) + 'px')
+                .classed('visible', true);
+        }
+
+        function hideTooltip() {
+            tooltip.classed('visible', false);
+        }
+
+        window.addEventListener('resize', () => {
+            drawTimeline();
+            updateVisualization();
+        });
+    </script>
+</body>
+</html>
