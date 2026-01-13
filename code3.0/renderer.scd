@@ -13,7 +13,6 @@ var renderer = { |d|
     var updateView = {|view|
         var now = thisThread.seconds;
 
-            
         // visualEvents.do { |event|
         views[d.port][\visualEvents].do { |event|
             var elapsed = 0.0, normTime = 0.0;
