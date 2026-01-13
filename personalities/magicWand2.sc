@@ -47,7 +47,7 @@ SynthDef(\glockenspiel2, {
 //------------------------------------------------------------
 ~next = {|d|
 
-	var oct = m.accelMassFiltered.lincurve(0,3,2,6,-1).floor;
+	var oct = m.accelMassFiltered.lincurve(0,3,2,5,-1).floor;
 	// var dur = 0.23 - m.accelMassFiltered.linlin(0,2.5,0.001,0.14);
 	var hardness = m.accelMassFiltered.linlin(0,2.5,0.2,0.9).clip2(0.91);
 	var amp = m.accelMassFiltered.linexp(0,2.5,0.45,0.2);
@@ -57,7 +57,7 @@ SynthDef(\glockenspiel2, {
 
 	Pdef(m.ptn).set(\dur, dur);
 	Pdef(m.ptn).set(\octave, 2 + oct);
-	Pdef(m.ptn).set(\amp, amp*0.23);
+	Pdef(m.ptn).set(\amp, amp*0.9);
 	Pdef(m.ptn).set(\hardness, 1 - hardness);
 
 	if(m.accelMassFiltered > 0.1,{

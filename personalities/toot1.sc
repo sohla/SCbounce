@@ -11,7 +11,7 @@ m.gyroFilteredAttack = 0.7;
 m.gyroFilteredDecay = 0.7;
 
 //------------------------------------------------------------
-SynthDef(\sampler, {|bufnum=0, out=0, amp=2, rate=1, start=0, pan=0, freq=440, attack=0.01, decay=0.1, sustain=0.9, release=0.2, gate=1,cutoff=20000, rq=1, loop=1|
+SynthDef(\sampler, {|bufnum=0, out=0, amp=1, rate=1, start=0, pan=0, freq=440, attack=0.01, decay=0.1, sustain=0.9, release=0.2, gate=1,cutoff=20000, rq=1, loop=1|
 	var lr = rate * BufRateScale.kr(bufnum) * (freq/440.0);
     var env = EnvGen.kr(Env.adsr(attack, decay, sustain, release), gate, doneAction: 2);
 	var sig = PlayBuf.ar(2, bufnum, rate: lr, startPos: start * BufFrames.kr(bufnum), loop: loop);
@@ -65,26 +65,16 @@ SynthDef(\sampler, {|bufnum=0, out=0, amp=2, rate=1, start=0, pan=0, freq=440, a
 
 //------------------------------------------------------------
 ~next = {|d|
-// 	var amp = m.accelMassFiltered.lincurve(0.0,2.0,-80,0,-7);
-//   var speed = m.gyroXFiltered.lincurve(-1,1,0.1,1.0,0);
-//   var ws = m.gyroYFiltered.lincurve(-1,1,0.1,1.5,-2);
-//   synth.set(\ws, ws);
-//   synth.set(\speed, speed);
-//   synth.set(\amp, amp.dbamp);
- if(d.sensors.digiInEvent[0] == 1, {
+
+	if(d.sensors.digiInEvent[0] == 1, {
     if(bl == false, {
     var ndx = (buffers.size -1).rand;
       bl = true;
-      synth = Synth(\sampler, [\bufnum, buffers[ndx], \gate, 1, \rate, ([0]).choose.midiratio]);
-    //   synth.set(\gate, 1);
-    "on".postln;
-      // synth.postln;
+      synth = Synth(\sampler, [\bufnum, buffers[ndx], \gate, 1, \rate, ([0]).choose.midiratio, \amp, 0.5]);
     });
  },{
     if(bl == true,{
-
         bl = false;
-        "off".postln;
         synth.set(\gate, 0);
     });
  });

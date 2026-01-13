@@ -4,7 +4,7 @@ var synth2;
 
 var lastTime=0;
 var notes = [0,0,7,0,0,0,7,0,7,5,0,0,0,7,0,0,7,5,0,0,0,-2,7,-2,7,5,-2,-2,7,5,-2,-2,-2,-4,7,5,-4,-4,7,5,-2,-2,7,5,-2,7,5];
-var mr = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,-2,-2,-2,-2,-2,-2,-2,-2,-2,-2,-2,-2,-4,-4,-4,-4,-4,-4,-4,-2,-2,-2,-2,-2,-2,-2];
+var mr = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,-2,-2,-2,-2,-2,-2,-2,-2,-2,-2,-2,-2,-4,-4,-4,-4,-4,-4,-4,-2,-2,-2,-2,-2,-2,-2].stutter(2);
 var roots = [0,3].stutter(47*2);
 var currentNote = notes[0];
 var currentRoot = roots[0];
@@ -18,7 +18,7 @@ SynthDef(\timWind1, { |out, freq=111, gate=0, amp = 0.3, pchx=0|
 	var follow = Amplitude.kr(amp, 0.03, 0.03);
 	var trig = PinkNoise.ar(0.01) * env * follow.lag(2);
 	var sig =  DynKlank.ar(`[[freq, freq*2].lag(3), [1,0.4,0.3], [2, 1, 1, 1]], trig);
-  	var tone = SinOsc.ar([freq * 4, freq * 0.5] * LFNoise2.ar(12,0.02,1), LFNoise2.ar(3,6),[0.04,0.4 ]* env * 6);
+  	var tone = SinOsc.ar([freq * 4, freq * 0.5] * LFNoise2.ar(12,0.02,1), LFNoise2.ar(3,6),[0.1,0.12 ]* env * 6);
 	var dly = DelayC.ar(sig + tone,0.03,[0.02,0.027]);
 	var eq = BLowShelf.ar(dly,1000,0.4, -7);
 	Out.ar(out, eq * amp);
@@ -38,7 +38,7 @@ SynthDef(\timWind1, { |out, freq=111, gate=0, amp = 0.3, pchx=0|
 
 	var move = m.accelMassFiltered.linlin(0,3,0,1.5);
   var a = m.accelMassFiltered * 0.5;
-  var amp = m.accelMassFiltered.lincurve(0,1.5,0.02,0.1,-5);
+  var amp = m.accelMassFiltered.lincurve(0,1.5,0.02,0.7,-5);
   var gap = m.accelMassFiltered.lincurve(0,1.5,0.8,0.1,-5);
 	var oct = d.sensors.gyroEvent.y.linlin(-1,1,1,5).floor * 12;
 	var av = d.sensors.gyroEvent.y.lincurve(-1,1,1,0.1,-2);
@@ -58,7 +58,7 @@ SynthDef(\timWind1, { |out, freq=111, gate=0, amp = 0.3, pchx=0|
 			synth = Synth(\timWind1, [
 				\freq, (36 + currentNote + currentRoot + oct).midicps,
 				\gate, 1,
-				\amp, amp * 1 * av,
+				\amp, amp * 0.4 * av,
 			]);
 			synth.server.sendBundle(0.3,[\n_set, synth.nodeID, \gate, 0]);
 		});

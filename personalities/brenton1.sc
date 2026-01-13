@@ -19,7 +19,7 @@ SynthDef(\stereoSamplerB, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, fr
     sig = RLPF.ar(sig, cutoff, rq) + osc;
     sig = Pan2.ar(sig, pan, amp * env);
 	sig = LeakDC.ar(sig);
-    Out.ar(out, ((0)!0 ++ sig));
+    Out.ar(out, [((0)!0 ++ sig)]);
 }).add;
 
 //------------------------------------------------------------

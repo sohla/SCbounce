@@ -52,7 +52,7 @@ SynthDef(\sheet3, {
 	// if(a<0.03,{a=0});
 	if(a>0.9,{a=0.9});
 	
-	synth.set(\amp, a * 34.3);
+	synth.set(\amp, a * 14.3);
 	synth.set(\my, b);
 	synth.set(\mx, r);
 	synth.set(\filterFreq, e);

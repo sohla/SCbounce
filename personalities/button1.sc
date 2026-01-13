@@ -130,7 +130,7 @@ SynthDef(\versatilePerc, {
 
   var notes = [26,19,17] + 12;
   var colors = [Color.red, Color.green, Color.blue, Color.yellow, Color.cyan];
-  var ni = (d.  sensors.gyroEvent.z / pi).lincurve(-0.5,0.5,0,notes.size-1,1).asInteger;//cw/ccw
+  var ni = (d.sensors.gyroEvent.z / pi).lincurve(-0.5,0.5,0,notes.size-1,1).asInteger;//cw/ccw
   var shapes = [\square, \triangle, \hexagon];
   var bassLine = bassLines[0];
   // var ni = (d.sensors.gyroEvent.y / pi).lincurve(-1.0,1.0,0,notes.size,0).floor;//left/right

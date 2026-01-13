@@ -2,7 +2,7 @@ var m = ~model;
 var synth;
 var buffer;
 var lastTime = 0;
-var notes = [0,7];
+var notes = [-2,7];
 
 m.accelMassFilteredAttack = 0.7;
 m.accelMassFilteredDecay = 0.2;

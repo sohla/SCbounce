@@ -75,7 +75,7 @@ SynthDef(\bongo2, {
 	Pdef(m.ptn,
 		Pbind(
 		    \instrument, \bongo2,
-			\dur, Pseq([0.5!11, 0.25, 0.25].flat, inf) ,
+			// \dur, Pseq([0.5!11, 0.25, 0.25].flat, inf) ,
 			\octave, 3,
 		    \note, Pseq([Pseq([0,9,7],3),0,9,7,4], inf),
 			\root, Pseq([Pn(0,13 * 2),Pn(3,13 * 2),Pn(1,13 * 2),Pn(-2,13 * 2)], inf),

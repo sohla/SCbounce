@@ -85,7 +85,7 @@ SynthDef(\drumkit, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 //------------------------------------------------------------
 ~next = {|d|
 
-	var rate = m.rrateMassFiltered.linlin(0,2,1.5,4);
+	var rate = m.rrateMassFiltered.linlin(0,1,1.5,4);
 	var amp = m.accelMassFiltered.lincurve(0,2.5,0.3,1, -1);
   
 	Pdef(m.ptn).set(\amp, amp);
@@ -94,7 +94,7 @@ SynthDef(\drumkit, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 	// bi = bi.asInteger;
 	bi = [10,11,12,13].choose;//14
 
-	if(m.accelMassFiltered > 0.1,{
+	if(m.accelMassFiltered > 0.07,{
 		if( Pdef(m.ptn).isPlaying.not,{
 			// Pdef(m.ptn).resume(quant:dur);
 			Pdef(m.ptn).play(quant:dur);

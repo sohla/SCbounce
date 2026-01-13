@@ -72,8 +72,8 @@ var serverView = UserView()
 // 	.maxWidth_(140);
 
 var meterView = View()
-	.minWidth_(240)
-	.maxWidth_(240);
+	.minWidth_(150)
+	.maxWidth_(150);
 
 var nodeTree = View()
 	.background_(Color.black(0.25))
@@ -151,5 +151,5 @@ var systemView = {
 
 s.plotTreeView(0.5, nodeTree);
 
-ServerMeterView.new(s, meterView, 0@0, 2, 8);
+ServerMeterView.new(s, meterView, 0@0, 2, 2);
 systemView;

@@ -75,7 +75,7 @@ SynthDef(\noise, { |out=0, frq=1000, gate=1, amp = 0.0, atk=0.02, sus=0.8, rel=1
 ~next = {|d|
 	// var amp = d.sensors.velocity.sum.abs.lincurve(0,0.03,0.0,1.0,-2);
 	var amp = m.accelMassFiltered.lincurve(0,2.5,0.0,1,-3);
-	var rfo = m.accelMassFiltered.lincurve(0,2.5,0.0,1,-3);
+	var rfo = m.accelMassFiltered.lincurve(0,1.5,0.0,1,-3);
   	var ffo = m.gyroYFiltered.lincurve(-1.0,1,1,18,-3);
     
     if(amp<0.015,{

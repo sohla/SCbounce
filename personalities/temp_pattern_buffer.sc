@@ -67,7 +67,8 @@ SynthDef(\sampler, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=440,
 			)
 		);
 		Pdef(m.ptn).play(quant:0.125);
-	});};
+	});
+};
 
 //------------------------------------------------------------
 ~deinit = ~deinit <> {

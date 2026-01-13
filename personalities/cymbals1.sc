@@ -34,6 +34,7 @@ SynthDef(\drumkit, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 ~init = ~init <> {
 
 	var folder  = PathName("~/Downloads/openLabSamples/kit");
+
 	postf("loading samples : % \n", folder);
 
 	~buffers = folder.entries.collect({ |path,i|
@@ -48,20 +49,6 @@ SynthDef(\drumkit, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 	Pdef(m.ptn,
 		Pbind(
 			\instrument, \drumkit,			
-  		\type, \customVisualEvent,
-			\shape, \circle,
-			\sx, Pwhite(-0.3,0.3),
-			\sy, 0,
-			\ex, Pkey(\sx),
-			\ey, 0,
-			// \startSize, 40,
-			\endSize, 30,
-			\rotation, pi / Pwhite(1.7,2.3),
-			\fill, true,
-			\startColor, Color.hsv(0.6,1,1.0,1),
-			\endColor, Color.hsv(0.8,1,1.0,0.0),
-      \duration, 0.4,
-
 			\bufnum, Pfunc{
 				if(bi >= (~buffers.size-1),{bi=0});
 				~buffers[bi];
@@ -74,6 +61,22 @@ SynthDef(\drumkit, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 			\attack, 0.01,
 			\release,1.3,
 			\args, #[],
+
+  		\type, \customVisualEvent,
+			\shape, \circle,
+			\sx, Pwhite(-0.02,0.02),
+			\sy, Pwhite(-0.02,0.02),
+			\ex, 0,
+			\ey, 0,
+			// \startSize, 40,
+			// \endSize, 30,
+			\rotation, pi / Pwhite(1.7,2.3),
+			\fill, false,
+			// \startWidth, 30,
+			\endWidth, 0.1,
+			// \startColor, Color.hsv(0.0,1,1.0,1),
+			// \endColor, Color.hsv(0.1,1,1.0,0.0),
+      \duration, 0.3,
 		)
 	);
 
@@ -96,27 +99,33 @@ SynthDef(\drumkit, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 //------------------------------------------------------------
 ~next = {|d|
 
-	var rate = m.rrateMassFiltered.linlin(0,1,1,1.4);
+	var rate = m.rrateMassFiltered.linlin(0,1,0.2,10.4);
 	var amp = m.accelMassFiltered.lincurve(0,1.5,0.02,1, 2);
 
-	Pdef(m.ptn).set(\amp, amp * 6);
+	Pdef(m.ptn).set(\amp, amp * 1.5);
 	Pdef(m.ptn).set(\rate, rate);
 
 	Pdef(m.ptn).set(\viewID, d.port);
-  // Pdef(m.ptn).set(\startSize, 10 + (100 * amp));
+  Pdef(m.ptn).set(\startSize, 3);
+  Pdef(m.ptn).set(\endSize, 30 + (100 * amp));
+  Pdef(m.ptn).set(\startWidth, (10.pow(amp)));
 
-	// Pdef(m.ptn).set(\modulation, (
-	// 		type: \radial,
-	// 		freq: 3 ,
-	// 		amp: 3,
-	// 		harmonics: 2
-	// ));
+	Pdef(m.ptn).set(\modulation, (
+			type: \radial,
+			freq: 1 ,
+			amp: 1 + (10 * amp),
+			harmonics: 2
+	));
 
 
 	// bi = (d.sensors.gyroEvent.y.abs / pi) * (~buffers.size-1);
 	// bi = bi.asInteger;
 	// bi = [0,1].choose;
   bi = ~buffers.size.rand;
+	Pdef(m.ptn).set(\startColor, Color.hsv(bi/~buffers.size,1,1.0,1));
+	Pdef(m.ptn).set(\endColor, Color.hsv(bi/~buffers.size,1,1.0,0.1));
+
+
 	if(m.accelMassFiltered > 0.02,{
 		if( Pdef(m.ptn).isPlaying.not,{
 			Pdef(m.ptn).resume(quant:dur*2);
