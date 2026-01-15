@@ -5530,6 +5530,113 @@
       ]
     },
     {
+      "id": "configureAirStickOSC.sc",
+      "label": "configureAirStickOSC.sc",
+      "full_path": "configureAirStickOSC.sc",
+      "commit_count": 14,
+      "category": "SuperCollider",
+      "commits": [
+        {
+          "hash": "08f1aef6",
+          "date": "2026-01-14",
+          "author": "soh_la",
+          "subject": "timeline analysis",
+          "files_count": 15
+        },
+        {
+          "hash": "89499526",
+          "date": "2025-11-17",
+          "author": "Steph OHara",
+          "subject": "mini",
+          "files_count": 2
+        },
+        {
+          "hash": "e0db3a87",
+          "date": "2025-10-17",
+          "author": "steph",
+          "subject": "api test",
+          "files_count": 3
+        },
+        {
+          "hash": "d72a9ee8",
+          "date": "2025-10-15",
+          "author": "Steph OHara",
+          "subject": "conmfig",
+          "files_count": 1
+        },
+        {
+          "hash": "94112314",
+          "date": "2025-10-12",
+          "author": "Steph OHara",
+          "subject": "claude notes",
+          "files_count": 3
+        },
+        {
+          "hash": "9f7d9f62",
+          "date": "2025-08-12",
+          "author": "soh_la",
+          "subject": "config",
+          "files_count": 1
+        },
+        {
+          "hash": "ffe76bd3",
+          "date": "2024-11-26",
+          "author": "Steph OHara",
+          "subject": "more sounds",
+          "files_count": 5
+        },
+        {
+          "hash": "46cee239",
+          "date": "2024-11-15",
+          "author": "steph",
+          "subject": "layout on device",
+          "files_count": 2
+        },
+        {
+          "hash": "b1227794",
+          "date": "2024-11-14",
+          "author": "soh_la",
+          "subject": "laptop",
+          "files_count": 1
+        },
+        {
+          "hash": "df116d80",
+          "date": "2024-11-08",
+          "author": "soh_la",
+          "subject": "building for workshops",
+          "files_count": 2
+        },
+        {
+          "hash": "6201f8da",
+          "date": "2024-11-08",
+          "author": "soh_la",
+          "subject": "building cabin",
+          "files_count": 1
+        },
+        {
+          "hash": "8f79ab91",
+          "date": "2024-11-06",
+          "author": "soh_la",
+          "subject": "setuups",
+          "files_count": 1
+        },
+        {
+          "hash": "f61efbd5",
+          "date": "2024-11-06",
+          "author": "soh_la",
+          "subject": "airkit 0.1",
+          "files_count": 2
+        },
+        {
+          "hash": "6bd573af",
+          "date": "2024-10-24",
+          "author": "soh_la",
+          "subject": "setting up first 4 osc versions, also added color",
+          "files_count": 2
+        }
+      ]
+    },
+    {
       "id": "personalities/thunder.sc",
       "label": "thunder.sc",
       "full_path": "personalities/thunder.sc",
@@ -6468,106 +6575,6 @@
           "author": "sohla",
           "subject": "refactor project",
           "files_count": 9
-        }
-      ]
-    },
-    {
-      "id": "configureAirStickOSC.sc",
-      "label": "configureAirStickOSC.sc",
-      "full_path": "configureAirStickOSC.sc",
-      "commit_count": 13,
-      "category": "SuperCollider",
-      "commits": [
-        {
-          "hash": "89499526",
-          "date": "2025-11-17",
-          "author": "Steph OHara",
-          "subject": "mini",
-          "files_count": 2
-        },
-        {
-          "hash": "e0db3a87",
-          "date": "2025-10-17",
-          "author": "steph",
-          "subject": "api test",
-          "files_count": 3
-        },
-        {
-          "hash": "d72a9ee8",
-          "date": "2025-10-15",
-          "author": "Steph OHara",
-          "subject": "conmfig",
-          "files_count": 1
-        },
-        {
-          "hash": "94112314",
-          "date": "2025-10-12",
-          "author": "Steph OHara",
-          "subject": "claude notes",
-          "files_count": 3
-        },
-        {
-          "hash": "9f7d9f62",
-          "date": "2025-08-12",
-          "author": "soh_la",
-          "subject": "config",
-          "files_count": 1
-        },
-        {
-          "hash": "ffe76bd3",
-          "date": "2024-11-26",
-          "author": "Steph OHara",
-          "subject": "more sounds",
-          "files_count": 5
-        },
-        {
-          "hash": "46cee239",
-          "date": "2024-11-15",
-          "author": "steph",
-          "subject": "layout on device",
-          "files_count": 2
-        },
-        {
-          "hash": "b1227794",
-          "date": "2024-11-14",
-          "author": "soh_la",
-          "subject": "laptop",
-          "files_count": 1
-        },
-        {
-          "hash": "df116d80",
-          "date": "2024-11-08",
-          "author": "soh_la",
-          "subject": "building for workshops",
-          "files_count": 2
-        },
-        {
-          "hash": "6201f8da",
-          "date": "2024-11-08",
-          "author": "soh_la",
-          "subject": "building cabin",
-          "files_count": 1
-        },
-        {
-          "hash": "8f79ab91",
-          "date": "2024-11-06",
-          "author": "soh_la",
-          "subject": "setuups",
-          "files_count": 1
-        },
-        {
-          "hash": "f61efbd5",
-          "date": "2024-11-06",
-          "author": "soh_la",
-          "subject": "airkit 0.1",
-          "files_count": 2
-        },
-        {
-          "hash": "6bd573af",
-          "date": "2024-10-24",
-          "author": "soh_la",
-          "subject": "setting up first 4 osc versions, also added color",
-          "files_count": 2
         }
       ]
     },
@@ -16732,7 +16739,7 @@
   "statistics": {
     "total_files": 100,
     "total_edges": 967,
-    "total_commits": 494,
+    "total_commits": 499,
     "most_connected_files": [
       [
         "code2.0/oscmusic.sc",
@@ -16776,8 +16783,8 @@
       ]
     ],
     "categories": [
-      "Root",
-      "SuperCollider"
+      "SuperCollider",
+      "Root"
     ]
   },
   "filters": {

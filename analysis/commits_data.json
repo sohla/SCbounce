@@ -309,11 +309,11 @@
       "size": 3
     },
     {
-      "text": "ideas",
+      "text": "some",
       "size": 3
     },
     {
-      "text": "some",
+      "text": "ideas",
       "size": 3
     },
     {
@@ -337,11 +337,11 @@
       "size": 3
     },
     {
-      "text": "buttons",
+      "text": "add",
       "size": 3
     },
     {
-      "text": "add",
+      "text": "buttons",
       "size": 3
     },
     {
@@ -549,11 +549,11 @@
       "size": 2
     },
     {
-      "text": "arvo",
+      "text": "alessio",
       "size": 2
     },
     {
-      "text": "alessio",
+      "text": "arvo",
       "size": 2
     },
     {
@@ -569,7 +569,7 @@
       "size": 2
     },
     {
-      "text": "origin",
+      "text": "tracking",
       "size": 2
     },
     {
@@ -577,7 +577,7 @@
       "size": 2
     },
     {
-      "text": "tracking",
+      "text": "origin",
       "size": 2
     },
     {
@@ -653,11 +653,11 @@
       "size": 2
     },
     {
-      "text": "only",
+      "text": "stops",
       "size": 2
     },
     {
-      "text": "stops",
+      "text": "only",
       "size": 2
     },
     {
@@ -669,11 +669,11 @@
       "size": 2
     },
     {
-      "text": "path",
+      "text": "harp",
       "size": 2
     },
     {
-      "text": "harp",
+      "text": "path",
       "size": 2
     },
     {
@@ -11548,6 +11548,46 @@
         "type": "other"
       }
     ],
+    "some": [
+      {
+        "hash": "7042a3a7",
+        "date": "2025-12-03",
+        "datetime": "2025-12-03 16:11:37 +1100",
+        "author": "sohla",
+        "subject": "some ball ideas",
+        "files": [
+          "code3.0/personalityController.scd",
+          "lists/list_ITR_Ball.sc",
+          "personalities/ball1.sc",
+          "personalities/cymbals1.sc",
+          "personalities/melbb1.sc",
+          "personalities/temp_pattern_buffer.sc"
+        ],
+        "type": "personality"
+      },
+      {
+        "hash": "35bb6b23",
+        "date": "2025-10-12",
+        "datetime": "2025-10-12 22:38:01 +1100",
+        "author": "sohla",
+        "subject": "added some cpu stats bit not gui freiendly",
+        "files": [
+          "code3.0/systemView.scd"
+        ],
+        "type": "implementation"
+      },
+      {
+        "hash": "3c7e5b4e",
+        "date": "2024-07-02",
+        "datetime": "2024-07-02 11:10:45 +1000",
+        "author": "Steph OHara",
+        "subject": "some claude ai code",
+        "files": [
+          "code2.0/oscmusic.sc"
+        ],
+        "type": "implementation"
+      }
+    ],
     "ideas": [
       {
         "hash": "7042a3a7",
@@ -11591,46 +11631,6 @@
           "synths/woodBamboo.sc"
         ],
         "type": "other"
-      }
-    ],
-    "some": [
-      {
-        "hash": "7042a3a7",
-        "date": "2025-12-03",
-        "datetime": "2025-12-03 16:11:37 +1100",
-        "author": "sohla",
-        "subject": "some ball ideas",
-        "files": [
-          "code3.0/personalityController.scd",
-          "lists/list_ITR_Ball.sc",
-          "personalities/ball1.sc",
-          "personalities/cymbals1.sc",
-          "personalities/melbb1.sc",
-          "personalities/temp_pattern_buffer.sc"
-        ],
-        "type": "personality"
-      },
-      {
-        "hash": "35bb6b23",
-        "date": "2025-10-12",
-        "datetime": "2025-10-12 22:38:01 +1100",
-        "author": "sohla",
-        "subject": "added some cpu stats bit not gui freiendly",
-        "files": [
-          "code3.0/systemView.scd"
-        ],
-        "type": "implementation"
-      },
-      {
-        "hash": "3c7e5b4e",
-        "date": "2024-07-02",
-        "datetime": "2024-07-02 11:10:45 +1000",
-        "author": "Steph OHara",
-        "subject": "some claude ai code",
-        "files": [
-          "code2.0/oscmusic.sc"
-        ],
-        "type": "implementation"
       }
     ],
     "wed": [
@@ -11947,42 +11947,6 @@
         "type": "personality"
       }
     ],
-    "buttons": [
-      {
-        "hash": "2d0f2cd6",
-        "date": "2025-11-17",
-        "datetime": "2025-11-17 09:25:30 +1100",
-        "author": "sohla",
-        "subject": "add 4 buttons",
-        "files": [
-          "lists/list_yourDNA25.sc",
-          "personalities/temp_synth_4button.sc"
-        ],
-        "type": "personality"
-      },
-      {
-        "hash": "dc4aa97d",
-        "date": "2025-02-19",
-        "datetime": "2025-02-19 15:12:37 +1100",
-        "author": "sohla",
-        "subject": "better tab buttons",
-        "files": [
-          "code2.0/buttonGrid.sc"
-        ],
-        "type": "implementation"
-      },
-      {
-        "hash": "7570ec61",
-        "date": "2024-10-31",
-        "datetime": "2024-10-31 17:15:34 +1100",
-        "author": "soh_la",
-        "subject": "improved gui for rpi : -/+ buttons",
-        "files": [
-          "code2.0/oscmusic.sc"
-        ],
-        "type": "implementation"
-      }
-    ],
     "add": [
       {
         "hash": "2d0f2cd6",
@@ -12033,6 +11997,42 @@
         "datetime": "2024-11-01 15:46:15 +1100",
         "author": "soh_la",
         "subject": "starting to add controlbus",
+        "files": [
+          "code2.0/oscmusic.sc"
+        ],
+        "type": "implementation"
+      }
+    ],
+    "buttons": [
+      {
+        "hash": "2d0f2cd6",
+        "date": "2025-11-17",
+        "datetime": "2025-11-17 09:25:30 +1100",
+        "author": "sohla",
+        "subject": "add 4 buttons",
+        "files": [
+          "lists/list_yourDNA25.sc",
+          "personalities/temp_synth_4button.sc"
+        ],
+        "type": "personality"
+      },
+      {
+        "hash": "dc4aa97d",
+        "date": "2025-02-19",
+        "datetime": "2025-02-19 15:12:37 +1100",
+        "author": "sohla",
+        "subject": "better tab buttons",
+        "files": [
+          "code2.0/buttonGrid.sc"
+        ],
+        "type": "implementation"
+      },
+      {
+        "hash": "7570ec61",
+        "date": "2024-10-31",
+        "datetime": "2024-10-31 17:15:34 +1100",
+        "author": "soh_la",
+        "subject": "improved gui for rpi : -/+ buttons",
         "files": [
           "code2.0/oscmusic.sc"
         ],
@@ -14173,38 +14173,6 @@
         "type": "mixed"
       }
     ],
-    "arvo": [
-      {
-        "hash": "1b7d0a77",
-        "date": "2025-10-29",
-        "datetime": "2025-10-29 14:47:20 +1100",
-        "author": "steph",
-        "subject": "alessio pre arvo",
-        "files": [
-          "code3.0/main.sc",
-          "lists/list_SiS_Alessio.sc",
-          "personalities/aless1.sc",
-          "personalities/aless2.sc",
-          "personalities/aless3.sc",
-          "personalities/aless4.sc",
-          "personalities/velocity2.sc"
-        ],
-        "type": "personality"
-      },
-      {
-        "hash": "5bcea4a3",
-        "date": "2025-10-08",
-        "datetime": "2025-10-08 18:08:55 +1100",
-        "author": "sohla",
-        "subject": "pre thurs session arvo",
-        "files": [
-          "personalities/mel3.sc",
-          "personalities/melbb1.sc",
-          "personalities/melbb2.sc"
-        ],
-        "type": "personality"
-      }
-    ],
     "alessio": [
       {
         "hash": "1b7d0a77",
@@ -14238,6 +14206,38 @@
           "personalities/aless3.sc",
           "personalities/jamesCello.sc",
           "personalities/mel1.sc"
+        ],
+        "type": "personality"
+      }
+    ],
+    "arvo": [
+      {
+        "hash": "1b7d0a77",
+        "date": "2025-10-29",
+        "datetime": "2025-10-29 14:47:20 +1100",
+        "author": "steph",
+        "subject": "alessio pre arvo",
+        "files": [
+          "code3.0/main.sc",
+          "lists/list_SiS_Alessio.sc",
+          "personalities/aless1.sc",
+          "personalities/aless2.sc",
+          "personalities/aless3.sc",
+          "personalities/aless4.sc",
+          "personalities/velocity2.sc"
+        ],
+        "type": "personality"
+      },
+      {
+        "hash": "5bcea4a3",
+        "date": "2025-10-08",
+        "datetime": "2025-10-08 18:08:55 +1100",
+        "author": "sohla",
+        "subject": "pre thurs session arvo",
+        "files": [
+          "personalities/mel3.sc",
+          "personalities/melbb1.sc",
+          "personalities/melbb2.sc"
         ],
         "type": "personality"
       }
@@ -14333,7 +14333,7 @@
         "type": "mixed"
       }
     ],
-    "origin": [
+    "tracking": [
       {
         "hash": "41176aed",
         "date": "2025-10-20",
@@ -14373,7 +14373,7 @@
         "type": "other"
       }
     ],
-    "tracking": [
+    "origin": [
       {
         "hash": "41176aed",
         "date": "2025-10-20",
@@ -15010,6 +15010,36 @@
         "type": "mixed"
       }
     ],
+    "stops": [
+      {
+        "hash": "83cfc0b2",
+        "date": "2025-08-15",
+        "datetime": "2025-08-15 09:48:08 +1000",
+        "author": "sohla",
+        "subject": "enabled button working : but only stops calling ~next",
+        "files": [
+          "code3.0/personalityController.scd",
+          "code3.0/titleView.scd",
+          "code3.0/visualView.scd",
+          "personalities/silence.sc"
+        ],
+        "type": "mixed"
+      },
+      {
+        "hash": "1155ebd4",
+        "date": "2025-08-12",
+        "datetime": "2025-08-12 16:45:46 +1000",
+        "author": "sohla",
+        "subject": "need to fix enable bug : file watcher stops working",
+        "files": [
+          "code2.0/oscController.scd",
+          "code2.0/personalityController.scd",
+          "code2.0/titleView.scd",
+          "personalities/silence.sc"
+        ],
+        "type": "mixed"
+      }
+    ],
     "only": [
       {
         "hash": "83cfc0b2",
@@ -15039,36 +15069,6 @@
           "personalities/synth16.sc"
         ],
         "type": "personality"
-      }
-    ],
-    "stops": [
-      {
-        "hash": "83cfc0b2",
-        "date": "2025-08-15",
-        "datetime": "2025-08-15 09:48:08 +1000",
-        "author": "sohla",
-        "subject": "enabled button working : but only stops calling ~next",
-        "files": [
-          "code3.0/personalityController.scd",
-          "code3.0/titleView.scd",
-          "code3.0/visualView.scd",
-          "personalities/silence.sc"
-        ],
-        "type": "mixed"
-      },
-      {
-        "hash": "1155ebd4",
-        "date": "2025-08-12",
-        "datetime": "2025-08-12 16:45:46 +1000",
-        "author": "sohla",
-        "subject": "need to fix enable bug : file watcher stops working",
-        "files": [
-          "code2.0/oscController.scd",
-          "code2.0/personalityController.scd",
-          "code2.0/titleView.scd",
-          "personalities/silence.sc"
-        ],
-        "type": "mixed"
       }
     ],
     "project": [
@@ -15130,30 +15130,6 @@
         "type": "implementation"
       }
     ],
-    "path": [
-      {
-        "hash": "51258888",
-        "date": "2025-06-03",
-        "datetime": "2025-06-03 21:19:42 +1000",
-        "author": "Steph OHara",
-        "subject": "fix harp path",
-        "files": [
-          "personalities/harp1.sc"
-        ],
-        "type": "personality"
-      },
-      {
-        "hash": "832f4e18",
-        "date": "2024-06-17",
-        "datetime": "2024-06-17 21:21:30 +1000",
-        "author": "soh_la",
-        "subject": "local path",
-        "files": [
-          "code2.0/oscmusic.sc"
-        ],
-        "type": "implementation"
-      }
-    ],
     "harp": [
       {
         "hash": "51258888",
@@ -15187,6 +15163,30 @@
           "personalities/wingChimes1.sc"
         ],
         "type": "personality"
+      }
+    ],
+    "path": [
+      {
+        "hash": "51258888",
+        "date": "2025-06-03",
+        "datetime": "2025-06-03 21:19:42 +1000",
+        "author": "Steph OHara",
+        "subject": "fix harp path",
+        "files": [
+          "personalities/harp1.sc"
+        ],
+        "type": "personality"
+      },
+      {
+        "hash": "832f4e18",
+        "date": "2024-06-17",
+        "datetime": "2024-06-17 21:21:30 +1000",
+        "author": "soh_la",
+        "subject": "local path",
+        "files": [
+          "code2.0/oscmusic.sc"
+        ],
+        "type": "implementation"
       }
     ],
     "single": [
@@ -16158,6 +16158,6 @@
   },
   "timeline": {
     "min_date": "2024-03-21T11:28:25+11:00",
-    "max_date": "2026-01-14T09:51:43+11:00"
+    "max_date": "2026-01-15T11:30:14+11:00"
   }
 }
