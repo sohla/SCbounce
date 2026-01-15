@@ -2,35 +2,19 @@
   "words": [
     {
       "text": "merge",
-<<<<<<< HEAD
-      "size": 41
+      "size": 44
     },
     {
       "text": "branch",
-      "size": 40
+      "size": 43
     },
     {
       "text": "airsticks",
-      "size": 34
-    },
-    {
-      "text": "rpi",
-      "size": 33
-=======
-      "size": 39
-    },
-    {
-      "text": "branch",
       "size": 38
     },
     {
-      "text": "airsticks",
-      "size": 33
-    },
-    {
       "text": "rpi",
-      "size": 31
->>>>>>> 798b61e7bca6806d1b31c86ecad8e1d918fd3357
+      "size": 36
     },
     {
       "text": "more",
@@ -157,6 +141,14 @@
       "size": 8
     },
     {
+      "text": "conflicts",
+      "size": 7
+    },
+    {
+      "text": "local",
+      "size": 7
+    },
+    {
       "text": "fixes",
       "size": 7
     },
@@ -181,7 +173,11 @@
       "size": 7
     },
     {
-      "text": "conflicts",
+      "text": "code",
+      "size": 6
+    },
+    {
+      "text": "data",
       "size": 6
     },
     {
@@ -210,10 +206,6 @@
     },
     {
       "text": "update",
-      "size": 6
-    },
-    {
-      "text": "local",
       "size": 6
     },
     {
@@ -253,10 +245,6 @@
       "size": 5
     },
     {
-      "text": "code",
-      "size": 5
-    },
-    {
       "text": "all",
       "size": 5
     },
@@ -270,10 +258,6 @@
     },
     {
       "text": "master",
-      "size": 5
-    },
-    {
-      "text": "data",
       "size": 5
     },
     {
@@ -325,11 +309,11 @@
       "size": 3
     },
     {
-      "text": "some",
+      "text": "ideas",
       "size": 3
     },
     {
-      "text": "ideas",
+      "text": "some",
       "size": 3
     },
     {
@@ -353,11 +337,11 @@
       "size": 3
     },
     {
-      "text": "add",
+      "text": "buttons",
       "size": 3
     },
     {
-      "text": "buttons",
+      "text": "add",
       "size": 3
     },
     {
@@ -481,6 +465,10 @@
       "size": 3
     },
     {
+      "text": "timeline",
+      "size": 2
+    },
+    {
       "text": "refining",
       "size": 2
     },
@@ -581,15 +569,11 @@
       "size": 2
     },
     {
-<<<<<<< HEAD
-      "text": "remote",
+      "text": "origin",
       "size": 2
     },
     {
-      "text": "tracking",
-=======
-      "text": "origin",
->>>>>>> 798b61e7bca6806d1b31c86ecad8e1d918fd3357
+      "text": "remote",
       "size": 2
     },
     {
@@ -669,11 +653,11 @@
       "size": 2
     },
     {
-      "text": "stops",
+      "text": "only",
       "size": 2
     },
     {
-      "text": "only",
+      "text": "stops",
       "size": 2
     },
     {
@@ -815,49 +799,67 @@
     {
       "text": "recording",
       "size": 2
-    },
-    {
-      "text": "sampler",
-      "size": 2
     }
   ],
   "commits": {
     "merge": [
       {
-<<<<<<< HEAD
+        "hash": "970104d1",
+        "date": "2026-01-14",
+        "datetime": "2026-01-14 09:51:33 +1100",
+        "author": "soh_la",
+        "subject": "Merge branch 'Airsticks-RPI' of https://github.com/sohla/SCbounce into Airsticks-RPI",
+        "files": [],
+        "type": "other"
+      },
+      {
+        "hash": "86766d36",
+        "date": "2026-01-14",
+        "datetime": "2026-01-14 09:43:15 +1100",
+        "author": "steph",
+        "subject": "Merge branch 'Airsticks-RPI' of https://github.com/sohla/SCbounce into Airsticks-RPI",
+        "files": [
+          "analysis/commits_data.json"
+        ],
+        "type": "other"
+      },
+      {
+        "hash": "798b61e7",
+        "date": "2026-01-14",
+        "datetime": "2026-01-14 09:18:11 +1100",
+        "author": "soh_la",
+        "subject": "Merge branch 'Airsticks-RPI' of https://github.com/sohla/SCbounce into Airsticks-RPI",
+        "files": [],
+        "type": "other"
+      },
+      {
         "hash": "9103723d",
         "date": "2026-01-14",
         "datetime": "2026-01-14 07:16:08 +1100",
         "author": "steph",
-        "subject": "Merge branch 'Airsticks-RPI' of https://github.com/sohla/SCbounce into Airsticks-RPI"
+        "subject": "Merge branch 'Airsticks-RPI' of https://github.com/sohla/SCbounce into Airsticks-RPI",
+        "files": [
+          "code3.0/renderer.scd"
+        ],
+        "type": "implementation"
       },
       {
-=======
->>>>>>> 798b61e7bca6806d1b31c86ecad8e1d918fd3357
         "hash": "bdfa2d50",
         "date": "2026-01-12",
         "datetime": "2026-01-12 10:32:45 +1100",
         "author": "soh_la",
-<<<<<<< HEAD
-        "subject": "Merge branch 'Airsticks-RPI' of https://github.com/sohla/SCbounce into Airsticks-RPI"
-=======
         "subject": "Merge branch 'Airsticks-RPI' of https://github.com/sohla/SCbounce into Airsticks-RPI",
         "files": [],
         "type": "other"
->>>>>>> 798b61e7bca6806d1b31c86ecad8e1d918fd3357
       },
       {
         "hash": "c0a131d7",
         "date": "2026-01-05",
         "datetime": "2026-01-05 16:02:17 +1100",
         "author": "soh_la",
-<<<<<<< HEAD
-        "subject": "Merge branch 'Airsticks-RPI' of https://github.com/sohla/SCbounce into Airsticks-RPI"
-=======
         "subject": "Merge branch 'Airsticks-RPI' of https://github.com/sohla/SCbounce into Airsticks-RPI",
         "files": [],
         "type": "other"
->>>>>>> 798b61e7bca6806d1b31c86ecad8e1d918fd3357
       },
       {
         "hash": "dcd26e63",
@@ -873,7 +875,11 @@
         "date": "2025-11-13",
         "datetime": "2025-11-13 11:57:08 +1100",
         "author": "steph",
-        "subject": "Merge branch 'Airsticks-RPI' of https://github.com/sohla/SCbounce into Airsticks-RPI"
+        "subject": "Merge branch 'Airsticks-RPI' of https://github.com/sohla/SCbounce into Airsticks-RPI",
+        "files": [
+          "code3.0/renderer.scd"
+        ],
+        "type": "implementation"
       },
       {
         "hash": "39f6fb25",
@@ -1220,40 +1226,62 @@
     ],
     "branch": [
       {
-<<<<<<< HEAD
+        "hash": "970104d1",
+        "date": "2026-01-14",
+        "datetime": "2026-01-14 09:51:33 +1100",
+        "author": "soh_la",
+        "subject": "Merge branch 'Airsticks-RPI' of https://github.com/sohla/SCbounce into Airsticks-RPI",
+        "files": [],
+        "type": "other"
+      },
+      {
+        "hash": "86766d36",
+        "date": "2026-01-14",
+        "datetime": "2026-01-14 09:43:15 +1100",
+        "author": "steph",
+        "subject": "Merge branch 'Airsticks-RPI' of https://github.com/sohla/SCbounce into Airsticks-RPI",
+        "files": [
+          "analysis/commits_data.json"
+        ],
+        "type": "other"
+      },
+      {
+        "hash": "798b61e7",
+        "date": "2026-01-14",
+        "datetime": "2026-01-14 09:18:11 +1100",
+        "author": "soh_la",
+        "subject": "Merge branch 'Airsticks-RPI' of https://github.com/sohla/SCbounce into Airsticks-RPI",
+        "files": [],
+        "type": "other"
+      },
+      {
         "hash": "9103723d",
         "date": "2026-01-14",
         "datetime": "2026-01-14 07:16:08 +1100",
         "author": "steph",
-        "subject": "Merge branch 'Airsticks-RPI' of https://github.com/sohla/SCbounce into Airsticks-RPI"
+        "subject": "Merge branch 'Airsticks-RPI' of https://github.com/sohla/SCbounce into Airsticks-RPI",
+        "files": [
+          "code3.0/renderer.scd"
+        ],
+        "type": "implementation"
       },
       {
-=======
->>>>>>> 798b61e7bca6806d1b31c86ecad8e1d918fd3357
         "hash": "bdfa2d50",
         "date": "2026-01-12",
         "datetime": "2026-01-12 10:32:45 +1100",
         "author": "soh_la",
-<<<<<<< HEAD
-        "subject": "Merge branch 'Airsticks-RPI' of https://github.com/sohla/SCbounce into Airsticks-RPI"
-=======
         "subject": "Merge branch 'Airsticks-RPI' of https://github.com/sohla/SCbounce into Airsticks-RPI",
         "files": [],
         "type": "other"
->>>>>>> 798b61e7bca6806d1b31c86ecad8e1d918fd3357
       },
       {
         "hash": "c0a131d7",
         "date": "2026-01-05",
         "datetime": "2026-01-05 16:02:17 +1100",
         "author": "soh_la",
-<<<<<<< HEAD
-        "subject": "Merge branch 'Airsticks-RPI' of https://github.com/sohla/SCbounce into Airsticks-RPI"
-=======
         "subject": "Merge branch 'Airsticks-RPI' of https://github.com/sohla/SCbounce into Airsticks-RPI",
         "files": [],
         "type": "other"
->>>>>>> 798b61e7bca6806d1b31c86ecad8e1d918fd3357
       },
       {
         "hash": "dcd26e63",
@@ -1290,7 +1318,11 @@
         "date": "2025-11-13",
         "datetime": "2025-11-13 11:57:08 +1100",
         "author": "steph",
-        "subject": "Merge branch 'Airsticks-RPI' of https://github.com/sohla/SCbounce into Airsticks-RPI"
+        "subject": "Merge branch 'Airsticks-RPI' of https://github.com/sohla/SCbounce into Airsticks-RPI",
+        "files": [
+          "code3.0/renderer.scd"
+        ],
+        "type": "implementation"
       },
       {
         "hash": "41176aed",
@@ -1644,40 +1676,62 @@
     ],
     "airsticks": [
       {
-<<<<<<< HEAD
+        "hash": "970104d1",
+        "date": "2026-01-14",
+        "datetime": "2026-01-14 09:51:33 +1100",
+        "author": "soh_la",
+        "subject": "Merge branch 'Airsticks-RPI' of https://github.com/sohla/SCbounce into Airsticks-RPI",
+        "files": [],
+        "type": "other"
+      },
+      {
+        "hash": "86766d36",
+        "date": "2026-01-14",
+        "datetime": "2026-01-14 09:43:15 +1100",
+        "author": "steph",
+        "subject": "Merge branch 'Airsticks-RPI' of https://github.com/sohla/SCbounce into Airsticks-RPI",
+        "files": [
+          "analysis/commits_data.json"
+        ],
+        "type": "other"
+      },
+      {
+        "hash": "798b61e7",
+        "date": "2026-01-14",
+        "datetime": "2026-01-14 09:18:11 +1100",
+        "author": "soh_la",
+        "subject": "Merge branch 'Airsticks-RPI' of https://github.com/sohla/SCbounce into Airsticks-RPI",
+        "files": [],
+        "type": "other"
+      },
+      {
         "hash": "9103723d",
         "date": "2026-01-14",
         "datetime": "2026-01-14 07:16:08 +1100",
         "author": "steph",
-        "subject": "Merge branch 'Airsticks-RPI' of https://github.com/sohla/SCbounce into Airsticks-RPI"
+        "subject": "Merge branch 'Airsticks-RPI' of https://github.com/sohla/SCbounce into Airsticks-RPI",
+        "files": [
+          "code3.0/renderer.scd"
+        ],
+        "type": "implementation"
       },
       {
-=======
->>>>>>> 798b61e7bca6806d1b31c86ecad8e1d918fd3357
         "hash": "bdfa2d50",
         "date": "2026-01-12",
         "datetime": "2026-01-12 10:32:45 +1100",
         "author": "soh_la",
-<<<<<<< HEAD
-        "subject": "Merge branch 'Airsticks-RPI' of https://github.com/sohla/SCbounce into Airsticks-RPI"
-=======
         "subject": "Merge branch 'Airsticks-RPI' of https://github.com/sohla/SCbounce into Airsticks-RPI",
         "files": [],
         "type": "other"
->>>>>>> 798b61e7bca6806d1b31c86ecad8e1d918fd3357
       },
       {
         "hash": "c0a131d7",
         "date": "2026-01-05",
         "datetime": "2026-01-05 16:02:17 +1100",
         "author": "soh_la",
-<<<<<<< HEAD
-        "subject": "Merge branch 'Airsticks-RPI' of https://github.com/sohla/SCbounce into Airsticks-RPI"
-=======
         "subject": "Merge branch 'Airsticks-RPI' of https://github.com/sohla/SCbounce into Airsticks-RPI",
         "files": [],
         "type": "other"
->>>>>>> 798b61e7bca6806d1b31c86ecad8e1d918fd3357
       },
       {
         "hash": "dcd26e63",
@@ -1693,7 +1747,11 @@
         "date": "2025-11-13",
         "datetime": "2025-11-13 11:57:08 +1100",
         "author": "steph",
-        "subject": "Merge branch 'Airsticks-RPI' of https://github.com/sohla/SCbounce into Airsticks-RPI"
+        "subject": "Merge branch 'Airsticks-RPI' of https://github.com/sohla/SCbounce into Airsticks-RPI",
+        "files": [
+          "code3.0/renderer.scd"
+        ],
+        "type": "implementation"
       },
       {
         "hash": "41176aed",
@@ -1956,8 +2014,6 @@
         "type": "implementation"
       },
       {
-<<<<<<< HEAD
-=======
         "hash": "3a574f21",
         "date": "2024-06-04",
         "datetime": "2024-06-04 09:17:09 +1000",
@@ -1967,7 +2023,6 @@
         "type": "other"
       },
       {
->>>>>>> 798b61e7bca6806d1b31c86ecad8e1d918fd3357
         "hash": "ba4e1c82",
         "date": "2024-06-03",
         "datetime": "2024-06-03 13:52:53 +1000",
@@ -1982,40 +2037,62 @@
     ],
     "rpi": [
       {
-<<<<<<< HEAD
+        "hash": "970104d1",
+        "date": "2026-01-14",
+        "datetime": "2026-01-14 09:51:33 +1100",
+        "author": "soh_la",
+        "subject": "Merge branch 'Airsticks-RPI' of https://github.com/sohla/SCbounce into Airsticks-RPI",
+        "files": [],
+        "type": "other"
+      },
+      {
+        "hash": "86766d36",
+        "date": "2026-01-14",
+        "datetime": "2026-01-14 09:43:15 +1100",
+        "author": "steph",
+        "subject": "Merge branch 'Airsticks-RPI' of https://github.com/sohla/SCbounce into Airsticks-RPI",
+        "files": [
+          "analysis/commits_data.json"
+        ],
+        "type": "other"
+      },
+      {
+        "hash": "798b61e7",
+        "date": "2026-01-14",
+        "datetime": "2026-01-14 09:18:11 +1100",
+        "author": "soh_la",
+        "subject": "Merge branch 'Airsticks-RPI' of https://github.com/sohla/SCbounce into Airsticks-RPI",
+        "files": [],
+        "type": "other"
+      },
+      {
         "hash": "9103723d",
         "date": "2026-01-14",
         "datetime": "2026-01-14 07:16:08 +1100",
         "author": "steph",
-        "subject": "Merge branch 'Airsticks-RPI' of https://github.com/sohla/SCbounce into Airsticks-RPI"
+        "subject": "Merge branch 'Airsticks-RPI' of https://github.com/sohla/SCbounce into Airsticks-RPI",
+        "files": [
+          "code3.0/renderer.scd"
+        ],
+        "type": "implementation"
       },
       {
-=======
->>>>>>> 798b61e7bca6806d1b31c86ecad8e1d918fd3357
         "hash": "bdfa2d50",
         "date": "2026-01-12",
         "datetime": "2026-01-12 10:32:45 +1100",
         "author": "soh_la",
-<<<<<<< HEAD
-        "subject": "Merge branch 'Airsticks-RPI' of https://github.com/sohla/SCbounce into Airsticks-RPI"
-=======
         "subject": "Merge branch 'Airsticks-RPI' of https://github.com/sohla/SCbounce into Airsticks-RPI",
         "files": [],
         "type": "other"
->>>>>>> 798b61e7bca6806d1b31c86ecad8e1d918fd3357
       },
       {
         "hash": "c0a131d7",
         "date": "2026-01-05",
         "datetime": "2026-01-05 16:02:17 +1100",
         "author": "soh_la",
-<<<<<<< HEAD
-        "subject": "Merge branch 'Airsticks-RPI' of https://github.com/sohla/SCbounce into Airsticks-RPI"
-=======
         "subject": "Merge branch 'Airsticks-RPI' of https://github.com/sohla/SCbounce into Airsticks-RPI",
         "files": [],
         "type": "other"
->>>>>>> 798b61e7bca6806d1b31c86ecad8e1d918fd3357
       },
       {
         "hash": "dcd26e63",
@@ -2031,7 +2108,11 @@
         "date": "2025-11-13",
         "datetime": "2025-11-13 11:57:08 +1100",
         "author": "steph",
-        "subject": "Merge branch 'Airsticks-RPI' of https://github.com/sohla/SCbounce into Airsticks-RPI"
+        "subject": "Merge branch 'Airsticks-RPI' of https://github.com/sohla/SCbounce into Airsticks-RPI",
+        "files": [
+          "code3.0/renderer.scd"
+        ],
+        "type": "implementation"
       },
       {
         "hash": "41176aed",
@@ -2335,9 +2416,6 @@
         "date": "2026-01-12",
         "datetime": "2026-01-12 10:32:41 +1100",
         "author": "soh_la",
-<<<<<<< HEAD
-        "subject": "more ana"
-=======
         "subject": "more ana",
         "files": [
           ".DS_Store",
@@ -2346,7 +2424,6 @@
           "analysis/file_networks.json"
         ],
         "type": "other"
->>>>>>> 798b61e7bca6806d1b31c86ecad8e1d918fd3357
       },
       {
         "hash": "2cec10e4",
@@ -7284,71 +7361,6 @@
         "type": "other"
       }
     ],
-    "visuals": [
-      {
-        "hash": "d99de0fb",
-        "date": "2026-01-09",
-        "datetime": "2026-01-09 15:42:51 +1100",
-        "author": "sohla",
-        "subject": "making visuals with claude"
-      },
-      {
-        "hash": "0961cfa8",
-        "date": "2026-01-09",
-        "datetime": "2026-01-09 13:47:35 +1100",
-        "author": "sohla",
-        "subject": "can have visuals at boot"
-      },
-      {
-        "hash": "74282844",
-        "date": "2025-11-10",
-        "datetime": "2025-11-10 13:13:47 +1100",
-        "author": "sohla",
-        "subject": "fixed visuals"
-      },
-      {
-        "hash": "fa7f33c7",
-        "date": "2025-11-06",
-        "datetime": "2025-11-06 11:36:53 +1100",
-        "author": "steph",
-        "subject": "r&d on visuals"
-      },
-      {
-        "hash": "87d79f7f",
-        "date": "2025-05-16",
-        "datetime": "2025-05-16 14:48:37 +1000",
-        "author": "steph",
-        "subject": "added \\width to visuals"
-      },
-      {
-        "hash": "acbc9fd5",
-        "date": "2025-05-14",
-        "datetime": "2025-05-14 15:27:23 +1000",
-        "author": "steph",
-        "subject": "checking visuals"
-      },
-      {
-        "hash": "6b116079",
-        "date": "2025-05-12",
-        "datetime": "2025-05-12 13:16:50 +1000",
-        "author": "steph",
-        "subject": "fuk yes. visuals all working"
-      },
-      {
-        "hash": "447302fc",
-        "date": "2025-03-20",
-        "datetime": "2025-03-20 15:05:41 +1100",
-        "author": "soh_la",
-        "subject": "big day of visuals : using env is fun"
-      },
-      {
-        "hash": "05c20974",
-        "date": "2025-02-17",
-        "datetime": "2025-02-17 20:24:52 +1100",
-        "author": "Steph OHara",
-        "subject": "looking at visuals"
-      }
-    ],
     "layout": [
       {
         "hash": "807fc88d",
@@ -8195,6 +8207,173 @@
         "type": "mixed"
       }
     ],
+    "conflicts": [
+      {
+        "hash": "86766d36",
+        "date": "2026-01-14",
+        "datetime": "2026-01-14 09:43:15 +1100",
+        "author": "steph",
+        "subject": "Merge branch 'Airsticks-RPI' of https://github.com/sohla/SCbounce into Airsticks-RPI",
+        "files": [
+          "analysis/commits_data.json"
+        ],
+        "type": "other"
+      },
+      {
+        "hash": "9103723d",
+        "date": "2026-01-14",
+        "datetime": "2026-01-14 07:16:08 +1100",
+        "author": "steph",
+        "subject": "Merge branch 'Airsticks-RPI' of https://github.com/sohla/SCbounce into Airsticks-RPI",
+        "files": [
+          "code3.0/renderer.scd"
+        ],
+        "type": "implementation"
+      },
+      {
+        "hash": "8f203630",
+        "date": "2025-10-17",
+        "datetime": "2025-10-17 10:12:27 +1100",
+        "author": "steph",
+        "subject": "Merge branch 'Airsticks-RPI' of https://github.com/sohla/SCbounce into Airsticks-RPI",
+        "files": [],
+        "type": "other"
+      },
+      {
+        "hash": "7d7e4e33",
+        "date": "2025-06-18",
+        "datetime": "2025-06-18 13:46:37 +1000",
+        "author": "soh_la",
+        "subject": "Merge branch 'Airsticks-RPI' of https://github.com/sohla/SCbounce into Airsticks-RPI",
+        "files": [],
+        "type": "other"
+      },
+      {
+        "hash": "c8e7679a",
+        "date": "2025-05-07",
+        "datetime": "2025-05-07 20:09:23 +1000",
+        "author": "soh_la",
+        "subject": "Merge branch 'Airsticks-RPI' of https://github.com/sohla/SCbounce into Airsticks-RPI",
+        "files": [],
+        "type": "other"
+      },
+      {
+        "hash": "955302a9",
+        "date": "2024-11-06",
+        "datetime": "2024-11-06 10:55:51 +1100",
+        "author": "soh_la",
+        "subject": "Merge branch 'Airsticks-OSC' of https://github.com/sohla/SCbounce into Airsticks-OSC",
+        "files": [
+          "code2.0/oscmusic.sc"
+        ],
+        "type": "implementation"
+      },
+      {
+        "hash": "8e040ee1",
+        "date": "2024-06-17",
+        "datetime": "2024-06-17 10:48:40 +1000",
+        "author": "soh_la",
+        "subject": "Merge branch 'master' of https://github.com/sohla/SCbounce into Airsticks",
+        "files": [
+          "code2.0/oscmusic.sc"
+        ],
+        "type": "implementation"
+      }
+    ],
+    "local": [
+      {
+        "hash": "60d6f3dc",
+        "date": "2026-01-14",
+        "datetime": "2026-01-14 09:42:59 +1100",
+        "author": "steph",
+        "subject": "local data",
+        "files": [
+          "analysis/commits_data.json",
+          "analysis/file_networks.json"
+        ],
+        "type": "other"
+      },
+      {
+        "hash": "1a7e20fc",
+        "date": "2025-08-25",
+        "datetime": "2025-08-25 15:24:51 +1000",
+        "author": "Steph OHara",
+        "subject": "local quaternion maths",
+        "files": [
+          "code3.0/oscController.scd",
+          "code3.0/personalityController.scd",
+          "personalities/silence.sc"
+        ],
+        "type": "mixed"
+      },
+      {
+        "hash": "5a658163",
+        "date": "2024-11-14",
+        "datetime": "2024-11-14 11:02:32 +1100",
+        "author": "sohla",
+        "subject": "moving local rpi workshop code",
+        "files": [
+          "code2.0/oscmusic.sc",
+          "personalities/arialBass.sc",
+          "personalities/arialOstinato.sc",
+          "personalities/bells.sc",
+          "personalities/blobblob2.sc",
+          "personalities/bongo1.sc",
+          "personalities/footGong.sc",
+          "personalities/footGong2.sc",
+          "personalities/heatherLaugh.sc",
+          "personalities/list_yourDNA.sc",
+          "personalities/magicWand.sc",
+          "personalities/pluck2.sc"
+        ],
+        "type": "personality"
+      },
+      {
+        "hash": "0266008e",
+        "date": "2024-10-21",
+        "datetime": "2024-10-21 13:17:35 +1100",
+        "author": "stephohara",
+        "subject": "rpi local",
+        "files": [
+          "code2.0/oscmusic.sc"
+        ],
+        "type": "implementation"
+      },
+      {
+        "hash": "31646c21",
+        "date": "2024-07-15",
+        "datetime": "2024-07-15 22:56:42 +1000",
+        "author": "soh_la",
+        "subject": "local fixups",
+        "files": [
+          "code2.0/oscmusic.sc",
+          "personalities/rope2.sc"
+        ],
+        "type": "mixed"
+      },
+      {
+        "hash": "832f4e18",
+        "date": "2024-06-17",
+        "datetime": "2024-06-17 21:21:30 +1000",
+        "author": "soh_la",
+        "subject": "local path",
+        "files": [
+          "code2.0/oscmusic.sc"
+        ],
+        "type": "implementation"
+      },
+      {
+        "hash": "4edb48a2",
+        "date": "2024-05-21",
+        "datetime": "2024-05-21 09:57:04 +1000",
+        "author": "Steph OHara",
+        "subject": "local dir",
+        "files": [
+          "code2.0/oscmusic.scd"
+        ],
+        "type": "implementation"
+      }
+    ],
     "fixes": [
       {
         "hash": "82e6ea5a",
@@ -8483,9 +8662,6 @@
         "date": "2025-04-01",
         "datetime": "2025-04-01 15:02:59 +1100",
         "author": "steph",
-<<<<<<< HEAD
-        "subject": "detail view"
-=======
         "subject": "detail view",
         "files": [
           "code2.0/buttonGrid.sc",
@@ -8494,7 +8670,6 @@
           "code2.0/oscController.scd"
         ],
         "type": "implementation"
->>>>>>> 798b61e7bca6806d1b31c86ecad8e1d918fd3357
       }
     ],
     "bug": [
@@ -8758,48 +8933,175 @@
         "type": "other"
       }
     ],
-    "conflicts": [
+    "code": [
       {
-        "hash": "9103723d",
+        "hash": "7bfb94df",
         "date": "2026-01-14",
-        "datetime": "2026-01-14 07:16:08 +1100",
+        "datetime": "2026-01-14 09:50:55 +1100",
+        "author": "soh_la",
+        "subject": "code timeline",
+        "files": [
+          "analysis/analyze_personality_code.py",
+          "analysis/personality_code_data.json",
+          "analysis/personality_code_timeline.html"
+        ],
+        "type": "other"
+      },
+      {
+        "hash": "388fe333",
+        "date": "2025-08-25",
+        "datetime": "2025-08-25 13:33:46 +1000",
+        "author": "Steph OHara",
+        "subject": "callibration code",
+        "files": [
+          "code3.0/main.sc",
+          "code3.0/oscController.scd",
+          "code3.0/personalityController.scd",
+          "code3.0/threeDeeView.scd",
+          "code3.0/titleView.scd"
+        ],
+        "type": "implementation"
+      },
+      {
+        "hash": "11f3f2d3",
+        "date": "2025-04-03",
+        "datetime": "2025-04-03 20:34:55 +1100",
         "author": "steph",
-        "subject": "Merge branch 'Airsticks-RPI' of https://github.com/sohla/SCbounce into Airsticks-RPI"
+        "subject": "better plotter code etc.",
+        "files": [
+          "code2.0/details.scd",
+          "code2.0/devices.scd",
+          "code2.0/personalityController.scd"
+        ],
+        "type": "implementation"
       },
       {
-        "hash": "8f203630",
-        "date": "2025-10-17",
-        "datetime": "2025-10-17 10:12:27 +1100",
+        "hash": "be226a71",
+        "date": "2025-01-30",
+        "datetime": "2025-01-30 07:47:34 +1100",
+        "author": "Steph OHara",
+        "subject": "code",
+        "files": [
+          "code1.0/serverSetup.sc"
+        ],
+        "type": "other"
+      },
+      {
+        "hash": "5a658163",
+        "date": "2024-11-14",
+        "datetime": "2024-11-14 11:02:32 +1100",
+        "author": "sohla",
+        "subject": "moving local rpi workshop code",
+        "files": [
+          "code2.0/oscmusic.sc",
+          "personalities/arialBass.sc",
+          "personalities/arialOstinato.sc",
+          "personalities/bells.sc",
+          "personalities/blobblob2.sc",
+          "personalities/bongo1.sc",
+          "personalities/footGong.sc",
+          "personalities/footGong2.sc",
+          "personalities/heatherLaugh.sc",
+          "personalities/list_yourDNA.sc",
+          "personalities/magicWand.sc",
+          "personalities/pluck2.sc"
+        ],
+        "type": "personality"
+      },
+      {
+        "hash": "3c7e5b4e",
+        "date": "2024-07-02",
+        "datetime": "2024-07-02 11:10:45 +1000",
+        "author": "Steph OHara",
+        "subject": "some claude ai code",
+        "files": [
+          "code2.0/oscmusic.sc"
+        ],
+        "type": "implementation"
+      }
+    ],
+    "data": [
+      {
+        "hash": "60d6f3dc",
+        "date": "2026-01-14",
+        "datetime": "2026-01-14 09:42:59 +1100",
         "author": "steph",
-        "subject": "Merge branch 'Airsticks-RPI' of https://github.com/sohla/SCbounce into Airsticks-RPI"
+        "subject": "local data",
+        "files": [
+          "analysis/commits_data.json",
+          "analysis/file_networks.json"
+        ],
+        "type": "other"
       },
       {
-        "hash": "7d7e4e33",
-        "date": "2025-06-18",
-        "datetime": "2025-06-18 13:46:37 +1000",
-        "author": "soh_la",
-        "subject": "Merge branch 'Airsticks-RPI' of https://github.com/sohla/SCbounce into Airsticks-RPI"
+        "hash": "fc91aaee",
+        "date": "2024-10-21",
+        "datetime": "2024-10-21 13:16:16 +1100",
+        "author": "Steph OHara",
+        "subject": "new sounds and new data ui",
+        "files": [
+          ".DS_Store",
+          "code2.0/oscmusic.sc",
+          "personalities/list_yourDNA.sc",
+          "synths/.DS_Store",
+          "synths/cicada.sc",
+          "synths/improvedFrog.sc",
+          "synths/interactiveWind.sc",
+          "synths/kickhat.sc",
+          "synths/leaves.sc",
+          "synths/magpie.sc",
+          "synths/metalCrash.sc",
+          "synths/ncPluck.sc",
+          "synths/raindrop.sc",
+          "synths/woodBamboo.sc"
+        ],
+        "type": "mixed"
       },
       {
-        "hash": "c8e7679a",
-        "date": "2025-05-07",
-        "datetime": "2025-05-07 20:09:23 +1000",
+        "hash": "b7a318c5",
+        "date": "2024-08-07",
+        "datetime": "2024-08-07 15:21:39 +1000",
         "author": "soh_la",
-        "subject": "Merge branch 'Airsticks-RPI' of https://github.com/sohla/SCbounce into Airsticks-RPI"
+        "subject": "using rrate data",
+        "files": [
+          "code2.0/oscmusic.sc",
+          "personalities/pluck2.sc",
+          "personalities/timDrums.sc"
+        ],
+        "type": "mixed"
       },
       {
-        "hash": "955302a9",
-        "date": "2024-11-06",
-        "datetime": "2024-11-06 10:55:51 +1100",
+        "hash": "7f691f53",
+        "date": "2024-08-01",
+        "datetime": "2024-08-01 17:06:09 +1000",
         "author": "soh_la",
-        "subject": "Merge branch 'Airsticks-OSC' of https://github.com/sohla/SCbounce into Airsticks-OSC"
+        "subject": "taking in old data",
+        "files": [
+          "code2.0/oscmusic.sc"
+        ],
+        "type": "implementation"
       },
       {
-        "hash": "8e040ee1",
-        "date": "2024-06-17",
-        "datetime": "2024-06-17 10:48:40 +1000",
+        "hash": "28f7418b",
+        "date": "2024-08-01",
+        "datetime": "2024-08-01 17:00:24 +1000",
         "author": "soh_la",
-        "subject": "Merge branch 'master' of https://github.com/sohla/SCbounce into Airsticks"
+        "subject": "needs more work on getting data",
+        "files": [
+          "code2.0/OSCscanning.sc"
+        ],
+        "type": "implementation"
+      },
+      {
+        "hash": "6ef5ff70",
+        "date": "2024-07-23",
+        "datetime": "2024-07-23 14:43:54 +1000",
+        "author": "soh_la",
+        "subject": "combined data",
+        "files": [
+          "code2.0/oscmusic.sc"
+        ],
+        "type": "implementation"
       }
     ],
     "list": [
@@ -9536,88 +9838,6 @@
         "type": "other"
       }
     ],
-    "local": [
-      {
-        "hash": "1a7e20fc",
-        "date": "2025-08-25",
-        "datetime": "2025-08-25 15:24:51 +1000",
-        "author": "Steph OHara",
-        "subject": "local quaternion maths",
-        "files": [
-          "code3.0/oscController.scd",
-          "code3.0/personalityController.scd",
-          "personalities/silence.sc"
-        ],
-        "type": "mixed"
-      },
-      {
-        "hash": "5a658163",
-        "date": "2024-11-14",
-        "datetime": "2024-11-14 11:02:32 +1100",
-        "author": "sohla",
-        "subject": "moving local rpi workshop code",
-        "files": [
-          "code2.0/oscmusic.sc",
-          "personalities/arialBass.sc",
-          "personalities/arialOstinato.sc",
-          "personalities/bells.sc",
-          "personalities/blobblob2.sc",
-          "personalities/bongo1.sc",
-          "personalities/footGong.sc",
-          "personalities/footGong2.sc",
-          "personalities/heatherLaugh.sc",
-          "personalities/list_yourDNA.sc",
-          "personalities/magicWand.sc",
-          "personalities/pluck2.sc"
-        ],
-        "type": "personality"
-      },
-      {
-        "hash": "0266008e",
-        "date": "2024-10-21",
-        "datetime": "2024-10-21 13:17:35 +1100",
-        "author": "stephohara",
-        "subject": "rpi local",
-        "files": [
-          "code2.0/oscmusic.sc"
-        ],
-        "type": "implementation"
-      },
-      {
-        "hash": "31646c21",
-        "date": "2024-07-15",
-        "datetime": "2024-07-15 22:56:42 +1000",
-        "author": "soh_la",
-        "subject": "local fixups",
-        "files": [
-          "code2.0/oscmusic.sc",
-          "personalities/rope2.sc"
-        ],
-        "type": "mixed"
-      },
-      {
-        "hash": "832f4e18",
-        "date": "2024-06-17",
-        "datetime": "2024-06-17 21:21:30 +1000",
-        "author": "soh_la",
-        "subject": "local path",
-        "files": [
-          "code2.0/oscmusic.sc"
-        ],
-        "type": "implementation"
-      },
-      {
-        "hash": "4edb48a2",
-        "date": "2024-05-21",
-        "datetime": "2024-05-21 09:57:04 +1000",
-        "author": "Steph OHara",
-        "subject": "local dir",
-        "files": [
-          "code2.0/oscmusic.scd"
-        ],
-        "type": "implementation"
-      }
-    ],
     "using": [
       {
         "hash": "6cebccbc",
@@ -10307,60 +10527,6 @@
         "type": "personality"
       }
     ],
-<<<<<<< HEAD
-=======
-    "conflicts": [
-      {
-        "hash": "8f203630",
-        "date": "2025-10-17",
-        "datetime": "2025-10-17 10:12:27 +1100",
-        "author": "steph",
-        "subject": "Merge branch 'Airsticks-RPI' of https://github.com/sohla/SCbounce into Airsticks-RPI",
-        "files": [],
-        "type": "other"
-      },
-      {
-        "hash": "7d7e4e33",
-        "date": "2025-06-18",
-        "datetime": "2025-06-18 13:46:37 +1000",
-        "author": "soh_la",
-        "subject": "Merge branch 'Airsticks-RPI' of https://github.com/sohla/SCbounce into Airsticks-RPI",
-        "files": [],
-        "type": "other"
-      },
-      {
-        "hash": "c8e7679a",
-        "date": "2025-05-07",
-        "datetime": "2025-05-07 20:09:23 +1000",
-        "author": "soh_la",
-        "subject": "Merge branch 'Airsticks-RPI' of https://github.com/sohla/SCbounce into Airsticks-RPI",
-        "files": [],
-        "type": "other"
-      },
-      {
-        "hash": "955302a9",
-        "date": "2024-11-06",
-        "datetime": "2024-11-06 10:55:51 +1100",
-        "author": "soh_la",
-        "subject": "Merge branch 'Airsticks-OSC' of https://github.com/sohla/SCbounce into Airsticks-OSC",
-        "files": [
-          "code2.0/oscmusic.sc"
-        ],
-        "type": "implementation"
-      },
-      {
-        "hash": "8e040ee1",
-        "date": "2024-06-17",
-        "datetime": "2024-06-17 10:48:40 +1000",
-        "author": "soh_la",
-        "subject": "Merge branch 'master' of https://github.com/sohla/SCbounce into Airsticks",
-        "files": [
-          "code2.0/oscmusic.sc"
-        ],
-        "type": "implementation"
-      }
-    ],
->>>>>>> 798b61e7bca6806d1b31c86ecad8e1d918fd3357
     "notes": [
       {
         "hash": "94112314",
@@ -10419,80 +10585,6 @@
           "README.md"
         ],
         "type": "other"
-      }
-    ],
-    "code": [
-      {
-        "hash": "388fe333",
-        "date": "2025-08-25",
-        "datetime": "2025-08-25 13:33:46 +1000",
-        "author": "Steph OHara",
-        "subject": "callibration code",
-        "files": [
-          "code3.0/main.sc",
-          "code3.0/oscController.scd",
-          "code3.0/personalityController.scd",
-          "code3.0/threeDeeView.scd",
-          "code3.0/titleView.scd"
-        ],
-        "type": "implementation"
-      },
-      {
-        "hash": "11f3f2d3",
-        "date": "2025-04-03",
-        "datetime": "2025-04-03 20:34:55 +1100",
-        "author": "steph",
-        "subject": "better plotter code etc.",
-        "files": [
-          "code2.0/details.scd",
-          "code2.0/devices.scd",
-          "code2.0/personalityController.scd"
-        ],
-        "type": "implementation"
-      },
-      {
-        "hash": "be226a71",
-        "date": "2025-01-30",
-        "datetime": "2025-01-30 07:47:34 +1100",
-        "author": "Steph OHara",
-        "subject": "code",
-        "files": [
-          "code1.0/serverSetup.sc"
-        ],
-        "type": "other"
-      },
-      {
-        "hash": "5a658163",
-        "date": "2024-11-14",
-        "datetime": "2024-11-14 11:02:32 +1100",
-        "author": "sohla",
-        "subject": "moving local rpi workshop code",
-        "files": [
-          "code2.0/oscmusic.sc",
-          "personalities/arialBass.sc",
-          "personalities/arialOstinato.sc",
-          "personalities/bells.sc",
-          "personalities/blobblob2.sc",
-          "personalities/bongo1.sc",
-          "personalities/footGong.sc",
-          "personalities/footGong2.sc",
-          "personalities/heatherLaugh.sc",
-          "personalities/list_yourDNA.sc",
-          "personalities/magicWand.sc",
-          "personalities/pluck2.sc"
-        ],
-        "type": "personality"
-      },
-      {
-        "hash": "3c7e5b4e",
-        "date": "2024-07-02",
-        "datetime": "2024-07-02 11:10:45 +1000",
-        "author": "Steph OHara",
-        "subject": "some claude ai code",
-        "files": [
-          "code2.0/oscmusic.sc"
-        ],
-        "type": "implementation"
       }
     ],
     "all": [
@@ -10795,78 +10887,6 @@
         "datetime": "2024-06-17 10:48:40 +1000",
         "author": "soh_la",
         "subject": "Merge branch 'master' of https://github.com/sohla/SCbounce into Airsticks",
-        "files": [
-          "code2.0/oscmusic.sc"
-        ],
-        "type": "implementation"
-      }
-    ],
-    "data": [
-      {
-        "hash": "fc91aaee",
-        "date": "2024-10-21",
-        "datetime": "2024-10-21 13:16:16 +1100",
-        "author": "Steph OHara",
-        "subject": "new sounds and new data ui",
-        "files": [
-          ".DS_Store",
-          "code2.0/oscmusic.sc",
-          "personalities/list_yourDNA.sc",
-          "synths/.DS_Store",
-          "synths/cicada.sc",
-          "synths/improvedFrog.sc",
-          "synths/interactiveWind.sc",
-          "synths/kickhat.sc",
-          "synths/leaves.sc",
-          "synths/magpie.sc",
-          "synths/metalCrash.sc",
-          "synths/ncPluck.sc",
-          "synths/raindrop.sc",
-          "synths/woodBamboo.sc"
-        ],
-        "type": "mixed"
-      },
-      {
-        "hash": "b7a318c5",
-        "date": "2024-08-07",
-        "datetime": "2024-08-07 15:21:39 +1000",
-        "author": "soh_la",
-        "subject": "using rrate data",
-        "files": [
-          "code2.0/oscmusic.sc",
-          "personalities/pluck2.sc",
-          "personalities/timDrums.sc"
-        ],
-        "type": "mixed"
-      },
-      {
-        "hash": "7f691f53",
-        "date": "2024-08-01",
-        "datetime": "2024-08-01 17:06:09 +1000",
-        "author": "soh_la",
-        "subject": "taking in old data",
-        "files": [
-          "code2.0/oscmusic.sc"
-        ],
-        "type": "implementation"
-      },
-      {
-        "hash": "28f7418b",
-        "date": "2024-08-01",
-        "datetime": "2024-08-01 17:00:24 +1000",
-        "author": "soh_la",
-        "subject": "needs more work on getting data",
-        "files": [
-          "code2.0/OSCscanning.sc"
-        ],
-        "type": "implementation"
-      },
-      {
-        "hash": "6ef5ff70",
-        "date": "2024-07-23",
-        "datetime": "2024-07-23 14:43:54 +1000",
-        "author": "soh_la",
-        "subject": "combined data",
         "files": [
           "code2.0/oscmusic.sc"
         ],
@@ -11488,29 +11508,6 @@
         "type": "implementation"
       }
     ],
-    "claude": [
-      {
-        "hash": "d99de0fb",
-        "date": "2026-01-09",
-        "datetime": "2026-01-09 15:42:51 +1100",
-        "author": "sohla",
-        "subject": "making visuals with claude"
-      },
-      {
-        "hash": "94112314",
-        "date": "2025-10-12",
-        "datetime": "2025-10-12 21:40:21 +1100",
-        "author": "Steph OHara",
-        "subject": "claude notes"
-      },
-      {
-        "hash": "3c7e5b4e",
-        "date": "2024-07-02",
-        "datetime": "2024-07-02 11:10:45 +1000",
-        "author": "Steph OHara",
-        "subject": "some claude ai code"
-      }
-    ],
     "views": [
       {
         "hash": "8a6d9146",
@@ -11549,46 +11546,6 @@
           "visuals/customEvent.sc"
         ],
         "type": "other"
-      }
-    ],
-    "some": [
-      {
-        "hash": "7042a3a7",
-        "date": "2025-12-03",
-        "datetime": "2025-12-03 16:11:37 +1100",
-        "author": "sohla",
-        "subject": "some ball ideas",
-        "files": [
-          "code3.0/personalityController.scd",
-          "lists/list_ITR_Ball.sc",
-          "personalities/ball1.sc",
-          "personalities/cymbals1.sc",
-          "personalities/melbb1.sc",
-          "personalities/temp_pattern_buffer.sc"
-        ],
-        "type": "personality"
-      },
-      {
-        "hash": "35bb6b23",
-        "date": "2025-10-12",
-        "datetime": "2025-10-12 22:38:01 +1100",
-        "author": "sohla",
-        "subject": "added some cpu stats bit not gui freiendly",
-        "files": [
-          "code3.0/systemView.scd"
-        ],
-        "type": "implementation"
-      },
-      {
-        "hash": "3c7e5b4e",
-        "date": "2024-07-02",
-        "datetime": "2024-07-02 11:10:45 +1000",
-        "author": "Steph OHara",
-        "subject": "some claude ai code",
-        "files": [
-          "code2.0/oscmusic.sc"
-        ],
-        "type": "implementation"
       }
     ],
     "ideas": [
@@ -11634,6 +11591,46 @@
           "synths/woodBamboo.sc"
         ],
         "type": "other"
+      }
+    ],
+    "some": [
+      {
+        "hash": "7042a3a7",
+        "date": "2025-12-03",
+        "datetime": "2025-12-03 16:11:37 +1100",
+        "author": "sohla",
+        "subject": "some ball ideas",
+        "files": [
+          "code3.0/personalityController.scd",
+          "lists/list_ITR_Ball.sc",
+          "personalities/ball1.sc",
+          "personalities/cymbals1.sc",
+          "personalities/melbb1.sc",
+          "personalities/temp_pattern_buffer.sc"
+        ],
+        "type": "personality"
+      },
+      {
+        "hash": "35bb6b23",
+        "date": "2025-10-12",
+        "datetime": "2025-10-12 22:38:01 +1100",
+        "author": "sohla",
+        "subject": "added some cpu stats bit not gui freiendly",
+        "files": [
+          "code3.0/systemView.scd"
+        ],
+        "type": "implementation"
+      },
+      {
+        "hash": "3c7e5b4e",
+        "date": "2024-07-02",
+        "datetime": "2024-07-02 11:10:45 +1000",
+        "author": "Steph OHara",
+        "subject": "some claude ai code",
+        "files": [
+          "code2.0/oscmusic.sc"
+        ],
+        "type": "implementation"
       }
     ],
     "wed": [
@@ -11950,6 +11947,42 @@
         "type": "personality"
       }
     ],
+    "buttons": [
+      {
+        "hash": "2d0f2cd6",
+        "date": "2025-11-17",
+        "datetime": "2025-11-17 09:25:30 +1100",
+        "author": "sohla",
+        "subject": "add 4 buttons",
+        "files": [
+          "lists/list_yourDNA25.sc",
+          "personalities/temp_synth_4button.sc"
+        ],
+        "type": "personality"
+      },
+      {
+        "hash": "dc4aa97d",
+        "date": "2025-02-19",
+        "datetime": "2025-02-19 15:12:37 +1100",
+        "author": "sohla",
+        "subject": "better tab buttons",
+        "files": [
+          "code2.0/buttonGrid.sc"
+        ],
+        "type": "implementation"
+      },
+      {
+        "hash": "7570ec61",
+        "date": "2024-10-31",
+        "datetime": "2024-10-31 17:15:34 +1100",
+        "author": "soh_la",
+        "subject": "improved gui for rpi : -/+ buttons",
+        "files": [
+          "code2.0/oscmusic.sc"
+        ],
+        "type": "implementation"
+      }
+    ],
     "add": [
       {
         "hash": "2d0f2cd6",
@@ -12000,42 +12033,6 @@
         "datetime": "2024-11-01 15:46:15 +1100",
         "author": "soh_la",
         "subject": "starting to add controlbus",
-        "files": [
-          "code2.0/oscmusic.sc"
-        ],
-        "type": "implementation"
-      }
-    ],
-    "buttons": [
-      {
-        "hash": "2d0f2cd6",
-        "date": "2025-11-17",
-        "datetime": "2025-11-17 09:25:30 +1100",
-        "author": "sohla",
-        "subject": "add 4 buttons",
-        "files": [
-          "lists/list_yourDNA25.sc",
-          "personalities/temp_synth_4button.sc"
-        ],
-        "type": "personality"
-      },
-      {
-        "hash": "dc4aa97d",
-        "date": "2025-02-19",
-        "datetime": "2025-02-19 15:12:37 +1100",
-        "author": "sohla",
-        "subject": "better tab buttons",
-        "files": [
-          "code2.0/buttonGrid.sc"
-        ],
-        "type": "implementation"
-      },
-      {
-        "hash": "7570ec61",
-        "date": "2024-10-31",
-        "datetime": "2024-10-31 17:15:34 +1100",
-        "author": "soh_la",
-        "subject": "improved gui for rpi : -/+ buttons",
         "files": [
           "code2.0/oscmusic.sc"
         ],
@@ -13400,6 +13397,47 @@
         "type": "mixed"
       }
     ],
+    "timeline": [
+      {
+        "hash": "7bfb94df",
+        "date": "2026-01-14",
+        "datetime": "2026-01-14 09:50:55 +1100",
+        "author": "soh_la",
+        "subject": "code timeline",
+        "files": [
+          "analysis/analyze_personality_code.py",
+          "analysis/personality_code_data.json",
+          "analysis/personality_code_timeline.html"
+        ],
+        "type": "other"
+      },
+      {
+        "hash": "08f1aef6",
+        "date": "2026-01-14",
+        "datetime": "2026-01-14 09:09:27 +1100",
+        "author": "soh_la",
+        "subject": "timeline analysis",
+        "files": [
+          ".DS_Store",
+          "analysis/analyze_git.py",
+          "analysis/commits_data.json",
+          "analysis/index_6.html",
+          "analysis/timeline_1.html",
+          "analysis/timeline_10.html",
+          "analysis/timeline_2.html",
+          "analysis/timeline_3.html",
+          "analysis/timeline_4.html",
+          "analysis/timeline_5.html",
+          "analysis/timeline_6.html",
+          "analysis/timeline_7.html",
+          "analysis/timeline_8.html",
+          "analysis/timeline_9.html",
+          "configureAirStickOSC.sc",
+          "synths/lowGrowl.sc"
+        ],
+        "type": "other"
+      }
+    ],
     "refining": [
       {
         "hash": "e5274457",
@@ -13425,22 +13463,6 @@
           "synths/timGrain.sc"
         ],
         "type": "mixed"
-      }
-    ],
-    "refining": [
-      {
-        "hash": "e5274457",
-        "date": "2026-01-06",
-        "datetime": "2026-01-06 13:50:53 +1100",
-        "author": "sohla",
-        "subject": "refining"
-      },
-      {
-        "hash": "22883b82",
-        "date": "2024-08-15",
-        "datetime": "2024-08-15 12:55:40 +1000",
-        "author": "soh_la",
-        "subject": "refining"
       }
     ],
     "visual": [
@@ -14298,41 +14320,6 @@
         "date": "2025-08-19",
         "datetime": "2025-08-19 11:59:48 +1000",
         "author": "sohla",
-<<<<<<< HEAD
-        "subject": "sys view, fixing template, looking at details"
-      }
-    ],
-    "remote": [
-      {
-        "hash": "41176aed",
-        "date": "2025-10-20",
-        "datetime": "2025-10-20 10:56:59 +1100",
-        "author": "sohla",
-        "subject": "Merge remote-tracking branch 'origin/Airsticks-RPI' into Airsticks-RPI"
-      },
-      {
-        "hash": "50b7a60f",
-        "date": "2025-10-15",
-        "datetime": "2025-10-15 13:19:09 +1100",
-        "author": "sohla",
-        "subject": "Merge remote-tracking branch 'origin/Airsticks-RPI' into Airsticks-RPI"
-      }
-    ],
-    "tracking": [
-      {
-        "hash": "41176aed",
-        "date": "2025-10-20",
-        "datetime": "2025-10-20 10:56:59 +1100",
-        "author": "sohla",
-        "subject": "Merge remote-tracking branch 'origin/Airsticks-RPI' into Airsticks-RPI"
-      },
-      {
-        "hash": "50b7a60f",
-        "date": "2025-10-15",
-        "datetime": "2025-10-15 13:19:09 +1100",
-        "author": "sohla",
-        "subject": "Merge remote-tracking branch 'origin/Airsticks-RPI' into Airsticks-RPI"
-=======
         "subject": "sys view, fixing template, looking at details",
         "files": [
           "code3.0/main.sc",
@@ -14344,7 +14331,6 @@
           "personalities/template3.sc"
         ],
         "type": "mixed"
->>>>>>> 798b61e7bca6806d1b31c86ecad8e1d918fd3357
       }
     ],
     "origin": [
@@ -14367,28 +14353,6 @@
         "type": "other"
       }
     ],
-    "tracking": [
-      {
-        "hash": "41176aed",
-        "date": "2025-10-20",
-        "datetime": "2025-10-20 10:56:59 +1100",
-        "author": "sohla",
-        "subject": "Merge remote-tracking branch 'origin/Airsticks-RPI' into Airsticks-RPI",
-        "files": [],
-        "type": "other"
-      },
-      {
-        "hash": "50b7a60f",
-        "date": "2025-10-15",
-        "datetime": "2025-10-15 13:19:09 +1100",
-        "author": "sohla",
-        "subject": "Merge remote-tracking branch 'origin/Airsticks-RPI' into Airsticks-RPI",
-        "files": [],
-        "type": "other"
-      }
-    ],
-<<<<<<< HEAD
-=======
     "remote": [
       {
         "hash": "41176aed",
@@ -14409,7 +14373,26 @@
         "type": "other"
       }
     ],
->>>>>>> 798b61e7bca6806d1b31c86ecad8e1d918fd3357
+    "tracking": [
+      {
+        "hash": "41176aed",
+        "date": "2025-10-20",
+        "datetime": "2025-10-20 10:56:59 +1100",
+        "author": "sohla",
+        "subject": "Merge remote-tracking branch 'origin/Airsticks-RPI' into Airsticks-RPI",
+        "files": [],
+        "type": "other"
+      },
+      {
+        "hash": "50b7a60f",
+        "date": "2025-10-15",
+        "datetime": "2025-10-15 13:19:09 +1100",
+        "author": "sohla",
+        "subject": "Merge remote-tracking branch 'origin/Airsticks-RPI' into Airsticks-RPI",
+        "files": [],
+        "type": "other"
+      }
+    ],
     "mute": [
       {
         "hash": "5bda8073",
@@ -14598,9 +14581,6 @@
         "date": "2025-10-08",
         "datetime": "2025-10-08 18:08:55 +1100",
         "author": "sohla",
-<<<<<<< HEAD
-        "subject": "pre thurs session arvo"
-=======
         "subject": "pre thurs session arvo",
         "files": [
           "personalities/mel3.sc",
@@ -14608,7 +14588,6 @@
           "personalities/melbb2.sc"
         ],
         "type": "personality"
->>>>>>> 798b61e7bca6806d1b31c86ecad8e1d918fd3357
       }
     ],
     "personalties": [
@@ -15031,36 +15010,6 @@
         "type": "mixed"
       }
     ],
-    "stops": [
-      {
-        "hash": "83cfc0b2",
-        "date": "2025-08-15",
-        "datetime": "2025-08-15 09:48:08 +1000",
-        "author": "sohla",
-        "subject": "enabled button working : but only stops calling ~next",
-        "files": [
-          "code3.0/personalityController.scd",
-          "code3.0/titleView.scd",
-          "code3.0/visualView.scd",
-          "personalities/silence.sc"
-        ],
-        "type": "mixed"
-      },
-      {
-        "hash": "1155ebd4",
-        "date": "2025-08-12",
-        "datetime": "2025-08-12 16:45:46 +1000",
-        "author": "sohla",
-        "subject": "need to fix enable bug : file watcher stops working",
-        "files": [
-          "code2.0/oscController.scd",
-          "code2.0/personalityController.scd",
-          "code2.0/titleView.scd",
-          "personalities/silence.sc"
-        ],
-        "type": "mixed"
-      }
-    ],
     "only": [
       {
         "hash": "83cfc0b2",
@@ -15090,6 +15039,36 @@
           "personalities/synth16.sc"
         ],
         "type": "personality"
+      }
+    ],
+    "stops": [
+      {
+        "hash": "83cfc0b2",
+        "date": "2025-08-15",
+        "datetime": "2025-08-15 09:48:08 +1000",
+        "author": "sohla",
+        "subject": "enabled button working : but only stops calling ~next",
+        "files": [
+          "code3.0/personalityController.scd",
+          "code3.0/titleView.scd",
+          "code3.0/visualView.scd",
+          "personalities/silence.sc"
+        ],
+        "type": "mixed"
+      },
+      {
+        "hash": "1155ebd4",
+        "date": "2025-08-12",
+        "datetime": "2025-08-12 16:45:46 +1000",
+        "author": "sohla",
+        "subject": "need to fix enable bug : file watcher stops working",
+        "files": [
+          "code2.0/oscController.scd",
+          "code2.0/personalityController.scd",
+          "code2.0/titleView.scd",
+          "personalities/silence.sc"
+        ],
+        "type": "mixed"
       }
     ],
     "project": [
@@ -16175,47 +16154,10 @@
         ],
         "type": "personality"
       }
-    ],
-    "sampler": [
-      {
-        "hash": "028a85f3",
-        "date": "2024-09-01",
-        "datetime": "2024-09-01 06:25:35 +0200",
-        "author": "soh_la",
-        "subject": "looking at sampler",
-        "files": [
-          "synths/convertWavTitles.sc"
-        ],
-        "type": "other"
-      },
-      {
-        "hash": "ecdcb243",
-        "date": "2024-08-18",
-        "datetime": "2024-08-18 22:01:09 +1000",
-        "author": "Steph OHara",
-<<<<<<< HEAD
-        "subject": "new sampler for garageband samples"
-=======
-        "subject": "new sampler for garageband samples",
-        "files": [
-          ".DS_Store",
-          "synths/arialMelody.sc",
-          "synths/convertWavTitles.sc",
-          "synths/ncPluck.sc",
-          "synths/pianoSamplerExample.sc",
-          "synths/voices.sc"
-        ],
-        "type": "other"
->>>>>>> 798b61e7bca6806d1b31c86ecad8e1d918fd3357
-      }
     ]
   },
   "timeline": {
     "min_date": "2024-03-21T11:28:25+11:00",
-<<<<<<< HEAD
-    "max_date": "2026-01-14T07:16:08+11:00"
-=======
-    "max_date": "2026-01-12T10:32:45+11:00"
->>>>>>> 798b61e7bca6806d1b31c86ecad8e1d918fd3357
+    "max_date": "2026-01-14T09:51:43+11:00"
   }
 }
