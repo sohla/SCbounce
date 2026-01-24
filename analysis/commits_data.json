@@ -2,6 +2,7 @@
   "words": [
     {
       "text": "merge",
+<<<<<<< HEAD
       "size": 43
     },
     {
@@ -15,6 +16,21 @@
     {
       "text": "rpi",
       "size": 35
+=======
+      "size": 44
+    },
+    {
+      "text": "branch",
+      "size": 43
+    },
+    {
+      "text": "airsticks",
+      "size": 38
+    },
+    {
+      "text": "rpi",
+      "size": 36
+>>>>>>> 260f1ee2e475b7ec95e31eddf0f591ad2d87fc1f
     },
     {
       "text": "more",
@@ -173,6 +189,13 @@
       "size": 7
     },
     {
+<<<<<<< HEAD
+=======
+      "text": "code",
+      "size": 6
+    },
+    {
+>>>>>>> 260f1ee2e475b7ec95e31eddf0f591ad2d87fc1f
       "text": "data",
       "size": 6
     },
@@ -238,10 +261,6 @@
     },
     {
       "text": "notes",
-      "size": 5
-    },
-    {
-      "text": "code",
       "size": 5
     },
     {
@@ -465,6 +484,10 @@
       "size": 3
     },
     {
+      "text": "timeline",
+      "size": 2
+    },
+    {
       "text": "refining",
       "size": 2
     },
@@ -545,11 +568,11 @@
       "size": 2
     },
     {
-      "text": "arvo",
+      "text": "alessio",
       "size": 2
     },
     {
-      "text": "alessio",
+      "text": "arvo",
       "size": 2
     },
     {
@@ -795,15 +818,23 @@
     {
       "text": "recording",
       "size": 2
-    },
-    {
-      "text": "sampler",
-      "size": 2
     }
   ],
   "commits": {
     "merge": [
       {
+<<<<<<< HEAD
+=======
+        "hash": "970104d1",
+        "date": "2026-01-14",
+        "datetime": "2026-01-14 09:51:33 +1100",
+        "author": "soh_la",
+        "subject": "Merge branch 'Airsticks-RPI' of https://github.com/sohla/SCbounce into Airsticks-RPI",
+        "files": [],
+        "type": "other"
+      },
+      {
+>>>>>>> 260f1ee2e475b7ec95e31eddf0f591ad2d87fc1f
         "hash": "86766d36",
         "date": "2026-01-14",
         "datetime": "2026-01-14 09:43:15 +1100",
@@ -1217,6 +1248,18 @@
     ],
     "branch": [
       {
+<<<<<<< HEAD
+=======
+        "hash": "970104d1",
+        "date": "2026-01-14",
+        "datetime": "2026-01-14 09:51:33 +1100",
+        "author": "soh_la",
+        "subject": "Merge branch 'Airsticks-RPI' of https://github.com/sohla/SCbounce into Airsticks-RPI",
+        "files": [],
+        "type": "other"
+      },
+      {
+>>>>>>> 260f1ee2e475b7ec95e31eddf0f591ad2d87fc1f
         "hash": "86766d36",
         "date": "2026-01-14",
         "datetime": "2026-01-14 09:43:15 +1100",
@@ -1658,6 +1701,18 @@
     ],
     "airsticks": [
       {
+<<<<<<< HEAD
+=======
+        "hash": "970104d1",
+        "date": "2026-01-14",
+        "datetime": "2026-01-14 09:51:33 +1100",
+        "author": "soh_la",
+        "subject": "Merge branch 'Airsticks-RPI' of https://github.com/sohla/SCbounce into Airsticks-RPI",
+        "files": [],
+        "type": "other"
+      },
+      {
+>>>>>>> 260f1ee2e475b7ec95e31eddf0f591ad2d87fc1f
         "hash": "86766d36",
         "date": "2026-01-14",
         "datetime": "2026-01-14 09:43:15 +1100",
@@ -1987,6 +2042,18 @@
         "type": "implementation"
       },
       {
+<<<<<<< HEAD
+=======
+        "hash": "3a574f21",
+        "date": "2024-06-04",
+        "datetime": "2024-06-04 09:17:09 +1000",
+        "author": "git stash",
+        "subject": "index on OSCMusicMachine: ba4e1c8 explornig multi airsticks",
+        "files": [],
+        "type": "other"
+      },
+      {
+>>>>>>> 260f1ee2e475b7ec95e31eddf0f591ad2d87fc1f
         "hash": "ba4e1c82",
         "date": "2024-06-03",
         "datetime": "2024-06-03 13:52:53 +1000",
@@ -2001,6 +2068,18 @@
     ],
     "rpi": [
       {
+<<<<<<< HEAD
+=======
+        "hash": "970104d1",
+        "date": "2026-01-14",
+        "datetime": "2026-01-14 09:51:33 +1100",
+        "author": "soh_la",
+        "subject": "Merge branch 'Airsticks-RPI' of https://github.com/sohla/SCbounce into Airsticks-RPI",
+        "files": [],
+        "type": "other"
+      },
+      {
+>>>>>>> 260f1ee2e475b7ec95e31eddf0f591ad2d87fc1f
         "hash": "86766d36",
         "date": "2026-01-14",
         "datetime": "2026-01-14 09:43:15 +1100",
@@ -8888,6 +8967,7 @@
         "type": "other"
       }
     ],
+<<<<<<< HEAD
     "data": [
       {
         "hash": "60d6f3dc",
@@ -8935,10 +9015,134 @@
           "code2.0/oscmusic.sc",
           "personalities/pluck2.sc",
           "personalities/timDrums.sc"
+=======
+    "code": [
+      {
+        "hash": "7bfb94df",
+        "date": "2026-01-14",
+        "datetime": "2026-01-14 09:50:55 +1100",
+        "author": "soh_la",
+        "subject": "code timeline",
+        "files": [
+          "analysis/analyze_personality_code.py",
+          "analysis/personality_code_data.json",
+          "analysis/personality_code_timeline.html"
+        ],
+        "type": "other"
+      },
+      {
+        "hash": "388fe333",
+        "date": "2025-08-25",
+        "datetime": "2025-08-25 13:33:46 +1000",
+        "author": "Steph OHara",
+        "subject": "callibration code",
+        "files": [
+          "code3.0/main.sc",
+          "code3.0/oscController.scd",
+          "code3.0/personalityController.scd",
+          "code3.0/threeDeeView.scd",
+          "code3.0/titleView.scd"
+        ],
+        "type": "implementation"
+      },
+      {
+        "hash": "11f3f2d3",
+        "date": "2025-04-03",
+        "datetime": "2025-04-03 20:34:55 +1100",
+        "author": "steph",
+        "subject": "better plotter code etc.",
+        "files": [
+          "code2.0/details.scd",
+          "code2.0/devices.scd",
+          "code2.0/personalityController.scd"
+        ],
+        "type": "implementation"
+      },
+      {
+        "hash": "be226a71",
+        "date": "2025-01-30",
+        "datetime": "2025-01-30 07:47:34 +1100",
+        "author": "Steph OHara",
+        "subject": "code",
+        "files": [
+          "code1.0/serverSetup.sc"
+        ],
+        "type": "other"
+      },
+      {
+        "hash": "5a658163",
+        "date": "2024-11-14",
+        "datetime": "2024-11-14 11:02:32 +1100",
+        "author": "sohla",
+        "subject": "moving local rpi workshop code",
+        "files": [
+          "code2.0/oscmusic.sc",
+          "personalities/arialBass.sc",
+          "personalities/arialOstinato.sc",
+          "personalities/bells.sc",
+          "personalities/blobblob2.sc",
+          "personalities/bongo1.sc",
+          "personalities/footGong.sc",
+          "personalities/footGong2.sc",
+          "personalities/heatherLaugh.sc",
+          "personalities/list_yourDNA.sc",
+          "personalities/magicWand.sc",
+          "personalities/pluck2.sc"
+        ],
+        "type": "personality"
+      },
+      {
+        "hash": "3c7e5b4e",
+        "date": "2024-07-02",
+        "datetime": "2024-07-02 11:10:45 +1000",
+        "author": "Steph OHara",
+        "subject": "some claude ai code",
+        "files": [
+          "code2.0/oscmusic.sc"
+        ],
+        "type": "implementation"
+      }
+    ],
+    "data": [
+      {
+        "hash": "60d6f3dc",
+        "date": "2026-01-14",
+        "datetime": "2026-01-14 09:42:59 +1100",
+        "author": "steph",
+        "subject": "local data",
+        "files": [
+          "analysis/commits_data.json",
+          "analysis/file_networks.json"
+        ],
+        "type": "other"
+      },
+      {
+        "hash": "fc91aaee",
+        "date": "2024-10-21",
+        "datetime": "2024-10-21 13:16:16 +1100",
+        "author": "Steph OHara",
+        "subject": "new sounds and new data ui",
+        "files": [
+          ".DS_Store",
+          "code2.0/oscmusic.sc",
+          "personalities/list_yourDNA.sc",
+          "synths/.DS_Store",
+          "synths/cicada.sc",
+          "synths/improvedFrog.sc",
+          "synths/interactiveWind.sc",
+          "synths/kickhat.sc",
+          "synths/leaves.sc",
+          "synths/magpie.sc",
+          "synths/metalCrash.sc",
+          "synths/ncPluck.sc",
+          "synths/raindrop.sc",
+          "synths/woodBamboo.sc"
+>>>>>>> 260f1ee2e475b7ec95e31eddf0f591ad2d87fc1f
         ],
         "type": "mixed"
       },
       {
+<<<<<<< HEAD
         "hash": "7f691f53",
         "date": "2024-08-01",
         "datetime": "2024-08-01 17:06:09 +1000",
@@ -8957,6 +9161,45 @@
         "subject": "needs more work on getting data",
         "files": [
           "code2.0/OSCscanning.sc"
+=======
+        "hash": "b7a318c5",
+        "date": "2024-08-07",
+        "datetime": "2024-08-07 15:21:39 +1000",
+        "author": "soh_la",
+        "subject": "using rrate data",
+        "files": [
+          "code2.0/oscmusic.sc",
+          "personalities/pluck2.sc",
+          "personalities/timDrums.sc"
+        ],
+        "type": "mixed"
+      },
+      {
+        "hash": "7f691f53",
+        "date": "2024-08-01",
+        "datetime": "2024-08-01 17:06:09 +1000",
+        "author": "soh_la",
+        "subject": "taking in old data",
+        "files": [
+          "code2.0/oscmusic.sc"
+>>>>>>> 260f1ee2e475b7ec95e31eddf0f591ad2d87fc1f
+        ],
+        "type": "implementation"
+      },
+      {
+<<<<<<< HEAD
+        "hash": "6ef5ff70",
+        "date": "2024-07-23",
+        "datetime": "2024-07-23 14:43:54 +1000",
+        "author": "soh_la",
+=======
+        "hash": "28f7418b",
+        "date": "2024-08-01",
+        "datetime": "2024-08-01 17:00:24 +1000",
+        "author": "soh_la",
+        "subject": "needs more work on getting data",
+        "files": [
+          "code2.0/OSCscanning.sc"
         ],
         "type": "implementation"
       },
@@ -8965,6 +9208,7 @@
         "date": "2024-07-23",
         "datetime": "2024-07-23 14:43:54 +1000",
         "author": "soh_la",
+>>>>>>> 260f1ee2e475b7ec95e31eddf0f591ad2d87fc1f
         "subject": "combined data",
         "files": [
           "code2.0/oscmusic.sc"
@@ -10453,80 +10697,6 @@
           "README.md"
         ],
         "type": "other"
-      }
-    ],
-    "code": [
-      {
-        "hash": "388fe333",
-        "date": "2025-08-25",
-        "datetime": "2025-08-25 13:33:46 +1000",
-        "author": "Steph OHara",
-        "subject": "callibration code",
-        "files": [
-          "code3.0/main.sc",
-          "code3.0/oscController.scd",
-          "code3.0/personalityController.scd",
-          "code3.0/threeDeeView.scd",
-          "code3.0/titleView.scd"
-        ],
-        "type": "implementation"
-      },
-      {
-        "hash": "11f3f2d3",
-        "date": "2025-04-03",
-        "datetime": "2025-04-03 20:34:55 +1100",
-        "author": "steph",
-        "subject": "better plotter code etc.",
-        "files": [
-          "code2.0/details.scd",
-          "code2.0/devices.scd",
-          "code2.0/personalityController.scd"
-        ],
-        "type": "implementation"
-      },
-      {
-        "hash": "be226a71",
-        "date": "2025-01-30",
-        "datetime": "2025-01-30 07:47:34 +1100",
-        "author": "Steph OHara",
-        "subject": "code",
-        "files": [
-          "code1.0/serverSetup.sc"
-        ],
-        "type": "other"
-      },
-      {
-        "hash": "5a658163",
-        "date": "2024-11-14",
-        "datetime": "2024-11-14 11:02:32 +1100",
-        "author": "sohla",
-        "subject": "moving local rpi workshop code",
-        "files": [
-          "code2.0/oscmusic.sc",
-          "personalities/arialBass.sc",
-          "personalities/arialOstinato.sc",
-          "personalities/bells.sc",
-          "personalities/blobblob2.sc",
-          "personalities/bongo1.sc",
-          "personalities/footGong.sc",
-          "personalities/footGong2.sc",
-          "personalities/heatherLaugh.sc",
-          "personalities/list_yourDNA.sc",
-          "personalities/magicWand.sc",
-          "personalities/pluck2.sc"
-        ],
-        "type": "personality"
-      },
-      {
-        "hash": "3c7e5b4e",
-        "date": "2024-07-02",
-        "datetime": "2024-07-02 11:10:45 +1000",
-        "author": "Steph OHara",
-        "subject": "some claude ai code",
-        "files": [
-          "code2.0/oscmusic.sc"
-        ],
-        "type": "implementation"
       }
     ],
     "all": [
@@ -13339,6 +13509,47 @@
         "type": "mixed"
       }
     ],
+    "timeline": [
+      {
+        "hash": "7bfb94df",
+        "date": "2026-01-14",
+        "datetime": "2026-01-14 09:50:55 +1100",
+        "author": "soh_la",
+        "subject": "code timeline",
+        "files": [
+          "analysis/analyze_personality_code.py",
+          "analysis/personality_code_data.json",
+          "analysis/personality_code_timeline.html"
+        ],
+        "type": "other"
+      },
+      {
+        "hash": "08f1aef6",
+        "date": "2026-01-14",
+        "datetime": "2026-01-14 09:09:27 +1100",
+        "author": "soh_la",
+        "subject": "timeline analysis",
+        "files": [
+          ".DS_Store",
+          "analysis/analyze_git.py",
+          "analysis/commits_data.json",
+          "analysis/index_6.html",
+          "analysis/timeline_1.html",
+          "analysis/timeline_10.html",
+          "analysis/timeline_2.html",
+          "analysis/timeline_3.html",
+          "analysis/timeline_4.html",
+          "analysis/timeline_5.html",
+          "analysis/timeline_6.html",
+          "analysis/timeline_7.html",
+          "analysis/timeline_8.html",
+          "analysis/timeline_9.html",
+          "configureAirStickOSC.sc",
+          "synths/lowGrowl.sc"
+        ],
+        "type": "other"
+      }
+    ],
     "refining": [
       {
         "hash": "e5274457",
@@ -14074,38 +14285,6 @@
         "type": "mixed"
       }
     ],
-    "arvo": [
-      {
-        "hash": "1b7d0a77",
-        "date": "2025-10-29",
-        "datetime": "2025-10-29 14:47:20 +1100",
-        "author": "steph",
-        "subject": "alessio pre arvo",
-        "files": [
-          "code3.0/main.sc",
-          "lists/list_SiS_Alessio.sc",
-          "personalities/aless1.sc",
-          "personalities/aless2.sc",
-          "personalities/aless3.sc",
-          "personalities/aless4.sc",
-          "personalities/velocity2.sc"
-        ],
-        "type": "personality"
-      },
-      {
-        "hash": "5bcea4a3",
-        "date": "2025-10-08",
-        "datetime": "2025-10-08 18:08:55 +1100",
-        "author": "sohla",
-        "subject": "pre thurs session arvo",
-        "files": [
-          "personalities/mel3.sc",
-          "personalities/melbb1.sc",
-          "personalities/melbb2.sc"
-        ],
-        "type": "personality"
-      }
-    ],
     "alessio": [
       {
         "hash": "1b7d0a77",
@@ -14139,6 +14318,38 @@
           "personalities/aless3.sc",
           "personalities/jamesCello.sc",
           "personalities/mel1.sc"
+        ],
+        "type": "personality"
+      }
+    ],
+    "arvo": [
+      {
+        "hash": "1b7d0a77",
+        "date": "2025-10-29",
+        "datetime": "2025-10-29 14:47:20 +1100",
+        "author": "steph",
+        "subject": "alessio pre arvo",
+        "files": [
+          "code3.0/main.sc",
+          "lists/list_SiS_Alessio.sc",
+          "personalities/aless1.sc",
+          "personalities/aless2.sc",
+          "personalities/aless3.sc",
+          "personalities/aless4.sc",
+          "personalities/velocity2.sc"
+        ],
+        "type": "personality"
+      },
+      {
+        "hash": "5bcea4a3",
+        "date": "2025-10-08",
+        "datetime": "2025-10-08 18:08:55 +1100",
+        "author": "sohla",
+        "subject": "pre thurs session arvo",
+        "files": [
+          "personalities/mel3.sc",
+          "personalities/melbb1.sc",
+          "personalities/melbb2.sc"
         ],
         "type": "personality"
       }
@@ -16055,6 +16266,7 @@
         ],
         "type": "personality"
       }
+<<<<<<< HEAD
     ],
     "sampler": [
       {
@@ -16084,10 +16296,16 @@
         ],
         "type": "other"
       }
+=======
+>>>>>>> 260f1ee2e475b7ec95e31eddf0f591ad2d87fc1f
     ]
   },
   "timeline": {
     "min_date": "2024-03-21T11:28:25+11:00",
+<<<<<<< HEAD
     "max_date": "2026-01-14T09:43:15+11:00"
+=======
+    "max_date": "2026-01-15T11:30:14+11:00"
+>>>>>>> 260f1ee2e475b7ec95e31eddf0f591ad2d87fc1f
   }
 }
