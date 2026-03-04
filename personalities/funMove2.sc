@@ -1,6 +1,6 @@
 var m = ~model;
 var synth;
-var note = 43+7;
+var note = 48;
 m.accelMassFilteredAttack = 0.8;
 m.accelMassFilteredDecay = 0.8;
 

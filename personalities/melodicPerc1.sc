@@ -6,7 +6,7 @@ m.accelMassFilteredDecay = 0.9;
 
 SynthDef(\tick, {
 		|out=0, gate=1, amp=0.3, pan=0, dcy=0.2, curve=40, ff = 4444|
-		var sig = PinkNoise.ar(EnvGen.ar(Env.perc(0.04,dcy,1,curve.neg), gate, doneAction:2));
+		var sig = PinkNoise.ar(EnvGen.ar(Env.perc(0.03,dcy,1,curve.neg), gate, doneAction:2));
 		sig = Resonz.ar(sig, ff, 0.1, 3);
 		Out.ar(out, Pan2.ar(sig,pan,amp))
 }).add;
@@ -42,8 +42,8 @@ SynthDef(\melodicPerc, {|out=0, freq=50, tension=0.1, decay=0.5, clickLevel=0.3,
 			\instrument, \melodicPerc,
 			\scale, Scale.major,
 			\octave, Pseq([3,6,5,4].stutter(1), inf),
-			\note,1,
-			\root, Pseq([0,2,5,4,-2,5,7,9,4,-2].stutter(24), inf),
+			\note,0,
+			\root, Pseq([0,1,5,4,-2,5,7,8,4,-2].stutter(24), inf),
 			\legato, 0.1,
 			\amp, Pwhite(0.1,0.2, inf)*0.8,
 			\func, Pfunc({|e| ~onEvent.(e)}),
@@ -58,7 +58,7 @@ SynthDef(\melodicPerc, {|out=0, freq=50, tension=0.1, decay=0.5, clickLevel=0.3,
 			\octave, Pseq([3,4,5,6].stutter(1), inf),
 			\dur, 0.22/2,
 			\pan, Pwhite(-0.1,0.1),
-			\amp, Pwhite(0.2,0.8, inf),
+			\amp, Pwhite(0.3,0.4, inf),
 			\args, #[]
 		);
 	);

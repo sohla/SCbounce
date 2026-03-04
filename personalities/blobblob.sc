@@ -12,7 +12,7 @@ SynthDef(\monoSampler, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=44
     var env = EnvGen.kr(Env.adsr(attack, decay, sustain, release), gate, timeScale: cd * 2, doneAction: 2);
 	var sig = PlayBuf.ar(1, bufnum, rate: [lr, lr * 1.003], startPos: start * BufFrames.kr(bufnum), loop: 0);
     sig = RLPF.ar(sig, cutoff, rq);
-    sig = Balance2.ar(sig[0], sig[0], pan);
+    sig = Pan2.ar(sig, pan);
 		sig = Compander.ar(sig * 2, sig * 2,
 						thresh: -35.dbamp,
 						slopeBelow: 1,
@@ -48,14 +48,14 @@ SynthDef(\monoSampler, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=44
 				if(bi >= (buffers.size-1),{bi=0});
 				buffers[bi];
 			},
-			\dur, 0.2,
+			\dur, 0.25,
 			\octave, Pxrand([1,2], inf),
 			\rate, Pseq([0,7,12].midiratio, inf),
 			\legato, 0.5,
 			\root, 0,
 			\start, Pwhite(0, 0.1),
 			\note, Pseq([33], inf),
-			\amp, 2,
+			\amp, 1,
 			\attack, 0.07,
 			\release,0.07,
 			\pan, -1,
@@ -82,15 +82,26 @@ SynthDef(\monoSampler, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=44
 	var cutoff = m.accelMassFiltered.linexp(0,2.5,100,11000);
 	Pdef(m.ptn).set(\cutoff, cutoff);
 
-	if(m.accelMassFiltered > 0.1,{
-		if( Pdef(~model.ptn).isPlaying.not,{
-			Pdef(~model.ptn).resume(quant:0.2);
+
+	  if(d.sensors.digiInEvent[0] == 1, {
+		if( Pdef(m.ptn).isPlaying.not,{
+			Pdef(m.ptn).resume(quant:0);
 		});
 	},{
-		if( Pdef(~model.ptn).isPlaying,{
-			Pdef(~model.ptn).pause();
+		if( Pdef(m.ptn).isPlaying,{
+			Pdef(m.ptn).pause();
 		});
 	});
+
+	// if(m.accelMassFiltered > 0.1,{
+	// 	if( Pdef(~model.ptn).isPlaying.not,{
+	// 		Pdef(~model.ptn).resume(quant:0.2);
+	// 	});
+	// },{
+	// 	if( Pdef(~model.ptn).isPlaying,{
+	// 		Pdef(~model.ptn).pause();
+	// 	});
+	// });
 };
 
 //------------------------------------------------------------

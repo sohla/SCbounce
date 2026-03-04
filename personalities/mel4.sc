@@ -10,7 +10,7 @@ m.gyroFilteredAttack = 0.7;
 m.gyroFilteredDecay = 0.7;
 
 //------------------------------------------------------------
-SynthDef(\bufGrain, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=440,
+SynthDef(\bufGrainM, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=440,
     attack=0.01, decay=0.1, sustain=0.8, release=5.2, gate=1,cutoff=20000, rq=1, rezf=200|
 
 	var lr = rate * BufRateScale.kr(bufnum) * (freq/440.0);
@@ -18,26 +18,24 @@ SynthDef(\bufGrain, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=440
 	var sig = Splay.arFill(2,{|i|
 			Warp1.ar(2, bufnum, start, rate * (i+1) , 0.3, -1, 8, windowRandRatio:0.3)
 	},1,1,0);
-  sig = Compander.ar(sig, sig,
+  	sig = Compander.ar(sig, sig,
         thresh: 0.01,
         slopeBelow: 1,
         slopeAbove: 0.1,
         clampTime:  0.01,
         relaxTime:  0.01
     );
-    Out.ar(out, sig[0] * env * amp);
+	sig = sig[0] * env * amp;
+    Out.ar(out, [((0)!0 ++ sig)]);
 }).add;
 
 //------------------------------------------------------------
 ~init = ~init <> {
-	// var path = PathName("~/Downloads/yourDNASamples/brenton/BrentonVoice_09.wav");
-	// var path = PathName("~/Downloads/melSamples/mel_mouth1.wav");
 	var path = PathName("~/Downloads/melSamples/mel_mouth2.wav");
-
 	postf("loading sample : % \n", path.fileName);
 	buffer = Buffer.read(s, path.fullPath, action:{ |buf|
 		postf("buffer alloc [%] \n", buf);
-		synth = Synth(\bufGrain,[\bufnum,buf, \rate, 1, \gate, 1 ]);
+		synth = Synth(\bufGrainM,[\bufnum,buf, \rate, 1, \gate, 1 ]);
 	});
 };
 

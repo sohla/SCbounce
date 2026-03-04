@@ -11,20 +11,21 @@ m.gyroFilteredAttack = 0.7;
 m.gyroFilteredDecay = 0.7;
 
 //------------------------------------------------------------
-SynthDef(\sampler, {|bufnum=0, out=0, amp=2, rate=1, start=0, pan=0, freq=440, attack=0.01, decay=0.1, sustain=0.9, release=0.2, gate=1,cutoff=20000, rq=1, loop=1|
+SynthDef(\sampler, {|bufnum=0, out=0, amp=1, rate=1, start=0, pan=0, freq=440, attack=0.01, decay=0.1, sustain=0.9, release=0.2, gate=1,cutoff=20000, rq=1, loop=1|
 	var lr = rate * BufRateScale.kr(bufnum) * (freq/440.0);
-     var env = EnvGen.kr(Env.adsr(attack, decay, sustain, release), gate, doneAction: 2);
+    var env = EnvGen.kr(Env.adsr(attack, decay, sustain, release), gate, doneAction: 2);
 	var sig = PlayBuf.ar(2, bufnum, rate: lr, startPos: start * BufFrames.kr(bufnum), loop: loop);
     sig = RLPF.ar(sig, cutoff, rq);
     // sig = Balance2.ar(sig[0], sig[1], pan);
-		sig = Compander.ar(sig, sig,
-						thresh: -32.dbamp,
-						slopeBelow: 1,
-						slopeAbove: 0.5,
-						clampTime:  0.02,
-						relaxTime:  0.01
-				);
-    Out.ar(out, sig!2 * amp * env);
+	sig = Compander.ar(sig, sig,
+		thresh: -32.dbamp,
+		slopeBelow: 1,
+		slopeAbove: 0.5,
+		clampTime:  0.02,
+		relaxTime:  0.01
+	);
+	sig = sig!2 * amp * env;
+    Out.ar(out, (0)!0 ++ sig); // multi output
 }).add;
 
 
@@ -49,38 +50,31 @@ SynthDef(\sampler, {|bufnum=0, out=0, amp=2, rate=1, start=0, pan=0, freq=440, a
 //------------------------------------------------------------
 ~deinit = ~deinit <> {
 //check if synth	
-	synth.onFree({
-    buffers.do({|buf|
-      postf("buffer dealloc [%] \n", buf);
-      buf.free;
-      // s.sync;
-    });
-	});	
+	
+	if(synth.notNil, {
+		synth.onFree({
+			buffers.do({|buf|
+			postf("buffer dealloc [%] \n", buf);
+			buf.free;
+			// s.sync;
+			});
+		});	
+	});
 	synth.set(\gate, 0);
 };
 
 //------------------------------------------------------------
 ~next = {|d|
-// 	var amp = m.accelMassFiltered.lincurve(0.0,2.0,-80,0,-7);
-//   var speed = m.gyroXFiltered.lincurve(-1,1,0.1,1.0,0);
-//   var ws = m.gyroYFiltered.lincurve(-1,1,0.1,1.5,-2);
-//   synth.set(\ws, ws);
-//   synth.set(\speed, speed);
-//   synth.set(\amp, amp.dbamp);
- if(d.sensors.digiInEvent[0] == 1, {
+
+	if(d.sensors.digiInEvent[0] == 1, {
     if(bl == false, {
     var ndx = (buffers.size -1).rand;
       bl = true;
-      synth = Synth(\sampler, [\bufnum, buffers[ndx], \gate, 1, \rate, ([0]).choose.midiratio]);
-    //   synth.set(\gate, 1);
-    "on".postln;
-      // synth.postln;
+      synth = Synth(\sampler, [\bufnum, buffers[ndx], \gate, 1, \rate, ([0]).choose.midiratio, \amp, 0.5]);
     });
  },{
     if(bl == true,{
-
         bl = false;
-        "off".postln;
         synth.set(\gate, 0);
     });
  });
@@ -110,7 +104,8 @@ SynthDef(\sampler, {|bufnum=0, out=0, amp=2, rate=1, start=0, pan=0, freq=440, a
 	// [(d.sensors.gyroEvent.y / pi.half)];//up down
 	// [(d.sensors.gyroEvent.z / pi)];//left right
 
-  [m.gyroXFiltered, m.gyroYFiltered, m.gyroZFiltered];
+  // [m.gyroXFiltered, m.gyroYFiltered, m.gyroZFiltered];
+	[d.sensors.digiInEvent[0],d.sensors.rrateEvent.x];
 
 	// [(d.sensors.gyroEvent.y / pi.half).lincurve(-1.0,1.0,-1.0,1.0,3)];
 };

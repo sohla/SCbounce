@@ -4,7 +4,7 @@ var buffer;
 
 var index =0;
 var trig = false;
-var notes = [12,11,9,7,12,11,9,7,14,12,11,9,7,5,4,2]-36;
+var notes = [2];//[12,11,9,7,12,11,9,7,14,12,11,9,7,5,4,2]-15;
 var note = notes[0];
 m.accelMassFilteredAttack = 0.99;
 m.accelMassFilteredDecay = 0.5;
@@ -13,10 +13,10 @@ m.rrateMassFilteredDecay = 0.2;
 m.gyroFilteredAttack = 0.7;
 m.gyroFilteredDecay = 0.7;
 
-SynthDef(\pullstretchMonoQ, {|out, amp = 1, buffer = 0, envbuf = -1, pch = 1, div=1, speed = 0.008, splay = 0.3,pan=0, gate=1, delta=0, lag=0.05, ffo=10, rfo=1|
+SynthDef(\pullstretchMonoQAF, {|out, amp = 1, buffer = 0, envbuf = -1, pch = 1, div=1, speed = 0.008, splay = 0.3,pan=0, gate=1, delta=0, lag=0.05, ffo=10, rfo=1|
 	var len = BufDur.kr(buffer) / div;
 	var lfo = LFSaw.kr( (1.0/len) * speed ,1).range(0.0,0.99);
-  var afo = LFCub.ar(ffo,0,rfo).range(1.0 - rfo,2.0 - rfo);
+  	var afo = LFCub.ar(ffo,0,rfo).range(1.0 - rfo,2.0 - rfo);
 	var sp = Splay.arFill(8,
 		{ |i| Warp1.ar(1, buffer, lfo.linlin(0,1,0.01,0.99), pch * (1 / ((i*delta)+1)) * [1] ,splay, envbuf, 8, 0.1 * (i+1), 4)  },
 			1,
@@ -25,16 +25,15 @@ SynthDef(\pullstretchMonoQ, {|out, amp = 1, buffer = 0, envbuf = -1, pch = 1, di
 	) ;
 	var env = EnvGen.ar(Env.adsr(0.4,0.1,0.9,2.0), gate, doneAction:2);
 	var mas = HPF.ar(sp,45).tanh * amp.lag(lag) * afo;
-		mas = Compander.ar(mas, mas,
-						thresh: -32.dbamp,
-						slopeBelow: 1,
-						slopeAbove: 0.5,
-						clampTime:  0.02,
-						relaxTime:  0.01
-				);
-
-
-	Out.ar(out,Pan2.ar(mas[0],pan) * env);
+	var sig = Compander.ar(mas, mas,
+			thresh: -32.dbamp,
+			slopeBelow: 1,
+			slopeAbove: 0.5,
+			clampTime:  0.02,
+			relaxTime:  0.01
+	);
+	sig = Pan2.ar(mas[0],pan) * env;
+	Out.ar(out, ((0)!0 ++ sig));
 }).add;
 //------------------------------------------------------------
 SynthDef(\noise, { |out=0, frq=1000, gate=1, amp = 0.0, atk=0.02, sus=0.8, rel=1.3, lag=0.05, pch=1|
@@ -47,14 +46,14 @@ SynthDef(\noise, { |out=0, frq=1000, gate=1, amp = 0.0, atk=0.02, sus=0.8, rel=1
 
 //------------------------------------------------------------
 ~init = ~init <> {
-		var path = PathName("~/Downloads/alessioSamples/andHeLikesBandToys.wav");
+		var path = PathName("~/Downloads/alessioSamples/ararrrr2.wav");
 
 	// var path = PathName("~/Downloads/yourDNASamples/HK lots of teddies.wav");
 	postf("loading sample : % \n", path.fileName);
 
 	buffer = Buffer.read(s, path.fullPath, action:{ |buf|
 		postf("buffer alloc [%] \n", buf);
-		synth = Synth(\pullstretchMonoQ,[\buffer,buf,\pch,0.midiratio, \amp,0.0, \div, 10]);
+		synth = Synth(\pullstretchMonoQAF,[\buffer,buf,\pch,0.midiratio, \amp,0.0, \div, 10]);
 	});
 
 
@@ -76,10 +75,10 @@ SynthDef(\noise, { |out=0, frq=1000, gate=1, amp = 0.0, atk=0.02, sus=0.8, rel=1
 ~next = {|d|
 	// var amp = d.sensors.velocity.sum.abs.lincurve(0,0.03,0.0,1.0,-2);
 	var amp = m.accelMassFiltered.lincurve(0,2.5,0.0,1,-3);
-	var rfo = m.accelMassFiltered.lincurve(0,2.5,0.0,1,-3);
-  var ffo = m.gyroYFiltered.lincurve(-1.0,1,1,18,-3);
+	var rfo = m.accelMassFiltered.lincurve(0,1.5,0.0,1,-3);
+  	var ffo = m.gyroYFiltered.lincurve(-1.0,1,1,18,-3);
     
-    if(amp<0.035,{
+    if(amp<0.015,{
         amp=0;
         synth.set(\lag,0.8);
         if(trig, {
@@ -96,7 +95,7 @@ SynthDef(\noise, { |out=0, frq=1000, gate=1, amp = 0.0, atk=0.02, sus=0.8, rel=1
         synth.set(\lag,0.1);
     });
 
-    synth.set(\amp, amp*5);
+    synth.set(\amp, amp*4);
     synth.set(\ffo, ffo);
     synth.set(\rfo, rfo);
 };

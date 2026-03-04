@@ -6,12 +6,13 @@ var views = Dictionary.new;
 var renderer = { |d|
 // var makeView = { |name, rect|
     // var visualEvents = List.new(20);
-
+    var updateViewX = {|view|
+    view.postln;
+    };
     // Define the updateView function for this specific view
     var updateView = {|view|
         var now = thisThread.seconds;
 
-            
         // visualEvents.do { |event|
         views[d.port][\visualEvents].do { |event|
             var elapsed = 0.0, normTime = 0.0;
@@ -214,9 +215,12 @@ Event.addEventType(\customVisualEvent, {
         \modulation: ~modulation,  // Optional modulation settings
         \startTime: thisThread.seconds
     );
-    views[viewID][\visualEvents] = views[viewID][\visualEvents].add(event);
-    ~type = \note;
-    currentEnvironment.play;
+
+    if(views[viewID].isNil.not,{ // must check in case gui has not been fully built yet
+        views[viewID][\visualEvents] = views[viewID][\visualEvents].add(event);
+        ~type = \note;
+        currentEnvironment.play;
+    });
 });
 
 

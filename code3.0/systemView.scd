@@ -1,7 +1,6 @@
 var bh = 100;
 var hosts = "hostname -I".unixCmdGetStdOut;
 
-
 var updateCPU = {
     var pipe;
     
@@ -34,7 +33,7 @@ var getTemp = {
 var serverView = UserView()
     .minWidth_(60)
     .maxHeight_(30)
-	.frameRate_(10)
+		.frameRate_(10)
     .animate_(true)
     .drawFunc_({|uv|
 			// fork {
@@ -63,6 +62,7 @@ var serverView = UserView()
 });
 
 
+
 // var meterView = LevelIndicator()
 // 	.numTicks_(20)
 // 	.value_(0.5)
@@ -72,8 +72,8 @@ var serverView = UserView()
 // 	.maxWidth_(140);
 
 var meterView = View()
-	.minWidth_(140)
-	.maxWidth_(140);
+	.minWidth_(150)
+	.maxWidth_(150);
 
 var nodeTree = View()
 	.background_(Color.black(0.25))

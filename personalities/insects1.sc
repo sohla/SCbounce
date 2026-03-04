@@ -81,12 +81,12 @@ SynthDef(\syntheticLeaf, {
 }).add;
 
 ~init = ~init <> {
-	synth = Synth(\insects, [\gate, 1, \amp, 0.004]);
+	// synth = Synth(\insects, [\gate, 1, \amp, 0.004]);
 	synth2 = Synth(\syntheticLeaf, [\gate, 1]);
 };
 
 ~deinit = ~deinit <> {
-	synth.set(\gate, 0);
+	// synth.set(\gate, 0);
 	synth2.set(\gate,0);
 };
 
@@ -97,7 +97,7 @@ SynthDef(\syntheticLeaf, {
     var f = (d.sensors.gyroEvent.x / pi).linlin(-1,1,1.13,1.56);
 	var pan = d.sensors.gyroEvent.z.linlin(-1,1,-0.3,0.3);
     
-    synth.set(\temp, f);
+    // synth.set(\temp, f);
 	if(a<0.0003,{a=0});
 
 	synth2.set(\amp, a);

@@ -1,0 +1,850 @@
+control and visual views are back
+post glenroy
+ux
+cleaning up ui
+mel and swan
+S3 audio interface and layout
+dress reh ITR
+run thru
+mix tech
+am fixes
+quick pre evening run thru
+pre show pre evening fixes
+some ball ideas
+big wed session
+mappings
+preshow night done
+basic show cues
+up to train
+sounds
+preshow fix 1
+ui fixes
+pre ITR reh tuning
+pre ITR reh
+fixes
+Merge pull request #39 from sohla/Airsticks-RPI-ITR
+branch for show
+mim25 peeps
+post battery
+post reh (mim)
+remove graph
+pre reh
+toots and trains
+more persons
+dynamic title view
+trains
+4button buffers
+added 4 button buffer
+add 4 buttons
+mini
+prep list
+post 4 reh
+pre reh
+fix bretons panning
+fix routings
+aless routing
+brenton routing
+nic routing
+mel routing
+wed big session
+finding
+adding ITR lists
+tuning
+fixed visuals
+fixed hapr buffer scope issue
+more mel chair
+removed vis & chair
+sil
+basic multichannel setup and test
+fixed digiIn array bug
+r&d on visuals
+5 devices
+controls per device
+adding midi cc control
+post 30 reh
+nic prep
+merge
+glenroy
+alessio pre arvo
+ales2
+ale
+alessio
+prep Mels Device
+post yourDNA
+pre yourDNA:
+templates and grafix
+more template work
+Merge remote-tracking branch 'origin/Airsticks-RPI' into Airsticks-RPI
+debug buffers
+Merge branch 'Airsticks-RPI' of https://github.com/sohla/SCbounce into Airsticks-RPI
+more OSC api
+clean up postf's
+ui/ux syste,me view
+Merge branch 'Airsticks-RPI' of https://github.com/sohla/SCbounce into Airsticks-RPI
+api test
+added mute OSC to api
+sys view
+ui/ux
+post mel session : detail mappings
+Merge remote-tracking branch 'origin/Airsticks-RPI' into Airsticks-RPI
+conmfig
+pre allessio
+Merge branch 'Airsticks-RPI' of https://github.com/sohla/SCbounce into Airsticks-RPI
+ds
+more templates
+refactor persons
+refactor gyro and added filter
+button layout back to bottom
+list dir
+layout and tweeks
+added temp info
+added some cpu stats bit not gui freiendly
+persons thurs
+claude notes
+pre thurs session arvo
+gui layout
+melbb more
+bus work
+more work on mel
+fixing deinits
+looking at tetsts
+removed old personalties
+pre mel vox session:
+tweeks
+post mel, re-sorted out qauts!
+tweaks pre mel
+tues am mel prep
+laptop build
+prep for Mel
+playing with velocity
+addewd shutdown button and fixed volume
+setup for brenton
+loader
+update on dev
+clean
+osc thru added  osc api
+config hack : just wait a little
+shape lib clean
+stack layout of devices
+calibration tap
+rf
+testing on rpi
+improved rrate
+looking at rotation
+local quaternion maths
+perps
+calibration and orientation working
+wokring on pi with calibration rough
+callibration code
+sythns
+and size?
+render x/y norm to size
+tweaks
+back to as
+unload and reload personality / remove reload button!
+refactored 3d and plotter
+shutdown and attempt at restart
+prev and next button rf
+reload button rf
+bat level update
+looking into pass OSC thru
+tweeks
+checking rt audio
+sys view, fixing template, looking at details
+tweeks
+ui and system ux
+dont need
+doc API
+Merge branch 'Airsticks-RPI' of https://github.com/sohla/SCbounce into Airsticks-RPI
+ws
+enabled button working : but only stops calling ~next
+refactor project
+need to fix enable bug : file watcher stops working
+Merge branch 'Airsticks-RPI' of https://github.com/sohla/SCbounce into Airsticks-RPI
+config
+improved UI/UX afer Mels input. Mute button and all Butotns
+post mel session
+swapping layout
+nime workshop
+pre-nime
+fixes
+ws2
+Merge branch 'Airsticks-RPI' of https://github.com/sohla/SCbounce into Airsticks-RPI
+nimeworkshop
+ws
+Merge branch 'Airsticks-RPI' of https://github.com/sohla/SCbounce into Airsticks-RPI
+midi
+Merge branch 'Airsticks-RPI' of https://github.com/sohla/SCbounce into Airsticks-RPI
+play
+lab am prep
+fix harp path
+tweaks network button and ui
+v1 of open lab
+cymbals / harp and vis fix
+yourDNA session
+ui teeeks
+added \width to visuals
+update on save BOOM
+single events work!
+playing
+checking visuals
+fuk yes. visuals all working
+ds
+better ux
+new layout for details
+refactor to internal OSC
+start refactor using internal OSC
+look at axis and button
+a-ah this is shit. let use OSC...
+urgh
+workshop rpi
+fun
+Merge branch 'Airsticks-RPI' of https://github.com/sohla/SCbounce into Airsticks-RPI
+workshop
+addded to main + button.sc
+digiIn OSC listener
+airkit demo with mel
+brenton itr 2
+itr brenton new
+itr prep1
+nime shoot
+yourDNA/brenton workshop 1-25
+prep for matt
+playing with BERT
+Merge branch 'Airsticks-RPI' of https://github.com/sohla/SCbounce into Airsticks-RPI
+mmidi
+modulating shape with scaling
+edits
+fixed mouse up down
+ce4
+fixed view instancing
+basic loading of personality and default
+better plotter code etc.
+visual 3 with view instancing
+explor
+detail view
+imporved layourt of devices
+tweeking
+Merge branch 'Airsticks-RPI' of https://github.com/sohla/SCbounce into Airsticks-RPI
+synths
+new sounds for Lindsay
+more examples
+individual views
+ui tweaks
+build on rpi
+oh what fun!
+hmm
+big day of visuals : using env is fun
+Merge branch 'Airsticks-RPI' of https://github.com/sohla/SCbounce into Airsticks-RPI
+hmm
+envelope fun
+Merge branch 'Airsticks-RPI' of https://github.com/sohla/SCbounce into Airsticks-RPI
+setup
+adding devices is fun!
+runnig on pi
+adding a control bus
+4 views
+more fun
+work
+notes
+another visauliser
+assessing
+dependant of config file!
+thinking remaking a generato for testing
+experiments
+better tab buttons
+using Require
+more ui work
+planning out
+looking at visuals
+Merge branch 'Airsticks-RPI' of https://github.com/sohla/SCbounce into Airsticks-RPI
+playing
+another synth
+code
+syth
+CPEC workshops
+friday worskhsop dev
+start workshop
+2025 push
+post yourDNA shows
+fix treeWind
+sy
+synths
+MiM sat show prep
+brenton sns show
+tweeking brenton set wed night
+list
+added osc patch command
+move to MiM for testing
+staiblity settings
+brenton wednesday review
+ugh bug not fixed
+midi connect with defer. maybe now fixed?
+midi connect bug fixed. all devices loading
+brenton hopest gig
+MiM show post
+fades
+show fixes monday night
+MiM show1
+brenton gig
+sunday night brenton
+sunday brenton work start
+sat night finish tweeks
+syhths
+friday work
+tweek timWind
+midi foot control
+lab day tweeks
+post brenton session
+brenton play prep
+more sounds
+ball laugh
+move all around
+moving 4 to 8
+cue list
+sunday mix
+sytnhs
+james insects
+v1 of show
+fixes
+scale1&2&foot working
+scale 1 & 2
+playoing w synths
+chicken,frog,magicWand,timWind,treeWind,wind
+playing
+fix list
+merge
+cue list prep
+prep for reh
+woiworung play
+timWind
+globt & blobblob
+added battery monitor
+tree 7 made
+ndefs and removing buffers after synth has finished
+sunday night
+more sounds
+sat lab
+Merge branch 'Airsticks-OSC' of https://github.com/sohla/SCbounce into Airsticks-OSC
+add more synths
+Merge branch 'master' of https://github.com/sohla/SCbounce into Airsticks-OSC
+friday night
+small ui
+layout on device
+RPI build prep
+new layout
+sounds
+getting color from device
+new brenton sounds
+Merge branch 'master' of https://github.com/sohla/SCbounce
+wiki
+moving local rpi workshop code
+laptop
+MiM workshop
+prep for MiM workshop
+brenton session
+pre brenton reh
+brenton session build
+more synths from -ware branch
+cabin build
+goodbye dstore
+moved personalities over from -ware branch
+store
+store
+building for workshops
+building cabin
+more souds
+store
+new oscmsuic
+lab build
+Merge branch 'Airsticks-OSC' of https://github.com/sohla/SCbounce into Airsticks-OSC
+setuups
+airkit 0.1
+basic connection working
+more
+new synths and review
+synth paly
+new synths
+starting to add controlbus
+review synths
+improved gui for rpi : -/+ buttons
+new synths
+worksho 29.10
+prep for workshop
+workshop changes
+now working with airware OSC : allows for port 57121 etc.
+setting up first 4 osc versions, also added color
+Merge branch 'Airsticks-BT' of https://github.com/sohla/SCbounce into Airsticks-BT
+rpi local
+new sounds and new data ui
+more checking
+looking into buffer alloc/dealloc issue : using s.sync on dealloc
+moure play
+new osunds
+fixups
+cabin build
+rpi runnung without server options
+repair from merge
+merge
+rpi build
+no api key in source
+no api key fix
+EU trip
+EU trip
+lots of playing
+recording session
+personalities
+bug found : synths left hanging
+looking at sampler
+fixups
+Ciaran handover
+finish off personalties refacotr and tweaks
+big update excepts synths
+notes
+testing
+cleanup
+added bettery testing
+buffer handling
+added cpu
+added cpu
+yourDNA workshop
+fixups for workshop
+pre workshop new pwersonalities
+Brenton workshop
+new sampler for garageband samples
+w
+Merge branch 'master' of https://github.com/sohla/SCbounce
+wiki
+tweaking
+cleaning up and testing
+wikik
+update all personalities
+fix ups
+fix ups
+refining
+refactor
+project description
+more refactor
+refactor
+clean up
+new imrpoved personality
+imporvrd rendering
+remove old listeners
+paths
+rpi paths
+mouse buffer
+rpi dhcp setup
+mappings
+first big refactor
+midi
+using rrate data
+connecting to new hardware : 1 device and rate change working
+Merge branch 'Airsticks-BT' of https://github.com/sohla/SCbounce into Airsticks-BT
+more testing
+608workshop
+laptop build
+monday night prep
+more osunds
+adding scanner
+monday morning
+play
+taking in old data
+needs more work on getting data
+more hardware testing
+Merge branch 'Airsticks' of https://github.com/sohla/SCbounce into Airsticks
+testing new hardware
+new
+tooliong
+refactored for  macAddress device keys
+switching back
+starting new ideas
+combined data
+more fun
+qfun
+brenton first gig
+now with patch midi controller
+tuesday music motion workshop
+local fixups
+monday night 2
+monday night 1
+monday day work
+wiki update
+lovely
+tweaks
+building samplers
+Merge branch 'Airsticks' of https://github.com/sohla/SCbounce into Airsticks
+adding synth ideas
+Merge branch 'main' into Airsticks
+Merge branch 'master' of https://github.com/sohla/SCbounce
+rpi
+Merge branch 'main' into Airsticks
+wiki added
+Merge branch 'Airsticks'
+some claude ai code
+post wrokshop
+height
+more sounds
+building sounds for brenton
+bug fix : only single device OSC listneres : now has crappy rrate values
+post workshop
+local path
+preworshop new sounds
+Merge branch 'Airsticks' of https://github.com/sohla/SCbounce into Airsticks
+test
+Merge branch 'master' of https://github.com/sohla/SCbounce into Airsticks
+small screen
+no comment
+listening to 4 airware virtual devices : bug when removing first
+2 AS devices : playback and recording
+working model with synth and passing values
+listneing to aristick devices
+changes for paper
+working model with synth and passing values
+listneing to aristick devices
+On OSCMusicMachine: Tower Auto-Stash: 2024-06-04 09:17:09 +1000
+index on OSCMusicMachine: ba4e1c8 explornig multi airsticks
+explornig multi airsticks
+testing
+Merge branch 'OSCMusicMachine' of https://github.com/sohla/SCbounce into OSCMusicMachine
+timing
+hack sending midi to phone
+build on mac mini intel
+local dir
+fixed scaling and order of angles
+quaternions working with formular
+yourDNA2
+mydna1
+playng wiht as
+imrpoved upload speed
+fixing transform
+getting m5stick working
+setup
+OSC2Bus working
+explorztions
+testing
+looking into using bus.control
+refactor : looking into proto
+more explorations
+notes
+notes
+Create README.md
+improving the plotter
+generator device : basic functionaloity and graoh updates
+working version on new machine
+bloom dev
+working : need to fix sending motion data before connecting
+Merge branch 'OSCMusicMachine' of https://github.com/sohla/SCbounce into OSCMusicMachine
+prepare for workshop
+looking at sessions
+err
+Merge branch 'OSCMusicMachine' of https://github.com/sohla/SCbounce into OSCMusicMachine
+moving devices to nukuNet
+lpatop compile including Quaternion.sc with .asEuler
+devifes now working : prepare
+rrate values fixed
+getting m5stick going
+testing
+scad model
+working hardware BNO055
+clean up
+commoner shoot
+Merge branch 'OSCMusicMachine' of https://github.com/sohla/SCbounce into OSCMusicMachine
+removed old embed
+tweeks
+basic new controls persons
+music visual time
+week 1 cws
+oopps forgot hard coding ip addresses
+Merge branch 'OSCMusicMachine' of https://github.com/sohla/SCbounce into OSCMusicMachine
+control
+uploaded to devices
+new router
+Merge branch 'OSCMusicMachine' of https://github.com/sohla/SCbounce into OSCMusicMachine
+oon site CWS
+fixed all devices for SOHLA3 netcomm for CWS
+update network to new SOHLA3 netcomm router
+so not working
+urgh still i2c on stick not working
+getting i2c working with cap1188
+msstick audio test
+nuku network wokring for laptop
+setting up new networks
+fixed event proto instances
+hard calibration of m5 devices
+added M5Stickc : wow this is fun
+saved
+M5atom imp.
+new persons for warringa
+fininshed cleaign up triggers and basic layout of personalities
+fixing triggers
+getting to know the code
+Merge branch 'OSCMusicMachine' of https://github.com/sohla/SCbounce into OSCMusicMachine
+testing wemos
+thursday development
+day1 convent
+Merge branch 'OSCMusicMachine' of https://github.com/sohla/SCbounce into OSCMusicMachine
+change name
+refactor
+no note
+passing more values including velocity :
+adding velocity from ke
+hooking up params for blobi/shadow
+basic hookup of a blob
+aptop build
+for laptop
+bees reh1
+starting on some bees ideas
+bees hacks
+adding gyro back for bees
+playing
+basic energy levels : normalising data
+beat3
+notes on remote device removing
+fixed oscLisnters : now each device : also removeDevice added
+cleaning up
+can recieve on multi ports
+multi blobs implemented in bounce
+bif refactor of elemtns
+fixing up ui
+exploring
+lots of cleaning up / removing of unused code
+refactoring gyro data
+exploring futures
+update of embed
+more osc
+small test for embed version
+fixing bugs
+fix ups
+finished round of all the peeps
+slowly updating peeps with new global controls
+basic ui for threshold of isMoving
+nothing
+refining peeps
+monitoring volt from esp8266 wemos
+trigger hit only from accel
+added accel data : hacked mappings to match ios device
+baasic communication working :: rrate not correct
+Merge branch 'kinect'
+cleaned up code
+adding embed code
+wednesday open day
+Merge branch 'lostlands19'
+nothing
+tuning for open studio
+post Lostlands
+preshow
+pre bumpin
+croxton end
+ugenWed
+post session genu2
+ready for next session : added beat box
+post session
+new duo personalities
+Merge branch 'croxton2'
+fixing sessions
+tweak
+first balancing effort : needs more tweaking
+rain and scratch added
+eve2 fixed
+all previous personalities
+min and harvey
+lach and til
+george and gabe
+band 123 done
+small changes to band
+Merge branch 'pandc'
+more wakinator
+keith visit
+rain and clapping loop rack
+building sampler : ignore sample files
+session update
+changes to peeps
+more
+removing onAmp
+removing peeps
+start refactoring
+post croxton workshop 1
+pre croxton workshop #1
+adding more detail to personalities
+defer closing midi client fix
+getting ready for croxton : lokking at OSC hang bug
+more experiments
+session with nick
+more sounds
+new track : voice
+ptn midi bug fixed : not sure but added Midi client dispose
+live band sesison
+tracking down patern midi bug
+fine tuning first band : bug where things pause on;y on SC end
+basic band 3 : working
+mball band  : session 1 : need to drive harmony from bass line maybe?
+infinitytest
+exploring wyas to hack kinextEplorere into engine
+added infiity dance script for driving protopixel
+mic and accel data : threashold and trigger added
+live sessions added
+more dir making
+restructure dirs
+updated personlieites with ~nextMidiOut.()
+midiRout : separate rputine for midi out (control) data
+refactor rout
+remove midi controller
+other work
+added all vals into init pattern
+embed vaals into init pattern…using keys!
+new personalities : exploring patterns : issues with reloading
+notes
+maybe use midi contl as is
+init pattern encaps. imrpovng p’s set up
+change ptn
+looking at midi controllers
+onOffButton scope bug fixed
+added com model : shared data including events
+play/stop of ptn : state is now added :/
+demo with new p’s
+device enabled moved to inside rout
+making music with eve
+playing around
+bug fix : named pattern doh!
+snoic play
+another fix
+fix
+Merge branch 'pandc' of https://github.com/sohla/SCbounce into pandc
+more refactor of eve
+more refactor of eve
+refactoring eve
+improved controller ux
+playing with accel data
+refactor : stroing devices keys from port insteadn of ip
+osc linetners within device
+protopixel player commands
+looking at simulating multiple devices
+adding rrate : hard to simulate
+euler to quat simulation
+added basic generator structure
+new v
+protopixel experiements
+nil
+window at top
+midi sender built
+start midi sender
+looking / playing
+fixing midi out
+playing with ampValue : in adam
+playing
+new notes
+builind and hacking more music making
+making music : hacing in with midi
+hacking ui for reading data : also fixed SLIPDecoder : need to add to repo!
+playing with serial OSC
+new build
+tweaking personlaities: removed midiController
+working on personalties
+more testing of audio trigger with eve
+looking at midi out bug : not sending not4s sometimes
+working on speeding amp msgs and triggering : midi latency
+app build
+playing with amp and triggering from OSCFunc
+adding app
+fringe shows
+personalities more more more
+pwersonalities arefinally coming
+new personalities
+lolin testing
+more work on personalities
+working on the people
+hooking up midi control easy use with Live
+cleaning up ui
+added ui niceness
+add basic midi controller functionality
+adding modality file
+refectoring ui layout
+audio devicesetup
+triggering
+on/off graph ui
+looking at placing device on side of ball
+inCaseOf script
+thursday morning session
+wednesday arvo
+wednesday morning dev
+basic midi with steph
+dynamic personality list
+tuesday development : nick and george
+se dev start
+playing
+hmr showing
+plaing with oscDataRecorder
+HMR stuff in here
+ui play
+testing esp
+hooking up new algor. linlin and rounding is enough
+playing with eve
+slowly movign towards playing with it all
+playing with eve
+playing with scontrol bus
+looking at OSC data inside a ControlBus
+fixed gyro data written as event
+tidy up
+refactor and removed DataCollector
+redid plotters
+fixed some logic
+recorder now sending “/gyrosc/button” and default NetAddress
+looking itno ugen signals again
+hear me roar
+added reset motion osc command
+big red button boom
+osascript aweomeness : control itunes and collect
+looking at OSCRecorder and what is possible
+recorder OSC
+looking at HMR
+research and code review
+sending osc data out for fun
+looking at control bus
+next : consolodate data
+swapping orientation
+fixing accel rotation : clean code
+quaternion calcs working!
+using ArduinoQuarternion : asEuler function : angles are not correct yet
+looking at ugen filtering control bus
+quat maths code out
+quat to angles code added but not working
+control bus gold!
+looking into communication with nodemcu
+sc working ya! chrome :(
+looking at why synth is late
+perth festival play
+basic graph for mycelium
+fixing up hero synth
+Merge remote-tracking branch 'origin/ugenData' into ugenData
+basic signal passing : plotter now taking 3 values
+plotter now taking 3 values
+working multi plotter
+playing with data using the knew plotter
+oh LOOK : got plotter working for arrays
+looking at plotter and multi array : can’t seem to insert into array
+summing gyro data
+added avg over a buffer
+plotter ~plot value refctor
+removed i from ~next
+learning ptns
+we can inject functions into all personalities : good for modular data processing
+added variable data size
+remove old data
+more bug ascii fix
+fixing small asAscii bug
+looking at Link
+warringa day
+setup fro waringa : more
+warringa monday setup
+working on eve : hanging type
+looking at recording data using DataCollector
+playing with DataCollector
+playing with data : created eve
+looking at structure
+looking at list comprehensions
+hacking height of window and scrollView
+default midi setup
+added basic midi out
+new video
+Create README.md
+files added

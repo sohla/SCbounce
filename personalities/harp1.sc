@@ -26,14 +26,19 @@ var noteToMidi = { |noteName|
 		(octave + 1) * 12 + noteIndex;
 };
 
-var folder = PathName("~/Downloads/yourDNASamples/harp");
-var samplesLib = folder.entries.collect({ |path|
-	var note = path.fileNameWithoutExtension.split($_).last;
-	var buffer = Buffer.read(s, path.fullPath, action:{ |buf|
-	});
-	postf("loading sample : % \n", path.fileNameWithoutExtension);
-	(name: path.fileNameWithoutExtension, buffer: buffer, midiNote: noteToMidi.(note))
-});
+var folder = PathName("~/Downloads/openLabSamples/harp");
+var samplesLib;
+
+// scope issue!?!
+// var samplesLib = folder.entries.collect({ |path|
+// 	var note = path.fileNameWithoutExtension.split($_).last;
+// 	var buffer = Buffer.read(s, path.fullPath, action:{ |buf|
+// 		postf("buffer alloc [%] \n", buf);
+// 	});
+// 	postf("loading sample : % \n", path.fileNameWithoutExtension);
+// 	(name: path.fileNameWithoutExtension, buffer: buffer, midiNote: noteToMidi.(note))
+// });
+
 //------------------------------------------------------------
 
 m.accelMassFilteredAttack = 0.99;
@@ -87,6 +92,16 @@ SynthDef(\funBass, {
 		});
 		bufnum
 	};
+
+	samplesLib = folder.entries.collect({ |path|
+		var note = path.fileNameWithoutExtension.split($_).last;
+		var buffer = Buffer.read(s, path.fullPath, action:{ |buf|
+			postf("buffer alloc [%] \n", buf);
+		});
+		postf("loading sample : % \n", path.fileNameWithoutExtension);
+		(name: path.fileNameWithoutExtension, buffer: buffer, midiNote: noteToMidi.(note))
+	});
+
 	~playNote = {|note,root,octave, amp=0.1|
 			var n = note + root + (12 * octave);
 			var bufnum,rate;
@@ -119,6 +134,7 @@ SynthDef(\funBass, {
 		});
 			// ~instrument = \stereoSampler;
 			~type = \customVisualEvent;
+			// ~type = \note;
 			currentEnvironment.play;
 		 	// ~bufnum.postln;
 	});
@@ -172,9 +188,8 @@ SynthDef(\funBass, {
 };
 
 //------------------------------------------------------------
-//------------------------------------------------------------
 ~onEvent = {|e|
-	m.com.root = e.root;
+	// m.com.root = bass[0];
 	frame = frame + 1;
 };
 
@@ -182,10 +197,47 @@ SynthDef(\funBass, {
 //------------------------------------------------------------
 ~next = {|d|
 
-	var move = m.accelMassFiltered.lincurve(0,1.5,1,notes.size,2);
-	var amp = m.accelMassFiltered.lincurve(0,1.4,-40,-8,-1);
-	var ff = m.rrateMassFiltered.lincurve(0.0,2.0,200,2000,-3); //left right
+	var move = m.accelMassFiltered.lincurve(0,2.5,1,notes.size,1);
+	var amp = m.accelMassFiltered.lincurve(0,1.4,-50,-14,-1);
+	var ff = m.rrateMassFiltered.lincurve(0.0,2.0,200,2000,-3); 
+	var wd = m.rrateMassFiltered.lincurve(0.0,2.0,10,0.1,-3); 
 	var step = m.gyroXFiltered.linlin(-0.8,0.8,0,3).floor; //up down
+	
+				var n = bass[0] + root[0];
+   			var event = (
+				type: \customVisualEvent,
+				amp: 0,
+				viewID: d.port,
+				shape: \circle,
+				fill: false,
+				startSize: 100,// * amp.dbamp,
+				endSize: 190,// * amp.dbamp,
+				duration: 3.4,
+				sizeEnv: Env([0,1], [1], [-3]),
+				startColor: Color.hsv(n/14.0,1,1).alpha_(amp.dbamp), //Color.red.alpha_(0.7),
+				endColor: Color.yellow.alpha_(amp.dbamp),
+				startWidth: 1,
+				endWidth: 0.1,
+				sx: 0,
+				sy: 0,
+				ex: 0,
+				ey: 0,
+				rotation: 2pi * (13/n) + 10.rand,
+				modulation: (
+					type: \radial,
+					freq: 0.2,
+					amp: amp.dbamp.squared * 140,
+					harmonics:2
+				),
+			);
+					
+
+
+
+
+	Pdef(m.ptn).set(\range, move.floor);
+	Pdef(m.ptn).set(\amp, amp.dbamp);
+	Pdef(m.ptn).set(\root, root[0]);
 
 	Pdef(m.ptn).set(\viewID, d.port);
 	// Pdef(m.ptn).set(\startColor, Color.hsv((frame/40.0).mod(1.0),0.5,1.0,1.0));
@@ -200,12 +252,7 @@ SynthDef(\funBass, {
 	// 		harmonics: 2
 	// ));
 
-	Pdef(m.ptn).set(\range, move.floor);
-	Pdef(m.ptn).set(\amp, amp.dbamp);
-	Pdef(m.ptn).set(\root, root[0]);
 
-
-	
 	if(bassSynth.isPlaying,{
 		if(ff<0,{ff=200});
 		bassSynth.set(\filtFreq, ff);
@@ -221,46 +268,19 @@ SynthDef(\funBass, {
 		});
 	});
 
-	if(m.accelMassFiltered > 1.2, {
+	if(m.accelMassFiltered > 3.2, {
 		if(TempoClock.beats > (lastTime + (dur*4)),{
-			var n = bass[0] + root[0];
-   			var event = (
-				type: \customVisualEvent,
-				amp: 0,
-				viewID: d.port,
-				shape: \circle,
-				fill: true,
-				startSize: 4 * amp.dbamp,
-				endSize: 400 * amp.dbamp,
-				duration: 3.4,
-				sizeEnv: Env([0,1], [1], [-3]),
-				startColor: Color.red.alpha_(0.7),
-				endColor: Color.yellow.alpha_(0.0),
-				startWidth: 10,
-				endWidth: 1,
-				sx: 0,
-				sy: 0,
-				ex: 0,
-				ey: 0,
-				rotation: pi/2.rrand(5),
-				modulation: (
-					type: \radial,
-					freq: 5,
-					amp: amp.dbamp.squared * 20,
-					harmonics:2
-				),
-			);
-
 			lastTime = TempoClock.beats;
-			~playNote.(n-12,0, 3,amp.dbamp * 0.06);
+			~playNote.(n-12,0, 3,amp.dbamp * 0.04);
+			m.com.root = n;
 			bassSynth = Synth(\funBass, [\freq, (n + 24).midicps, \gate,1, \amp, amp.dbamp * 0.19]);
 			NodeWatcher.register(bassSynth);
 			bassSynth.server.sendBundle(0.3,[\n_set, bassSynth.nodeID, \gate, 0]);
-			event.play;
 			bass = bass.rotate(-1);
 			bassCount = bassCount + 1;
-
+			
 		});
+		event.play;
 	});
 };
 
