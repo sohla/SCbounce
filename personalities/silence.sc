@@ -73,7 +73,7 @@ m.rrateMassFilteredDecay = 0.4;
 		yEnv: yEnv, // Vertical oscillation
 		rotation: sin(time) * 0.1,
 	);
-	ev.play;
+	// ev.play;
 };
 
 //------------------------------------------------------------

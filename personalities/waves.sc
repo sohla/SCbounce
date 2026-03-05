@@ -15,7 +15,7 @@ SynthDef(\waves22, { |out=0, gate=1, amp = 0.0, lag=1,ff=200|
     var env = EnvGen.ar(Env.asr(1.3,1.0,8 ), gate, doneAction:2);
 
 	var spd = 0.03.rrand(0.09);//MouseY.kr(0.03,0.09);
-	var air = RHPF.ar(PinkNoise.ar(0.1), LFNoise2.ar([1,2]).range(12000,15000));
+	var air = RHPF.ar(PinkNoise.ar(0.1), LFNoise2.ar([1,2]).range(9000,14000));
 	var rum = RLPF.ar(BrownNoise.ar(0.1), LFNoise1.ar([3,5]).range(30,40));
 	var nsa = RHPF.ar(BrownNoise.ar(0.3), ff.lag(lag));
 	var sig = SinOsc.ar(spd, LFCub.ar([0.2,0.1]).range(0,1), nsa);

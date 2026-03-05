@@ -61,34 +61,39 @@ SynthDef(\looper, {|bufnum=0, out=0, amp=1.0, rate=1, start=0, pan=0, freq=440,
 
 	bgWaveBuffer1 = Buffer.read(s, bgWave1.fullPath, action:{ |buf|
 		postf("buffer alloc [%] \n", buf);
-		bgWaveSynth1 = Synth(\looper, [\bufnum, buf, \amp, 0.5]);
+		bgWaveSynth1 = Synth(\looper, [\bufnum, buf, \amp, 0.6]);
 	});
 	bgWaveBuffer2 = Buffer.read(s, bgWave2.fullPath, action:{ |buf|
 		postf("buffer alloc [%] \n", buf);
-		bgWaveSynth2 = Synth(\looper, [\bufnum, buf, \amp, 0.4]);
+		bgWaveSynth2 = Synth(\looper, [\bufnum, buf, \amp, 0.5]);
 	});
 
 };
 
 //------------------------------------------------------------
 ~deinit = ~deinit <> {
-	Pdef(m.ptn).remove;
-	bgWaveSynth1.set(\gate, 0);
-	bgWaveSynth2.set(\gate, 0);
-	fork{
-		1.0.yield;
-        buffers.do({|buf|
-            postf("buffer dealloc [%] \n", buf);
-            buf.free;
-            s.sync;
-        });
-		s.sync;
-	};
+
+	bgWaveSynth1.free;
+	bgWaveSynth2.free;
+	buffers.do({|buf|
+		buf.free;
+	});
+	// bgWaveSynth1.set(\gate, 0);
+	// bgWaveSynth2.set(\gate, 0);
+	// fork{
+	// 	1.0.yield;
+    //     buffers.do({|buf|
+    //         postf("buffer dealloc [%] \n", buf);
+    //         buf.free;
+    //         s.sync;
+    //     });
+	// 	s.sync;
+	// };
 };
 
 //------------------------------------------------------------
 ~next = {|d|
-  var amp = m.accelMassFiltered.lincurve(0,2.0,0.3,2, 2);
+  var amp = m.accelMassFiltered.lincurve(0,2.0,0.3,10, 2);
 
 	if(TempoClock.beats > (lastTime + 0.2),{
 		lastTime = TempoClock.beats;
