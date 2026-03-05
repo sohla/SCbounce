@@ -4,8 +4,9 @@ var dur = 0.14 * 1;
 var limit = 8;
 var step = 1;
 var lastTime=0;
+var buffers;
 
-~buffers;
+// ~buffers;
 m.accelMassFilteredAttack = 0.99;
 m.accelMassFilteredDecay = 0.5;
 m.rrateMassFilteredAttack = 0.9;
@@ -37,10 +38,12 @@ SynthDef(\drumkit2, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 ~init = ~init <> {
 
 	var folder  = PathName("~/Downloads/melSamples/melbb");
+	var shapes = [\circle,\circle,\hexagon,\hexagon,\hexagon,\circle,\hexagon];
 	postf("loading samples : % \n", folder);
 
-	~buffers = folder.entries.collect({ |path,i|
+	buffers = folder.entries.collect({ |path,i|
 		Buffer.read(s, path.fullPath, action:{|buf|
+			buf.normalize(0.8);
 			postf("buffer alloc [%] \n", buf);
 			if(folder.entries.size - 1 == i,{
 				"samples loaded".postln;
@@ -54,7 +57,8 @@ SynthDef(\drumkit2, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 			\bufnum, Pfunc{
         bi = bi + step;
 				if(bi >= (7),{bi=0});
-				~buffers[bi];
+				buffers[bi];
+				bi.asInteger.postln;
 			},
 			\octave, Pseq([0].stutter(8), inf),
 			\start, 0.05,
@@ -63,6 +67,40 @@ SynthDef(\drumkit2, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 			\pan, Pwhite(-0.4,0.4),
 			\attack, 0.02,
 
+			\type, \customVisualEvent,
+			\shape, Pfunc{shapes[bi.asInteger]},
+			
+			// \sx, 0,
+			// \sy, 0.4,
+			// \ex, 0,
+			// \ey, 0.4,
+			// \xEnv: ~xEnv ? defaultEnv,
+			// \yEnv: ~yEnv ? defaultEnv,
+
+			\startWidth, 10,
+			\endWidth, 1,
+			// \widthEnv: ~sizeEnv ? defaultEnv,
+
+			\startSize, 100,
+			\endSize, 60,
+			// \sizeEnv: ~sizeEnv ? defaultEnv,
+
+			\startColor, Color.yellow,
+			\endColor, Color.red.alpha_(0.0),
+			// \colorEnv: ~colorEnv ? defaultEnv,
+
+			\rotation,pi.half,
+
+			\duration, 0.7,
+			// \envelope: ~envelope ? defaultEnv,
+
+			// \alphaEnv: ~alphaEnv ? Env([1, 1, 0], [0.0, 1], \sin),
+
+			// \fill, true,
+
+			// \closed: ~closed ? true,  // Whether to close the shape
+			// \modulation: ~modulation,  // Optional modulation settings
+
 			\args, #[],
 		)
 	);
@@ -70,21 +108,45 @@ SynthDef(\drumkit2, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 
 	Pdef(\shaker,
 		Pbind(
-			\instrument, \drumkit2,			
-			\bufnum, Pfunc{
-				~buffers[1];
+			\instrument, \drumkit2,
+			\bi, Pxrand([0,1,3,5], inf),			
+			\bufnum, Pfunc{|e|
+				buffers[e.bi];
 			},
 			\octave, Pseq([0].stutter(8), inf),
 			\start, Pwhite(0.15,0.3),
 			\note, Pseq([30], inf),
-			\rate, Pxrand([0.5,1], inf),
+			\rate, Pxrand([5,6], inf),
 			\dur, dur,
 			\cnt, Pseries(0,1, inf),
 			\clk, Pfunc({TempoClock.beats}),
 			\pan, Pwhite(-0.4,0.4),
-			\attack, 0.07,
+			\attack, Pwhite(0.07,0.14),
 			\legato, 0.2,
 			\release, Pwhite(0.1,0.9),
+
+			\type, \customVisualEvent,
+			\shape, \line,
+			\sx, Pfunc{|e| ((e.bi / 3) - 1) * 0.02},
+			\sy, 0,
+			\ex, Pkey(\sx),
+			\ey, 0,
+			\startWidth, 1,
+			\endWidth, 10,
+			// \widthEnv: ~sizeEnv ? defaultEnv,
+
+			\startSize, 100,
+			\endSize, 10,
+			// \sizeEnv: ~sizeEnv ? defaultEnv,
+
+			\startColor, Color.red,
+			\endColor, Color.yellow.alpha_(0.0),
+			// \colorEnv: ~colorEnv ? defaultEnv,
+
+			\rotation,pi.half,
+
+			\duration, 0.3,
+
 			\func, Pfunc({|e| ~onEvent.(e)}),
 			\args, #[],
 		)
@@ -92,7 +154,7 @@ SynthDef(\drumkit2, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 
 
 	Pdef(m.ptn).play(quant:dur);
-	Pdef(m.ptn).set(\bufnum, ~buffers[0]);
+	Pdef(m.ptn).set(\bufnum, buffers[0]);
 
 	Pdef(\shaker).play(quant:dur);
 
@@ -103,10 +165,10 @@ SynthDef(\drumkit2, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 	Pdef(m.ptn).remove;
 	Pdef(\shaker).remove;
 
-	~buffers.do({|buf|
+	buffers.do({|buf|
 		postf("buffer dealloc [%] \n", buf);
 		buf.free;
-		// s.sync;
+		s.sync;
 	});
 };
 
@@ -133,8 +195,10 @@ SynthDef(\drumkit2, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 	var roll = m.gyroXFiltered.lincurve(-0.2,0.4,1,4,-2) * 0.5;
 	var sa = m.rrateMassFiltered.lincurve(0,0.3,0.1,0.35, -1);
 
+	Pdef(m.ptn).set(\viewID, d.port);
+	Pdef(\shaker).set(\viewID, d.port);
 
-	Pdef(m.ptn).set(\amp, amp * 0.3);
+	Pdef(m.ptn).set(\amp, amp * 0.2);
 	Pdef(m.ptn).set(\release, rel);
 	Pdef(m.ptn).set(\rate, roll);
 	step = 2.pow(m.accelMassFiltered.lincurve(0,1.0,-1,0, -1));
