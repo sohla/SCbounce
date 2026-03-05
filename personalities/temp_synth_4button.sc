@@ -10,7 +10,7 @@ m.gyroFilteredAttack = 0.7;
 m.gyroFilteredDecay = 0.7;
 
 //------------------------------------------------------------
-SynthDef(\simple, {|out=0, amp=0.6, freq=440, attack=0.001, decay=0.03, sustain=0.8, release=0.59, gate=1|
+SynthDef(\simple, {|out=0, amp=0.6, freq=440, attack=0.001, decay=0.03, sustain=0.01, release=0.59, gate=1|
 	var env = EnvGen.kr(Env.adsr(attack, decay, sustain, release), gate, doneAction: Done.freeSelf);
 	var sig = SinOsc.ar(freq,0,0.5)!2;
     Out.ar(out, sig * env * amp);
@@ -30,6 +30,8 @@ SynthDef(\simple, {|out=0, amp=0.6, freq=440, attack=0.001, decay=0.03, sustain=
     if(d.sensors.digiInEvent[i] == 1, {
       if(o == 1,{
       	states[i] = 0;
+				synths[i].set(\gate, 0);
+				synths[i] = nil;
 				synths.put(i, Synth(\simple, [\freq, 100.rrand(1200) * (i+1)]));
       	// ["on",i].postln;
     	});
@@ -38,6 +40,7 @@ SynthDef(\simple, {|out=0, amp=0.6, freq=440, attack=0.001, decay=0.03, sustain=
       	states[i] = 1;
 				synths[i].set(\gate, 0);
 				synths[i] = nil;
+				synths.put(i, Synth(\simple, [\freq, 100.rrand(1200) * (i+1)]));
       	// ["off",i].postln;
     	});
 		});

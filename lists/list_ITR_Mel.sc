@@ -68,7 +68,7 @@
 		"button1",
 		"cymbals1",
 		"melChair1",
-
+"temp_synth_4button",
 	
 		"silence",
 ]
