@@ -51,10 +51,10 @@ makeBlob = { |seed|
 				angle = (i / numPoints) * 2pi + rotationOffset;
 
 				// Base radius - constant size
-				baseRadius = 140;
+				baseRadius = 70;
 
 				// Base motion - smoothly fades in with texture
-				motionAmount = params[\texture].pow(0.5); // Square root for smooth fade-in
+				motionAmount = params[\texture].pow(0.5) ; // Square root for smooth fade-in
 				baseMotion = motionAmount * (
 					sin(angle * 2 + (time * 2)) * 15 +
 					cos(angle * 3 + (time * 3.5)) * 10
@@ -162,9 +162,9 @@ makeBlobSystem = {
 
 			color = obj.getColor.();
 
-			// Pen.translate(centerX, centerY);
-			// Pen.rotate(currentTime * params[\motion] * 4);
-			// Pen.translate(centerX.neg, centerY.neg);
+			Pen.translate(centerX, centerY);
+			Pen.rotate(currentTime * params[\motion] * 4);
+			Pen.translate(centerX.neg, centerY.neg);
 
 
 			// Draw instances from back to front
