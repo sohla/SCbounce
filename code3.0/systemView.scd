@@ -132,6 +132,15 @@ var freeAllNodes = Button()
 		s.freeAll;
 	});
 
+var freeAllBuffers = Button()
+	.font_(Font(size:18, bold:false))
+	// .maxWidth_(140)
+	.maxHeight_(bh)
+	.states_([["Free All buffers",Color.black,Color.gray(0.5)]])
+	.action_({
+		Buffer.freeAll(s);
+	});
+
 var systemView = {
 	View().layout_(VLayout(
 		HLayout(View().maxWidth_(140), serverView),
@@ -140,7 +149,7 @@ var systemView = {
 			View(),
 			networkReset,
 			oscThruButton,
-			View(),
+			freeAllBuffers,
 			freeAllNodes,
 			quitButton,
 			View(),

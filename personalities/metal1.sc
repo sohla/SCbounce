@@ -164,7 +164,7 @@ SynthDef(\sheet2, { |out, frq=111, gate=0, amp = 0, pchx=0|
 //------------------------------------------------------------
 ~next = {|d|
 
-	var move = m.accelMassFiltered.linlin(0,3,0,1);
+	var move = m.accelMassFiltered.linlin(0,2,0,1);
   var oct = m.accelMassFiltered.linlin(0,5,2,5).floor;
 	var dur = m.accelMassFiltered.lincurve(0,2.5,0.3,0.05,-3);
 	
