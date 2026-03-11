@@ -27,7 +27,11 @@ var getCPUInstant = {
 var getTemp = {
     var result = "cat /sys/class/thermal/thermal_zone0/temp".unixCmdGetStdOut;
     var temp = result.asInteger / 1000.0; // Convert millidegrees to degrees
-    temp.postln;
+    temp
+};
+var getFan = {
+    var result = "cat /sys/class/thermal/cooling_device0/cur_state".unixCmdGetStdOut;
+		result.asInteger 
 };
 
 var serverView = UserView()
@@ -53,11 +57,12 @@ var serverView = UserView()
 			// };
 			// getCPUInstant.();
 			// getTemp.();
-			("Server: "++s.peakCPU.asStringPrec(3)++"%").drawAtPoint(6@4, Font.default, Color.yellow);
-			("UGens: "++s.numUGens).drawAtPoint(120@4, Font.default, Color.yellow);
-			("Groups: "++s.numGroups).drawAtPoint(200@4, Font.default, Color.yellow);
-			("Synths: "++s.numSynths).drawAtPoint(300@4, Font.default, Color.yellow);
-			("Hosting: "++hosts).drawAtPoint(400@4, Font.default, Color.yellow);
+			("Temp: "++getTemp.().asStringPrec(2)++"°C"++".   Fan: "++getFan.()).drawAtPoint(6@4, Font.default, Color.yellow);
+			("Server: "++s.peakCPU.asStringPrec(3)++"%").drawAtPoint(156@4, Font.default, Color.yellow);
+			("UGens: "++s.numUGens).drawAtPoint(270@4, Font.default, Color.yellow);
+			("Groups: "++s.numGroups).drawAtPoint(350@4, Font.default, Color.yellow);
+			("Synths: "++s.numSynths).drawAtPoint(450@4, Font.default, Color.yellow);
+			("Hosting: "++hosts).drawAtPoint(550@4, Font.default, Color.yellow);
 			("Port: "++NetAddr.	localAddr.port).drawAtPoint(1000@4, Font.default, Color.yellow);
 });
 

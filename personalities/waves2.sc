@@ -2,8 +2,8 @@ var m = ~model;
 var buffers;
 var bi = 0;
 var dur = 0.3;
-var synth;
-var trig = false;
+var synthID;
+var isLoaded = false;
 var lastTime = 0;
 var bgWaveBuffer1;
 var bgWaveSynth1;
@@ -19,9 +19,9 @@ m.gyroFilteredDecay = 0.7;
 
 //------------------------------------------------------------
 SynthDef(\waveSampler, {|bufnum=0, out=0.5, amp=0.5, rate=1, start=0, pan=0, freq=440,
-	attack=0.01, decay=0.1, sustain=0.3, release=0.2, gate=1,cutoff=20000, rq=0.9|
+	attack=0.01, decay=0.1, sustain=0.3, release=5.2, gate=1,cutoff=20000, rq=0.9|
 	var lr = rate * BufRateScale.kr(bufnum) * (freq/440.0);
-	var env = EnvGen.kr(Env.adsr(attack, decay, sustain, release), gate, timeScale: 2,doneAction: 2);
+	var env = EnvGen.kr(Env.adsr(attack, decay, sustain, release), gate,doneAction: 2);
 	var sig = PlayBuf.ar(2, bufnum, rate: lr, startPos: start * BufFrames.kr(bufnum), loop: 0);
 	// sig = RLPF.ar(sig, cutoff, rq);// + osc;
 	sig = Balance2.ar(sig[0], sig[1], pan, amp);
@@ -29,11 +29,10 @@ SynthDef(\waveSampler, {|bufnum=0, out=0.5, amp=0.5, rate=1, start=0, pan=0, fre
 	Out.ar(out, sig);
 }).add;
 
-
 SynthDef(\looper, {|bufnum=0, out=0, amp=1.0, rate=1, start=0, pan=0, freq=440,
-	attack=2.1, decay=0.1, sustain=0.99, release=1.2, gate=1,cutoff=20000, rq=0.9|
+	attack=9.1, decay=0.1, sustain=0.99, release=4.2, gate=1,cutoff=20000, rq=0.9|
 	var lr = rate * BufRateScale.kr(bufnum) * (freq/440.0);
-	var env = EnvGen.kr(Env.adsr(attack, decay, sustain, release), gate, timeScale: 1,doneAction: 2);
+	var env = EnvGen.kr(Env.adsr(attack, decay, sustain, release), gate,doneAction: 2);
 	var sig = PlayBuf.ar(2, bufnum, rate: lr, startPos: start * BufFrames.kr(bufnum), loop: 1);
 	// sig = RLPF.ar(sig, cutoff, rq);// + osc;
 	sig = Pan2.ar(sig, pan, amp);
@@ -47,25 +46,27 @@ SynthDef(\looper, {|bufnum=0, out=0, amp=1.0, rate=1, start=0, pan=0, freq=440,
 	var folder = PathName("~/Downloads/waveSamples/oneshots");
 	var bgWave1 = PathName("~/Downloads/waveSamples/bgs/wave_bg_16.wav");
 	var bgWave2 = PathName("~/Downloads/waveSamples/bgs/wave_bg_splashes_16.wav");
-
+	
 	postf("loading samples : % \n", folder);
 
 	buffers = folder.entries.collect({ |path,i|
 		Buffer.read(s, path.fullPath, action:{|buf|
+			buf.normalize;
 			postf("buffer alloc [%] \n", buf);
 			if(folder.entries.size - 1 == i,{   
 				"samples loaded".postln;
+				isLoaded = true;
 			});
 		});
 	});
 
 	bgWaveBuffer1 = Buffer.read(s, bgWave1.fullPath, action:{ |buf|
 		postf("buffer alloc [%] \n", buf);
-		bgWaveSynth1 = Synth(\looper, [\bufnum, buf, \amp, 0.6]);
+		bgWaveSynth1 = Synth(\looper, [\bufnum, buf, \amp, 0.4]);
 	});
 	bgWaveBuffer2 = Buffer.read(s, bgWave2.fullPath, action:{ |buf|
 		postf("buffer alloc [%] \n", buf);
-		bgWaveSynth2 = Synth(\looper, [\bufnum, buf, \amp, 0.5]);
+		bgWaveSynth2 = Synth(\looper, [\bufnum, buf, \amp, 0.3]);
 	});
 
 };
@@ -73,45 +74,42 @@ SynthDef(\looper, {|bufnum=0, out=0, amp=1.0, rate=1, start=0, pan=0, freq=440,
 //------------------------------------------------------------
 ~deinit = ~deinit <> {
 
-	bgWaveSynth1.free;
-	bgWaveSynth2.free;
-	buffers.do({|buf|
-		buf.free;
+	bgWaveSynth1.onFree({
+		postf("free synth [%] & buffer dealloc [%] \n", bgWaveSynth1, bgWaveBuffer1);
+		bgWaveBuffer1.free;
 	});
-	// bgWaveSynth1.set(\gate, 0);
-	// bgWaveSynth2.set(\gate, 0);
-	// fork{
-	// 	1.0.yield;
-    //     buffers.do({|buf|
-    //         postf("buffer dealloc [%] \n", buf);
-    //         buf.free;
-    //         s.sync;
-    //     });
-	// 	s.sync;
-	// };
+	bgWaveSynth1.set(\gate, 0);
+	
+	bgWaveSynth2.onFree({
+		postf("free synth [%] & buffer dealloc [%] \n", bgWaveSynth2, bgWaveBuffer2);
+		bgWaveBuffer2.free;
+	});
+	bgWaveSynth2.set(\gate, 0);
+
+	{
+		buffers.do({|buf|
+			postf("free buffer [%] \n", buf);
+			buf.free;
+		});
+	}.defer(4.5);//more than the release of the synth 
 };
 
 //------------------------------------------------------------
 ~next = {|d|
-  var amp = m.accelMassFiltered.lincurve(0,2.0,0.3,10, 2);
+  var amp = m.accelMassFiltered.lincurve(0,2.0,0.1,1, 2);
 
-	if(TempoClock.beats > (lastTime + 0.2),{
-		lastTime = TempoClock.beats;
-		if(m.accelMass>0.1,{
-			synth = Synth(\waveSampler, [\bufnum, bi, \amp, amp]);
-			NodeWatcher.register(synth);
-			"next".postln;
-			bi = bi + 1;
-			if(bi >= (buffers.size-1),{bi=0});
-			trig = true;
-		},{
-			if(trig == true,{
-				synth.set(\gate, 0);
-				trig = false;
+	if(isLoaded==true,{
+		if(TempoClock.beats > (lastTime + 0.2),{
+			lastTime = TempoClock.beats;
+			if(m.accelMass>0.1,{
+				synthID = s.nextNodeID;
+				s.sendMsg("/s_new", "waveSampler", synthID, 0, 1, \bufnum, buffers[0].bufnum, \amp, amp); // group 1
+				s.sendBundle(0.2,["n_set", synthID, \gate, 0]);
+				buffers = buffers.rotate(-1);
+				buffers[0].postln;
 			});
 		});
 	});
-
 };
 //------------------------------------------------------------
 ~plotMin = -1;
