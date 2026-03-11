@@ -1,7 +1,7 @@
 (
 	[
-		"waves2",
 		"silence",
+		"waves2",
 		"rain1",
 		"thunder",
 

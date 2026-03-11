@@ -12,7 +12,7 @@ var renderer = { |d|
     // Define the updateView function for this specific view
     var updateView = {|view|
         var now = thisThread.seconds;
-
+        
         // visualEvents.do { |event|
         views[d.port][\visualEvents].do { |event|
             var elapsed = 0.0, normTime = 0.0;
@@ -20,6 +20,8 @@ var renderer = { |d|
             var mx = view.bounds.width / 2.0;
             var my = view.bounds.height / 2.0;
 
+            view.background_(event[\bgColor]);
+            
             if (event[\startTime].notNil) {
                 elapsed = now - event[\startTime];
             };
@@ -188,6 +190,7 @@ Event.addEventType(\customVisualEvent, {
     // var visualEvents = views[viewID][\visualEvents];
 
     var event = (
+        \bgColor: ~bgColor ? Color.black, // Optional background color for the event
         \shape: ~shape ? \circle,
         \points: ~points,  // Optional custom points array
         \numPoints: ~numPoints, // Optional number of points to generate
