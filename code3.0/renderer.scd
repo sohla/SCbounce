@@ -167,7 +167,7 @@ var renderer = { |d|
 
         .animate_(true)
         // .background_(d.color.alpha_(0.9))
-        .frameRate_(15)
+        .frameRate_(60)
         // .clearOnRefresh_(false)
         .drawFunc_({
             // Pen.fillColor = Color.black.alpha_(0.1);
