@@ -93,11 +93,11 @@ s.waitForBoot({
 	
 	ShutDown.add({"shut down...".postln});
 
-	{
-		var a = "/1/IMUFusedData";
-		var n = NetAddr("127.0.0.1", 57120);
-		n.sendMsg(a, 0,0,0,0,0,0,0,0,0,0,0);
-	}.defer(2);
+	// {
+	// 	var a = "/1/IMUFusedData";
+	// 	var n = NetAddr("127.0.0.1", 57120);
+	// 	n.sendMsg(a, 0,0,0,0,0,0,0,0,0,0,0);
+	// }.defer(2);
 
 });
 

@@ -1,5 +1,6 @@
 (
 	[
+		"viz1",
 		"silence",
 		"waves2",
 		"rain1",
