@@ -106,7 +106,6 @@ SynthDef(\looper, {|bufnum=0, out=0, amp=1.0, rate=1, start=0, pan=0, freq=440,
 				s.sendMsg("/s_new", "waveSampler", synthID, 0, 1, \bufnum, buffers[0].bufnum, \amp, amp); // group 1
 				s.sendBundle(0.2,["n_set", synthID, \gate, 0]);
 				buffers = buffers.rotate(-1);
-				buffers[0].postln;
 			});
 		});
 	});

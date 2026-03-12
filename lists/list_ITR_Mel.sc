@@ -1,6 +1,5 @@
 (
 	[
-		"viz1",
 		"silence",
 		"waves2",
 		"rain1",
@@ -11,6 +10,7 @@
 		"wind1",
 		"wind2",
 
+		// "drone1",
 
 		"melbb1",
 		"melbb2",
@@ -26,6 +26,7 @@
 		"nic3",
 		"nic4",
 
+		"viz1",
 
 		// "brenton1",
 		// "brenton2",

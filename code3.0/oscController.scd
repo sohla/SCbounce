@@ -2,11 +2,12 @@
 // NetAddr.new("192.168.2.1", 3333).sendMsg(*msg); // Mac Mini connected to SensiLab (ethernet)
 // NetAddr.new("192.168.70.232", 3333).sendMsg(*msg); // iPhone connected 
 // NetAddr.new("192.168.70.48", 3333).sendMsg(*msg); // connected to Laptop
-
+// NetAddr.new("192.168.70.242", 5005) // mu laptop
+// PyOSCCam port listening on 5005
 
 // var oscMessageTag  = "CombinedDataPacket";
 var oscMessageTag  = "IMUFusedData"; // this is coming from AirSticks
-var outAddr = NetAddr.new("192.168.70.242", 3333);
+var outAddr = NetAddr.new("192.168.70.242", 5005);
 var airstickListeners = [];
 var numAirwareVirtualDevices = 5;
 var oscThru = false;
