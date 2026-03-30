@@ -7,11 +7,9 @@ var isLoaded = false;
 var lastTime = 0;
 var bgWaveBuffer1;
 var bgWaveSynth1;
-var bgWaveBuffer2;
-var bgWaveSynth2;
 
 m.accelMassFilteredAttack = 0.9;
-m.accelMassFilteredDecay = 0.8;
+m.accelMassFilteredDecay = 0.1;
 m.rrateMassFilteredAttack = 0.95;
 m.rrateMassFilteredDecay = 0.5;
 m.gyroFilteredAttack = 0.7;
@@ -19,12 +17,12 @@ m.gyroFilteredDecay = 0.7;
 
 //------------------------------------------------------------
 SynthDef(\waveSampler, {|bufnum=0, out=0.5, amp=0.5, rate=1, start=0, pan=0, freq=440,
-	attack=0.01, decay=0.1, sustain=0.3, release=5.2, gate=1,cutoff=20000, rq=0.9|
+	attack=0.3, decay=0.1, sustain=0.3, release=5.2, gate=1,cutoff=20000, rq=0.9|
 	var lr = rate * BufRateScale.kr(bufnum) * (freq/440.0);
 	var env = EnvGen.kr(Env.adsr(attack, decay, sustain, release), gate,doneAction: 2);
 	var sig = PlayBuf.ar(2, bufnum, rate: lr, startPos: start * BufFrames.kr(bufnum), loop: 0);
 	// sig = RLPF.ar(sig, cutoff, rq);// + osc;
-	sig = Balance2.ar(sig[0], sig[1], pan, amp);
+	sig = Balance2.ar(sig[0], sig[1], pan, amp.lag(0.5));
 	sig = LeakDC.ar(sig * env);
 	Out.ar(out, sig);
 }).add;
@@ -43,9 +41,8 @@ SynthDef(\looper, {|bufnum=0, out=0, amp=1.0, rate=1, start=0, pan=0, freq=440,
 //------------------------------------------------------------
 ~init = ~init <> {
 
-	var folder = PathName("~/Downloads/waveSamples/oneshots");
-	var bgWave1 = PathName("~/Downloads/waveSamples/bgs/wave_bg_16.wav");
-	var bgWave2 = PathName("~/Downloads/waveSamples/bgs/wave_bg_splashes_16.wav");
+	var folder = PathName("~/Downloads/melSamples/traffic/pb");
+	var bgWave1 = PathName("~/Downloads/melSamples/traffic/traffic_bg.wav");
 	
 	postf("loading samples : % \n", folder);
 
@@ -62,11 +59,7 @@ SynthDef(\looper, {|bufnum=0, out=0, amp=1.0, rate=1, start=0, pan=0, freq=440,
 
 	bgWaveBuffer1 = Buffer.read(s, bgWave1.fullPath, action:{ |buf|
 		postf("buffer alloc [%] \n", buf);
-		bgWaveSynth1 = Synth(\looper, [\bufnum, buf, \amp, 0.4]);
-	});
-	bgWaveBuffer2 = Buffer.read(s, bgWave2.fullPath, action:{ |buf|
-		postf("buffer alloc [%] \n", buf);
-		bgWaveSynth2 = Synth(\looper, [\bufnum, buf, \amp, 0.2]);
+		bgWaveSynth1 = Synth(\looper, [\bufnum, buf, \amp, 0.03]);
 	});
 
 };
@@ -80,12 +73,6 @@ SynthDef(\looper, {|bufnum=0, out=0, amp=1.0, rate=1, start=0, pan=0, freq=440,
 	});
 	bgWaveSynth1.set(\gate, 0);
 	
-	bgWaveSynth2.onFree({
-		postf("free synth [%] & buffer dealloc [%] \n", bgWaveSynth2, bgWaveBuffer2);
-		bgWaveBuffer2.free;
-	});
-	bgWaveSynth2.set(\gate, 0);
-
 	{
 		buffers.do({|buf|
 			postf("free buffer [%] \n", buf);
@@ -96,10 +83,10 @@ SynthDef(\looper, {|bufnum=0, out=0, amp=1.0, rate=1, start=0, pan=0, freq=440,
 
 //------------------------------------------------------------
 ~next = {|d|
-  var amp = m.accelMassFiltered.lincurve(0,2.0,0.1,1.0, 2);
+  var amp = m.accelMassFiltered.lincurve(0,2.0,0.01,0.3, 2);
 
 	if(isLoaded==true,{
-		if(TempoClock.beats > (lastTime + 0.2),{
+		if(TempoClock.beats > (lastTime + 0.1),{
 			lastTime = TempoClock.beats;
 			if(m.accelMass>0.1,{
 				synthID = s.nextNodeID;

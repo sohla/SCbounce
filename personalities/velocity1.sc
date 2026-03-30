@@ -2,7 +2,7 @@ var m = ~model;
 var synth;
 var index =0;
 var trig = false;
-var notes = [12,11,9,7,12,11,9,7,14,12,11,9,7,5,4,2]+24;
+var notes = [12,11,9,7,12,11,9,7,14,12,11,9,7,5,4,2]+12;
 var note = notes[0];
 m.accelMassFilteredAttack = 0.99;
 m.accelMassFilteredDecay = 0.2;
@@ -36,10 +36,10 @@ SynthDef(\noise, { |out=0, frq=1000, gate=1, amp = 0.0, atk=0.02, sus=0.8, rel=1
 //------------------------------------------------------------
 ~next = {|d|
 	// var amp = d.sensors.velocity.sum.abs.lincurve(0,0.03,0.0,1.0,-2);
-	var amp = m.accelMassFiltered.lincurve(0,2.5,0.0,0.3,-3);
+	var amp = m.accelMassFiltered.lincurve(0,0.5,0.0,0.3,-3);
     var ud = m.gyroYFiltered.linexp(-0.8,0.9,400,10000);
     
-    if(amp<0.025,{
+    if(amp<0.05,{
         amp=0;
         synth.set(\lag,0.8);
         if(trig, {

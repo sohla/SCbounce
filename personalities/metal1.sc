@@ -133,7 +133,7 @@ SynthDef(\sheet2, { |out, frq=111, gate=0, amp = 0, pchx=0|
       // \dur, Pseq([0.4,Rest(0.2),0.2] * 0.5, inf),
       \degree, Pseq([0,2,7], inf),
       \root, Pseq([0,3,-2,0,-5,3,5,2].stutter(30), inf),
-      \amp, 0.12,
+      \amp, 0.1,
       \pan, Pwhite(-0.6, 0.6),
       \model, 1,//Prand([0, 1, 2,3,4,5,6], inf),
       \strikePos, Pwhite(0.1, 0.9),
@@ -166,7 +166,7 @@ SynthDef(\sheet2, { |out, frq=111, gate=0, amp = 0, pchx=0|
 
 	var move = m.accelMassFiltered.linlin(0,2,0,1);
   var oct = m.accelMassFiltered.linlin(0,5,2,5).floor;
-	var dur = m.accelMassFiltered.lincurve(0,2.5,0.3,0.05,-3);
+	var dur = m.accelMassFiltered.lincurve(0,1.5,0.3,0.05,-3);
 	
   var a = m.accelMass * 0.5;
 	var f = 50 + (m.accelMassFiltered * 100);
@@ -180,7 +180,7 @@ SynthDef(\sheet2, { |out, frq=111, gate=0, amp = 0, pchx=0|
   Pdef(m.ptn).set(\dur, dur);
 	// Pdef(m.ptn).set(\octave, 4 + oct);
 	// Pdef(m.ptn).set(\amp, oct.linlin(2,5,0.1,0.9));
-  if(move > 0.03, {
+  if(move > 0.05, {
 		if( Pdef(m.ptn).isPlaying.not,{
 			Pdef(m.ptn).resume(quant:0.4);
 		});
