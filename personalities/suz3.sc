@@ -35,9 +35,10 @@ SynthDef(\pullstretchStereo, {|out, amp = 1, bufnum = 0, envbuf = -1, pch = 1, d
 
 	buffer = Buffer.read(s, path.fullPath, action:{ |buf|
         var winenv = Env([0, 1, 0], [0.002, 1.5], [8, 1]);
-        var z = Buffer.sendCollection(s, winenv.discretize, 1);
-		postf("buffer alloc [%] \n", buf);
-    	synth = Synth(\pullstretchStereo, [\bufnum, buf,  \envbuf, z, \pch, 0.5]);
+        var z = Buffer.sendCollection(s, winenv.discretize, 1, action:{|eb|
+					postf("buffer alloc [%] \n", buf);
+					synth = Synth(\pullstretchStereo, [\bufnum, buf,  \envbuf, eb, \pch, 0.5]);
+				});
 	});
 };
 

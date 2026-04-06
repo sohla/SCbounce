@@ -58,17 +58,35 @@ var shutdown = {
 };
 
 var initGUI = {
+
+	// var visualView = Require("visualView.scd");
+
 	QtGUI.palette = QPalette.dark;
-	w = Window("AirKit")
-		.bounds_(Rect(100,100,1000,700))
+	w = Window("AirKit", border: false)
+		.bounds_(Rect(0,0,1280,800))
 		.layout_(mainView)
 		.front
 		.fullScreen
 		.background_(Color.black.lighten(0.25));
+
 	w.onClose = {
 		shutdown.();
 	};
-	CmdPeriod.doOnce({w.close});
+
+	// z = Window("Visual", border: false)
+	// 	.bounds_(Rect(1280,-40,1024,768))
+	// 	.layout_(VLayout(visualView.()))
+	// 	// .front
+	// 	// .fullScreen
+	// 	.background_(Color.black);
+
+	// w.front;
+	// z.front;
+
+	CmdPeriod.doOnce({
+		w.close;
+		// z.close;
+	});
 };
 
 s.volume = -2; // in db
