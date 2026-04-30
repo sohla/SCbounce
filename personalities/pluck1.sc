@@ -13,7 +13,7 @@ SynthDef(\pluck1, { |out=0, amp=0, pch=30, frq=30, gate=0 |
 	var dly = Decay.ar(sig, 0.01, BrownNoise.ar(0.1));
 	var plk = Pluck.ar(WhiteNoise.ar, sig, frq.reciprocal, frq.reciprocal, 8, 0.9, 0.7);
 	var ton = SinOsc.ar([1,1.03] * pch,0,((plk*1)+(dly*0.1))*2);
-	Out.ar(out, ton+(dly*0.01) * amp * env);
+	Out.ar(out, ton+(dly*0.01) * amp.lag(0.2) * env);
 }).add;
 
 
@@ -28,15 +28,15 @@ SynthDef(\pluck1, { |out=0, amp=0, pch=30, frq=30, gate=0 |
 //------------------------------------------------------------
 ~next = {|d|
 
-	var pch = 20 + (m.accelMass * 150);
+	var pch = 40 + (m.accelMass * 150);
 	var frq= 110 + (m.accelMassFiltered * 100);
 	synth.set(\pch,pch);
 	synth.set(\frq,frq);
 
-	if(m.accelMass < 0.02,{
+	if(m.accelMass < 0.01,{
 		synth.set(\amp,0);
 	},{
-		synth.set(\amp,0.65);
+		synth.set(\amp,0.35);
 	});
 
 };

@@ -21,7 +21,7 @@ SynthDef(\stereoSampler1, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, fr
 	sig = Pan2.ar(hs + sig, pan, amp * env);
 	sig = FreeVerb.ar(sig,0.5,0.4);
 	sig = LeakDC.ar(sig);
-	Out.ar(out, [((0)!0 ++ sig)]);
+	Out.ar(out, ((0)!0 ++ sig));
 }).add;
 
 //------------------------------------------------------------
@@ -41,10 +41,11 @@ SynthDef(\stereoSampler1, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, fr
 				// \octave, Pxrand([0,1,2,1,3,2], inf),
 				\note, Pwhite(33,33, inf).floor,
 				\start,Pwhite(0.0,0.9),
+				\root, 0,
 				\attack,0.01,
 				\decay, 0.2,
 				\sustain,0.1,
-				\release,1.3,
+				\release,0.1,
 				// \rate, Pwhite(0.3,3.0),
 				\rate, Pslide(notes.midiratio, inf, Pkey(\range), 0, 0),
 
@@ -80,7 +81,7 @@ SynthDef(\stereoSampler1, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, fr
 	if(amp < 0.02, {amp = 0});
 
 	Pdef(m.ptn).set(\dur, dur);
-	Pdef(m.ptn).set(\amp, amp * bal);
+	Pdef(m.ptn).set(\amp, amp * bal * 0.6);
 	Pdef(m.ptn).set(\range, range);
 	Pdef(m.ptn).set(\octave, octave);
 

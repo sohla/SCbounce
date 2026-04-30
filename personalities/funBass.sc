@@ -12,7 +12,7 @@ m.gyroFilteredDecay = 0.7;
 //------------------------------------------------------------
 
 SynthDef(\funBass, {
-    |out=0, freq = 440, gate = 1, amp = 0.8, filtFreq = 2000, filtRes = 0.5, envAtk = 0.01, envDec = 0.1, envSus = 0.7, envRel = 4.2, rm = 0.5|
+    |out=0, freq = 440, gate = 1, amp = 0.5, filtFreq = 2000, filtRes = 0.5, envAtk = 0.01, envDec = 0.1, envSus = 0.7, envRel = 4.2, rm = 0.5|
     var osc1, osc2, osc3, env, filter, output;
 
     env = EnvGen.ar(Env.adsr(envAtk, envDec, envSus, envRel), gate, doneAction: Done.freeSelf);
@@ -79,7 +79,7 @@ SynthDef(\warmPad, {
 
 
 SynthDef(\versatilePerc, {
-    |out=0, freq=50, tension=0.1, decay=0.5, clickLevel=0.5, amp=0.5, dist = 5, filtFreq = 20, filtRes = 0.8,pan =0|
+    |out=0, freq=50, tension=0.1, decay=0.5, clickLevel=0.5, amp=0.3, dist = 5, filtFreq = 20, filtRes = 0.8,pan =0|
     var pitch_contour, drum_osc, click_osc, drum_env, click_env, sig, pch;
 
     // Pitch envelope
@@ -126,7 +126,7 @@ SynthDef(\versatilePerc, {
 			\envDec,0.3,
 			\envSus, 0.0,
 			\envRel,Pkey(\octave).squared * 0.05,
-   		\amp, 0.95,
+   		\amp, 0.55,
 			\pan, Pxrand([-0.5,0.5], inf),
    		\filtRes, 1,//Pwhite(0.4,0.7),
 			\func, Pfunc({|e| ~onEvent.(e)}),
@@ -137,7 +137,7 @@ SynthDef(\versatilePerc, {
 	Pdef(m.ptn).play(quant:0.125);
 	synth = Synth(\warmPad, [
 		\freq, note.midicps, 
-		\amp, 0.05,
+		\amp, 0.03,
 		\gate, 1,
     \atk, 1.02,
     \rel, 1.8,
@@ -187,7 +187,7 @@ SynthDef(\versatilePerc, {
 	if(a<0.03,{a=0});
 	if(a>0.9,{a=0.9});
 
-	synth.set(\amp, a * 0.4);
+	synth.set(\amp, a * 0.01);
 	synth.set(\filtSpeed, filtSpeed);
 	synth.set(\lfoFreq, lfoFreq);
 

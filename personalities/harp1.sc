@@ -5,7 +5,7 @@ var frame = 0;
 
 var synth, bassSynth;
 var dur = 0.11;
-var notes = [0,2,5,7,9,11,12,14,12,11] + 1;
+var notes = [2,0,5,7,9,11,12,14,12,11] + 1;
 var bass = [2,9,5,12,5,9,2].stutter(2) + 1;
 var root = [0];
 var offset = 0;
@@ -197,8 +197,8 @@ SynthDef(\funBass, {
 //------------------------------------------------------------
 ~next = {|d|
 
-	var move = m.accelMassFiltered.lincurve(0,2.5,1,notes.size,1);
-	var amp = m.accelMassFiltered.lincurve(0,1.4,-50,-14,-1);
+	var move = m.accelMassFiltered.lincurve(0,0.7,1,notes.size,1);
+	var amp = m.accelMassFiltered.lincurve(0,1.4,-50,-5,-1);
 	var ff = m.rrateMassFiltered.lincurve(0.0,2.0,200,2000,-3); 
 	var wd = m.rrateMassFiltered.lincurve(0.0,2.0,10,0.1,-3); 
 	var step = m.gyroXFiltered.linlin(-0.8,0.8,0,3).floor; //up down
@@ -237,7 +237,7 @@ SynthDef(\funBass, {
 
 	Pdef(m.ptn).set(\range, move.floor);
 	Pdef(m.ptn).set(\amp, amp.dbamp);
-	Pdef(m.ptn).set(\root, root[0]);
+	Pdef(m.ptn).set(\root, root[0]+2);
 
 	Pdef(m.ptn).set(\viewID, d.port);
 	// Pdef(m.ptn).set(\startColor, Color.hsv((frame/40.0).mod(1.0),0.5,1.0,1.0));
@@ -268,12 +268,12 @@ SynthDef(\funBass, {
 		});
 	});
 
-	if(m.accelMassFiltered > 3.2, {
+	if(m.accelMassFiltered > 0.8, {
 		if(TempoClock.beats > (lastTime + (dur*4)),{
 			lastTime = TempoClock.beats;
-			~playNote.(n-12,0, 3,amp.dbamp * 0.04);
+			~playNote.(n-12,0, 3,amp.dbamp * 0.08);
 			m.com.root = n;
-			bassSynth = Synth(\funBass, [\freq, (n + 24).midicps, \gate,1, \amp, amp.dbamp * 0.19]);
+			bassSynth = Synth(\funBass, [\freq, (n + 24 + 2).midicps, \gate,1, \amp, amp.dbamp * 0.13]);
 			NodeWatcher.register(bassSynth);
 			bassSynth.server.sendBundle(0.3,[\n_set, bassSynth.nodeID, \gate, 0]);
 			bass = bass.rotate(-1);

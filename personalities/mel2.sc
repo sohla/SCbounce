@@ -54,7 +54,7 @@ SynthDef(\pullstretchMonoQm2, {|out, amp = 1, buffer = 0, envbuf = -1, pch = 1.0
 
 	synth.set(\pch, (pch + -4).midiratio);
 	synth.set(\speed, speed);
-	synth.set(\amp, amp * 2);
+	synth.set(\amp, amp * 0.8);
 };
 //------------------------------------------------------------
 ~plotMin = -1;

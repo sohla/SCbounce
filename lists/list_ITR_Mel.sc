@@ -1,30 +1,55 @@
 (
 	[
 		"silence",
+
+		"mel4",
+		"mel3",
+		"mel1",
+
+		"melbb1",
+		"thunder",
+		"rain1",
+		"melbb2",
+
+		"harp1",
+		"cymbals1",
+
+		"violin2",
+
+		"funMelody",
+		"funBass",
+
+		"mel2",
+		"mel5",
+
 		"waves2",
+		"waves",
 		"rain1",
 		"thunder",
 
+		"inABottle",
+		"bells",
+		"metal1",
+		"metal2",
 
-		"waves",
 		"wind1",
 		"wind2",
 
-
-		"melbb1",
-		"melbb2",
-		"mel1",
-		"mel2",
-		"mel3",
-		"mel4",
-		"mel5",
 		"melChair1",
+		"melChair2",
+
+		"pluck1",
+		"pluck2",
+
 
 		"nic1",
 		"nic2",
 		"nic3",
 		"nic4",
 
+		"viz1",
+
+		"violin1",
 
 		// "brenton1",
 		// "brenton2",
@@ -36,16 +61,10 @@
 		// "aless3",
 		// "aless4",
 
-		"funMelody",
-		"funBass",
 		"velocity1",
 		"velocity2",
 		"drumkit",
 		"drumkit2",
-		"violin1",
-		"violin2",
-		"harp1",
-		"cymbals1",
 
 		"button1",
 
@@ -53,25 +72,17 @@
 		"melodicPerc1",
 		"melodicPerc2",
 		
-		"metal1",
-		"metal2",
 		
 		"gendy1",
 		"gendy2",
 		
-		"pluck1",
-		"pluck2",
 		
 		"bongo1",
 		"drumkit3",
 		
-		"bells",
-		"fuckYes",
 
-		"inABottle",
 
-		"melChair1",
-		"temp_synth_4button",
+		// "temp_synth_4button",
 	
 		"silence",
 ]
