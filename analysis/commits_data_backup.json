@@ -361,11 +361,11 @@
       "size": 3
     },
     {
-      "text": "gui",
+      "text": "cpu",
       "size": 3
     },
     {
-      "text": "cpu",
+      "text": "gui",
       "size": 3
     },
     {
@@ -393,11 +393,11 @@
       "size": 3
     },
     {
-      "text": "improved",
+      "text": "rrate",
       "size": 3
     },
     {
-      "text": "rrate",
+      "text": "improved",
       "size": 3
     },
     {
@@ -593,11 +593,11 @@
       "size": 2
     },
     {
-      "text": "tracking",
+      "text": "remote",
       "size": 2
     },
     {
-      "text": "remote",
+      "text": "tracking",
       "size": 2
     },
     {
@@ -689,11 +689,11 @@
       "size": 2
     },
     {
-      "text": "harp",
+      "text": "path",
       "size": 2
     },
     {
-      "text": "path",
+      "text": "harp",
       "size": 2
     },
     {
@@ -12663,6 +12663,41 @@
         "type": "implementation"
       }
     ],
+    "cpu": [
+      {
+        "hash": "35bb6b23",
+        "date": "2025-10-12",
+        "datetime": "2025-10-12 22:38:01 +1100",
+        "author": "sohla",
+        "subject": "added some cpu stats bit not gui freiendly",
+        "files": [
+          "code3.0/systemView.scd"
+        ],
+        "type": "implementation"
+      },
+      {
+        "hash": "7cd4a6e9",
+        "date": "2024-08-20",
+        "datetime": "2024-08-20 22:39:25 +1000",
+        "author": "Steph OHara",
+        "subject": "added cpu",
+        "files": [
+          "code2.0/oscmusic.sc"
+        ],
+        "type": "implementation"
+      },
+      {
+        "hash": "92d1478c",
+        "date": "2024-08-20",
+        "datetime": "2024-08-20 22:24:12 +1000",
+        "author": "Steph OHara",
+        "subject": "added cpu",
+        "files": [
+          "code2.0/oscmusic.sc"
+        ],
+        "type": "implementation"
+      }
+    ],
     "gui": [
       {
         "hash": "35bb6b23",
@@ -12696,41 +12731,6 @@
         "datetime": "2024-10-31 17:15:34 +1100",
         "author": "soh_la",
         "subject": "improved gui for rpi : -/+ buttons",
-        "files": [
-          "code2.0/oscmusic.sc"
-        ],
-        "type": "implementation"
-      }
-    ],
-    "cpu": [
-      {
-        "hash": "35bb6b23",
-        "date": "2025-10-12",
-        "datetime": "2025-10-12 22:38:01 +1100",
-        "author": "sohla",
-        "subject": "added some cpu stats bit not gui freiendly",
-        "files": [
-          "code3.0/systemView.scd"
-        ],
-        "type": "implementation"
-      },
-      {
-        "hash": "7cd4a6e9",
-        "date": "2024-08-20",
-        "datetime": "2024-08-20 22:39:25 +1000",
-        "author": "Steph OHara",
-        "subject": "added cpu",
-        "files": [
-          "code2.0/oscmusic.sc"
-        ],
-        "type": "implementation"
-      },
-      {
-        "hash": "92d1478c",
-        "date": "2024-08-20",
-        "datetime": "2024-08-20 22:24:12 +1000",
-        "author": "Steph OHara",
-        "subject": "added cpu",
         "files": [
           "code2.0/oscmusic.sc"
         ],
@@ -13015,45 +13015,6 @@
         "type": "implementation"
       }
     ],
-    "improved": [
-      {
-        "hash": "1ee390b2",
-        "date": "2025-08-25",
-        "datetime": "2025-08-25 15:51:38 +1000",
-        "author": "Steph OHara",
-        "subject": "improved rrate",
-        "files": [
-          "code3.0/oscController.scd",
-          "personalities/silence.sc"
-        ],
-        "type": "mixed"
-      },
-      {
-        "hash": "0352c1e0",
-        "date": "2025-08-05",
-        "datetime": "2025-08-05 16:13:41 +1000",
-        "author": "sohla",
-        "subject": "improved UI/UX afer Mels input. Mute button and all Butotns",
-        "files": [
-          "code2.0/details.scd",
-          "code2.0/devices.scd",
-          "code2.0/oscController.scd",
-          "code2.0/titleView.scd"
-        ],
-        "type": "implementation"
-      },
-      {
-        "hash": "7570ec61",
-        "date": "2024-10-31",
-        "datetime": "2024-10-31 17:15:34 +1100",
-        "author": "soh_la",
-        "subject": "improved gui for rpi : -/+ buttons",
-        "files": [
-          "code2.0/oscmusic.sc"
-        ],
-        "type": "implementation"
-      }
-    ],
     "rrate": [
       {
         "hash": "1ee390b2",
@@ -13094,6 +13055,45 @@
           "personalities/synth16.sc"
         ],
         "type": "personality"
+      }
+    ],
+    "improved": [
+      {
+        "hash": "1ee390b2",
+        "date": "2025-08-25",
+        "datetime": "2025-08-25 15:51:38 +1000",
+        "author": "Steph OHara",
+        "subject": "improved rrate",
+        "files": [
+          "code3.0/oscController.scd",
+          "personalities/silence.sc"
+        ],
+        "type": "mixed"
+      },
+      {
+        "hash": "0352c1e0",
+        "date": "2025-08-05",
+        "datetime": "2025-08-05 16:13:41 +1000",
+        "author": "sohla",
+        "subject": "improved UI/UX afer Mels input. Mute button and all Butotns",
+        "files": [
+          "code2.0/details.scd",
+          "code2.0/devices.scd",
+          "code2.0/oscController.scd",
+          "code2.0/titleView.scd"
+        ],
+        "type": "implementation"
+      },
+      {
+        "hash": "7570ec61",
+        "date": "2024-10-31",
+        "datetime": "2024-10-31 17:15:34 +1100",
+        "author": "soh_la",
+        "subject": "improved gui for rpi : -/+ buttons",
+        "files": [
+          "code2.0/oscmusic.sc"
+        ],
+        "type": "implementation"
       }
     ],
     "personality": [
@@ -14964,7 +14964,7 @@
         "type": "other"
       }
     ],
-    "tracking": [
+    "remote": [
       {
         "hash": "41176aed",
         "date": "2025-10-20",
@@ -14984,7 +14984,7 @@
         "type": "other"
       }
     ],
-    "remote": [
+    "tracking": [
       {
         "hash": "41176aed",
         "date": "2025-10-20",
@@ -15741,6 +15741,30 @@
         "type": "implementation"
       }
     ],
+    "path": [
+      {
+        "hash": "51258888",
+        "date": "2025-06-03",
+        "datetime": "2025-06-03 21:19:42 +1000",
+        "author": "Steph OHara",
+        "subject": "fix harp path",
+        "files": [
+          "personalities/harp1.sc"
+        ],
+        "type": "personality"
+      },
+      {
+        "hash": "832f4e18",
+        "date": "2024-06-17",
+        "datetime": "2024-06-17 21:21:30 +1000",
+        "author": "soh_la",
+        "subject": "local path",
+        "files": [
+          "code2.0/oscmusic.sc"
+        ],
+        "type": "implementation"
+      }
+    ],
     "harp": [
       {
         "hash": "51258888",
@@ -15774,30 +15798,6 @@
           "personalities/wingChimes1.sc"
         ],
         "type": "personality"
-      }
-    ],
-    "path": [
-      {
-        "hash": "51258888",
-        "date": "2025-06-03",
-        "datetime": "2025-06-03 21:19:42 +1000",
-        "author": "Steph OHara",
-        "subject": "fix harp path",
-        "files": [
-          "personalities/harp1.sc"
-        ],
-        "type": "personality"
-      },
-      {
-        "hash": "832f4e18",
-        "date": "2024-06-17",
-        "datetime": "2024-06-17 21:21:30 +1000",
-        "author": "soh_la",
-        "subject": "local path",
-        "files": [
-          "code2.0/oscmusic.sc"
-        ],
-        "type": "implementation"
       }
     ],
     "single": [

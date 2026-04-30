@@ -311,7 +311,18 @@
                 </div>
                 
                 <div class="control-group">
-                    <label for="min-connections">Minimum Connections:</label>
+                    <label for="code-version-filter">Code Version:</label>
+                    <select id="code-version-filter">
+                        <option value="all">All Code</option>
+                        <option value="code2.0">Code 2.0</option>
+                        <option value="code3.0">Code 3.0</option>
+                        <option value="personalities">Personalities</option>
+                        <option value="other">Other Files</option>
+                    </select>
+                </div>
+                
+                <div class="control-group">
+                    <label for="min-connections">Co-change Threshold:</label>
                     <input type="range" id="min-connections" min="2" max="18" value="2">
                     <span id="min-connections-value">2</span>
                 </div>
@@ -400,24 +411,73 @@
             }
             
             const categoryFilter = document.getElementById('filter-category').value;
+            const codeVersionFilter = document.getElementById('code-version-filter').value;
             const minConnections = parseInt(document.getElementById('min-connections').value);
             
-            console.log('Filtering with category:', categoryFilter, 'minConnections:', minConnections);
+            console.log('=== FILTER DATA START ===');
+            console.log('Original data:', networkData.nodes.length, 'nodes,', networkData.edges.length, 'edges');
+            console.log('Filtering with category:', categoryFilter, 'codeVersion:', codeVersionFilter, 'minConnections:', minConnections);
             
-            // Filter nodes
-            let filteredNodes = networkData.nodes;
+            // Create deep copies to avoid modifying original data
+            let filteredNodes = networkData.nodes.slice();
+            
+            // Apply category filter
             if (categoryFilter !== 'all') {
                 filteredNodes = filteredNodes.filter(node => node.category === categoryFilter);
                 console.log('After category filter:', filteredNodes.length, 'nodes');
             }
             
+            // Apply code version filter
+            if (codeVersionFilter !== 'all') {
+                filteredNodes = filteredNodes.filter(node => {
+                    const path = node.full_path;
+                    switch (codeVersionFilter) {
+                        case 'code2.0':
+                            return path.startsWith('code2.0/');
+                        case 'code3.0':
+                            return path.startsWith('code3.0/');
+                        case 'personalities':
+                            return path.startsWith('personalities/');
+                        case 'other':
+                            return !path.startsWith('code2.0/') && 
+                                   !path.startsWith('code3.0/') && 
+                                   !path.startsWith('personalities/');
+                        default:
+                            return true;
+                    }
+                });
+                console.log('After code version filter:', filteredNodes.length, 'nodes');
+            }
+            
             // Filter edges based on minimum connections and available nodes
             const nodeIds = new Set(filteredNodes.map(node => node.id));
-            const filteredEdges = networkData.edges.filter(edge => 
-                edge.weight >= minConnections && 
-                nodeIds.has(edge.source) && 
-                nodeIds.has(edge.target)
-            );
+            console.log('Available node IDs:', nodeIds.size);
+            
+            // Debug: Check how many edges meet the weight requirement
+            const edgesByWeight = networkData.edges.filter(edge => edge.weight >= minConnections);
+            console.log('Edges with weight >=', minConnections + ':', edgesByWeight.length);
+            
+            const filteredEdges = networkData.edges.filter(edge => {
+                const weightOK = edge.weight >= minConnections;
+                const sourceOK = nodeIds.has(edge.source);
+                const targetOK = nodeIds.has(edge.target);
+                
+                if (!weightOK || !sourceOK || !targetOK) {
+                    // Debug failed edges occasionally
+                    if (Math.random() < 0.01) { // Log 1% of failures for debugging
+                        console.log('Edge filtered out:', {
+                            source: edge.source,
+                            target: edge.target, 
+                            weight: edge.weight,
+                            weightOK,
+                            sourceOK,
+                            targetOK
+                        });
+                    }
+                }
+                
+                return weightOK && sourceOK && targetOK;
+            });
             
             console.log('After connection filter:', filteredEdges.length, 'edges');
             
@@ -431,6 +491,7 @@
             filteredNodes = filteredNodes.filter(node => connectedNodeIds.has(node.id));
             
             console.log('Final result:', filteredNodes.length, 'nodes,', filteredEdges.length, 'edges');
+            console.log('=== FILTER DATA END ===');
             
             // If no nodes remain, show a message but don't break the visualization
             if (filteredNodes.length === 0) {
@@ -438,8 +499,8 @@
             }
             
             filteredData = {
-                nodes: filteredNodes,
-                edges: filteredEdges
+                nodes: filteredNodes.map(node => ({...node})), // Deep copy nodes
+                edges: filteredEdges.map(edge => ({...edge}))  // Deep copy edges
             };
             
             updateStats();
@@ -461,6 +522,11 @@
                 console.log('No filtered data for visualization');
                 return;
             }
+            
+            // Calculate dimensions first
+            const sidebarActive = document.getElementById('sidebar').classList.contains('active');
+            const width = sidebarActive ? window.innerWidth - 400 : window.innerWidth;
+            const height = window.innerHeight;
             
             console.log('Updating visualization with', filteredData.nodes.length, 'nodes and', filteredData.edges.length, 'edges');
             
@@ -486,10 +552,6 @@
                 // Remove no-data message if it exists
                 svg.select('g').selectAll('text.no-data').remove();
             }
-            
-            const sidebarActive = document.getElementById('sidebar').classList.contains('active');
-            const width = sidebarActive ? window.innerWidth - 400 : window.innerWidth;
-            const height = window.innerHeight;
             
             console.log('Visualization dimensions:', width, 'x', height);
             
@@ -762,9 +824,10 @@
         function setupEventListeners() {
             document.getElementById('layout-select').addEventListener('change', updateVisualization);
             document.getElementById('filter-category').addEventListener('change', filterData);
+            document.getElementById('code-version-filter').addEventListener('change', filterData);
             document.getElementById('min-connections').addEventListener('input', function() {
                 document.getElementById('min-connections-value').textContent = this.value;
-                console.log('Min connections changed to:', this.value);
+                console.log('Co-change threshold changed to:', this.value);
                 filterData();
             });
             
@@ -796,6 +859,17 @@
             
             console.log('Raw data loaded:', data.nodes.length, 'nodes,', data.edges.length, 'edges');
             console.log('Edge weight range:', Math.min(...data.edges.map(e => e.weight)), 'to', Math.max(...data.edges.map(e => e.weight)));
+            
+            // Debug: show some sample weights
+            const sampleWeights = data.edges.slice(0, 10).map(e => e.weight);
+            console.log('Sample edge weights:', sampleWeights);
+            
+            // Debug: count edges by weight
+            const weightCounts = {};
+            data.edges.forEach(e => {
+                weightCounts[e.weight] = (weightCounts[e.weight] || 0) + 1;
+            });
+            console.log('Weight distribution:', weightCounts);
             
             // Populate category filter
             const categorySelect = document.getElementById('filter-category');

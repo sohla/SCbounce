@@ -1,18 +1,213 @@
 {
   "metadata": {
-    "analysis_date": "2026-01-15T11:40:56.862445",
-    "total_commits": 267,
+    "analysis_date": "2026-04-14T22:27:01.975850",
+    "total_commits": 274,
     "date_range": {
       "start": "2024-01-01",
-      "end": "2026-01-15"
+      "end": "2026-04-14"
     },
     "totals": {
-      "synthdef_lines": 8693,
-      "mapping_lines": 4108,
+      "synthdef_lines": 8843,
+      "mapping_lines": 4180,
       "ambiguous_lines": 0
     }
   },
   "commits": [
+    {
+      "hash": "f9677c8e",
+      "date": "2026-03-12",
+      "datetime": "2026-03-12 11:50:27 +1100",
+      "author": "sohla",
+      "subject": "exploring new viz ideas",
+      "files_changed": [
+        "personalities/silence.sc",
+        "personalities/viz1.sc"
+      ],
+      "changes": {
+        "synthdef": {
+          "lines_added": 0,
+          "lines_removed": 0,
+          "net_change": 0
+        },
+        "mapping": {
+          "lines_added": 44,
+          "lines_removed": 0,
+          "net_change": 44
+        },
+        "ambiguous": {
+          "lines_added": 0,
+          "lines_removed": 0,
+          "net_change": 0
+        }
+      }
+    },
+    {
+      "hash": "77029965",
+      "date": "2026-03-12",
+      "datetime": "2026-03-12 10:42:51 +1100",
+      "author": "steph",
+      "subject": "more viz work",
+      "files_changed": [
+        "personalities/silence.sc"
+      ],
+      "changes": {
+        "synthdef": {
+          "lines_added": 0,
+          "lines_removed": 0,
+          "net_change": 0
+        },
+        "mapping": {
+          "lines_added": 1,
+          "lines_removed": 1,
+          "net_change": 0
+        },
+        "ambiguous": {
+          "lines_added": 0,
+          "lines_removed": 0,
+          "net_change": 0
+        }
+      }
+    },
+    {
+      "hash": "1bf78203",
+      "date": "2026-03-11",
+      "datetime": "2026-03-11 14:22:54 +1100",
+      "author": "sohla",
+      "subject": "improived rain sythn buffer dependancy",
+      "files_changed": [
+        "personalities/rain1.sc",
+        "personalities/waves2.sc"
+      ],
+      "changes": {
+        "synthdef": {
+          "lines_added": 42,
+          "lines_removed": 33,
+          "net_change": 9
+        },
+        "mapping": {
+          "lines_added": 4,
+          "lines_removed": 0,
+          "net_change": 4
+        },
+        "ambiguous": {
+          "lines_added": 0,
+          "lines_removed": 0,
+          "net_change": 0
+        }
+      }
+    },
+    {
+      "hash": "9362b957",
+      "date": "2026-03-06",
+      "datetime": "2026-03-06 09:41:24 +1100",
+      "author": "sohla",
+      "subject": "quick fixes",
+      "files_changed": [
+        "personalities/melbb1.sc",
+        "personalities/silence.sc",
+        "personalities/thunder.sc",
+        "personalities/waves.sc",
+        "personalities/waves2.sc",
+        "personalities/wind2.sc"
+      ],
+      "changes": {
+        "synthdef": {
+          "lines_added": 28,
+          "lines_removed": 37,
+          "net_change": -9
+        },
+        "mapping": {
+          "lines_added": 0,
+          "lines_removed": 0,
+          "net_change": 0
+        },
+        "ambiguous": {
+          "lines_added": 0,
+          "lines_removed": 0,
+          "net_change": 0
+        }
+      }
+    },
+    {
+      "hash": "253f4f16",
+      "date": "2026-03-05",
+      "datetime": "2026-03-05 23:00:18 +1100",
+      "author": "sohla",
+      "subject": "waves: found buffer deinit bug",
+      "files_changed": [
+        "personalities/melbb1.sc",
+        "personalities/waves2.sc"
+      ],
+      "changes": {
+        "synthdef": {
+          "lines_added": 76,
+          "lines_removed": 10,
+          "net_change": 66
+        },
+        "mapping": {
+          "lines_added": 23,
+          "lines_removed": 0,
+          "net_change": 23
+        },
+        "ambiguous": {
+          "lines_added": 0,
+          "lines_removed": 0,
+          "net_change": 0
+        }
+      }
+    },
+    {
+      "hash": "f310494b",
+      "date": "2026-03-04",
+      "datetime": "2026-03-04 12:47:11 +1100",
+      "author": "Steph OHara",
+      "subject": "Merge branch 'Airsticks-RPI' into Airsticks-RPI-Mel",
+      "files_changed": [],
+      "changes": {
+        "synthdef": {
+          "lines_added": 0,
+          "lines_removed": 0,
+          "net_change": 0
+        },
+        "mapping": {
+          "lines_added": 0,
+          "lines_removed": 0,
+          "net_change": 0
+        },
+        "ambiguous": {
+          "lines_added": 0,
+          "lines_removed": 0,
+          "net_change": 0
+        }
+      }
+    },
+    {
+      "hash": "62787411",
+      "date": "2026-03-04",
+      "datetime": "2026-03-04 12:36:48 +1100",
+      "author": "sohla",
+      "subject": "2026 mel time",
+      "files_changed": [
+        "personalities/temp_synth_4button.sc"
+      ],
+      "changes": {
+        "synthdef": {
+          "lines_added": 4,
+          "lines_removed": 1,
+          "net_change": 3
+        },
+        "mapping": {
+          "lines_added": 0,
+          "lines_removed": 0,
+          "net_change": 0
+        },
+        "ambiguous": {
+          "lines_added": 0,
+          "lines_removed": 0,
+          "net_change": 0
+        }
+      }
+    },
     {
       "hash": "5d45bc8b",
       "date": "2026-01-09",
@@ -17324,6 +17519,227 @@
             }
           }
         ]
+      },
+      {
+        "period": "2026-W10",
+        "period_label": "Week 10, 2026",
+        "synthdef_lines": 108,
+        "mapping_lines": 23,
+        "ambiguous_lines": 0,
+        "total_commits": 4,
+        "synthdef_commits": 2,
+        "mapping_commits": 0,
+        "mixed_commits": 1,
+        "commits": [
+          {
+            "hash": "9362b957",
+            "date": "2026-03-06",
+            "datetime": "2026-03-06 09:41:24 +1100",
+            "author": "sohla",
+            "subject": "quick fixes",
+            "files_changed": [
+              "personalities/melbb1.sc",
+              "personalities/silence.sc",
+              "personalities/thunder.sc",
+              "personalities/waves.sc",
+              "personalities/waves2.sc",
+              "personalities/wind2.sc"
+            ],
+            "changes": {
+              "synthdef": {
+                "lines_added": 28,
+                "lines_removed": 37,
+                "net_change": -9
+              },
+              "mapping": {
+                "lines_added": 0,
+                "lines_removed": 0,
+                "net_change": 0
+              },
+              "ambiguous": {
+                "lines_added": 0,
+                "lines_removed": 0,
+                "net_change": 0
+              }
+            }
+          },
+          {
+            "hash": "253f4f16",
+            "date": "2026-03-05",
+            "datetime": "2026-03-05 23:00:18 +1100",
+            "author": "sohla",
+            "subject": "waves: found buffer deinit bug",
+            "files_changed": [
+              "personalities/melbb1.sc",
+              "personalities/waves2.sc"
+            ],
+            "changes": {
+              "synthdef": {
+                "lines_added": 76,
+                "lines_removed": 10,
+                "net_change": 66
+              },
+              "mapping": {
+                "lines_added": 23,
+                "lines_removed": 0,
+                "net_change": 23
+              },
+              "ambiguous": {
+                "lines_added": 0,
+                "lines_removed": 0,
+                "net_change": 0
+              }
+            }
+          },
+          {
+            "hash": "f310494b",
+            "date": "2026-03-04",
+            "datetime": "2026-03-04 12:47:11 +1100",
+            "author": "Steph OHara",
+            "subject": "Merge branch 'Airsticks-RPI' into Airsticks-RPI-Mel",
+            "files_changed": [],
+            "changes": {
+              "synthdef": {
+                "lines_added": 0,
+                "lines_removed": 0,
+                "net_change": 0
+              },
+              "mapping": {
+                "lines_added": 0,
+                "lines_removed": 0,
+                "net_change": 0
+              },
+              "ambiguous": {
+                "lines_added": 0,
+                "lines_removed": 0,
+                "net_change": 0
+              }
+            }
+          },
+          {
+            "hash": "62787411",
+            "date": "2026-03-04",
+            "datetime": "2026-03-04 12:36:48 +1100",
+            "author": "sohla",
+            "subject": "2026 mel time",
+            "files_changed": [
+              "personalities/temp_synth_4button.sc"
+            ],
+            "changes": {
+              "synthdef": {
+                "lines_added": 4,
+                "lines_removed": 1,
+                "net_change": 3
+              },
+              "mapping": {
+                "lines_added": 0,
+                "lines_removed": 0,
+                "net_change": 0
+              },
+              "ambiguous": {
+                "lines_added": 0,
+                "lines_removed": 0,
+                "net_change": 0
+              }
+            }
+          }
+        ]
+      },
+      {
+        "period": "2026-W11",
+        "period_label": "Week 11, 2026",
+        "synthdef_lines": 42,
+        "mapping_lines": 49,
+        "ambiguous_lines": 0,
+        "total_commits": 3,
+        "synthdef_commits": 0,
+        "mapping_commits": 2,
+        "mixed_commits": 1,
+        "commits": [
+          {
+            "hash": "f9677c8e",
+            "date": "2026-03-12",
+            "datetime": "2026-03-12 11:50:27 +1100",
+            "author": "sohla",
+            "subject": "exploring new viz ideas",
+            "files_changed": [
+              "personalities/silence.sc",
+              "personalities/viz1.sc"
+            ],
+            "changes": {
+              "synthdef": {
+                "lines_added": 0,
+                "lines_removed": 0,
+                "net_change": 0
+              },
+              "mapping": {
+                "lines_added": 44,
+                "lines_removed": 0,
+                "net_change": 44
+              },
+              "ambiguous": {
+                "lines_added": 0,
+                "lines_removed": 0,
+                "net_change": 0
+              }
+            }
+          },
+          {
+            "hash": "77029965",
+            "date": "2026-03-12",
+            "datetime": "2026-03-12 10:42:51 +1100",
+            "author": "steph",
+            "subject": "more viz work",
+            "files_changed": [
+              "personalities/silence.sc"
+            ],
+            "changes": {
+              "synthdef": {
+                "lines_added": 0,
+                "lines_removed": 0,
+                "net_change": 0
+              },
+              "mapping": {
+                "lines_added": 1,
+                "lines_removed": 1,
+                "net_change": 0
+              },
+              "ambiguous": {
+                "lines_added": 0,
+                "lines_removed": 0,
+                "net_change": 0
+              }
+            }
+          },
+          {
+            "hash": "1bf78203",
+            "date": "2026-03-11",
+            "datetime": "2026-03-11 14:22:54 +1100",
+            "author": "sohla",
+            "subject": "improived rain sythn buffer dependancy",
+            "files_changed": [
+              "personalities/rain1.sc",
+              "personalities/waves2.sc"
+            ],
+            "changes": {
+              "synthdef": {
+                "lines_added": 42,
+                "lines_removed": 33,
+                "net_change": 9
+              },
+              "mapping": {
+                "lines_added": 4,
+                "lines_removed": 0,
+                "net_change": 4
+              },
+              "ambiguous": {
+                "lines_added": 0,
+                "lines_removed": 0,
+                "net_change": 0
+              }
+            }
+          }
+        ]
       }
     ],
     "monthly": [
@@ -25856,6 +26272,214 @@
                 "lines_added": 12,
                 "lines_removed": 12,
                 "net_change": 0
+              },
+              "mapping": {
+                "lines_added": 0,
+                "lines_removed": 0,
+                "net_change": 0
+              },
+              "ambiguous": {
+                "lines_added": 0,
+                "lines_removed": 0,
+                "net_change": 0
+              }
+            }
+          }
+        ]
+      },
+      {
+        "period": "2026-03",
+        "period_label": "Mar 2026",
+        "synthdef_lines": 150,
+        "mapping_lines": 72,
+        "ambiguous_lines": 0,
+        "total_commits": 7,
+        "synthdef_commits": 2,
+        "mapping_commits": 2,
+        "mixed_commits": 2,
+        "commits": [
+          {
+            "hash": "f9677c8e",
+            "date": "2026-03-12",
+            "datetime": "2026-03-12 11:50:27 +1100",
+            "author": "sohla",
+            "subject": "exploring new viz ideas",
+            "files_changed": [
+              "personalities/silence.sc",
+              "personalities/viz1.sc"
+            ],
+            "changes": {
+              "synthdef": {
+                "lines_added": 0,
+                "lines_removed": 0,
+                "net_change": 0
+              },
+              "mapping": {
+                "lines_added": 44,
+                "lines_removed": 0,
+                "net_change": 44
+              },
+              "ambiguous": {
+                "lines_added": 0,
+                "lines_removed": 0,
+                "net_change": 0
+              }
+            }
+          },
+          {
+            "hash": "77029965",
+            "date": "2026-03-12",
+            "datetime": "2026-03-12 10:42:51 +1100",
+            "author": "steph",
+            "subject": "more viz work",
+            "files_changed": [
+              "personalities/silence.sc"
+            ],
+            "changes": {
+              "synthdef": {
+                "lines_added": 0,
+                "lines_removed": 0,
+                "net_change": 0
+              },
+              "mapping": {
+                "lines_added": 1,
+                "lines_removed": 1,
+                "net_change": 0
+              },
+              "ambiguous": {
+                "lines_added": 0,
+                "lines_removed": 0,
+                "net_change": 0
+              }
+            }
+          },
+          {
+            "hash": "1bf78203",
+            "date": "2026-03-11",
+            "datetime": "2026-03-11 14:22:54 +1100",
+            "author": "sohla",
+            "subject": "improived rain sythn buffer dependancy",
+            "files_changed": [
+              "personalities/rain1.sc",
+              "personalities/waves2.sc"
+            ],
+            "changes": {
+              "synthdef": {
+                "lines_added": 42,
+                "lines_removed": 33,
+                "net_change": 9
+              },
+              "mapping": {
+                "lines_added": 4,
+                "lines_removed": 0,
+                "net_change": 4
+              },
+              "ambiguous": {
+                "lines_added": 0,
+                "lines_removed": 0,
+                "net_change": 0
+              }
+            }
+          },
+          {
+            "hash": "9362b957",
+            "date": "2026-03-06",
+            "datetime": "2026-03-06 09:41:24 +1100",
+            "author": "sohla",
+            "subject": "quick fixes",
+            "files_changed": [
+              "personalities/melbb1.sc",
+              "personalities/silence.sc",
+              "personalities/thunder.sc",
+              "personalities/waves.sc",
+              "personalities/waves2.sc",
+              "personalities/wind2.sc"
+            ],
+            "changes": {
+              "synthdef": {
+                "lines_added": 28,
+                "lines_removed": 37,
+                "net_change": -9
+              },
+              "mapping": {
+                "lines_added": 0,
+                "lines_removed": 0,
+                "net_change": 0
+              },
+              "ambiguous": {
+                "lines_added": 0,
+                "lines_removed": 0,
+                "net_change": 0
+              }
+            }
+          },
+          {
+            "hash": "253f4f16",
+            "date": "2026-03-05",
+            "datetime": "2026-03-05 23:00:18 +1100",
+            "author": "sohla",
+            "subject": "waves: found buffer deinit bug",
+            "files_changed": [
+              "personalities/melbb1.sc",
+              "personalities/waves2.sc"
+            ],
+            "changes": {
+              "synthdef": {
+                "lines_added": 76,
+                "lines_removed": 10,
+                "net_change": 66
+              },
+              "mapping": {
+                "lines_added": 23,
+                "lines_removed": 0,
+                "net_change": 23
+              },
+              "ambiguous": {
+                "lines_added": 0,
+                "lines_removed": 0,
+                "net_change": 0
+              }
+            }
+          },
+          {
+            "hash": "f310494b",
+            "date": "2026-03-04",
+            "datetime": "2026-03-04 12:47:11 +1100",
+            "author": "Steph OHara",
+            "subject": "Merge branch 'Airsticks-RPI' into Airsticks-RPI-Mel",
+            "files_changed": [],
+            "changes": {
+              "synthdef": {
+                "lines_added": 0,
+                "lines_removed": 0,
+                "net_change": 0
+              },
+              "mapping": {
+                "lines_added": 0,
+                "lines_removed": 0,
+                "net_change": 0
+              },
+              "ambiguous": {
+                "lines_added": 0,
+                "lines_removed": 0,
+                "net_change": 0
+              }
+            }
+          },
+          {
+            "hash": "62787411",
+            "date": "2026-03-04",
+            "datetime": "2026-03-04 12:36:48 +1100",
+            "author": "sohla",
+            "subject": "2026 mel time",
+            "files_changed": [
+              "personalities/temp_synth_4button.sc"
+            ],
+            "changes": {
+              "synthdef": {
+                "lines_added": 4,
+                "lines_removed": 1,
+                "net_change": 3
               },
               "mapping": {
                 "lines_added": 0,

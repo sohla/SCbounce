@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Git Commit Activity Timeline</title>
+    <title>Git Commit Activity Timeline - Stream Graph</title>
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <style>
         * {
@@ -41,53 +41,6 @@
             margin-right: 10px;
         }
 
-        .filter-btn {
-            padding: 8px 16px;
-            border: 2px solid #444;
-            background: #2a2a2a;
-            color: #e0e0e0;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 13px;
-            font-weight: bold;
-            transition: all 0.2s;
-        }
-
-        .filter-btn:hover {
-            border-color: #666;
-            background: #333;
-        }
-
-        .filter-btn.active {
-            background: #4CAF50;
-            border-color: #4CAF50;
-            color: #1a1a1a;
-        }
-
-        .filter-btn.implementation.active {
-            background: #2196F3;
-            border-color: #2196F3;
-        }
-
-        .filter-btn.personality.active {
-            background: #FF9800;
-            border-color: #FF9800;
-        }
-
-        .filter-btn.other.active {
-            background: #9C27B0;
-            border-color: #9C27B0;
-        }
-
-        .granularity-controls {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-            margin-left: 30px;
-            padding-left: 30px;
-            border-left: 1px solid #444;
-        }
-
         .granularity-btn {
             padding: 6px 12px;
             border: 2px solid #444;
@@ -108,6 +61,51 @@
             background: #4CAF50;
             border-color: #4CAF50;
             color: #1a1a1a;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: #333;
+        }
+
+        .legend-item:hover {
+            background: #3a3a3a;
+        }
+
+        .legend-item.disabled {
+            opacity: 0.3;
+        }
+
+        .legend-item.disabled .legend-color-box {
+            background: #555 !important;
+        }
+
+        .legend-color-box {
+            width: 20px;
+            height: 20px;
+            border-radius: 3px;
+            margin-right: 8px;
+        }
+
+        .legend-item.implementation .legend-color-box {
+            background: #2196F3;
+        }
+
+        .legend-item.personality .legend-color-box {
+            background: #FF9800;
+        }
+
+        .legend-item.mixed .legend-color-box {
+            background: #E91E63;
+        }
+
+        .legend-item.other .legend-color-box {
+            background: #9C27B0;
         }
 
         #main-content {
@@ -160,6 +158,35 @@
             font-weight: bold;
         }
 
+        .category-header {
+            background: #333;
+            padding: 8px 12px;
+            border-radius: 4px;
+            margin: 15px 0 10px 0;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .category-header.implementation {
+            color: #2196F3;
+            border-left: 3px solid #2196F3;
+        }
+
+        .category-header.personality {
+            color: #FF9800;
+            border-left: 3px solid #FF9800;
+        }
+
+        .category-header.mixed {
+            color: #E91E63;
+            border-left: 3px solid #E91E63;
+        }
+
+        .category-header.other {
+            color: #9C27B0;
+            border-left: 3px solid #9C27B0;
+        }
+
         .commit-item {
             background: #333;
             padding: 12px;
@@ -176,6 +203,10 @@
 
         .commit-item.personality {
             border-left-color: #FF9800;
+        }
+
+        .commit-item.mixed {
+            border-left-color: #E91E63;
         }
 
         .commit-item.other {
@@ -229,6 +260,12 @@
             background: #FF980020;
             color: #FF9800;
             border: 1px solid #FF9800;
+        }
+
+        .commit-type-badge.mixed {
+            background: #E91E6320;
+            color: #E91E63;
+            border: 1px solid #E91E63;
         }
 
         .commit-type-badge.other {
@@ -327,55 +364,39 @@
             stroke-dasharray: 2,2;
         }
 
-        .area-chart {
-            fill: #4CAF5030;
-            stroke: #4CAF50;
-            stroke-width: 2px;
-        }
-
-        .area-chart.implementation {
-            fill: #2196F330;
-            stroke: #2196F3;
-        }
-
-        .area-chart.personality {
-            fill: #FF980030;
-            stroke: #FF9800;
-        }
-
-        .area-chart.other {
-            fill: #9C27B030;
-            stroke: #9C27B0;
-        }
-
-        .data-point {
-            fill: #4CAF50;
-            stroke: #1a1a1a;
-            stroke-width: 2px;
+        .stack-layer {
             cursor: pointer;
-            transition: all 0.2s;
+            transition: opacity 0.3s, filter 0.3s;
+            opacity: 0.8;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
         }
 
-        .data-point.implementation {
+        .stack-layer:hover {
+            opacity: 1;
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.4));
+        }
+
+        .stack-layer.implementation {
             fill: #2196F3;
         }
 
-        .data-point.personality {
+        .stack-layer.personality {
             fill: #FF9800;
         }
 
-        .data-point.other {
+        .stack-layer.mixed {
+            fill: #E91E63;
+        }
+
+        .stack-layer.other {
             fill: #9C27B0;
         }
 
-        .data-point:hover {
-            r: 8;
-            filter: brightness(1.4);
-        }
-
-        .data-point.selected {
-            r: 8;
-            filter: brightness(1.5) drop-shadow(0 0 10px currentColor);
+        .total-line {
+            fill: none;
+            stroke: #4CAF50;
+            stroke-width: 2px;
+            opacity: 0.6;
         }
 
         .tooltip {
@@ -401,33 +422,73 @@
             margin-bottom: 5px;
         }
 
-        .tooltip-count {
+        .tooltip-total {
             color: #e0e0e0;
+            margin-bottom: 5px;
+        }
+
+        .tooltip-breakdown {
+            font-size: 11px;
+            margin-top: 5px;
+            padding-top: 5px;
+            border-top: 1px solid #444;
+        }
+
+        .tooltip-cat {
+            margin: 2px 0;
+        }
+
+        .tooltip-cat.implementation {
+            color: #2196F3;
+        }
+
+        .tooltip-cat.personality {
+            color: #FF9800;
+        }
+
+        .tooltip-cat.mixed {
+            color: #E91E63;
+        }
+
+        .tooltip-cat.other {
+            color: #9C27B0;
         }
     </style>
 </head>
 <body>
     <div id="container">
         <div id="controls">
-            <h3>Filter:</h3>
-            <button class="filter-btn all active" data-filter="all">All</button>
-            <button class="filter-btn implementation" data-filter="implementation">Implementation</button>
-            <button class="filter-btn personality" data-filter="personality">Personality</button>
-            <button class="filter-btn other" data-filter="other">Other</button>
+            <h3>Group By:</h3>
+            <button class="granularity-btn" data-granularity="day">Day</button>
+            <button class="granularity-btn active" data-granularity="week">Week</button>
+            <button class="granularity-btn" data-granularity="month">Month</button>
 
-            <div class="granularity-controls">
-                <h3>Group By:</h3>
-                <button class="granularity-btn" data-granularity="day">Day</button>
-                <button class="granularity-btn active" data-granularity="week">Week</button>
-                <button class="granularity-btn" data-granularity="month">Month</button>
+            <div style="display: flex; gap: 10px; margin-left: 30px; padding-left: 30px; border-left: 1px solid #444;">
+                <h3>Legend:</h3>
+                <div class="legend-item implementation">
+                    <div class="legend-color-box"></div>
+                    <span>Implementation</span>
+                </div>
+                <div class="legend-item personality">
+                    <div class="legend-color-box"></div>
+                    <span>Personality</span>
+                </div>
+                <div class="legend-item mixed">
+                    <div class="legend-color-box"></div>
+                    <span>Mixed</span>
+                </div>
+                <div class="legend-item other">
+                    <div class="legend-color-box"></div>
+                    <span>Other</span>
+                </div>
             </div>
         </div>
 
         <div id="main-content">
             <div id="chart-container">
                 <div id="header">
-                    <h1>Commit Activity Timeline</h1>
-                    <p>Click on any point to see commits for that period</p>
+                    <h1>Stream Graph: Commit Flow</h1>
+                    <p>Flowing visualization of commit activity patterns - click any stream to explore</p>
                 </div>
 
                 <div id="stats">
@@ -436,10 +497,11 @@
                         <div style="font-size: 12px; color: #888; margin-bottom: 5px;">By Type:</div>
                         <div style="font-size: 11px;"><span style="color: #2196F3;">■</span> Implementation: <span id="stat-implementation">0</span></div>
                         <div style="font-size: 11px;"><span style="color: #FF9800;">■</span> Personality: <span id="stat-personality">0</span></div>
+                        <div style="font-size: 11px;"><span style="color: #E91E63;">■</span> Mixed: <span id="stat-mixed">0</span></div>
                         <div style="font-size: 11px;"><span style="color: #9C27B0;">■</span> Other: <span id="stat-other">0</span></div>
                     </div>
                     <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid #444;">
-                        <div style="font-size: 12px; color: #888; margin-bottom: 5px;">Peak Activity:</div>
+                        <div style="font-size: 12px; color: #888; margin-bottom: 5px;">Peak Total:</div>
                         <div style="font-size: 11px;" id="peak-activity">-</div>
                     </div>
                 </div>
@@ -458,9 +520,15 @@
     <script>
         let data = null;
         let allCommits = [];
-        let currentFilter = 'all';
         let currentGranularity = 'week';
         let selectedPeriod = null;
+        let selectedCategory = null;
+        let visibleCategories = {
+            implementation: true,
+            personality: true,
+            mixed: true,
+            other: true
+        };
 
         // Load and process data
         d3.json('commits_data.json').then(function(loadedData) {
@@ -482,7 +550,7 @@
             allCommits.sort((a, b) => a.datetime - b.datetime);
 
             // Calculate stats
-            const commitTypes = { implementation: 0, personality: 0, other: 0 };
+            const commitTypes = { implementation: 0, personality: 0, mixed: 0, other: 0 };
             allCommits.forEach(commit => {
                 if (commit.type in commitTypes) {
                     commitTypes[commit.type]++;
@@ -492,20 +560,11 @@
             document.getElementById('total-commits').textContent = allCommits.length;
             document.getElementById('stat-implementation').textContent = commitTypes.implementation;
             document.getElementById('stat-personality').textContent = commitTypes.personality;
+            document.getElementById('stat-mixed').textContent = commitTypes.mixed;
             document.getElementById('stat-other').textContent = commitTypes.other;
 
             // Initial render
             updateVisualization();
-        });
-
-        // Set up filter buttons
-        document.querySelectorAll('.filter-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-                this.classList.add('active');
-                currentFilter = this.dataset.filter;
-                updateVisualization();
-            });
         });
 
         // Set up granularity buttons
@@ -514,6 +573,16 @@
                 document.querySelectorAll('.granularity-btn').forEach(b => b.classList.remove('active'));
                 this.classList.add('active');
                 currentGranularity = this.dataset.granularity;
+                updateVisualization();
+            });
+        });
+
+        // Set up legend toggle buttons
+        document.querySelectorAll('.legend-item').forEach(item => {
+            const category = item.classList[1]; // Get category class (implementation, personality, etc.)
+            item.addEventListener('click', function() {
+                visibleCategories[category] = !visibleCategories[category];
+                this.classList.toggle('disabled', !visibleCategories[category]);
                 updateVisualization();
             });
         });
@@ -534,34 +603,47 @@
                 }
 
                 if (!groups.has(key)) {
-                    groups.set(key, []);
+                    groups.set(key, {
+                        implementation: [],
+                        personality: [],
+                        mixed: [],
+                        other: []
+                    });
                 }
-                groups.get(key).push(commit);
+
+                const type = commit.type || 'other';
+                groups.get(key)[type].push(commit);
             });
 
-            return Array.from(groups.entries()).map(([timestamp, commits]) => ({
+            return Array.from(groups.entries()).map(([timestamp, categoryCommits]) => ({
                 date: new Date(timestamp),
-                commits: commits,
-                count: commits.length
+                implementation: categoryCommits.implementation.length,
+                personality: categoryCommits.personality.length,
+                mixed: categoryCommits.mixed.length,
+                other: categoryCommits.other.length,
+                commits: {
+                    implementation: categoryCommits.implementation,
+                    personality: categoryCommits.personality,
+                    mixed: categoryCommits.mixed,
+                    other: categoryCommits.other
+                },
+                total: categoryCommits.implementation.length +
+                       categoryCommits.personality.length +
+                       categoryCommits.mixed.length +
+                       categoryCommits.other.length
             })).sort((a, b) => a.date - b.date);
         }
 
         function updateVisualization() {
-            // Filter commits
-            const filteredCommits = currentFilter === 'all'
-                ? allCommits
-                : allCommits.filter(c => c.type === currentFilter);
-
-            // Group by period
-            const groupedData = groupCommitsByPeriod(filteredCommits, currentGranularity);
+            const groupedData = groupCommitsByPeriod(allCommits, currentGranularity);
 
             // Find peak activity
             if (groupedData.length > 0) {
-                const peak = groupedData.reduce((max, d) => d.count > max.count ? d : max);
+                const peak = groupedData.reduce((max, d) => d.total > max.total ? d : max);
                 const periodLabel = currentGranularity === 'day' ? 'Day' :
                                   currentGranularity === 'week' ? 'Week' : 'Month';
                 document.getElementById('peak-activity').textContent =
-                    `${peak.count} commits (${periodLabel} of ${peak.date.toLocaleDateString()})`;
+                    `${peak.total} commits (${periodLabel} of ${peak.date.toLocaleDateString()})`;
             }
 
             drawChart(groupedData);
@@ -588,7 +670,7 @@
                     .attr('text-anchor', 'middle')
                     .attr('fill', '#888')
                     .attr('font-size', '18px')
-                    .text('No commits found for selected filter');
+                    .text('No commits found');
                 return;
             }
 
@@ -600,8 +682,23 @@
                 .domain(d3.extent(data, d => d.date))
                 .range([0, chartWidth]);
 
+            // Create stack with only visible categories
+            const allCategories = ['other', 'mixed', 'personality', 'implementation'];
+            const categories = allCategories.filter(cat => visibleCategories[cat]);
+            
+            // Use different offset based on number of visible categories
+            // Keep consistent order to prevent flipping when toggling
+            const stack = d3.stack()
+                .keys(categories)
+                .order(d3.stackOrderNone) // Fixed order instead of InsideOut
+                .offset(categories.length === 1 ? d3.stackOffsetSilhouette : d3.stackOffsetWiggle);
+
+            const stackedData = stack(data);
+            
+            // Calculate y domain from stacked data extent  
+            const yExtent = d3.extent(stackedData.flat().flat());
             const yScale = d3.scaleLinear()
-                .domain([0, d3.max(data, d => d.count)])
+                .domain(yExtent)
                 .nice()
                 .range([chartHeight, 0]);
 
@@ -612,18 +709,67 @@
                     .tickSize(-chartWidth)
                     .tickFormat(''));
 
-            // Area
+            // Create area generator
             const area = d3.area()
-                .x(d => xScale(d.date))
-                .y0(chartHeight)
-                .y1(d => yScale(d.count))
-                .curve(d3.curveMonotoneX);
+                .x(d => xScale(d.data.date))
+                .y0(d => yScale(d[0]))
+                .y1(d => yScale(d[1]))
+                .curve(d3.curveBasisOpen);
 
-            const areaClass = currentFilter === 'all' ? '' : currentFilter;
-            g.append('path')
-                .datum(data)
-                .attr('class', `area-chart ${areaClass}`)
-                .attr('d', area);
+            const tooltip = d3.select('.tooltip');
+
+            // Draw stacked areas
+            g.selectAll('.stack-layer')
+                .data(stackedData)
+                .enter()
+                .append('path')
+                .attr('class', d => `stack-layer ${d.key}`)
+                .attr('d', area)
+                .style('display', d => visibleCategories[d.key] ? 'block' : 'none')
+                .on('mousemove', function(event, d) {
+                    // Find closest data point
+                    const [mouseX] = d3.pointer(event);
+                    const xDate = xScale.invert(mouseX);
+                    const bisect = d3.bisector(p => p.data.date).left;
+                    const idx = bisect(d, xDate);
+                    const closestData = d[idx] || d[d.length - 1];
+
+                    if (closestData) {
+                        const periodLabel = currentGranularity === 'day' ? 'Day' :
+                                          currentGranularity === 'week' ? 'Week' : 'Month';
+
+                        tooltip.html(`
+                            <div class="tooltip-date">${periodLabel} of ${closestData.data.date.toLocaleDateString()}</div>
+                            <div class="tooltip-total">Total: ${closestData.data.total} commits</div>
+                            <div class="tooltip-breakdown">
+                                ${closestData.data.implementation > 0 ? `<div class="tooltip-cat implementation">Implementation: ${closestData.data.implementation}</div>` : ''}
+                                ${closestData.data.personality > 0 ? `<div class="tooltip-cat personality">Personality: ${closestData.data.personality}</div>` : ''}
+                                ${closestData.data.mixed > 0 ? `<div class="tooltip-cat mixed">Mixed: ${closestData.data.mixed}</div>` : ''}
+                                ${closestData.data.other > 0 ? `<div class="tooltip-cat other">Other: ${closestData.data.other}</div>` : ''}
+                            </div>
+                        `)
+                        .style('left', (event.pageX + 10) + 'px')
+                        .style('top', (event.pageY - 30) + 'px')
+                        .classed('visible', true);
+                    }
+                })
+                .on('mouseout', function() {
+                    tooltip.classed('visible', false);
+                })
+                .on('click', function(event, d) {
+                    // Find closest data point
+                    const [mouseX] = d3.pointer(event);
+                    const xDate = xScale.invert(mouseX);
+                    const bisect = d3.bisector(p => p.data.date).left;
+                    const idx = bisect(d, xDate);
+                    const closestData = d[idx] || d[d.length - 1];
+
+                    if (closestData) {
+                        selectedPeriod = closestData.data;
+                        selectedCategory = d.key;
+                        showCommits(closestData.data, d.key);
+                    }
+                });
 
             // Axes
             const xAxis = d3.axisBottom(xScale)
@@ -638,92 +784,70 @@
                 .attr('transform', 'rotate(-45)')
                 .style('text-anchor', 'end');
 
-            g.append('g')
-                .attr('class', 'axis')
-                .call(d3.axisLeft(yScale).ticks(5));
+            // Hide Y-axis for stream graph (wiggle offset creates meaningless negative positions)
+            // g.append('g')
+            //     .attr('class', 'axis')
+            //     .call(d3.axisLeft(yScale).ticks(5));
 
-            // Y-axis label
-            g.append('text')
-                .attr('transform', 'rotate(-90)')
-                .attr('y', -45)
-                .attr('x', -chartHeight / 2)
-                .attr('text-anchor', 'middle')
-                .attr('fill', '#888')
-                .attr('font-size', '14px')
-                .text('Number of Commits');
+            // Y-axis label (hide for stream graph)
+            // g.append('text')
+            //     .attr('transform', 'rotate(-90)')
+            //     .attr('y', -45)
+            //     .attr('x', -chartHeight / 2)
+            //     .attr('text-anchor', 'middle')
+            //     .attr('fill', '#888')
+            //     .attr('font-size', '14px')
+            //     .text('Number of Commits');
 
-            // Data points
-            const pointClass = currentFilter === 'all' ? '' : currentFilter;
-            const tooltip = d3.select('.tooltip');
-
-            g.selectAll('.data-point')
-                .data(data)
-                .enter()
-                .append('circle')
-                .attr('class', `data-point ${pointClass}`)
-                .attr('cx', d => xScale(d.date))
-                .attr('cy', d => yScale(d.count))
-                .attr('r', 5)
-                .on('mouseover', function(event, d) {
-                    const periodLabel = currentGranularity === 'day' ? 'Day' :
-                                      currentGranularity === 'week' ? 'Week' : 'Month';
-                    tooltip
-                        .html(`
-                            <div class="tooltip-date">${periodLabel} of ${d.date.toLocaleDateString()}</div>
-                            <div class="tooltip-count">${d.count} commit${d.count !== 1 ? 's' : ''}</div>
-                        `)
-                        .style('left', (event.pageX + 10) + 'px')
-                        .style('top', (event.pageY - 30) + 'px')
-                        .classed('visible', true);
-                })
-                .on('mouseout', function() {
-                    tooltip.classed('visible', false);
-                })
-                .on('click', function(event, d) {
-                    d3.selectAll('.data-point').classed('selected', false);
-                    d3.select(this).classed('selected', true);
-                    selectedPeriod = d;
-                    showCommits(d);
-                });
         }
 
-        function showCommits(period) {
+        function showCommits(period, category) {
             const sidebar = document.getElementById('sidebar');
             const content = document.getElementById('sidebar-content');
 
             const periodLabel = currentGranularity === 'day' ? 'Day' :
                               currentGranularity === 'week' ? 'Week' : 'Month';
 
+            // Get commits from this period and category
+            const commits = period.commits[category] || [];
+
             let html = `
                 <div class="period-info">
                     <h2>${periodLabel} of ${period.date.toLocaleDateString()}</h2>
                     <div class="commit-count" style="margin-top: 10px;">
-                        ${period.count} commit${period.count !== 1 ? 's' : ''}
+                        Total: ${period.total} commits
+                    </div>
+                    <div style="color: #888; font-size: 13px; margin-top: 5px;">
+                        ${category}: ${commits.length} commit${commits.length !== 1 ? 's' : ''}
                     </div>
                 </div>
             `;
 
             // Sort commits by date (newest first)
-            const sortedCommits = [...period.commits].sort((a, b) =>
+            const sortedCommits = [...commits].sort((a, b) =>
                 b.datetime - a.datetime
             );
 
-            sortedCommits.forEach(commit => {
-                const typeLabel = commit.type || 'other';
-                html += `
-                    <div class="commit-item ${typeLabel}">
-                        <div class="commit-hash">${commit.hash}<span class="commit-type-badge ${typeLabel}">${typeLabel}</span></div>
-                        <div class="commit-date">${commit.date} • <span class="commit-author">${commit.author}</span></div>
-                        <div class="commit-subject">${commit.subject}</div>
-                        ${commit.files && commit.files.length > 0 ? `
-                            <div class="commit-files">
-                                ${commit.files.slice(0, 5).map(f => `<div class="commit-file">${f}</div>`).join('')}
-                                ${commit.files.length > 5 ? `<div class="commit-file">... and ${commit.files.length - 5} more</div>` : ''}
-                            </div>
-                        ` : ''}
-                    </div>
-                `;
-            });
+            if (sortedCommits.length > 0) {
+                html += `<div class="category-header ${category}">${category.toUpperCase()}</div>`;
+
+                sortedCommits.forEach(commit => {
+                    const typeLabel = commit.type || 'other';
+                    html += `
+                        <div class="commit-item ${typeLabel}">
+                            <div class="commit-hash">${commit.hash}<span class="commit-type-badge ${typeLabel}">${typeLabel}</span></div>
+                            <div class="commit-date">${commit.date} • <span class="commit-author">${commit.author}</span></div>
+                            <div class="commit-subject">${commit.subject}</div>
+                            ${commit.files && commit.files.length > 0 ? `
+                                <div class="commit-files">
+                                    ${commit.files.slice(0, 5).map(f => `<div class="commit-file">${f}</div>`).join('')}
+                                    ${commit.files.length > 5 ? `<div class="commit-file">... and ${commit.files.length - 5} more</div>` : ''}
+                                </div>
+                            ` : ''}
+                        </div>
+                    `;
+                });
+            }
 
             content.innerHTML = html;
             sidebar.classList.add('active');
@@ -733,7 +857,7 @@
         document.getElementById('close-sidebar').addEventListener('click', function() {
             document.getElementById('sidebar').classList.remove('active');
             selectedPeriod = null;
-            d3.selectAll('.data-point').classed('selected', false);
+            selectedCategory = null;
             updateVisualization();
         });
 
