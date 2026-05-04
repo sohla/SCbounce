@@ -194,7 +194,7 @@ SynthDef(\versatilePerc, {
 
 	Pdef(m.ptn).set(\filtFreq, filtFreq);
 	// Pdef(m.ptn).set(\dur, dur);
-	Pdef(m.ptn).set(\amp, a * 2);
+	Pdef(m.ptn).set(\amp, a * 1);
 	
 	// if(m.accelMassFiltered > 0.1,{
 	// 	if( Pdef(m.ptn).isPlaying.not,{

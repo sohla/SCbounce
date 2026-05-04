@@ -51,7 +51,7 @@ SynthDef(\samplerHTB, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=4
       if(o == 1,{
       	states[i] = 0;
         //max 11
-				synths.put(i, Synth(\samplerHTB, [\bufnum, buffers[i+0], \rate, 1, \amp, amps[i]]));
+				synths.put(i, Synth(\samplerHTB, [\bufnum, buffers[i+0], \rate, 1, \amp, amps[i], \start, 0.016]));
       	// ["on",i].postln;
     	});
 		},{

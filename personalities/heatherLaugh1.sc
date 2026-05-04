@@ -6,7 +6,7 @@ m.accelMassFilteredDecay = 0.9;
 
 //------------------------------------------------------------
 SynthDef(\hl, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=440,
-    attack=0.01, decay=0.1, sustain=0.3, release=0.2, gate=1,cutoff=20000, rq=1|
+    attack=0.01, decay=0.1, sustain=0.3, release=2.2, gate=1,cutoff=20000, rq=1|
 
 	var lr = rate * BufRateScale.kr(bufnum) * (freq/440.0);
     var env = EnvGen.kr(Env.adsr(attack, decay, sustain, release), gate, doneAction: 2);
