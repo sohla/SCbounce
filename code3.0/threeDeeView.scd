@@ -22,9 +22,8 @@ var addThreeDeeView = { |d|
 
 	graph1.add(cube = Canvas3DItem.cube()
 		.color_(d.color.alpha_(1))
-		.width_(2)
+		.width_(2		)
 		.transform(Canvas3D.mScale(1.0,0.4,0.5))
-		// .transform(Canvas3D.mScale(1.0,1.0,1.0))
 	);
 //Color.yellow,Color.magenta,Color.cyan,Color.red,Color.green,Color.blue
 	graph1.add(accelX = Canvas3DItem.cube()

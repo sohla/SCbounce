@@ -56,24 +56,24 @@ m.rrateMassFilteredDecay = 0.4;
 		type: \customVisualEvent,
 		amp: 0,
 		viewID: d.port,
-		shape: \circle,
-		fill: true,
+		shape: \star,
+		fill: false,
 		rotate: 0,
-		startSize: squareSize,
-		endSize: squareSize,
+		startSize: squareSize * 0.001,
+		endSize: squareSize * 0.01,
 		duration: duration,
-		startColor: oceanColor.alpha_(0.8),
+		startColor: d.color.alpha_(0.8),
 		endColor: oceanColor.lighten(0.2).alpha_(0.1),
 		startWidth: 1,
 		endWidth: 1,
-		sx: xPos,
-		sy: baseY,
+		sx: xPos * 0.1,
+		sy: baseY - 4.5,
 		ex: xPos, // Stay in same x position
-		ey: baseY, // Stay in same y, oscillation via envelope
+		ey: baseY.neg, // Stay in same y, oscillation via envelope
 		yEnv: yEnv, // Vertical oscillation
 		rotation: sin(time) * 0.1,
 	);
-	ev.play;
+	// ev.play;
 };
 
 //------------------------------------------------------------
