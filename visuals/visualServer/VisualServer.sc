@@ -11,12 +11,31 @@ VisualServer {
         ^super.new.init;
     }
 
+    // Collect every provided shape param from an event into a [k,v,...] array.
+    // Keys the user didn't set are omitted so each VisualSynthDef's own
+    // defaults apply. Defined here (not as an environment var) so it resolves
+    // correctly when called from inside an event-type function.
+    *visualArgsFrom { |env|
+        var keys = [\x, \y, \size, \color, \dur, \fill,
+            \startSize, \endSize, \curve,
+            \x1, \y1, \x2, \y2, \width, \length, \speed];
+        var args = [];
+        keys.do { |k|
+            var val = env[k];
+            if (val.notNil) { args = args.add(k); args = args.add(val); };
+        };
+        ^args;
+    }
+
     init {
         views = Dictionary.new;
         nodes = Dictionary.new;
         nextNodeID = 1000;
-        // Force load built-in defs
-        VisualSynthDef.initBuiltInDefs;
+        // Defensive: built-ins are registered in VisualSynthDef.initClass.
+        // Only re-register if something cleared them.
+        if (VisualSynthDef.all.isNil or: { VisualSynthDef.all.isEmpty }) {
+            VisualSynthDef.initBuiltInDefs;
+        };
     }
 
     // Create a new visual view (like audio server boot)
@@ -71,7 +90,7 @@ VisualServer {
         // Set parameters from args
         if (args.notNil) {
             args.pairsDo { |key, value|
-                node.params[key] = value;
+                node[\params][key] = value;
             };
         };
 
@@ -84,17 +103,20 @@ VisualServer {
     }
 
     // Visual equivalent of n_set (set node parameters)
-    vset { |nodeID, args|
+    vset { |nodeID ... args|
         var node;
-        
+
         node = nodes[nodeID];
         if (node.isNil) {
             ("Visual node" + nodeID + "not found").warn;
             ^this;
         };
 
+        // Accept both vset(id, \k, v, ...) and vset(id, [\k, v, ...])
+        if (args.size == 1 and: { args[0].isArray }) { args = args[0] };
+
         args.pairsDo { |key, value|
-            node.params[key] = value;
+            node[\params][key] = value;
         };
 
         ^this;
@@ -109,7 +131,7 @@ VisualServer {
             ^this;
         };
 
-        viewName = node.viewName;
+        viewName = node[\viewName];
         nodes.removeAt(nodeID);
         views[viewName][\nodes].removeAt(nodeID);
 
@@ -138,14 +160,17 @@ VisualServer {
         centerX = bounds.width / 2;
         centerY = bounds.height / 2;
 
-        // Clear background
-        Pen.fillColor = view.background;
-        Pen.addRect(view.bounds);
-        Pen.fill;
+        // Clear background (skipped when an effect manages it, e.g. trails)
+        if (viewData[\clearBackground] ? true) {
+            Pen.fillColor = view.background;
+            Pen.addRect(view.bounds);
+            Pen.fill;
+        };
 
-        // Render each active node
-        viewData[\nodes].do { |node|
-            if (node.isActive) {
+        // Render each active node. Iterate a copy: render funcs may vfree
+        // expired nodes, which mutates viewData[\nodes] mid-iteration.
+        viewData[\nodes].copy.do { |node|
+            if (node[\isActive]) {
                 this.renderNode(node, view, now, centerX, centerY);
             };
         };
@@ -155,9 +180,9 @@ VisualServer {
     renderNode { |node, view, now, centerX, centerY|
         var def, params, elapsed;
         
-        def = node.def;
-        params = node.params;
-        elapsed = now - node.startTime;
+        def = node[\def];
+        params = node[\params];
+        elapsed = now - node[\startTime];
 
         // Call the visual synth definition's render function
         def.renderFunc.value(node, view, elapsed, centerX, centerY, params);

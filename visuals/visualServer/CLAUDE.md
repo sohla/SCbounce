@@ -88,12 +88,14 @@ v.start;
 
 ## Current Issues
 
-### VisualSynthDef Registration Problem
-- Built-in VisualSynthDefs (circle, square, line, pulse, spinner, live) are created during class initialization
-- They register successfully at startup but `all` Dictionary becomes empty when accessed later
-- Class variable `all` is being reset/lost between initialization and runtime access
-- Issue likely related to SuperCollider class variable initialization timing or garbage collection
-- Symptoms: "WARNING: VisualSynthDef circle not found" errors when calling `vnew`
+### VisualSynthDef Registration Problem — RESOLVED
+- Root cause: `VisualServer.initClass` populated `VisualSynthDef.all`, then
+  `VisualSynthDef.initClass` ran afterwards and reset `all = Dictionary.new`,
+  wiping every built-in. initClass order is not guaranteed by a runtime call
+  buried in `VisualServer:init`.
+- Fix: built-ins are now registered inside `VisualSynthDef.initClass` itself
+  (after `all` is created). `VisualServer:init` only re-registers defensively
+  if `all` is empty.
 
 ## Development Workflow
 

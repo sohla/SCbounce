@@ -1,59 +1,41 @@
 // Visual Pattern Classes - modeled after SuperCollider's pattern system
 
-Vbind : Pbind {
+// These build a real Pbind. Defaults come first so user-supplied pairs
+// (appended after) override them when Pbind constructs the event.
+
+Vbind {
     *new { |...pairs|
-        var pattern = super.new;
         var defaults = (type: \visual, dur: 1, instrument: \circle, view: \default);
-        
-        // Merge defaults with provided pairs
-        var allPairs = [defaults.asPairs, pairs].flat;
-        
-        ^pattern.putPairs(allPairs);
+        ^Pbind(*[defaults.asPairs, pairs].flatten(1));
     }
 }
 
-Vpulse : Pbind {
+Vpulse {
     *new { |...pairs|
-        var pattern = super.new;
         var defaults = (type: \vpulse, dur: 1, view: \default);
-        
-        var allPairs = [defaults.asPairs, pairs].flat;
-        
-        ^pattern.putPairs(allPairs);
+        ^Pbind(*[defaults.asPairs, pairs].flatten(1));
     }
 }
 
-Vline : Pbind {
+Vline {
     *new { |...pairs|
-        var pattern = super.new;
         var defaults = (type: \vline, dur: 1, view: \default);
-        
-        var allPairs = [defaults.asPairs, pairs].flat;
-        
-        ^pattern.putPairs(allPairs);
+        ^Pbind(*[defaults.asPairs, pairs].flatten(1));
     }
 }
 
-Vlive : Pbind {
+Vlive {
     *new { |...pairs|
-        var pattern = super.new;
         var defaults = (type: \vlive, dur: inf, view: \default);
-        
-        var allPairs = [defaults.asPairs, pairs].flat;
-        
-        ^pattern.putPairs(allPairs);
+        ^Pbind(*[defaults.asPairs, pairs].flatten(1));
     }
 }
 
 // Audio-Visual combined pattern
-AVbind : Pbind {
+AVbind {
     *new { |...pairs|
-        var pattern = super.new;
         var defaults = (type: \audioVisual, dur: 1, instrument: \default, view: \default);
-        
-        var allPairs = [defaults.asPairs, pairs].flat;
-        
-        ^pattern.putPairs(allPairs);
+        ^Pbind(*[defaults.asPairs, pairs].flatten(1));
     }
 }
 
@@ -118,53 +100,44 @@ Vwrand {
     }
 }
 
-// Live input stream pattern
+// Live input value pattern: evaluates `func` once per event.
+// Timing is controlled by the host Pbind's \dur, NOT internally - a wait
+// here would be yielded as a parameter value and corrupt the stream.
+// Extra *new args (lag, dur, ...) are accepted and ignored for back-compat.
 LiveParam : Pattern {
-    var <func, <dur;
-    
-    *new { |func, dur = 0.1|
-        ^super.newCopyArgs(func, dur);
+    var <func;
+
+    *new { |func ... ignored|
+        ^super.newCopyArgs(func);
     }
-    
-    asStream {
-        ^Routine({
-            loop {
-                this.func.value.yield;
-                this.dur.wait;
-            };
-        });
-    }
-    
+
     embedInStream { |inval|
-        var stream = this.asStream;
-        var val;
-        while { 
-            val = stream.next(inval);
-            val.notNil;
-        } {
-            inval = val.yield;
-        };
+        loop { inval = func.value(inval).yield };
         ^inval;
     }
 }
 
+// Alias used by the examples
+LiveStream : LiveParam {}
+
 // Visual pattern player - manages playback of visual patterns
 VpatternPlayer {
-    var <pattern, <clock, <player, <view, <server;
-    
+    // Order matters: newCopyArgs assigns positionally in declaration order.
+    // `player` must be last so the 4 *new args map to pattern/clock/view/server.
+    var <pattern, <clock, <view, <server, <>player;
+
     *new { |pattern, clock, view = \default, server|
-        ^super.newCopyArgs(pattern, clock ?? TempoClock.default, view, server ?? VisualServer.default);
+        ^super.newCopyArgs(pattern, clock ? TempoClock.default, view, server ? VisualServer.default);
     }
     
     play { |quant|
-        // Ensure view exists
-        if (this.server.views[this.view].isNil) {
-            this.server.createView(this.view);
-        };
-        
-        // Start pattern
-        this.player = EventStreamPlayer(this.pattern.asStream, this.clock);
-        this.player.play(quant);
+        // No view pre-creation: each event carries its own \view and
+        // VisualServer:vnew auto-creates that view on demand. Pre-creating
+        // this.view here would spawn a spurious empty \default window.
+        //
+        // Pattern:play(clock, protoEvent, quant) builds and plays the
+        // EventStreamPlayer correctly (its 2nd arg is the protoEvent, not a clock).
+        player = this.pattern.play(this.clock, nil, quant);
         ^this;
     }
     

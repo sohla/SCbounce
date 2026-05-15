@@ -68,9 +68,9 @@ var drumPattern = Ppar([
         \freq, 60,
         \amp, 0.6,
         \dur, 1,
-        
+
         // Big expanding circles
-        \type, \visual,
+        \type, \audioVisual,
         \vinstrument, \pulse,
         \vx, 0,
         \vy, 0,
@@ -86,12 +86,12 @@ var drumPattern = Ppar([
         \instrument, \snare,
         \amp, 0.4,
         \dur, Pseq([Rest(0.5), 0.5], inf),
-        
-        \type, \visual,
+
+        \type, \audioVisual,
         \vinstrument, \circle,
         \vx, Pwhite(-0.8, 0.8),
         \vy, Pwhite(-0.8, 0.8),
-        \size, Pexprand(10, 30),
+        \vsize, Pexprand(10, 30),
         \vcolor, Color.white,
         \vdur, 0.3,
         \vview, \audioVisual
@@ -121,7 +121,7 @@ Vbind(
         -0.6, -0.4, -0.2, 0, 0.2, 0.4,
         0.6, 0.4, 0.2, 0, -0.2, -0.4
     ], inf),
-    \y, Psin(Ptime, 0.3),  // Sine wave motion
+    \y, Pfunc({ sin(thisThread.beats * 2) * 0.3 }),  // Sine wave motion
     \size, Pexprand(15, 40),
     \color, Pseq([
         Color.blue, Color.cyan, Color.green, Color.yellow,

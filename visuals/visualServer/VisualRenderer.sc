@@ -160,7 +160,9 @@ VisualRenderer {
             originalDrawFunc.value(v);
         });
         
-        // Disable automatic clearing
+        // Disable automatic clearing (UserView) and the server's opaque
+        // background fill, so the translucent overlay above produces a trail.
+        viewData[\clearBackground] = false;
         viewData[\view].clearOnRefresh_(false);
         
         ^this;
@@ -253,6 +255,26 @@ VisualRenderer {
                 };
             };
         });
+    }
+
+    // Remove all wrapped effects from a view by restoring the server's
+    // default render function (effects are drawFunc closures, so dropping
+    // the wrapper chain is the way to remove them).
+    clearEffects { |viewName|
+        var viewData, srv;
+
+        viewData = this.server.views[viewName];
+        if (viewData.isNil) {
+            ("View" + viewName + "not found").warn;
+            ^this;
+        };
+
+        srv = this.server;
+        viewData[\view].drawFunc_({ |v| srv.renderView(viewName, v) });
+        viewData[\view].clearOnRefresh_(true);
+        viewData[\clearBackground] = true;
+        viewData[\particles] = nil;
+        ^this;
     }
 
     // Cleanup

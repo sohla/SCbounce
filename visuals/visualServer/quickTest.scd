@@ -90,28 +90,30 @@ if (VisualServer.notNil) {
     // Simulate sensor changes with routine
     ~simulator = Routine({
         loop {
-            ~sensorData.x = sin(thisThread.seconds * 0.5) * 0.6;
-            ~sensorData.y = cos(thisThread.seconds * 0.3) * 0.4;
-            ~sensorData.size = (sin(thisThread.seconds * 1.5) + 1) * 20 + 15;
-            ~sensorData.hue = (thisThread.seconds * 0.2) % 1.0;
+            // Use [\key] not .key: `size` is Collection:size, so the
+            // pseudo-accessor form silently fails for it.
+            ~sensorData[\x] = sin(thisThread.seconds * 0.5) * 0.6;
+            ~sensorData[\y] = cos(thisThread.seconds * 0.3) * 0.4;
+            ~sensorData[\size] = (sin(thisThread.seconds * 1.5) + 1) * 20 + 15;
+            ~sensorData[\hue] = (thisThread.seconds * 0.2) % 1.0;
             0.05.wait;
         };
     }).play;
 
     // Create live visual with function parameters
     ~liveID = ~v.vnew(\live, nil, \test, [
-        \x, { ~sensorData.x },
-        \y, { ~sensorData.y },
-        \size, { ~sensorData.size },
-        \color, { Color.hsv(~sensorData.hue, 0.8, 0.9) },
+        \x, { ~sensorData[\x] },
+        \y, { ~sensorData[\y] },
+        \size, { ~sensorData[\size] },
+        \color, { Color.hsv(~sensorData[\hue], 0.8, 0.9) },
         \dur, inf
     ]);
     "✓ Live visual created with simulated sensor data".postln;
     
     // Create a spinner for additional visual interest
     ~spinnerID = ~v.vnew(\spinner, nil, \test, [
-        \x, { ~sensorData.x * 0.5 },
-        \y, { ~sensorData.y * 0.5 },
+        \x, { ~sensorData[\x] * 0.5 },
+        \y, { ~sensorData[\y] * 0.5 },
         \length, 80,
         \speed, 2,
         \color, Color.white,

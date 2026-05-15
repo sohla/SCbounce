@@ -84,14 +84,15 @@ v.vnew(\live, 3002, \liveDemo, [
     Routine({
         var history = Array.fill(10, [0, 0]);
         var writeIndex = 0;
-        
+        var readIndex;
+
         loop {
             // Store current position
             history[writeIndex] = [~mockIMU.accel.x, ~mockIMU.accel.y];
             writeIndex = (writeIndex + 1) % history.size;
-            
+
             // Read delayed position
-            var readIndex = (writeIndex + (i + 1) * 2) % history.size;
+            readIndex = (writeIndex + (i + 1) * 2) % history.size;
             delayedPos[0] = history[readIndex][0];
             delayedPos[1] = history[readIndex][1];
             

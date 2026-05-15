@@ -1,88 +1,80 @@
 // Visual Event Types - to be loaded after class compilation
 // These need to be in a startup file or loaded separately
+//
+// Each visual event type forwards every provided shape param via
+// VisualServer.visualArgsFrom; each VisualSynthDef supplies its own defaults
+// (through getParam) for keys the user didn't set.
+//
+// NOTE: the standard event play function forces ~server = Server.default
+// (the AUDIO server), so ~server can't identify the visual server here.
+// Use ~vserver as an optional override, otherwise VisualServer.default.
 
 Event.addEventType(\visual, {
-    var server = ~server ?? VisualServer.default;
+    var server = ~vserver ?? VisualServer.default;
     var def = ~instrument ?? \circle;
     var nodeID = ~nodeID ?? server.nextID;
-    var viewName = ~view ?? \default;
-    
-    // Create the visual node
-    server.vnew(def, nodeID, viewName, [
-        \x, ~x ?? 0,
-        \y, ~y ?? 0,
-        \size, ~size ?? 50,
-        \color, ~color ?? Color.white,
-        \dur, ~dur ?? 1,
-        \fill, ~fill ?? true
-    ]);
+    server.vnew(def, nodeID, ~view ?? \default, VisualServer.visualArgsFrom(currentEnvironment));
 });
 
 Event.addEventType(\vpulse, {
-    var server = ~server ?? VisualServer.default;
+    var server = ~vserver ?? VisualServer.default;
     var nodeID = ~nodeID ?? server.nextID;
-    var viewName = ~view ?? \default;
-    
-    server.vnew(\pulse, nodeID, viewName, [
-        \x, ~x ?? 0,
-        \y, ~y ?? 0,
-        \startSize, ~startSize ?? 10,
-        \endSize, ~endSize ?? 100,
-        \color, ~color ?? Color.white,
-        \dur, ~dur ?? 1,
-        \curve, ~curve ?? \exp
-    ]);
+    server.vnew(\pulse, nodeID, ~view ?? \default, VisualServer.visualArgsFrom(currentEnvironment));
 });
 
 Event.addEventType(\vline, {
-    var server = ~server ?? VisualServer.default;
+    var server = ~vserver ?? VisualServer.default;
     var nodeID = ~nodeID ?? server.nextID;
-    var viewName = ~view ?? \default;
-    
-    server.vnew(\line, nodeID, viewName, [
-        \x1, ~x1 ?? -0.5,
-        \y1, ~y1 ?? 0,
-        \x2, ~x2 ?? 0.5,
-        \y2, ~y2 ?? 0,
-        \color, ~color ?? Color.white,
-        \width, ~width ?? 1,
-        \dur, ~dur ?? 1
-    ]);
+    server.vnew(\line, nodeID, ~view ?? \default, VisualServer.visualArgsFrom(currentEnvironment));
 });
 
 Event.addEventType(\vlive, {
-    var server = ~server ?? VisualServer.default;
+    var server = ~vserver ?? VisualServer.default;
     var nodeID = ~nodeID ?? server.nextID;
-    var viewName = ~view ?? \default;
-    
-    server.vnew(\live, nodeID, viewName, [
-        \x, ~x ?? 0,
-        \y, ~y ?? 0,
-        \size, ~size ?? 50,
-        \color, ~color ?? Color.white,
-        \dur, ~dur ?? inf,
-        \fill, ~fill ?? true
-    ]);
+    server.vnew(\live, nodeID, ~view ?? \default, VisualServer.visualArgsFrom(currentEnvironment));
 });
 
-// Combined audio-visual event type
+// Combined audio-visual event type.
+// Plays the audio note, then builds a separate visual event routed to the
+// correct sub-type so shape-specific params (startSize/endSize/curve, line
+// endpoints, ...) are not lost.
 Event.addEventType(\audioVisual, {
+    var vinst, e;
+
     // Play audio first
-    var originalType = ~type;
     ~type = \note;
     currentEnvironment.play;
-    
-    // Then trigger visual
-    ~type = \visual;
-    ~instrument = ~vinstrument ?? \circle;
-    ~x = ~vx ?? 0;
-    ~y = ~vy ?? 0;
-    ~size = ~vsize ?? (~amp ? 0.5 * 100);
-    ~color = ~vcolor ?? Color.hsv((~freq ? 440).cpsmidi / 127, 1, 1);
-    ~dur = ~vdur ?? (~dur ? 1);
-    ~view = ~vview ?? \default;
-    
-    currentEnvironment.play;
+
+    vinst = ~vinstrument ? \circle;
+    e = ();
+    e[\type] = switch(vinst,
+        \pulse, { \vpulse },
+        \line,  { \vline },
+        \live,  { \vlive },
+        { \visual }        // circle / square / anything else
+    );
+    e[\instrument] = vinst;
+    e[\view]       = ~vview ? \default;
+    e[\dur]        = ~vdur ? (~dur ? 1);
+
+    // Generic
+    e[\x]     = ~vx ? (~x ? 0);
+    e[\y]     = ~vy ? (~y ? 0);
+    e[\size]  = ~vsize ?? ((~amp ? 0.5) * 100);
+    e[\color] = ~vcolor ?? Color.hsv(((~freq ? 440).cpsmidi / 127).clip(0, 1), 1, 1);
+    e[\fill]  = ~fill ? true;
+
+    // Pulse-specific
+    e[\startSize] = ~startSize ? 10;
+    e[\endSize]   = ~endSize ?? ((~amp ? 0.5) * 200);
+    e[\curve]     = ~curve ? \exp;
+
+    // Line-specific
+    e[\x1] = ~vx1 ? -0.5;  e[\y1] = ~vy1 ? 0;
+    e[\x2] = ~vx2 ? 0.5;   e[\y2] = ~vy2 ? 0;
+    e[\width] = ~width ? 1;
+
+    e.play;
 });
 
 "Visual event types loaded".postln;

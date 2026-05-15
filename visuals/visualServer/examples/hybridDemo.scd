@@ -72,8 +72,8 @@ SynthDef(\pad, {|freq=220, amp=0.2, gate=1, cutoff=1000|
 (
 ~ambientPattern = Vbind(
     \instrument, \circle,
-    \x, Psin(Ptime * 0.2, 0.9),
-    \y, Pcos(Ptime * 0.15, 0.7),
+    \x, Pfunc({ sin(thisThread.beats * 0.2) * 0.9 }),
+    \y, Pfunc({ cos(thisThread.beats * 0.15) * 0.7 }),
     \size, Pexprand(5, 15),
     \color, Pseq([
         Color.blue.alpha_(0.3),
