@@ -33,6 +33,16 @@ VisualSynthDef {
         ^if (val.isFunction) { val.value } { val };
     }
 
+    // Strictly-numeric param lookup for envelope timing. SC's default parent
+    // event injects machinery into played events (e.g. sustain as the
+    // Function #{ ~dur*~legato*~stretch }); evaluating that here would crash
+    // (nil * nil). Timing values are always plain numbers, so anything that
+    // isn't a number falls back to `default`.
+    numParam { |node, key, default|
+        var v = node[\params][key];
+        ^if (v.isNumber) { v } { default };
+    }
+
     // Helper to calculate envelope value
     calcEnv { |elapsed, duration, curve = \linear|
         var phase = (elapsed / duration).clip(0, 1);
@@ -45,108 +55,113 @@ VisualSynthDef {
             { phase }
         );
     }
+
+    // Map a curve symbol to an Env-safe curve. Env exp segments cannot touch
+    // level 0 (our levels include 0), so \exp/\log become numeric curves.
+    envCurve { |sym|
+        ^switch(sym,
+            \linear, { \lin },
+            \lin,    { \lin },
+            \sin,    { \sin },
+            \cos,    { \sin },
+            \exp,    { -4 },
+            \log,    { 4 },
+            { \sin }
+        );
+    }
+
+    // Per-frame envelope state for a node. Returns an Event
+    // (alpha:, scale:, expired:). Lifetime is decoupled from \dur:
+    //   life = (\sustain ? \dur) * \legato * \stretch
+    // and the [attack, hold, release] envelope spans that life. Defaults
+    // (legato/stretch 1, attack 0, release nil, sustain nil) reproduce the
+    // old "fade 1->0 over \dur, free at \dur" behaviour. life == inf =>
+    // persistent node (never expires).
+    envState { |node, elapsed|
+        var ts, base, life, atk, rel0, rel, hold, crv, env, v;
+
+        ts   = this.numParam(node, \legato, 1) * this.numParam(node, \stretch, 1);
+        base = this.numParam(node, \sustain, this.numParam(node, \dur, 1));
+        life = base * ts;
+        if (life == inf) { ^(alpha: 1, scale: 1, expired: false, life: inf) };
+
+        atk  = (this.numParam(node, \attack, 0) * ts).clip(0, life);
+        rel0 = this.numParam(node, \release, nil);
+        rel  = if (rel0.notNil) { (rel0 * ts).clip(0, life - atk) } { life - atk };
+        hold = (life - atk - rel).max(0);
+        crv  = this.envCurve(this.getParam(node, \curve, \sin));
+
+        env = Env([0, 1, 1, 0], [atk, hold, rel], crv);
+        v   = env.at(elapsed.clip(0, life));
+        ^(alpha: v, scale: v, expired: elapsed > life, life: life);
+    }
 }
 
 + VisualSynthDef {
     *initBuiltInDefs {
-        // Basic shape definitions
+        // Lifetime/envelope is centralised in VisualSynthDef.envState:
+        // st = (alpha:, scale:, expired:, life:). A `^` in these closures
+        // would be an out-of-context return (they outlive initBuiltInDefs),
+        // so expiry is handled with if (expired) { free } { draw }.
+
         VisualSynthDef(\circle, { |node, view, elapsed, centerX, centerY, params|
-            var def, x, y, size, color, duration, fill;
-            var alpha, phase;
-            
+            var def, st, x, y, size, color, fill;
+
             def = node[\def];
-            x = def.getParam(node, \x, 0) * centerX + centerX;
-            y = def.getParam(node, \y, 0) * centerY + centerY;
-            size = def.getParam(node, \size, 50);
-            color = def.getParam(node, \color, Color.white);
-            duration = def.getParam(node, \dur, 1);
-            fill = def.getParam(node, \fill, true);
-
-            // Envelope for alpha
-            alpha = 1;
-            if (duration != inf) {
-                phase = def.calcEnv(elapsed, duration, \sin);
-                alpha = 1 - phase;
-            };
-
-            if ((duration != inf) and: { elapsed > duration }) {
-                // Auto-free expired node, then draw nothing. A `^` here would
-                // be an out-of-context return: this closure outlives the
-                // initBuiltInDefs method that defined it.
+            st  = def.envState(node, elapsed);
+            if (st[\expired]) {
                 VisualServer.default.vfree(node[\nodeID]);
             } {
-                color = color.copy.alpha_(alpha);
+                x = def.getParam(node, \x, 0) * centerX + centerX;
+                y = def.getParam(node, \y, 0) * centerY + centerY;
+                size = def.getParam(node, \size, 50) * st[\scale];
+                color = def.getParam(node, \color, Color.white).copy.alpha_(st[\alpha]);
+                fill = def.getParam(node, \fill, true);
+
                 Pen.fillColor = color;
                 Pen.strokeColor = color;
-
-                if (fill) {
-                    Pen.addOval(Rect(x - size/2, y - size/2, size, size));
-                    Pen.fill;
-                } {
-                    Pen.addOval(Rect(x - size/2, y - size/2, size, size));
-                    Pen.stroke;
-                };
+                Pen.addOval(Rect(x - (size/2), y - (size/2), size, size));
+                if (fill) { Pen.fill } { Pen.stroke };
             };
         }, (x: 0, y: 0, size: 50, color: Color.white, dur: 1, fill: true));
 
         VisualSynthDef(\square, { |node, view, elapsed, centerX, centerY, params|
-            var def, x, y, size, color, duration, fill;
-            var alpha, phase;
-            
+            var def, st, x, y, size, color, fill;
+
             def = node[\def];
-            x = def.getParam(node, \x, 0) * centerX + centerX;
-            y = def.getParam(node, \y, 0) * centerY + centerY;
-            size = def.getParam(node, \size, 50);
-            color = def.getParam(node, \color, Color.white);
-            duration = def.getParam(node, \dur, 1);
-            fill = def.getParam(node, \fill, true);
-
-            alpha = 1;
-            if (duration != inf) {
-                phase = def.calcEnv(elapsed, duration, \sin);
-                alpha = 1 - phase;
-            };
-
-            if ((duration != inf) and: { elapsed > duration }) {
+            st  = def.envState(node, elapsed);
+            if (st[\expired]) {
                 VisualServer.default.vfree(node[\nodeID]);
             } {
-                color = color.copy.alpha_(alpha);
+                x = def.getParam(node, \x, 0) * centerX + centerX;
+                y = def.getParam(node, \y, 0) * centerY + centerY;
+                size = def.getParam(node, \size, 50) * st[\scale];
+                color = def.getParam(node, \color, Color.white).copy.alpha_(st[\alpha]);
+                fill = def.getParam(node, \fill, true);
+
                 Pen.fillColor = color;
                 Pen.strokeColor = color;
-
-                if (fill) {
-                    Pen.addRect(Rect(x - size/2, y - size/2, size, size));
-                    Pen.fill;
-                } {
-                    Pen.addRect(Rect(x - size/2, y - size/2, size, size));
-                    Pen.stroke;
-                };
+                Pen.addRect(Rect(x - (size/2), y - (size/2), size, size));
+                if (fill) { Pen.fill } { Pen.stroke };
             };
         }, (x: 0, y: 0, size: 50, color: Color.white, dur: 1, fill: true));
 
         VisualSynthDef(\line, { |node, view, elapsed, centerX, centerY, params|
-            var def, x1, y1, x2, y2, color, width, duration;
-            var alpha, phase;
-            
+            var def, st, x1, y1, x2, y2, color, width;
+
             def = node[\def];
-            x1 = def.getParam(node, \x1, -0.5) * centerX + centerX;
-            y1 = def.getParam(node, \y1, 0) * centerY + centerY;
-            x2 = def.getParam(node, \x2, 0.5) * centerX + centerX;
-            y2 = def.getParam(node, \y2, 0) * centerY + centerY;
-            color = def.getParam(node, \color, Color.white);
-            width = def.getParam(node, \width, 1);
-            duration = def.getParam(node, \dur, 1);
-
-            alpha = 1;
-            if (duration != inf) {
-                phase = def.calcEnv(elapsed, duration, \sin);
-                alpha = 1 - phase;
-            };
-
-            if ((duration != inf) and: { elapsed > duration }) {
+            st  = def.envState(node, elapsed);
+            if (st[\expired]) {
                 VisualServer.default.vfree(node[\nodeID]);
             } {
-                Pen.strokeColor = color.copy.alpha_(alpha);
+                x1 = def.getParam(node, \x1, -0.5) * centerX + centerX;
+                y1 = def.getParam(node, \y1, 0) * centerY + centerY;
+                x2 = def.getParam(node, \x2, 0.5) * centerX + centerX;
+                y2 = def.getParam(node, \y2, 0) * centerY + centerY;
+                color = def.getParam(node, \color, Color.white).copy.alpha_(st[\alpha]);
+                width = def.getParam(node, \width, 1) * st[\scale];
+
+                Pen.strokeColor = color;
                 Pen.width = width;
                 Pen.moveTo(x1 @ y1);
                 Pen.lineTo(x2 @ y2);
@@ -154,63 +169,54 @@ VisualSynthDef {
             };
         }, (x1: -0.5, y1: 0, x2: 0.5, y2: 0, color: Color.white, width: 1, dur: 1));
 
-        // Animated circle with size envelope
+        // Animated circle: own startSize->endSize sweep (over the node life),
+        // alpha/expiry from envState (scale NOT applied - size is the sweep).
         VisualSynthDef(\pulse, { |node, view, elapsed, centerX, centerY, params|
-            var def, x, y, startSize, endSize, color, duration, curve;
-            var phase, size, alpha;
-            
+            var def, st, x, y, startSize, endSize, color, curve, phase, size;
+
             def = node[\def];
-            x = def.getParam(node, \x, 0) * centerX + centerX;
-            y = def.getParam(node, \y, 0) * centerY + centerY;
-            startSize = def.getParam(node, \startSize, 10);
-            endSize = def.getParam(node, \endSize, 100);
-            color = def.getParam(node, \color, Color.white);
-            duration = def.getParam(node, \dur, 1);
-            curve = def.getParam(node, \curve, \exp);
-
-            phase = def.calcEnv(elapsed, duration, curve);
-            size = startSize.blend(endSize, phase);
-            alpha = 1 - phase;
-
-            if ((duration != inf) and: { elapsed > duration }) {
+            st  = def.envState(node, elapsed);
+            if (st[\expired]) {
                 VisualServer.default.vfree(node[\nodeID]);
             } {
-                Pen.fillColor = color.copy.alpha_(alpha);
-                Pen.addOval(Rect(x - size/2, y - size/2, size, size));
+                x = def.getParam(node, \x, 0) * centerX + centerX;
+                y = def.getParam(node, \y, 0) * centerY + centerY;
+                startSize = def.getParam(node, \startSize, 10);
+                endSize = def.getParam(node, \endSize, 100);
+                curve = def.getParam(node, \curve, \exp);
+                phase = def.calcEnv(elapsed, st[\life], curve);
+                size = startSize.blend(endSize, phase);
+                color = def.getParam(node, \color, Color.white).copy.alpha_(st[\alpha]);
+
+                Pen.fillColor = color;
+                Pen.addOval(Rect(x - (size/2), y - (size/2), size, size));
                 Pen.fill;
             };
         }, (x: 0, y: 0, startSize: 10, endSize: 100, color: Color.white, dur: 1, curve: \exp));
 
-        // Spinning line
+        // Spinning line. Persistent by default (dur: inf -> never expires).
         VisualSynthDef(\spinner, { |node, view, elapsed, centerX, centerY, params|
-            var def, x, y, length, color, speed, duration, width;
-            var alpha, phase, angle, x1, y1, x2, y2;
-            
+            var def, st, x, y, length, color, speed, width, angle, x1, y1, x2, y2;
+
             def = node[\def];
-            x = def.getParam(node, \x, 0) * centerX + centerX;
-            y = def.getParam(node, \y, 0) * centerY + centerY;
-            length = def.getParam(node, \length, 50);
-            color = def.getParam(node, \color, Color.white);
-            speed = def.getParam(node, \speed, 1);
-            duration = def.getParam(node, \dur, inf);
-            width = def.getParam(node, \width, 2);
-
-            alpha = 1;
-            if (duration != inf) {
-                phase = def.calcEnv(elapsed, duration, \linear);
-                alpha = 1 - phase;
-            };
-
-            if ((duration != inf) and: { elapsed > duration }) {
+            st  = def.envState(node, elapsed);
+            if (st[\expired]) {
                 VisualServer.default.vfree(node[\nodeID]);
             } {
-                angle = elapsed * speed * 2pi;
-                x1 = x + (cos(angle) * length/2);
-                y1 = y + (sin(angle) * length/2);
-                x2 = x - (cos(angle) * length/2);
-                y2 = y - (sin(angle) * length/2);
+                x = def.getParam(node, \x, 0) * centerX + centerX;
+                y = def.getParam(node, \y, 0) * centerY + centerY;
+                length = def.getParam(node, \length, 50) * st[\scale];
+                speed = def.getParam(node, \speed, 1);
+                width = def.getParam(node, \width, 2);
+                color = def.getParam(node, \color, Color.white).copy.alpha_(st[\alpha]);
 
-                Pen.strokeColor = color.copy.alpha_(alpha);
+                angle = elapsed * speed * 2pi;
+                x1 = x + (cos(angle) * length / 2);
+                y1 = y + (sin(angle) * length / 2);
+                x2 = x - (cos(angle) * length / 2);
+                y2 = y - (sin(angle) * length / 2);
+
+                Pen.strokeColor = color;
                 Pen.width = width;
                 Pen.moveTo(x1 @ y1);
                 Pen.lineTo(x2 @ y2);
@@ -218,46 +224,26 @@ VisualSynthDef {
             };
         }, (x: 0, y: 0, length: 50, color: Color.white, speed: 1, dur: inf, width: 2));
 
-        // Live parameter circle (for real-time input)
+        // Live parameter circle. Function params are evaluated by getParam.
+        // Persistent by default (dur: inf).
         VisualSynthDef(\live, { |node, view, elapsed, centerX, centerY, params|
-            var def, x, y, size, color;
-            var xParam, yParam, sizeParam, colorParam, duration, fill, alpha;
-            
-            def = node[\def];
-            
-            // Check for live parameter functions
-            xParam = def.getParam(node, \x, 0);
-            yParam = def.getParam(node, \y, 0);
-            sizeParam = def.getParam(node, \size, 50);
-            colorParam = def.getParam(node, \color, Color.white);
-            
-            // Evaluate functions if they are functions, otherwise use as values
-            x = if (xParam.isFunction) { xParam.value } { xParam };
-            y = if (yParam.isFunction) { yParam.value } { yParam };
-            size = if (sizeParam.isFunction) { sizeParam.value } { sizeParam };
-            color = if (colorParam.isFunction) { colorParam.value } { colorParam };
-            
-            x = x * centerX + centerX;
-            y = y * centerY + centerY;
+            var def, st, x, y, size, color, fill;
 
-            duration = def.getParam(node, \dur, inf);
-            fill = def.getParam(node, \fill, true);
-            
-            alpha = 1;
-            if ((duration != inf) and: { elapsed > duration }) {
+            def = node[\def];
+            st  = def.envState(node, elapsed);
+            if (st[\expired]) {
                 VisualServer.default.vfree(node[\nodeID]);
             } {
-                color = color.copy.alpha_(alpha);
+                x = def.getParam(node, \x, 0) * centerX + centerX;
+                y = def.getParam(node, \y, 0) * centerY + centerY;
+                size = def.getParam(node, \size, 50) * st[\scale];
+                color = def.getParam(node, \color, Color.white).copy.alpha_(st[\alpha]);
+                fill = def.getParam(node, \fill, true);
+
                 Pen.fillColor = color;
                 Pen.strokeColor = color;
-
-                if (fill) {
-                    Pen.addOval(Rect(x - size/2, y - size/2, size, size));
-                    Pen.fill;
-                } {
-                    Pen.addOval(Rect(x - size/2, y - size/2, size, size));
-                    Pen.stroke;
-                };
+                Pen.addOval(Rect(x - (size/2), y - (size/2), size, size));
+                if (fill) { Pen.fill } { Pen.stroke };
             };
         }, (x: 0, y: 0, size: 50, color: Color.white, dur: inf, fill: true));
     }

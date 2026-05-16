@@ -135,9 +135,13 @@ VpatternPlayer {
         // VisualServer:vnew auto-creates that view on demand. Pre-creating
         // this.view here would spawn a spurious empty \default window.
         //
-        // Pattern:play(clock, protoEvent, quant) builds and plays the
-        // EventStreamPlayer correctly (its 2nd arg is the protoEvent, not a clock).
-        player = this.pattern.play(this.clock, nil, quant);
+        // Pattern:play(clock, protoEvent, quant) - 2nd arg is the protoEvent.
+        // Pass an EMPTY Event, not nil: nil makes EventStreamPlayer copy
+        // Event.default into every event, leaking SC's audio machinery
+        // (sustain Function, legato 0.8) as own keys and breaking our
+        // envelope model. Event:play still sets the default parent for
+        // ~play/~eventTypes, so scheduling/dispatch keep working.
+        player = this.pattern.play(this.clock, Event.new, quant);
         ^this;
     }
     

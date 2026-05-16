@@ -11,18 +11,25 @@ VisualServer {
         ^super.new.init;
     }
 
-    // Collect every provided shape param from an event into a [k,v,...] array.
-    // Keys the user didn't set are omitted so each VisualSynthDef's own
-    // defaults apply. Defined here (not as an environment var) so it resolves
-    // correctly when called from inside an event-type function.
+    // Collect provided shape params from an event into a [k,v,...] array.
+    // Only the event's OWN keys are collected (includesKey, not at): keys
+    // inherited from SC's default parent event - notably sustain (a
+    // #{ ~dur*~legato*~stretch } Function) and legato 0.8 - must NOT leak
+    // in, or they break our envelope model. Omitted keys fall back to each
+    // VisualSynthDef's defaults / VisualSynthDef.envState defaults.
+    // Defined here (not as an environment var) so it resolves correctly
+    // when called from inside an event-type function.
     *visualArgsFrom { |env|
         var keys = [\x, \y, \size, \color, \dur, \fill,
             \startSize, \endSize, \curve,
-            \x1, \y1, \x2, \y2, \width, \length, \speed];
+            \x1, \y1, \x2, \y2, \width, \length, \speed,
+            // envelope / lifetime (see VisualSynthDef.envState)
+            \stretch, \legato, \sustain, \attack, \release];
         var args = [];
         keys.do { |k|
-            var val = env[k];
-            if (val.notNil) { args = args.add(k); args = args.add(val); };
+            if (env.includesKey(k) and: { env[k].notNil }) {
+                args = args.add(k); args = args.add(env[k]);
+            };
         };
         ^args;
     }
