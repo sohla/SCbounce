@@ -22,9 +22,14 @@ table::
 ## code::\vx1 \vy1 \vx2 \vy2 \vwidth:: || line || -0.5 / 0 / 0.5 / 0 / 1
 ## code::\vlength \vspeed:: || spinner || def defaults
 ## code::\vattack \vrelease \vlegato \vsustain \vstretch:: || envelope (link::Reference/VisualParameters::) || 0 / whole life / 1 / code::\vdur:: / 1
+## code::\vtimeDelay:: || delay the visual by N seconds before it appears || the audio server's code::latency:: (so audio + visual coincide)
 ::
 
 note:: code::\legato::/code::\sustain:: WITHOUT the code::v:: are the AUDIO note's; the visual envelope is code::\vlegato::/code::\vsustain:: etc. ::
+
+note::
+The audio note is sent at code::logicalTime + s.latency:: (~0.2 s) but the visual is language-side. So code::\vtimeDelay:: defaults to the audio server's code::latency::, making them line up automatically. Set code::\vtimeDelay, (s.latency + 0.05):: to also compensate projector/display lag, or code::\vtimeDelay, 0:: for the old visual-leads-audio behaviour.
+::
 
 CLASSMETHODS::
 

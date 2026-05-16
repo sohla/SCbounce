@@ -83,6 +83,8 @@ AVbind(\instrument, \default, \freq, Pseq([440,660,880],inf), \amp, 0.2, \dur, 0
     \vinstrument, \pulse, \vendSize, Pkey(\amp)*600, \vattack, 0.1, \vview, \demo).play;
 ::
 
+The audio note is sent at code::logicalTime + s.latency:: (~0.2 s) while the visual is language-side, so AVbind delays the visual by code::\vtimeDelay:: — defaulting to the audio server's code::latency:: so they coincide automatically. Add to it to compensate projector/display lag (code::\vtimeDelay, (s.latency + 0.05)::), or set code::\vtimeDelay, 0:: for the old visual-leads-audio behaviour. In a plain link::Classes/Vbind:: the same control is code::\timeDelay:: (default 0).
+
 section:: Effects
 
 code::

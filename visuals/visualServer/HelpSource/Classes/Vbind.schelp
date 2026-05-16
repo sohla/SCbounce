@@ -22,6 +22,8 @@ Vbind(
 
 Lifetime is decoupled from code::\dur:: via the envelope keys (code::\legato::, code::\sustain::, code::\attack::, code::\release::) — see link::Classes/VisualSynthDef:: and link::Guides/VisualServer:: §Envelope. code::\legato:: > 1 makes successive events overlap.
 
+code::\timeDelay:: (seconds, default 0) defers each visual that many seconds before it appears — useful to compensate projector/display lag. (In link::Classes/AVbind:: the same control is code::\vtimeDelay::, defaulting to the audio latency so audio + visual coincide.)
+
 CLASSMETHODS::
 
 method:: new

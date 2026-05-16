@@ -20,9 +20,15 @@
 //                                 \vlength \vspeed                (spinner)
 //                                 \vattack \vrelease \vlegato
 //                                 \vsustain \vstretch             (envelope)
+//                                 \vtimeDelay                     (a/v sync)
 //
 //   Smart defaults: \vsize ?? amp*100 ; \vendSize ?? amp*200 ;
 //                   \vcolor ?? hue(freq) ; \vdur ?? audio \dur
+//
+// AUDIO/VISUAL SYNC: audio is heard at +s.latency (~0.2 s); AVbind delays
+// the visual by \vtimeDelay (default = s.latency) so they line up. Add to it
+// for projector lag, e.g. \vtimeDelay, (s.latency + 0.05) ; or \vtimeDelay,0
+// to make the visual lead the audio again.
 //
 // AVbind is played with .play  (NOT .vplay) - it drives audio + visual.
 // Event types auto-register at class compile: no manual load needed.
@@ -67,6 +73,9 @@ if (VisualServer.isNil) {
     \amp,  0.2,
     \dur,  0.5,
     \vinstrument, \circle,   // <- the SHAPE (audio synth defaults to \default)
+    // \vtimeDelay defaults to s.latency so the circle hits with the sound.
+    // Projector a touch slow? add to it:   \vtimeDelay, (s.latency + 0.05),
+    // Want the old visual-leads-audio look?  \vtimeDelay, 0,
     \vview, \demo
 ).play;
 )
@@ -182,21 +191,26 @@ if (VisualServer.isNil) {
 // \vfill false  = stroke only.   \vsustain = explicit visual lifetime in
 // seconds (ignores \dur).   \vstretch = extra envelope time-scale.
 (
+~ex6.stop;
+
 ~ex6 = AVbind(
     \instrument, \sine,
     \freq, Pseq([60, 67, 64, 72, 69].midicps, inf),
     \amp, 0.18,
     \dur, 0.2,                 // notes every 0.2 s ...
 
-    \vinstrument, \square,
+    \vinstrument, \circle,
     \vx, Pseq([-0.6, -0.3, 0, 0.3, 0.6], inf),
-    \vy, Pwhite(-0.3, 0.3),
+	\vy, (Pkey(\freq).cpsmidi - 66) / 12.neg,
     \vsize, 120,
-    \vfill, false,             // outline only
+    \vfill, true,             // outline only
     \vcolor, Pseq([Color.red, Color.yellow, Color.green, Color.cyan, Color.magenta], inf),
-    \vsustain, 2.0,            // ... but each square lives 2 s -> ~10 overlap
-    \vstretch, 1.0,
-    \vattack, 0.4,
+	// \vsustain, 2.0,            // ... but each square lives 2 s -> ~10 overlap
+	// \vstretch, 1.0,
+	\vrelease,2,
+	\vdur, 1.4,
+	\vtimeDelay, 0.1,
+    \vattack, 0.001,
     \vview, \demo
 ).play;
 )

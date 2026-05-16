@@ -15,6 +15,11 @@
 // VisualServer.visualArgsFrom; each VisualSynthDef supplies its own defaults.
 // NOTE: the standard event play function forces ~server = Server.default
 // (the AUDIO server), so use ~vserver (else VisualServer.default).
+//
+// \timeDelay (Vbind) / \vtimeDelay (AVbind): seconds to defer the visual
+// before vnew. Vbind default 0 (immediate, unchanged). AVbind defaults it to
+// the audio server's latency so audio (sent at +s.latency) and visual
+// coincide; override to also compensate projector/display lag.
 
 VisualEventTypes {
     *initClass {
@@ -22,27 +27,34 @@ VisualEventTypes {
 
         Event.addEventType(\visual, {
             var server = ~vserver ?? VisualServer.default;
-            var def = ~instrument ?? \circle;
-            var nodeID = ~nodeID ?? server.nextID;
-            server.vnew(def, nodeID, ~view ?? \default, VisualServer.visualArgsFrom(currentEnvironment));
+            VisualEventTypes.spawn(server, ~instrument ?? \circle,
+                ~nodeID ?? server.nextID, ~view ?? \default,
+                VisualServer.visualArgsFrom(currentEnvironment),
+                (~timeDelay ? 0).max(0));
         });
 
         Event.addEventType(\vpulse, {
             var server = ~vserver ?? VisualServer.default;
-            var nodeID = ~nodeID ?? server.nextID;
-            server.vnew(\pulse, nodeID, ~view ?? \default, VisualServer.visualArgsFrom(currentEnvironment));
+            VisualEventTypes.spawn(server, \pulse,
+                ~nodeID ?? server.nextID, ~view ?? \default,
+                VisualServer.visualArgsFrom(currentEnvironment),
+                (~timeDelay ? 0).max(0));
         });
 
         Event.addEventType(\vline, {
             var server = ~vserver ?? VisualServer.default;
-            var nodeID = ~nodeID ?? server.nextID;
-            server.vnew(\line, nodeID, ~view ?? \default, VisualServer.visualArgsFrom(currentEnvironment));
+            VisualEventTypes.spawn(server, \line,
+                ~nodeID ?? server.nextID, ~view ?? \default,
+                VisualServer.visualArgsFrom(currentEnvironment),
+                (~timeDelay ? 0).max(0));
         });
 
         Event.addEventType(\vlive, {
             var server = ~vserver ?? VisualServer.default;
-            var nodeID = ~nodeID ?? server.nextID;
-            server.vnew(\live, nodeID, ~view ?? \default, VisualServer.visualArgsFrom(currentEnvironment));
+            VisualEventTypes.spawn(server, \live,
+                ~nodeID ?? server.nextID, ~view ?? \default,
+                VisualServer.visualArgsFrom(currentEnvironment),
+                (~timeDelay ? 0).max(0));
         });
 
         // Combined audio-visual event type.
@@ -100,9 +112,26 @@ VisualEventTypes {
             e[\sustain] = ~vsustain;
             e[\stretch] = ~vstretch;
 
+            // Delay the visual so it coincides with the heard audio (which is
+            // sent at +server.latency). Default = the audio server's latency;
+            // override \vtimeDelay to also compensate projector/display lag.
+            e[\timeDelay] = ~vtimeDelay ? (~server ? Server.default).latency;
+
             e.play;
         });
 
         "VisualServer: event types registered (\\visual \\vpulse \\vline \\vlive \\audioVisual)".postln;
+    }
+
+    // Create the visual node now, or after `delay` seconds. Scheduled on
+    // AppClock (same thread as the UserView drawFunc, so no race with
+    // rendering). `args` is captured by the caller while currentEnvironment
+    // is still valid; the nodeID is pre-allocated so it stays stable.
+    *spawn { |server, def, nodeID, view, args, delay = 0|
+        if (delay > 0) {
+            AppClock.sched(delay, { server.vnew(def, nodeID, view, args); nil });
+        } {
+            server.vnew(def, nodeID, view, args);
+        };
     }
 }

@@ -50,6 +50,7 @@ table::
 ## code::\stretch:: || 1 || additional global time-scale on the total life (also scales Pbind delta).
 ## code::\attack:: || 0 || fade/scale-in time in strong::absolute seconds:: (NOT scaled by legato/stretch), clamped into life.
 ## code::\release:: || code::nil:: -> whole life || fade/scale-out tail in strong::absolute seconds:: (NOT scaled), clamped to code::life - attack::. code::nil:: => the entire life is the release ramp (original single-fade). The remainder code::life - attack - release:: is the hold.
+## code::\timeDelay:: (Vbind) / code::\vtimeDelay:: (AVbind) || code::0:: (Vbind) / audio code::s.latency:: (AVbind) || seconds to defer the visual before it appears (scheduled on AppClock). Not a node param - consumed at scheduling. AVbind default makes the visual coincide with the heard audio (which is sent at code::+s.latency::); raise it to also compensate projector/display lag.
 ::
 
 note::
