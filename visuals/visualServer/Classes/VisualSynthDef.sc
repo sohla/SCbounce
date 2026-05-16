@@ -71,12 +71,15 @@ VisualSynthDef {
     }
 
     // Per-frame envelope state for a node. Returns an Event
-    // (alpha:, scale:, expired:). Lifetime is decoupled from \dur:
+    // (alpha:, scale:, expired:, life:). Lifetime is decoupled from \dur:
     //   life = (\sustain ? \dur) * \legato * \stretch
-    // and the [attack, hold, release] envelope spans that life. Defaults
-    // (legato/stretch 1, attack 0, release nil, sustain nil) reproduce the
-    // old "fade 1->0 over \dur, free at \dur" behaviour. life == inf =>
-    // persistent node (never expires).
+    // \legato/\stretch scale only the total life (the overlap control).
+    // \attack and \release are ABSOLUTE seconds (NOT scaled), clamped into
+    // life; the remainder is the hold. This matches SC's note model (legato
+    // scales hold; Env attack/release segment lengths are fixed seconds) and
+    // keeps \release usable at any \legato. Defaults (legato/stretch 1,
+    // attack 0, release nil, sustain nil) => fade 1->0 over \dur, free at
+    // \dur (original behaviour). life == inf => persistent (never expires).
     envState { |node, elapsed|
         var ts, base, life, atk, rel0, rel, hold, crv, env, v;
 
@@ -85,9 +88,9 @@ VisualSynthDef {
         life = base * ts;
         if (life == inf) { ^(alpha: 1, scale: 1, expired: false, life: inf) };
 
-        atk  = (this.numParam(node, \attack, 0) * ts).clip(0, life);
+        atk  = this.numParam(node, \attack, 0).clip(0, life);
         rel0 = this.numParam(node, \release, nil);
-        rel  = if (rel0.notNil) { (rel0 * ts).clip(0, life - atk) } { life - atk };
+        rel  = if (rel0.notNil) { rel0.clip(0, life - atk) } { life - atk };
         hold = (life - atk - rel).max(0);
         crv  = this.envCurve(this.getParam(node, \curve, \sin));
 

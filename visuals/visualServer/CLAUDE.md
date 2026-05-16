@@ -132,17 +132,20 @@ v.vnew(\live, 1001, \demo, [
 ### 3. Audio-Visual Sync
 For combined audio-visual composition:
 ```supercollider
+// In AVbind every VISUAL key is v-prefixed; audio keys stay plain.
 AVbind(
-    // Audio
+    // Audio (plain)
     \instrument, \sine,
     \freq, Pseq([440, 550, 660].midicps, inf),
     \amp, 0.3,
     \dur, 0.5,
-    
-    // Visual  
+
+    // Visual (all v-prefixed)
+    \vinstrument, \pulse,
     \vx, Pkey(\freq).linlin(440, 660, -0.5, 0.5),
-    \endSize, Pkey(\amp) * 200,
-    \vcolor, Pfunc({|ev| Color.hsv(ev[\freq].cpsmidi/127, 0.8, 1.0) })
+    \vendSize, Pkey(\amp) * 200,
+    \vcolor, Pfunc({|ev| Color.hsv(ev[\freq].cpsmidi/127, 0.8, 1.0) }),
+    \vview, \demo
 ).play;
 ```
 
@@ -166,6 +169,7 @@ visualServer/
 ├── quickTest.scd            # Test installation
 ├── examples/
 │   ├── basicPatterns.scd    # Basic pattern examples
+│   ├── audioVisualBasics.scd # Beginner audio+visual (synth vs shape)
 │   ├── audioVisualSync.scd  # Audio+visual synchronization
 │   ├── liveInput.scd        # Live sensor input examples
 │   └── hybridDemo.scd       # Mixed pattern+live system

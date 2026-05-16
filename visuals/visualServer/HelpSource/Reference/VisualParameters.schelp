@@ -5,6 +5,10 @@ related:: Classes/Vbind, Classes/VisualSynthDef, Classes/VisualServer, Guides/Vi
 
 The complete set of keys forwarded from a visual pattern/event to a node. The whitelist is code::VisualServer.visualArgsFrom:: (plus code::\instrument:: and code::\view::, handled by the event types). Coordinates are normalised code::-1.0 .. 1.0:: about the view centre. Any value may be a link::Classes/Function:: (evaluated live) except envelope-timing keys, which must be numbers.
 
+note::
+strong::Naming:: the keys below are the plain names used directly in link::Classes/Vbind:: / link::Classes/Vpulse:: / link::Classes/Vline:: / link::Classes/Vlive:: (visual-only patterns). In link::Classes/AVbind:: (audio + visual in one event) strong::every visual key is code::v::-prefixed:: — code::\vx \vsize \vcolor \vstartSize \vendSize \vcurve \vwidth \vlength \vspeed \vattack \vrelease \vlegato \vsustain \vstretch \vfill \vdur \vview \vinstrument:: — so they never collide with the audio note's plain keys (incl. its own code::\legato::/code::\sustain::).
+::
+
 section:: Routing keys
 
 table::
@@ -41,11 +45,11 @@ envelope = Env([0,1,1,0], [attack, hold, release], curve)   // over `life`
 table::
 ## strong::key:: || strong::default:: || strong::meaning::
 ## code::\dur:: || 1 (circle/square/line/pulse), code::inf:: (spinner/live) || event spacing; base lifetime if no code::\sustain::.
-## code::\sustain:: || code::nil:: -> code::\dur:: || explicit base lifetime in seconds (pre-scale).
-## code::\legato:: || 1 || time-scale on the whole envelope (NOT on spacing). code::>1:: => nodes outlive the gap and overlap.
-## code::\stretch:: || 1 || additional global time-scale (also scales Pbind delta).
-## code::\attack:: || 0 || fade/scale-in seconds (pre-scale).
-## code::\release:: || code::nil:: -> whole life || fade/scale-out tail seconds (pre-scale). code::nil:: => the entire life is the release ramp (the original single-fade behaviour).
+## code::\sustain:: || code::nil:: -> code::\dur:: || explicit base lifetime in seconds (before legato/stretch).
+## code::\legato:: || 1 || time-scale on the total life only (NOT spacing, NOT attack/release). code::>1:: => nodes outlive the gap and overlap.
+## code::\stretch:: || 1 || additional global time-scale on the total life (also scales Pbind delta).
+## code::\attack:: || 0 || fade/scale-in time in strong::absolute seconds:: (NOT scaled by legato/stretch), clamped into life.
+## code::\release:: || code::nil:: -> whole life || fade/scale-out tail in strong::absolute seconds:: (NOT scaled), clamped to code::life - attack::. code::nil:: => the entire life is the release ramp (original single-fade). The remainder code::life - attack - release:: is the hold.
 ::
 
 note::

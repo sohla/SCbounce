@@ -49,8 +49,8 @@ AVbind(
     \vinstrument, \pulse,
     \vx, Pkey(\freq).linlin(440, 880, -0.7, 0.7),  // Position follows pitch
     \vy, 0,
-    \startSize, 10,
-    \endSize, Pkey(\amp) * 200,                      // Size follows amplitude
+    \vstartSize, 10,
+    \vendSize, Pkey(\amp) * 200,                     // Size follows amplitude
     \vcolor, Pfunc({|ev| 
         Color.hsv(ev[\freq].cpsmidi / 127, 0.8, 1.0)  // Color follows pitch
     }),
@@ -74,11 +74,11 @@ var drumPattern = Ppar([
         \vinstrument, \pulse,
         \vx, 0,
         \vy, 0,
-        \startSize, 20,
-        \endSize, 200,
+        \vstartSize, 20,
+        \vendSize, 200,
         \vcolor, Color.red.alpha_(0.8),
         \vdur, 0.8,
-        \curve, \exp,
+        \vcurve, \exp,
         \vview, \audioVisual
     ),
     // Snare + scattered small circles  

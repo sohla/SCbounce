@@ -75,12 +75,12 @@ VisualServer.default.vnew(\live, nil, \demo, [\x, { ~imu.x }, \y, { ~imu.y }, \s
 
 section:: Audio-visual sync
 
-link::Classes/AVbind:: plays an audio note and a synchronised visual per event. Visual keys are code::v::-prefixed (code::\vinstrument \vx \vsize \vcolor \vdur \vview::) so they don't collide with audio keys.
+link::Classes/AVbind:: plays an audio note and a synchronised visual per event. strong::One rule:: every visual key is code::v::-prefixed (code::\vinstrument \vx \vy \vsize \vcolor \vfill \vdur \vview \vstartSize \vendSize \vcurve \vx1 \vy1 \vx2 \vy2 \vwidth \vlength \vspeed \vattack \vrelease \vlegato \vsustain \vstretch::); the audio side keeps the plain SC note keys (incl. its own code::\legato::/code::\sustain::). link::Classes/Vbind:: is visual-only, so it uses the plain names — the prefix is only needed where audio + visual share one event. See link::Reference/VisualParameters::.
 
 code::
 s.boot;
 AVbind(\instrument, \default, \freq, Pseq([440,660,880],inf), \amp, 0.2, \dur, 0.4,
-    \vinstrument, \pulse, \endSize, Pkey(\amp)*600, \vview, \demo).play;
+    \vinstrument, \pulse, \vendSize, Pkey(\amp)*600, \vattack, 0.1, \vview, \demo).play;
 ::
 
 section:: Effects
@@ -107,13 +107,21 @@ list::
 ## Defaults (code::legato:: 1, code::stretch:: 1, code::attack:: 0, code::release:: nil, code::sustain:: nil) reproduce the original "fade over code::dur::, free at code::dur::" — no overlap.
 ## code::\legato:: scales the whole envelope. code::\legato, 8:: with code::\dur, 0.12:: => each node lives ~1.2 s while a new one spawns every 0.12 s => ~10 overlapping.
 ## code::\sustain:: sets an explicit base lifetime (seconds) regardless of code::\dur::.
-## code::\attack::/code::\release:: are seconds (also scaled by code::legato*stretch::); code::\curve:: shapes the segments (code::\exp::/code::\log:: are mapped to numeric curves because link::Classes/Env:: exp segments can't touch level 0).
+## code::\attack::/code::\release:: are strong::absolute seconds:: (NOT scaled by legato/stretch) clamped into the life; the remainder is the hold. code::\curve:: shapes the segments (code::\exp::/code::\log:: are mapped to numeric curves because link::Classes/Env:: exp segments can't touch level 0).
 ::
 
+In a link::Classes/Vbind:: use the plain names (code::\attack \release \legato \sustain \stretch::). In an link::Classes/AVbind:: they are code::v::-prefixed (code::\vattack \vrelease \vlegato \vsustain \vstretch::) — plain code::\legato::/code::\sustain:: there belong to the audio note.
+
 code::
+// Vbind (visual-only) - plain keys
 Vbind(\x, Pwhite(-0.7,0.7), \y, Pwhite(-0.7,0.7), \size, 50,
     \color, Pfunc({ Color.hsv(1.0.rand,0.8,1) }),
-    \dur, 0.12, \legato, 10, \view, \demo).vplay;   // overlapping
+    \dur, 0.12, \legato, 10, \view, \demo).vplay;          // overlapping
+
+// AVbind - v-prefixed visual envelope
+AVbind(\instrument, \default, \freq, Pwhite(300,800), \amp, 0.2,
+    \dur, 0.12, \vinstrument, \circle, \vsize, 50,
+    \vlegato, 10, \vattack, 0.1, \vview, \demo).play;       // overlapping
 ::
 
 Full key list and defaults: link::Reference/VisualParameters::.

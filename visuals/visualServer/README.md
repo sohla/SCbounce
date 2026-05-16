@@ -110,18 +110,21 @@ Vbind(
 
 ### Audio-Visual Sync
 ```supercollider
-// Each audio note creates a visual
+// Each audio note creates a visual.
+// In AVbind every VISUAL key is v-prefixed; audio keys stay plain.
 AVbind(
-    // Audio
+    // Audio (plain SC note keys)
     \instrument, \sine,
     \freq, Pseq([440, 550, 660].midicps, inf),
     \amp, 0.3,
     \dur, 0.5,
-    
-    // Visual
+
+    // Visual (all v-prefixed)
+    \vinstrument, \pulse,
     \vx, Pkey(\freq).linlin(440, 660, -0.5, 0.5),
-    \endSize, Pkey(\amp) * 200,
-    \vcolor, Pfunc({|ev| Color.hsv(ev[\freq].cpsmidi/127, 0.8, 1.0) })
+    \vendSize, Pkey(\amp) * 200,
+    \vcolor, Pfunc({|ev| Color.hsv(ev[\freq].cpsmidi/127, 0.8, 1.0) }),
+    \vview, \demo
 ).play;
 ```
 
@@ -243,6 +246,7 @@ visuals/visualServer/
 ├── quickTest.scd            # Install smoke test
 ├── examples/
 │   ├── basicPatterns.scd    # Basic pattern examples
+│   ├── audioVisualBasics.scd # Beginner audio+visual (synth vs shape)
 │   ├── audioVisualSync.scd  # Audio+visual sync
 │   ├── liveInput.scd        # Live sensor input
 │   └── hybridDemo.scd       # Mixed pattern+live system
