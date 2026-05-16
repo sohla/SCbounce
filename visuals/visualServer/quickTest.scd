@@ -27,6 +27,19 @@ if (VisualServer.isNil) {
 };
 )
 
+(
+Vbind(
+      \x, Pwhite(-0.7, 0.7),
+      \y, Pwhite(-0.7, 0.7),
+      \size, 50,
+      \color, Pfunc({ Color.hsv(1.0.rand, 0.8, 1) }),
+      \dur, 0.12,      // a new circle spawns every 0.12 s
+      \legato, 10,     // each circle lives 0.12 * 10 = 1.2 s
+      \view, \test
+).vplay;
+
+)
+
 // Test 2: Basic visual node creation
 (
 if (VisualServer.notNil) {

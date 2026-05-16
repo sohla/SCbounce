@@ -1,0 +1,131 @@
+title:: Visual Server
+summary:: A pattern-based visual composition system mirroring the SC audio server
+categories:: Guides>VisualServer
+related:: Classes/VisualServer, Classes/VisualSynthDef, Classes/Vbind, Classes/AVbind, Classes/VisualRenderer, Reference/VisualParameters
+
+The Visual Server is a real-time visual generation framework that mirrors SuperCollider's audio server architecture, so you compose visuals with the patterns you already know (link::Classes/Pbind::, link::Classes/Pseq::, link::Classes/Pwhite::, ...).
+
+section:: Architecture
+
+list::
+## link::Classes/VisualServer:: — manages views (windows) and nodes; server-like code::vnew::/code::vset::/code::vfree::.
+## link::Classes/VisualSynthDef:: — a visual "instrument": render function + default params + envelope. Built-ins: code::\circle \square \line \pulse \spinner \live::.
+## code::VisualEventTypes.scd:: — registers the event types (code::\visual \vpulse \vline \vlive \audioVisual::). Must be loaded after class compilation.
+## link::Classes/Vbind:: (and link::Classes/Vpulse::, link::Classes/Vline::, link::Classes/Vlive::, link::Classes/AVbind::, link::Classes/Vseq::, link::Classes/Vpar::, link::Classes/Vrand::, link::Classes/Vwrand::) — pattern factories that emit visual events.
+## link::Classes/VisualRenderer:: — trails, grids, particles, performance monitor.
+::
+
+Coordinates are normalised code::-1.0 .. 1.0:: relative to the view centre.
+
+section:: Installation
+
+This is a directory of SuperCollider classes (in code::Classes/::) plus help (code::HelpSource/::). Install by copying the whole directory into the Extensions folder.
+
+list::
+## strong::Remove any previous install first:: — delete the old code::Extensions/visualServer:: (older versions had the code::.sc:: files flat in that folder; leaving them alongside the new code::Classes/:: causes duplicate-class compile errors).
+## Copy the whole directory:
+::
+code::
+// in a terminal:
+rm -rf ~/Library/Application\ Support/SuperCollider/Extensions/visualServer
+cp -r /path/to/visuals/visualServer ~/Library/Application\ Support/SuperCollider/Extensions/visualServer
+::
+list::
+## Recompile the class library (Cmd/Ctrl+Shift+L). SC compiles code::Classes/*.sc:: recursively and auto-indexes code::HelpSource/:: (these help pages).
+## Load the event types (once per session, after compile):
+::
+code::
+"~/Library/Application Support/SuperCollider/Extensions/visualServer/VisualEventTypes.scd".standardizePath.load;
+::
+
+section:: Quick start
+
+code::
+(
+VisualServer.default.start;
+~v = VisualServer.default.createView(\demo, Rect(200, 200, 800, 600), Color.black);
+)
+
+Vbind(
+    \x, Pwhite(-0.8, 0.8),
+    \y, Pwhite(-0.8, 0.8),
+    \size, Pexprand(20, 80),
+    \color, Pfunc({ Color.hsv(1.0.rand, 0.8, 1) }),
+    \dur, 0.3,
+    \view, \demo
+).vplay;
+::
+
+section:: Patterns and vplay
+
+The code::V*:: classes return ordinary link::Classes/Pbind::s seeded with sensible defaults (code::\type::, code::\dur::, code::\instrument::, code::\view::); your pairs override them. This library adds code::Pattern:vplay:: which plays through a link::Classes/VpatternPlayer:: using an empty proto event (keeps SC's audio event machinery out of the visual model — see link::Classes/VpatternPlayer::). code::vplay:: returns the player; call code::.stop:: on it.
+
+code::
+p = Vbind(\instrument, \square, \dur, 0.4, \view, \demo).vplay;
+p.stop;
+::
+
+section:: Live input
+
+Any parameter value may be a link::Classes/Function::; it is evaluated every frame (for code::\live::/persistent nodes) or every event (link::Classes/LiveParam::/link::Classes/LiveStream:: inside a pattern). Use code::\dur, inf:: (or link::Classes/Vlive::) for a persistent node driven by sensor/data globals.
+
+code::
+~imu = (x: 0, y: 0);
+Routine({ loop { ~imu.x = sin(thisThread.seconds); ~imu.y = cos(thisThread.seconds*0.7); 0.03.wait } }).play;
+VisualServer.default.vnew(\live, nil, \demo, [\x, { ~imu.x }, \y, { ~imu.y }, \size, 70]);
+::
+
+section:: Audio-visual sync
+
+link::Classes/AVbind:: plays an audio note and a synchronised visual per event. Visual keys are code::v::-prefixed (code::\vinstrument \vx \vsize \vcolor \vdur \vview::) so they don't collide with audio keys.
+
+code::
+s.boot;
+AVbind(\instrument, \default, \freq, Pseq([440,660,880],inf), \amp, 0.2, \dur, 0.4,
+    \vinstrument, \pulse, \endSize, Pkey(\amp)*600, \vview, \demo).play;
+::
+
+section:: Effects
+
+code::
+r = VisualRenderer.default;
+r.addTrailEffect(\demo, 0.08);
+r.addGrid(\demo, 60, Color.gray(0.15));
+r.addPerformanceMonitor(\demo);
+// r.clearEffects(\demo);
+::
+
+section:: Envelope and overlap
+
+Each visual node has its own attack/hold/release envelope, decoupled from the pattern's code::\dur:: (which is only the spawn spacing). The lifetime is:
+
+code::
+life = (sustain ? dur) * legato * stretch
+::
+
+The envelope drives both strong::alpha:: and strong::size scale:: (grow in / shrink out); code::\pulse:: keeps its own code::startSize->endSize:: sweep. code::life == inf:: => persistent node (never freed) — the default for code::\live:: and code::\spinner::.
+
+list::
+## Defaults (code::legato:: 1, code::stretch:: 1, code::attack:: 0, code::release:: nil, code::sustain:: nil) reproduce the original "fade over code::dur::, free at code::dur::" — no overlap.
+## code::\legato:: scales the whole envelope. code::\legato, 8:: with code::\dur, 0.12:: => each node lives ~1.2 s while a new one spawns every 0.12 s => ~10 overlapping.
+## code::\sustain:: sets an explicit base lifetime (seconds) regardless of code::\dur::.
+## code::\attack::/code::\release:: are seconds (also scaled by code::legato*stretch::); code::\curve:: shapes the segments (code::\exp::/code::\log:: are mapped to numeric curves because link::Classes/Env:: exp segments can't touch level 0).
+::
+
+code::
+Vbind(\x, Pwhite(-0.7,0.7), \y, Pwhite(-0.7,0.7), \size, 50,
+    \color, Pfunc({ Color.hsv(1.0.rand,0.8,1) }),
+    \dur, 0.12, \legato, 10, \view, \demo).vplay;   // overlapping
+::
+
+Full key list and defaults: link::Reference/VisualParameters::.
+
+section:: Files
+
+list::
+## code::Classes/:: — the SC classes (auto-compiled).
+## code::HelpSource/:: — this documentation (auto-indexed).
+## code::VisualEventTypes.scd:: — event-type registration (manually loaded).
+## code::quickTest.scd:: — installation smoke test (Tests 1–5).
+## code::examples/:: — basicPatterns, audioVisualSync, liveInput, hybridDemo.
+::

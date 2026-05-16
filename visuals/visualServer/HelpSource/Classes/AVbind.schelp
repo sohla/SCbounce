@@ -1,0 +1,47 @@
+class:: AVbind
+summary:: Pbind that plays an audio note AND a synchronised visual
+categories:: Libraries>VisualServer
+related:: Classes/Vbind, Classes/Pbind, Guides/VisualServer, Reference/VisualParameters
+
+description::
+
+Factory returning a link::Classes/Pbind:: pre-seeded with code::(type: \audioVisual, dur: 1, instrument: \default, view: \default)::. Each event first plays the audio note (using code::\instrument::, code::\freq::, code::\amp::, code::\dur:: ... as a normal code::\note::), then builds and plays a separate visual event routed to the correct visual sub-type by code::\vinstrument::.
+
+Visual parameters are prefixed with strong::v:: so they do not collide with audio keys:
+
+table::
+## strong::audio-visual key:: || strong::maps to visual:: || strong::default
+## code::\vinstrument:: || the visual def || code::\circle::
+## code::\vview:: || code::\view:: || code::\default::
+## code::\vdur:: || visual code::\dur:: || code::~dur::
+## code::\vx \vy:: || code::\x \y:: || code::~x ? 0::
+## code::\vsize:: || code::\size:: || code::(~amp ? 0.5) * 100::
+## code::\vcolor:: || code::\color:: || from code::~freq:: hue
+## code::\vx1 \vy1 \vx2 \vy2:: || line endpoints || -0.5/0/0.5/0
+::
+Pulse keys (code::\startSize \endSize \curve::) and code::\width:: pass through directly.
+
+CLASSMETHODS::
+
+method:: new
+argument:: ... pairs
+Audio + code::v::-prefixed visual pairs.
+returns:: a link::Classes/Pbind::.
+
+EXAMPLES::
+
+code::
+s.boot;
+AVbind(
+    \instrument, \default,
+    \freq, Pseq([440,550,660,880], inf),
+    \amp, 0.2, \dur, 0.5,
+    \vinstrument, \pulse,
+    \vx, Pkey(\freq).linlin(440, 880, -0.7, 0.7),
+    \endSize, Pkey(\amp) * 600,
+    \vdur, 1.2,
+    \vview, \demo
+).play;
+::
+
+note:: code::AVbind:: is played with code::.play:: (it drives audio + visual via the event system), not code::.vplay::. ::

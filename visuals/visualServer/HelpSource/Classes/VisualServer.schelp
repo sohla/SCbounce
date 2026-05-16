@@ -1,0 +1,116 @@
+class:: VisualServer
+summary:: Pattern-based visual composition server (mirrors the audio server)
+categories:: Libraries>VisualServer
+related:: Classes/VisualSynthDef, Classes/VisualRenderer, Classes/Vbind, Guides/VisualServer, Reference/VisualParameters
+
+description::
+
+The core of the Visual Server system. It manages link::Classes/UserView:: windows ("views") and visual "nodes", offering a server-like interface (code::vnew::, code::vset::, code::vfree::) analogous to the audio server's code::s_new::/code::n_set::/code::n_free::.
+
+A singleton is available as link::#*default::. Visual nodes are rendered every frame by a per-view draw function; each node's appearance and lifetime are produced by a link::Classes/VisualSynthDef::.
+
+Event types in code::VisualEventTypes.scd:: must be loaded after class compilation for the pattern classes (link::Classes/Vbind:: etc.) to work. See link::Guides/VisualServer::.
+
+code::
+v = VisualServer.default;
+v.start;
+~view = v.createView(\demo, Rect(200, 200, 800, 600));
+v.vnew(\circle, nil, \demo, [\x, 0, \y, 0, \size, 80, \color, Color.red]);
+::
+
+CLASSMETHODS::
+
+method:: default
+The shared singleton instance, created in code::*initClass::. This is the server used by the event types and pattern classes by default.
+
+method:: new
+Create a new server instance. Normally you use link::#*default:: instead.
+
+method:: visualArgsFrom
+Collect the provided shape parameters from an event into a code::[key, value, ...]:: array, used internally by the event types in code::VisualEventTypes.scd::.
+argument:: env
+The event (environment). Only the event's strong::own:: keys are collected (via code::includesKey::) so that keys inherited from SC's default parent event (notably code::sustain:: as a Function, and code::legato:: 0.8) do not leak into the visual model. Omitted keys fall back to each link::Classes/VisualSynthDef::'s defaults.
+discussion::
+The collected keys are: code::x y size color dur fill startSize endSize curve x1 y1 x2 y2 width length speed stretch legato sustain attack release::. See link::Reference/VisualParameters::.
+
+INSTANCEMETHODS::
+
+private:: init, renderView, renderNode
+
+method:: start
+Mark the server running.
+
+method:: stop
+Stop the server and free all nodes (calls link::#-freeAll::).
+
+method:: createView
+Create a window containing an animated link::Classes/UserView:: that renders this view's nodes at 60 fps.
+argument:: name
+A link::Classes/Symbol:: identifying the view (e.g. code::\demo::).
+argument:: bounds
+A link::Classes/Rect::. Default code::Rect(100, 100, 800, 600)::.
+argument:: background
+A link::Classes/Color::. Default code::Color.black::.
+returns:: the link::Classes/UserView::.
+
+method:: vnew
+Create a visual node (like code::s_new::).
+argument:: defName
+The link::Classes/VisualSynthDef:: name, e.g. code::\circle::, code::\pulse::.
+argument:: nodeID
+An integer id, or code::nil:: to auto-allocate via link::#-nextID::.
+argument:: viewName
+The view symbol. The view is auto-created if it does not exist.
+argument:: args
+A flat code::[key, value, ...]:: array of parameters. Values may be link::Classes/Function::s (evaluated every frame — live input).
+returns:: the node id.
+
+method:: vset
+Set parameters on an existing node (like code::n_set::). Variadic: accepts code::vset(id, \x, 0.5, \color, Color.blue):: or a single array code::vset(id, [\x, 0.5])::.
+argument:: nodeID
+The node id.
+
+method:: vfree
+Free a node (like code::n_free::).
+argument:: nodeID
+The node id.
+
+method:: nextID
+Allocate and return the next node id (starts at 1000).
+
+method:: freeAll
+Free every node in every view.
+
+method:: closeAllViews
+Close all view windows.
+
+method:: free
+Stop the server and close all views.
+
+method:: views
+A link::Classes/Dictionary:: of view-name -> view data.
+
+method:: nodes
+A link::Classes/Dictionary:: of nodeID -> node event.
+
+method:: isRunning
+Boolean run state.
+
+EXAMPLES::
+
+code::
+(
+(thisProcess.nowExecutingPath.dirname +/+ "VisualEventTypes.scd").load;  // if running from the project
+v = VisualServer.default;
+v.start;
+~view = v.createView(\demo, Rect(200, 200, 800, 600), Color.black);
+)
+
+// manual node
+~id = v.vnew(\pulse, nil, \demo, [\x, 0, \y, 0, \endSize, 200, \dur, 1.5]);
+
+// live (function) params
+v.vnew(\live, nil, \demo, [\x, { 1.0.rand2 }, \y, { 1.0.rand2 }, \dur, inf]);
+
+v.freeAll;
+::

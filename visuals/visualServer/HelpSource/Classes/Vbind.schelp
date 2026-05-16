@@ -1,0 +1,55 @@
+class:: Vbind
+summary:: Pbind that produces visual events (circles/squares/...)
+categories:: Libraries>VisualServer
+related:: Classes/Vpulse, Classes/Vline, Classes/Vlive, Classes/AVbind, Classes/Pbind, Classes/VisualServer, Guides/VisualServer, Reference/VisualParameters
+
+description::
+
+A factory that returns a link::Classes/Pbind:: pre-seeded with the defaults code::(type: \visual, dur: 1, instrument: \circle, view: \default)::. User pairs are appended strong::after:: the defaults, so they override them. Play it with link::#-vplay:: (preferred — uses an empty proto event so the audio event machinery does not leak into the visual model) or the ordinary code::.play::.
+
+Every key in link::Reference/VisualParameters:: may be used. code::\instrument:: selects the link::Classes/VisualSynthDef:: (code::\circle::, code::\square::, code::\pulse::, code::\spinner::, code::\live::, or a custom def). code::\view:: routes to a window (auto-created).
+
+code::
+Vbind(
+    \x, Pwhite(-0.8, 0.8),
+    \y, Pwhite(-0.8, 0.8),
+    \size, Pexprand(20, 80),
+    \color, Pfunc({ Color.hsv(1.0.rand, 0.8, 1) }),
+    \dur, 0.3,
+    \view, \demo
+).vplay;
+::
+
+Lifetime is decoupled from code::\dur:: via the envelope keys (code::\legato::, code::\sustain::, code::\attack::, code::\release::) — see link::Classes/VisualSynthDef:: and link::Guides/VisualServer:: §Envelope. code::\legato:: > 1 makes successive events overlap.
+
+CLASSMETHODS::
+
+method:: new
+argument:: ... pairs
+Key/value (or key/pattern) pairs, exactly as link::Classes/Pbind::.
+returns:: a link::Classes/Pbind::.
+
+INSTANCEMETHODS::
+
+method:: vplay
+(Added to link::Classes/Pattern:: by this library.) Wrap the pattern in a link::Classes/VpatternPlayer:: and play it.
+argument:: clock
+A clock (default link::Classes/TempoClock#*default::).
+argument:: view
+Fallback view symbol (events usually carry their own code::\view::).
+argument:: server
+A link::Classes/VisualServer:: (default link::Classes/VisualServer#*default::).
+argument:: quant
+returns:: the link::Classes/VpatternPlayer::.
+
+EXAMPLES::
+
+code::
+(thisProcess.nowExecutingPath.dirname +/+ "VisualEventTypes.scd").load; // load event types
+VisualServer.default.start;
+VisualServer.default.createView(\demo, Rect(200,200,800,600));
+
+p = Vbind(\instrument, \square, \x, Pseq([-0.5,0,0.5],inf), \size, 60,
+    \dur, 0.4, \legato, 4, \view, \demo).vplay;
+p.stop;
+::

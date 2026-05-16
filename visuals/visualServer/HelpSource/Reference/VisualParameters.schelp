@@ -1,0 +1,55 @@
+title:: Visual Parameters
+summary:: Every key a visual pattern/event accepts, with defaults
+categories:: Reference>VisualServer
+related:: Classes/Vbind, Classes/VisualSynthDef, Classes/VisualServer, Guides/VisualServer
+
+The complete set of keys forwarded from a visual pattern/event to a node. The whitelist is code::VisualServer.visualArgsFrom:: (plus code::\instrument:: and code::\view::, handled by the event types). Coordinates are normalised code::-1.0 .. 1.0:: about the view centre. Any value may be a link::Classes/Function:: (evaluated live) except envelope-timing keys, which must be numbers.
+
+section:: Routing keys
+
+table::
+## strong::key:: || strong::default:: || strong::meaning::
+## code::\instrument:: || code::\circle:: (Vbind) || which link::Classes/VisualSynthDef:: to use.
+## code::\view:: || code::\default:: || target window symbol (auto-created).
+::
+
+section:: Geometry & appearance
+
+table::
+## strong::key:: || strong::default:: || strong::used by:: || strong::meaning::
+## code::\x:: code::\y:: || 0, 0 || circle, square, pulse, spinner, live || centre position (normalised).
+## code::\size:: || 50 || circle, square, live || diameter / side (px), scaled by the envelope.
+## code::\color:: || code::Color.white:: || all || fill/stroke colour; alpha is multiplied by the envelope.
+## code::\fill:: || code::true:: || circle, square, live || code::true:: = filled, code::false:: = stroked.
+## code::\startSize:: code::\endSize:: || 10, 100 || pulse || size swept start->end over the node life.
+## code::\x1 \y1 \x2 \y2:: || -0.5, 0, 0.5, 0 || line || line endpoints (normalised).
+## code::\width:: || 1 (line), 2 (spinner) || line, spinner || stroke width (px), scaled by envelope (line).
+## code::\length:: || 50 || spinner || bar length (px), scaled by envelope.
+## code::\speed:: || 1 || spinner || rotations-per-second factor.
+## code::\curve:: || code::\exp:: (pulse), else code::\sin:: || pulse + envelope (all) || easing: code::\linear \sin \cos \exp \log::. For the envelope, code::\exp::/code::\log:: are mapped to numeric curves (link::Classes/Env:: exp segments cannot touch level 0).
+::
+
+section:: Timing & envelope
+
+code::\dur:: is the pattern delta (spawn spacing) AND the default base lifetime. The node's life and its alpha/size envelope are computed by code::VisualSynthDef.envState:::
+
+code::
+life = (sustain ? dur) * legato * stretch
+envelope = Env([0,1,1,0], [attack, hold, release], curve)   // over `life`
+::
+
+table::
+## strong::key:: || strong::default:: || strong::meaning::
+## code::\dur:: || 1 (circle/square/line/pulse), code::inf:: (spinner/live) || event spacing; base lifetime if no code::\sustain::.
+## code::\sustain:: || code::nil:: -> code::\dur:: || explicit base lifetime in seconds (pre-scale).
+## code::\legato:: || 1 || time-scale on the whole envelope (NOT on spacing). code::>1:: => nodes outlive the gap and overlap.
+## code::\stretch:: || 1 || additional global time-scale (also scales Pbind delta).
+## code::\attack:: || 0 || fade/scale-in seconds (pre-scale).
+## code::\release:: || code::nil:: -> whole life || fade/scale-out tail seconds (pre-scale). code::nil:: => the entire life is the release ramp (the original single-fade behaviour).
+::
+
+note::
+code::life == inf:: (e.g. code::\spinner::/code::\live:: with code::dur: inf::, or code::sustain: inf::) => the node is strong::persistent::: never auto-freed, code::alpha = 1::, code::scale = 1::. Free it with code::VisualServer.default.vfree(id):: or code::freeAll::.
+::
+
+Defaults (code::legato 1, stretch 1, attack 0, release nil, sustain nil::) reproduce the original behaviour: fade code::1 -> 0:: over code::\dur:: and free at code::\dur:: — no overlap. Set code::\legato:: or code::\sustain:: to make animations overlap. See link::Guides/VisualServer:: §Envelope.

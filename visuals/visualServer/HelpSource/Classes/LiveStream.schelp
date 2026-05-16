@@ -1,0 +1,22 @@
+class:: LiveStream
+summary:: Alias of LiveParam
+categories:: Libraries>VisualServer
+related:: Classes/LiveParam, Classes/Vlive, Guides/VisualServer
+
+description::
+
+A subclass of link::Classes/LiveParam:: with identical behaviour, provided as the name used by some examples (e.g. code::LiveStream({ ... }, nil, 0.1)::; the extra arguments are ignored). See link::Classes/LiveParam:: for the full description.
+
+CLASSMETHODS::
+
+method:: new
+argument:: func
+A link::Classes/Function:: returning the value for this event.
+argument:: ... ignored
+Accepted and ignored.
+
+EXAMPLES::
+
+code::
+Vbind(\x, LiveStream({ ~imu.x }, nil, 0.1), \dur, 0.2, \view, \demo).vplay;
+::

@@ -15,17 +15,19 @@ A pattern-based visual system for SuperCollider that enables real-time visual ge
 
 1. **Install the classes**:
 
-   **Option 1 - Copy to Extensions folder (Recommended):**
+   Classes live in `Classes/`, docs in `HelpSource/`. Copy the **whole
+   directory** (remove any previous flat install first, or you get
+   duplicate-class compile errors):
    ```bash
-   # Copy all .sc files to Extensions folder
-   cp *.sc ~/Library/Application\ Support/SuperCollider/Extensions/
+   # Remove old install (older versions had flat .sc files here)
+   rm -rf ~/Library/Application\ Support/SuperCollider/Extensions/visualServer
+
+   # Copy the whole folder (brings Classes/ + HelpSource/)
+   cp -r visuals/visualServer ~/Library/Application\ Support/SuperCollider/Extensions/visualServer
    ```
-   
-   **Option 2 - Copy entire folder:**
-   ```bash
-   # Copy whole visualServer folder to Extensions
-   cp -r visuals/visualServer/ ~/Library/Application\ Support/SuperCollider/Extensions/
-   ```
+   SC compiles `Classes/*.sc` recursively and auto-indexes `HelpSource/`
+   (Help browser → "Visual Server" guide, "Visual Parameters" reference,
+   or `VisualServer.help`).
 
 2. **Recompile class library:**
    ```
@@ -226,11 +228,19 @@ r.addPerformanceMonitor(\demo);
 
 ```
 visuals/visualServer/
-├── VisualServer.sc       # Core server class
-├── VisualSynthDef.sc     # Visual instrument definitions  
-├── VisualEvent.sc        # Event types for patterns
-├── VisualPatterns.sc     # Pattern classes (Vbind, etc.)
-├── VisualRenderer.sc     # Effects and rendering
+├── Classes/                 # SC classes (auto-compiled)
+│   ├── VisualServer.sc       # Core server class
+│   ├── VisualSynthDef.sc     # Visual instrument definitions
+│   ├── VisualEvent.sc        # One-off event factory
+│   ├── VisualPatterns.sc     # Pattern classes (Vbind, etc.)
+│   └── VisualRenderer.sc     # Effects and rendering
+├── HelpSource/              # SCDoc help (auto-indexed)
+│   ├── Classes/              # one .schelp per class
+│   ├── Guides/VisualServer.schelp
+│   └── Reference/VisualParameters.schelp
+├── VisualEventTypes.scd     # Event types (load after compile)
+├── loadVisualServer.scd     # Install instructions
+├── quickTest.scd            # Install smoke test
 ├── examples/
 │   ├── basicPatterns.scd    # Basic pattern examples
 │   ├── audioVisualSync.scd  # Audio+visual sync
@@ -238,6 +248,10 @@ visuals/visualServer/
 │   └── hybridDemo.scd       # Mixed pattern+live system
 └── README.md            # This file
 ```
+
+Documentation is in `HelpSource/` — open via SC's Help browser
+(search **"Visual Server"** for the guide, **"Visual Parameters"** for the
+full key reference) or `VisualServer.help`.
 
 ## Example Workflows
 

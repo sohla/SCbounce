@@ -1,0 +1,26 @@
+class:: Vpulse
+summary:: Pbind that produces expanding-pulse visual events
+categories:: Libraries>VisualServer
+related:: Classes/Vbind, Classes/VisualSynthDef, Guides/VisualServer, Reference/VisualParameters
+
+description::
+
+Factory returning a link::Classes/Pbind:: pre-seeded with code::(type: \vpulse, dur: 1, view: \default)::. Targets the code::\pulse:: link::Classes/VisualSynthDef::, which sweeps size from code::\startSize:: to code::\endSize:: over the node lifetime. See link::Classes/Vbind:: for the shared playback model and link::Reference/VisualParameters:: for keys.
+
+CLASSMETHODS::
+
+method:: new
+argument:: ... pairs
+Pbind-style pairs. Common keys: code::x y startSize endSize color dur curve view:: plus the envelope keys.
+returns:: a link::Classes/Pbind::.
+
+EXAMPLES::
+
+code::
+Vpulse(
+    \x, Pwhite(-0.5, 0.5), \y, Pwhite(-0.5, 0.5),
+    \startSize, 5, \endSize, Pexprand(80, 200),
+    \color, Pfunc({ Color.hsv(0.6, 0.8, 0.9) }),
+    \dur, 0.8, \view, \demo
+).vplay;
+::

@@ -26,13 +26,20 @@ The project consists of 5 main SuperCollider classes that must be installed in t
 ## Installation & Setup Commands
 
 ### Install Classes
+Classes live in `Classes/`, docs in `HelpSource/`. Copy the WHOLE directory
+(remove any previous flat install first to avoid duplicate-class errors).
 ```bash
-# Copy all .sc files to Extensions folder
-cp *.sc ~/Library/Application\ Support/SuperCollider/Extensions/
+# Remove old install (older versions had flat .sc files here)
+rm -rf ~/Library/Application\ Support/SuperCollider/Extensions/visualServer
 
-# Alternative: Create symbolic link  
-ln -s /path/to/visuals/visualServer ~/Library/Application\ Support/SuperCollider/Extensions/VisualServer
+# Copy the whole directory (brings Classes/ + HelpSource/)
+cp -r /path/to/visuals/visualServer ~/Library/Application\ Support/SuperCollider/Extensions/visualServer
+
+# Alternative: symbolic link (auto-tracks edits)
+ln -s /path/to/visuals/visualServer ~/Library/Application\ Support/SuperCollider/Extensions/visualServer
 ```
+SC compiles `Classes/*.sc` recursively and auto-indexes `HelpSource/`
+(Help browser → "Visual Server" guide, "Visual Parameters" reference).
 
 ### Initialize System
 ```supercollider
@@ -144,11 +151,16 @@ AVbind(
 
 ```
 visualServer/
-├── VisualServer.sc          # Core server class
-├── VisualSynthDef.sc        # Visual instrument definitions
-├── VisualEvent.sc           # Event types for patterns
-├── VisualPatterns.sc        # Pattern classes (Vbind, etc.)
-├── VisualRenderer.sc        # Effects and rendering system
+├── Classes/                 # SC classes (auto-compiled)
+│   ├── VisualServer.sc          # Core server class
+│   ├── VisualSynthDef.sc        # Visual instrument definitions
+│   ├── VisualEvent.sc           # One-off event factory
+│   ├── VisualPatterns.sc        # Pattern classes (Vbind, etc.)
+│   └── VisualRenderer.sc        # Effects and rendering system
+├── HelpSource/              # SCDoc help (auto-indexed)
+│   ├── Classes/                 # one .schelp per class (16)
+│   ├── Guides/VisualServer.schelp        # system guide
+│   └── Reference/VisualParameters.schelp # full key reference
 ├── VisualEventTypes.scd     # Event type definitions (load after classes)
 ├── loadVisualServer.scd     # Installation instructions
 ├── quickTest.scd            # Test installation
@@ -159,6 +171,8 @@ visualServer/
 │   └── hybridDemo.scd       # Mixed pattern+live system
 └── README.md               # Complete documentation
 ```
+Documentation lives in `HelpSource/` — open via SC's Help browser
+(search "Visual Server" / "Visual Parameters") or `VisualServer.help`.
 
 ## Common Development Tasks
 
