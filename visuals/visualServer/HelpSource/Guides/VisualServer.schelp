@@ -10,7 +10,7 @@ section:: Architecture
 list::
 ## link::Classes/VisualServer:: — manages views (windows) and nodes; server-like code::vnew::/code::vset::/code::vfree::.
 ## link::Classes/VisualSynthDef:: — a visual "instrument": render function + default params + envelope. Built-ins: code::\circle \square \line \pulse \spinner \live::.
-## code::VisualEventTypes.scd:: — registers the event types (code::\visual \vpulse \vline \vlive \audioVisual::). Must be loaded after class compilation.
+## link::Classes/VisualEventTypes:: — auto-registers the event types (code::\visual \vpulse \vline \vlive \audioVisual::) at class compile (its code::*initClass::).
 ## link::Classes/Vbind:: (and link::Classes/Vpulse::, link::Classes/Vline::, link::Classes/Vlive::, link::Classes/AVbind::, link::Classes/Vseq::, link::Classes/Vpar::, link::Classes/Vrand::, link::Classes/Vwrand::) — pattern factories that emit visual events.
 ## link::Classes/VisualRenderer:: — trails, grids, particles, performance monitor.
 ::
@@ -31,12 +31,10 @@ rm -rf ~/Library/Application\ Support/SuperCollider/Extensions/visualServer
 cp -r /path/to/visuals/visualServer ~/Library/Application\ Support/SuperCollider/Extensions/visualServer
 ::
 list::
-## Recompile the class library (Cmd/Ctrl+Shift+L). SC compiles code::Classes/*.sc:: recursively and auto-indexes code::HelpSource/:: (these help pages).
-## Load the event types (once per session, after compile):
+## Recompile the class library (Cmd/Ctrl+Shift+L). SC compiles code::Classes/*.sc:: recursively and auto-indexes code::HelpSource/:: (these help pages). The event types auto-register via link::Classes/VisualEventTypes::'s code::*initClass:: — strong::no manual load needed::.
 ::
-code::
-"~/Library/Application Support/SuperCollider/Extensions/visualServer/VisualEventTypes.scd".standardizePath.load;
-::
+
+note:: code::VisualEventTypes.scd:: is now an optional no-op stub kept only so older scripts that still code::.load:: it do not error. ::
 
 section:: Quick start
 
@@ -123,9 +121,9 @@ Full key list and defaults: link::Reference/VisualParameters::.
 section:: Files
 
 list::
-## code::Classes/:: — the SC classes (auto-compiled).
+## code::Classes/:: — the SC classes (auto-compiled), incl. link::Classes/VisualEventTypes:: which auto-registers the event types.
 ## code::HelpSource/:: — this documentation (auto-indexed).
-## code::VisualEventTypes.scd:: — event-type registration (manually loaded).
+## code::VisualEventTypes.scd:: — optional no-op stub (back-compat only).
 ## code::quickTest.scd:: — installation smoke test (Tests 1–5).
 ## code::examples/:: — basicPatterns, audioVisualSync, liveInput, hybridDemo.
 ::

@@ -1,5 +1,5 @@
 // Helper class for creating visual events from patterns
-// Event types are defined in VisualEventTypes.scd and must be loaded separately
+// Event types are auto-registered by VisualEventTypes:*initClass at compile
 VisualEvent {
     *new { |type = \visual, args|
         var event = Event.new;

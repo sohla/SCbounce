@@ -45,9 +45,8 @@ SC compiles `Classes/*.sc` recursively and auto-indexes `HelpSource/`
 ```supercollider
 // In SuperCollider: Recompile class library first
 Cmd/Ctrl+Shift+L
-
-// Load event types (must be done after class compilation)
-(thisProcess.nowExecutingPath.dirname +/+ "VisualEventTypes.scd").load;
+// Event types (\visual \vpulse \vline \vlive \audioVisual) auto-register
+// at compile via VisualEventTypes:*initClass — no manual load needed.
 
 // Initialize server and create view
 v = VisualServer.default;
@@ -156,12 +155,13 @@ visualServer/
 │   ├── VisualSynthDef.sc        # Visual instrument definitions
 │   ├── VisualEvent.sc           # One-off event factory
 │   ├── VisualPatterns.sc        # Pattern classes (Vbind, etc.)
-│   └── VisualRenderer.sc        # Effects and rendering system
+│   ├── VisualRenderer.sc        # Effects and rendering system
+│   └── VisualEventTypes.sc      # Auto-registers event types (*initClass)
 ├── HelpSource/              # SCDoc help (auto-indexed)
 │   ├── Classes/                 # one .schelp per class (16)
 │   ├── Guides/VisualServer.schelp        # system guide
 │   └── Reference/VisualParameters.schelp # full key reference
-├── VisualEventTypes.scd     # Event type definitions (load after classes)
+├── VisualEventTypes.scd     # No-op stub (event types auto-register; kept for back-compat)
 ├── loadVisualServer.scd     # Installation instructions
 ├── quickTest.scd            # Test installation
 ├── examples/

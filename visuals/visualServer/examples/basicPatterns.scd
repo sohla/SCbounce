@@ -9,9 +9,8 @@ if (VisualServer.isNil) {
 } {
     "✓ Visual Server classes found".postln;
     
-    // Load event types
-    (thisProcess.nowExecutingPath.dirname.dirname +/+ "VisualEventTypes.scd").load;
-    
+    // Event types auto-register at class compile (no manual load needed)
+
     // Initialize the visual server
     ~v = VisualServer.default;
     ~v.start;

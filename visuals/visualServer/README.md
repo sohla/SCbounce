@@ -42,8 +42,7 @@ A pattern-based visual system for SuperCollider that enables real-time visual ge
 
 4. **Initialize system:**
    ```supercollider
-   // Load event types (required for patterns)
-   (thisProcess.nowExecutingPath.dirname +/+ "VisualEventTypes.scd").load;
+   // Event types auto-register at class compile — no manual load needed.
 
    // Initialize visual server
    ~v = VisualServer.default;
@@ -233,12 +232,13 @@ visuals/visualServer/
 │   ├── VisualSynthDef.sc     # Visual instrument definitions
 │   ├── VisualEvent.sc        # One-off event factory
 │   ├── VisualPatterns.sc     # Pattern classes (Vbind, etc.)
-│   └── VisualRenderer.sc     # Effects and rendering
+│   ├── VisualRenderer.sc     # Effects and rendering
+│   └── VisualEventTypes.sc   # Auto-registers event types (*initClass)
 ├── HelpSource/              # SCDoc help (auto-indexed)
 │   ├── Classes/              # one .schelp per class
 │   ├── Guides/VisualServer.schelp
 │   └── Reference/VisualParameters.schelp
-├── VisualEventTypes.scd     # Event types (load after compile)
+├── VisualEventTypes.scd     # No-op stub (auto-registered; kept for back-compat)
 ├── loadVisualServer.scd     # Install instructions
 ├── quickTest.scd            # Install smoke test
 ├── examples/

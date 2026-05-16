@@ -45,7 +45,7 @@ returns:: the link::Classes/VpatternPlayer::.
 EXAMPLES::
 
 code::
-(thisProcess.nowExecutingPath.dirname +/+ "VisualEventTypes.scd").load; // load event types
+// event types auto-register at class compile - nothing to load
 VisualServer.default.start;
 VisualServer.default.createView(\demo, Rect(200,200,800,600));
 

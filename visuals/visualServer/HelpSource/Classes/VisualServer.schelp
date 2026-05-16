@@ -9,7 +9,7 @@ The core of the Visual Server system. It manages link::Classes/UserView:: window
 
 A singleton is available as link::#*default::. Visual nodes are rendered every frame by a per-view draw function; each node's appearance and lifetime are produced by a link::Classes/VisualSynthDef::.
 
-Event types in code::VisualEventTypes.scd:: must be loaded after class compilation for the pattern classes (link::Classes/Vbind:: etc.) to work. See link::Guides/VisualServer::.
+The event types are auto-registered at class-library compile by link::Classes/VisualEventTypes:: (its code::*initClass::) — no manual load is needed. See link::Guides/VisualServer::.
 
 code::
 v = VisualServer.default;
@@ -27,7 +27,7 @@ method:: new
 Create a new server instance. Normally you use link::#*default:: instead.
 
 method:: visualArgsFrom
-Collect the provided shape parameters from an event into a code::[key, value, ...]:: array, used internally by the event types in code::VisualEventTypes.scd::.
+Collect the provided shape parameters from an event into a code::[key, value, ...]:: array, used internally by the event types (link::Classes/VisualEventTypes::).
 argument:: env
 The event (environment). Only the event's strong::own:: keys are collected (via code::includesKey::) so that keys inherited from SC's default parent event (notably code::sustain:: as a Function, and code::legato:: 0.8) do not leak into the visual model. Omitted keys fall back to each link::Classes/VisualSynthDef::'s defaults.
 discussion::
@@ -100,7 +100,7 @@ EXAMPLES::
 
 code::
 (
-(thisProcess.nowExecutingPath.dirname +/+ "VisualEventTypes.scd").load;  // if running from the project
+// event types auto-register at class compile - nothing to load
 v = VisualServer.default;
 v.start;
 ~view = v.createView(\demo, Rect(200, 200, 800, 600), Color.black);

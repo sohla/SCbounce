@@ -5,7 +5,7 @@ related:: Classes/VisualServer, Classes/Vbind, Guides/VisualServer
 
 description::
 
-A small helper that builds an link::Classes/Event:: with the right code::\type:: so it can be played directly (code::().play::) without a pattern. The event types it targets are defined in code::VisualEventTypes.scd:: and must be loaded first.
+A small helper that builds an link::Classes/Event:: with the right code::\type:: so it can be played directly (code::().play::) without a pattern. The event types it targets are auto-registered at class compile by link::Classes/VisualEventTypes:: — nothing to load.
 
 These are equivalent: code::VisualEvent.circle(0, 0, 50).play:: and code::(type: \visual, instrument: \circle, x: 0, y: 0, size: 50).play::.
 
