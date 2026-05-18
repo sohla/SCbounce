@@ -1,5 +1,7 @@
 var listsDir = "~/Develop/SuperCollider/Projects/SCbounce/lists/";//RPI
 var personalityDir = "~/Develop/SuperCollider/Projects/SCbounce/personalities/";//RPI
+
+
 // var personalityDir = "~/Develop/SuperCollider/Projects/scbounce/personalities/"; //laptop
 // var personalityDir = "~/Develop/SuperCollider/oscMusic/personalities/"; //mac mini cabin
 
@@ -18,7 +20,7 @@ var defaultLists = [
 
     "list_NZ_Suz.sc",
     "list_NZ_Suz.sc",
-    
+
     "list_NZ_Suz.sc",
 ];
 
@@ -48,7 +50,7 @@ var com = (
 );
 
 //------------------------------------------------------------
-// 
+//
 //------------------------------------------------------------
 var loadPersonalityList = {|i|
     var path = PathName.new(listsDir++defaultLists[i]);
@@ -191,7 +193,7 @@ var interpretPersonality = {|d|
 };
 
 //------------------------------------------------------------
-// 
+//
 //------------------------------------------------------------
 
 var createProcRout = {|d|
@@ -202,7 +204,7 @@ var createProcRout = {|d|
                     ~fileTime = File.mtime(~filePath);
                     "[file saved]".postln;
                     NetAddr.new("127.0.0.1", 57120).sendMsg("/airkit/loadPersonality", d.port, d.personality);
-                }); 
+                });
                 if(d.enabled == true,{
                     // pre-process data -> personality model
                     ~processDeviceData.(d);
@@ -263,7 +265,7 @@ var loadPersonality = { |port, index|
 
 };
 //------------------------------------------------------------
-// 
+//
 //------------------------------------------------------------
 
 var unLoadPersonality = { |port, index|
@@ -289,7 +291,7 @@ var unLoadPersonality = { |port, index|
 };
 
 //------------------------------------------------------------
-// 
+//
 //------------------------------------------------------------
 
 var reLoadPersonality = { |port, index|
@@ -323,7 +325,7 @@ var reLoadPersonality = { |port, index|
 };
 
 //------------------------------------------------------------
-// 
+//
 //------------------------------------------------------------
 ~devices = Dictionary();
 
