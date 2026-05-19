@@ -6,7 +6,7 @@
 
 // var oscMessageTag  = "CombinedDataPacket";
 var oscMessageTag  = "IMUFusedData"; // this is coming from AirSticks
-var outAddr = NetAddr.new("192.168.70.242", 3333);
+var outAddr = NetAddr.new("192.168.100.40", 3333);
 var airstickListeners = [];
 var numAirwareVirtualDevices = 5;
 var oscThru = false;
@@ -371,6 +371,8 @@ var addDevice = { |ip,port,index|
     d.params.sensitivity =  0.5;
     d.sensors.digiInEvent = Array.fill(4,0); // must allocate for each instance
 
+    d.color = [Color.red,Color.yellow,Color.green,Color.blue].choose;
+    
     // global storage : port is the key
     ~devices.put(port,d);
 	NetAddr.new("127.0.0.1", 57120).sendMsg("/airkit/loadPersonality", port, 0);
@@ -448,3 +450,8 @@ OSCFunc({ |msg, time, addr, recvPort|
     calibrateDevice.value(devicePort);
 },'/airkit/calibrate', NetAddr("127.0.0.1", NetAddr.langPort));
 
+//------------------------------------------------------------
+OSCFunc({ |msg, time, addr, recvPort|
+    ~devices.keys.asArray.postln;
+    addr.sendMsg("/airkitremote/devices", ~devices.keys.asArray);
+},'/airkit/remote/devices');

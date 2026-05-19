@@ -197,8 +197,8 @@ SynthDef(\funBass, {
 //------------------------------------------------------------
 ~next = {|d|
 
-	var move = m.accelMassFiltered.lincurve(0,2.5,1,notes.size,1);
-	var amp = m.accelMassFiltered.lincurve(0,1.4,-50,-14,-1);
+	var move = m.accelMassFiltered.lincurve(0,1.5,1,notes.size,1);
+	var amp = m.accelMassFiltered.lincurve(0,1.4,-50,-6,-1);
 	var ff = m.rrateMassFiltered.lincurve(0.0,2.0,200,2000,-3); 
 	var wd = m.rrateMassFiltered.lincurve(0.0,2.0,10,0.1,-3); 
 	var step = m.gyroXFiltered.linlin(-0.8,0.8,0,3).floor; //up down
