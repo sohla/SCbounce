@@ -11,6 +11,7 @@
 
 
 		"melbb1",
+		"suz4",
 		"melbb2",
 		"mel1",
 		"mel2",

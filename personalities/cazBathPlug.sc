@@ -11,7 +11,7 @@ m.gyroFilteredAttack = 0.7;
 m.gyroFilteredDecay = 0.7;
 
 //------------------------------------------------------------
-SynthDef(\samplerTRAIN, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=440, attack=0.01, decay=0.1, sustain=0.9, release=3.7, gate=1,cutoff=20000, rq=1, loop=1|
+SynthDef(\samplerHTB, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=440, attack=0.01, decay=0.1, sustain=0.9, release=1.7, gate=1,cutoff=20000, rq=1, loop=1|
 	var lr = rate * BufRateScale.kr(bufnum) * (freq/440.0);
   var env = EnvGen.kr(Env.adsr(attack, decay, sustain, release), gate, doneAction: 2);
 	var sig = PlayBuf.ar(2, bufnum, rate: lr, startPos: start * BufFrames.kr(bufnum), loop: loop);
@@ -29,7 +29,7 @@ SynthDef(\samplerTRAIN, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq
 
 //------------------------------------------------------------
 ~init = ~init <> {
-	var folder  = PathName("~/Downloads/yourDNASamples/melbTrain");
+	var folder  = PathName("~/Downloads/yourDNASamples/bath/caz");
 	postf("loading samples : % \n", folder);
 
 	buffers = folder.entries.collect({ |path,i|
@@ -45,13 +45,13 @@ SynthDef(\samplerTRAIN, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq
 
 //------------------------------------------------------------
 ~next = {|d|
-	var amps = [3,4.4,6,8];
+	var amps = [1,1,1,1] * 0.5;
   states.do({|o,i|
 	    if(d.sensors.digiInEvent[i] == 1, {
       if(o == 1,{
       	states[i] = 0;
         //max 11
-				synths.put(i, Synth(\samplerTRAIN, [\bufnum, buffers[i+0], \rate, 1, \amp, amps[i]]));
+				synths.put(i, Synth(\samplerHTB, [\bufnum, buffers[i+0], \rate, 1, \amp, amps[i]]));
       	// ["on",i].postln;
     	});
 		},{

@@ -3,7 +3,7 @@ var addPrevButton = { |d|
 		.minHeight_(100)
 		.font_(Font(size:64))
 		.states_([
-			["⬅",Color.black, d.color.alpha_(0.8)],
+			["←",Color.black,d.color.alpha_(0.8)],
 		])
 		.action_({|but|
 			d.personality = d.personality - 1;

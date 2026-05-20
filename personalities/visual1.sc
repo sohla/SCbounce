@@ -59,8 +59,8 @@ m.rrateMassFilteredDecay = 0.4;
 		shape: \star,
 		fill: false,
 		rotate: 0,
-		startSize: squareSize * 0.001,
-		endSize: squareSize * 0.01,
+		startSize: squareSize * 0.003,
+		endSize: squareSize * 0.03,
 		duration: duration,
 		startColor: d.color.alpha_(0.8),
 		endColor: oceanColor.lighten(0.2).alpha_(0.1),
@@ -73,7 +73,7 @@ m.rrateMassFilteredDecay = 0.4;
 		yEnv: yEnv, // Vertical oscillation
 		rotation: sin(time) * 0.1,
 	);
-	// ev.play;
+	ev.play;
 };
 
 //------------------------------------------------------------

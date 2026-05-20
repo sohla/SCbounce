@@ -27,7 +27,7 @@ m.rrateMassFilteredDecay = 0.4;
 	// Create oscillating squares in bottom half - ocean effect
 	var time = TempoClock.beats;
 	var xPos = [-0.8,-0.6,-0.3,0.0,0.2,0.5,0.7,1.0].choose; // Random x position
-	var baseY = 4.7 - (sin(time * 0.5) * 0.2); // Bottom half of screen
+	var baseY = 4.5 - (sin(time *1.3) * 0.8); // Bottom half of screen
 	var squareSize = rrand(800,1000);
 	var duration = rrand(1.0, 4.0);
 	var wavePhase = rrand(0, 2pi); // Random phase offset for wave
@@ -56,24 +56,24 @@ m.rrateMassFilteredDecay = 0.4;
 		type: \customVisualEvent,
 		amp: 0,
 		viewID: d.port,
-		shape: \star,
-		fill: false,
+		shape: \circle,
+		fill: true,
 		rotate: 0,
-		startSize: squareSize * 0.001,
-		endSize: squareSize * 0.01,
+		startSize: squareSize * 0.002,
+		endSize: squareSize * 0.04,
 		duration: duration,
 		startColor: d.color.alpha_(0.8),
 		endColor: oceanColor.lighten(0.2).alpha_(0.1),
 		startWidth: 1,
 		endWidth: 1,
-		sx: xPos * 0.1,
+		sx: 1,//xPos * 0.1,
 		sy: baseY - 4.5,
-		ex: xPos, // Stay in same x position
-		ey: baseY.neg, // Stay in same y, oscillation via envelope
+		ex: -1,//xPos, // Stay in same x position
+		ey: 0,//baseY.neg, // Stay in same y, oscillation via envelope
 		yEnv: yEnv, // Vertical oscillation
 		rotation: sin(time) * 0.1,
 	);
-	// ev.play;
+	ev.play;
 };
 
 //------------------------------------------------------------
