@@ -1,5 +1,5 @@
-var listsDir = "~/Develop/SuperCollider/Projects/SCbounce/lists/";//RPI
-var personalityDir = "~/Develop/SuperCollider/Projects/SCbounce/personalities/";//RPI
+var listsDir = "~/Develop/SuperCollider/Projects/AirKit/lists/";//RPI
+var personalityDir = "~/Develop/SuperCollider/Projects/AirKit/personalities/";//RPI
 // var personalityDir = "~/Develop/SuperCollider/Projects/scbounce/personalities/"; //laptop
 // var personalityDir = "~/Develop/SuperCollider/oscMusic/personalities/"; //mac mini cabin
 
