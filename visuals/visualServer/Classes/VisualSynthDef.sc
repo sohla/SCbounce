@@ -106,9 +106,16 @@ VisualSynthDef {
         // st = (alpha:, scale:, expired:, life:). A `^` in these closures
         // would be an out-of-context return (they outlive initBuiltInDefs),
         // so expiry is handled with if (expired) { free } { draw }.
+        //
+        // \rotation (radians, default 0) is applied to every def via
+        // Pen.use { translate(centre); rotate(rotation); draw centred }.
+        // For animated spins pass a Function, e.g.
+        //   \rotation, { thisThread.seconds * 2pi }    // 1 rev/sec
+        // It is function-evaluated each frame by getParam, so any live
+        // value works (sensor, LFO, Pkey-derived, ...).
 
         VisualSynthDef(\circle, { |node, view, elapsed, centerX, centerY, params|
-            var def, st, x, y, size, color, fill;
+            var def, st, x, y, size, color, fill, rot;
 
             def = node[\def];
             st  = def.envState(node, elapsed);
@@ -120,16 +127,21 @@ VisualSynthDef {
                 size = def.getParam(node, \size, 50) * st[\scale];
                 color = def.getParam(node, \color, Color.white).copy.alpha_(st[\alpha]);
                 fill = def.getParam(node, \fill, true);
+                rot = def.getParam(node, \rotation, 0);
 
-                Pen.fillColor = color;
-                Pen.strokeColor = color;
-                Pen.addOval(Rect(x - (size/2), y - (size/2), size, size));
-                if (fill) { Pen.fill } { Pen.stroke };
+                Pen.use {
+                    Pen.translate(x, y);
+                    Pen.rotate(rot);
+                    Pen.fillColor = color;
+                    Pen.strokeColor = color;
+                    Pen.addOval(Rect(size.neg/2, size.neg/2, size, size));
+                    if (fill) { Pen.fill } { Pen.stroke };
+                };
             };
-        }, (x: 0, y: 0, size: 50, color: Color.white, dur: 1, fill: true));
+        }, (x: 0, y: 0, size: 50, color: Color.white, dur: 1, fill: true, rotation: 0));
 
         VisualSynthDef(\square, { |node, view, elapsed, centerX, centerY, params|
-            var def, st, x, y, size, color, fill;
+            var def, st, x, y, size, color, fill, rot;
 
             def = node[\def];
             st  = def.envState(node, elapsed);
@@ -141,16 +153,24 @@ VisualSynthDef {
                 size = def.getParam(node, \size, 50) * st[\scale];
                 color = def.getParam(node, \color, Color.white).copy.alpha_(st[\alpha]);
                 fill = def.getParam(node, \fill, true);
+                rot = def.getParam(node, \rotation, 0);
 
-                Pen.fillColor = color;
-                Pen.strokeColor = color;
-                Pen.addRect(Rect(x - (size/2), y - (size/2), size, size));
-                if (fill) { Pen.fill } { Pen.stroke };
+                Pen.use {
+                    Pen.translate(x, y);
+                    Pen.rotate(rot);
+                    Pen.fillColor = color;
+                    Pen.strokeColor = color;
+                    Pen.addRect(Rect(size.neg/2, size.neg/2, size, size));
+                    if (fill) { Pen.fill } { Pen.stroke };
+                };
             };
-        }, (x: 0, y: 0, size: 50, color: Color.white, dur: 1, fill: true));
+        }, (x: 0, y: 0, size: 50, color: Color.white, dur: 1, fill: true, rotation: 0));
 
+        // Line rotates around its midpoint (the only sensible pivot when the
+        // shape is defined by two endpoints). Set \rotation to a Function for
+        // spinning lines — this replaces the old \spinner def.
         VisualSynthDef(\line, { |node, view, elapsed, centerX, centerY, params|
-            var def, st, x1, y1, x2, y2, color, width;
+            var def, st, x1, y1, x2, y2, mx, my, color, width, rot;
 
             def = node[\def];
             st  = def.envState(node, elapsed);
@@ -163,19 +183,26 @@ VisualSynthDef {
                 y2 = def.getParam(node, \y2, 0) * centerY + centerY;
                 color = def.getParam(node, \color, Color.white).copy.alpha_(st[\alpha]);
                 width = def.getParam(node, \width, 1) * st[\scale];
+                rot = def.getParam(node, \rotation, 0);
+                mx = (x1 + x2) * 0.5;
+                my = (y1 + y2) * 0.5;
 
-                Pen.strokeColor = color;
-                Pen.width = width;
-                Pen.moveTo(x1 @ y1);
-                Pen.lineTo(x2 @ y2);
-                Pen.stroke;
+                Pen.use {
+                    Pen.translate(mx, my);
+                    Pen.rotate(rot);
+                    Pen.strokeColor = color;
+                    Pen.width = width;
+                    Pen.moveTo((x1 - mx) @ (y1 - my));
+                    Pen.lineTo((x2 - mx) @ (y2 - my));
+                    Pen.stroke;
+                };
             };
-        }, (x1: -0.5, y1: 0, x2: 0.5, y2: 0, color: Color.white, width: 1, dur: 1));
+        }, (x1: -0.5, y1: 0, x2: 0.5, y2: 0, color: Color.white, width: 1, dur: 1, rotation: 0));
 
         // Animated circle: own startSize->endSize sweep (over the node life),
         // alpha/expiry from envState (scale NOT applied - size is the sweep).
         VisualSynthDef(\pulse, { |node, view, elapsed, centerX, centerY, params|
-            var def, st, x, y, startSize, endSize, color, curve, phase, size;
+            var def, st, x, y, startSize, endSize, color, curve, phase, size, rot;
 
             def = node[\def];
             st  = def.envState(node, elapsed);
@@ -190,47 +217,22 @@ VisualSynthDef {
                 phase = def.calcEnv(elapsed, st[\life], curve);
                 size = startSize.blend(endSize, phase);
                 color = def.getParam(node, \color, Color.white).copy.alpha_(st[\alpha]);
+                rot = def.getParam(node, \rotation, 0);
 
-                Pen.fillColor = color;
-                Pen.addOval(Rect(x - (size/2), y - (size/2), size, size));
-                Pen.fill;
+                Pen.use {
+                    Pen.translate(x, y);
+                    Pen.rotate(rot);
+                    Pen.fillColor = color;
+                    Pen.addOval(Rect(size.neg/2, size.neg/2, size, size));
+                    Pen.fill;
+                };
             };
-        }, (x: 0, y: 0, startSize: 10, endSize: 100, color: Color.white, dur: 1, curve: \exp));
-
-        // Spinning line. Persistent by default (dur: inf -> never expires).
-        VisualSynthDef(\spinner, { |node, view, elapsed, centerX, centerY, params|
-            var def, st, x, y, length, color, speed, width, angle, x1, y1, x2, y2;
-
-            def = node[\def];
-            st  = def.envState(node, elapsed);
-            if (st[\expired]) {
-                VisualServer.default.vfree(node[\nodeID]);
-            } {
-                x = def.getParam(node, \x, 0) * centerX + centerX;
-                y = def.getParam(node, \y, 0) * centerY + centerY;
-                length = def.getParam(node, \length, 50) * st[\scale];
-                speed = def.getParam(node, \speed, 1);
-                width = def.getParam(node, \width, 2);
-                color = def.getParam(node, \color, Color.white).copy.alpha_(st[\alpha]);
-
-                angle = elapsed * speed * 2pi;
-                x1 = x + (cos(angle) * length / 2);
-                y1 = y + (sin(angle) * length / 2);
-                x2 = x - (cos(angle) * length / 2);
-                y2 = y - (sin(angle) * length / 2);
-
-                Pen.strokeColor = color;
-                Pen.width = width;
-                Pen.moveTo(x1 @ y1);
-                Pen.lineTo(x2 @ y2);
-                Pen.stroke;
-            };
-        }, (x: 0, y: 0, length: 50, color: Color.white, speed: 1, dur: inf, width: 2));
+        }, (x: 0, y: 0, startSize: 10, endSize: 100, color: Color.white, dur: 1, curve: \exp, rotation: 0));
 
         // Live parameter circle. Function params are evaluated by getParam.
         // Persistent by default (dur: inf).
         VisualSynthDef(\live, { |node, view, elapsed, centerX, centerY, params|
-            var def, st, x, y, size, color, fill;
+            var def, st, x, y, size, color, fill, rot;
 
             def = node[\def];
             st  = def.envState(node, elapsed);
@@ -242,13 +244,18 @@ VisualSynthDef {
                 size = def.getParam(node, \size, 50) * st[\scale];
                 color = def.getParam(node, \color, Color.white).copy.alpha_(st[\alpha]);
                 fill = def.getParam(node, \fill, true);
+                rot = def.getParam(node, \rotation, 0);
 
-                Pen.fillColor = color;
-                Pen.strokeColor = color;
-                Pen.addOval(Rect(x - (size/2), y - (size/2), size, size));
-                if (fill) { Pen.fill } { Pen.stroke };
+                Pen.use {
+                    Pen.translate(x, y);
+                    Pen.rotate(rot);
+                    Pen.fillColor = color;
+                    Pen.strokeColor = color;
+                    Pen.addOval(Rect(size.neg/2, size.neg/2, size, size));
+                    if (fill) { Pen.fill } { Pen.stroke };
+                };
             };
-        }, (x: 0, y: 0, size: 50, color: Color.white, dur: inf, fill: true));
+        }, (x: 0, y: 0, size: 50, color: Color.white, dur: inf, fill: true, rotation: 0));
     }
 }
 

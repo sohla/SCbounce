@@ -17,7 +17,7 @@
 //   \legato \sustain (note len)   \vview
 //                                 \vstartSize \vendSize \vcurve   (pulse)
 //                                 \vx1 \vy1 \vx2 \vy2 \vwidth     (line)
-//                                 \vlength \vspeed                (spinner)
+//                                 \vrotation                      (radians; Function = animated spin)
 //                                 \vattack \vrelease \vlegato
 //                                 \vsustain \vstretch             (envelope)
 //                                 \vtimeDelay                     (a/v sync)
@@ -71,8 +71,13 @@ if (VisualServer.isNil) {
 ~ex1 = AVbind(
     \freq, Pseq([440, 550, 660, 880], inf),
     \amp,  0.2,
-    \dur,  0.5,
+    \dur,  0.2,
     \vinstrument, \circle,   // <- the SHAPE (audio synth defaults to \default)
+	\vdur, 2.0,
+	\vsize, 100,
+	\vfill, false,
+	\vattack, 0.003,
+	\vx, (Pkey(\freq).cpsmidi - 74) / 8,
     // \vtimeDelay defaults to s.latency so the circle hits with the sound.
     // Projector a touch slow? add to it:   \vtimeDelay, (s.latency + 0.05),
     // Want the old visual-leads-audio look?  \vtimeDelay, 0,
@@ -112,7 +117,7 @@ if (VisualServer.isNil) {
     \instrument, \perc,
     \freq, Prand([220, 440, 660, 880], inf),
     \amp,  Pwhite(0.2, 0.5),
-    \dur,  0.18,
+    \dur,  0.09,
 
     \vinstrument, \line,
     \vx1, Pkey(\freq).linlin(220, 880, -0.8, 0),
@@ -121,7 +126,7 @@ if (VisualServer.isNil) {
     \vy2, Pwhite(-0.5, 0.5),
     \vwidth, Pkey(\amp) * 12,
     \vcolor, Color.cyan,
-    \vdur, 0.8,
+    \vdur, 3.8,
     \vview, \demo
 ).play;
 )
@@ -148,13 +153,14 @@ if (VisualServer.isNil) {
     \legato, 0.3,              // PLAIN \legato = the AUDIO note (stays short)
 
     \vinstrument, \circle,
-    \vx, Pwhite(-0.85, 0.85),
-    \vy, Pwhite(-0.85, 0.85),
-    \vsize, 80,
-    \vcolor, Pfunc({ |ev| Color.hsv(ev[\freq].cpsmidi.linlin(48,84,0,1), 0.7, 1) }),
-    \vlegato, 10,              // life = 0.15 * 10 = 1.5 s  -> ~10 overlap
-    \vattack, 0.25,            // grow + fade IN  over 0.25 s
-    \vrelease, 0.6,            // shrink + fade OUT over 0.6 s  (hold = 0.65 s)
+	\vx, Pseg(Pseq([-0.8,0.8], inf), 6, \sine, inf),
+    \vy, Pseg(Pseq([-0.8,0.8], inf), 9, \sine, inf),//Pwhite(-0.85, 0.85),
+	\vsize, 100,
+    \vcolor, Pfunc({ |ev| Color.hsv(ev[\freq].cpsmidi.linlin(48,84,0,1), 0.5, 1.0) }),
+	\vlegato, 1,              // life = 0.15 * 10 = 1.5 s  -> ~10 overlap
+	\vdur,2,
+    \vattack, 0.0025,            // grow + fade IN  over 0.25 s
+	\vrelease, 4,            // shrink + fade OUT over 0.6 s  (hold = 0.65 s)
     \vcurve, \sin,
     \vview, \demo
 ).play;
@@ -162,8 +168,15 @@ if (VisualServer.isNil) {
 ~ex4.stop;
 
 
-// ---- 5. SHOWCASE: a SPINNER driven by the sound ----------------------------
-// \vinstrument \spinner. Audio amp -> bar length, pitch -> spin speed.
+// ---- 5. SHOWCASE: a SPINNING LINE driven by the sound ----------------------
+// Rotating \line replaces the old \spinner def. \vrotation (radians) is a
+// Function evaluated every frame — pass a time-driven expression to spin.
+// Audio amp -> line half-length (via \vx1/\vx2), pitch -> revolutions/sec.
+//
+// Pkey(\amp)/Pkey(\freq) resolve once per EVENT; capture them via a Pfunc
+// closing over the event so the Function passed to \vrotation can read the
+// per-event rps. Cleanest is to pre-compute rps with Pkey and bake it into
+// a Pfunc that returns a fresh closure each event.
 (
 ~ex5 = AVbind(
     \instrument, \sine,
@@ -171,11 +184,19 @@ if (VisualServer.isNil) {
     \amp,  Pexprand(0.1, 0.4),
     \dur,  0.3,
 
-    \vinstrument, \spinner,
-    \vx, Pwhite(-0.6, 0.6),
-    \vy, Pwhite(-0.6, 0.6),
-    \vlength, Pkey(\amp).linlin(0.1, 0.4, 30, 160),    // loud  -> long bar
-    \vspeed,  Pkey(\freq).linlin(200, 1200, 0.5, 6),   // high  -> fast spin
+    \vinstrument, \line,
+    \vx1, Pkey(\amp).linlin(0.1, 0.4, -0.04, -0.10) + Pwhite(-0.6, 0.6),
+    \vy1, Pwhite(-0.6, 0.6),
+    \vx2, Pkey(\vx1) + Pkey(\amp).linlin(0.1, 0.4, 0.08, 0.20),   // length = amp
+    \vy2, Pkey(\vy1),
+    // per-event spin speed (rev/sec) baked into a fresh closure.
+    // Pfunc runs with the event as currentEnvironment, so ~freq is the
+    // just-resolved Pexprand value for THIS event. Each event gets a new
+    // closure with its own captured rps.
+    \vrotation, Pfunc({
+        var rps = ~freq.linlin(200, 1200, 0.5, 6);
+        { thisThread.seconds * 2pi * rps }
+    }),
     \vwidth,  4,
     \vcolor,  Pfunc({ Color.hsv(0.55 + 0.3.rand, 0.8, 1) }),
     \vdur,    1.0,            // life 1.0 s

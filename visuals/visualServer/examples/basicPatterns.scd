@@ -92,21 +92,25 @@ if (Vline.notNil) {
 };
 )
 
-// Example 5: Spinning elements 
+// Example 5: Spinning lines (rotating \line replaces the old \spinner def).
+// \rotation is in radians; a Function is re-evaluated every frame so passing
+// a time-dependent expression spins the shape continuously.
 (
 if (VisualServer.notNil) {
-    "Creating spinners...".postln;
+    "Creating spinning lines...".postln;
     5.do { |i|
-        ~v.vnew(\spinner, 2000 + i, \demo, [
-            \x, (i - 2) * 0.3,
-            \y, 0,
-            \length, 50 + (i * 10),
-            \speed, 0.5 + (i * 0.2),
+        var xc   = (i - 2) * 0.3;         // centre x (normalised)
+        var half = 0.05 + (i * 0.012);    // half-length (normalised)
+        var rps  = 0.5 + (i * 0.2);       // revolutions per second
+        ~v.vnew(\line, 2000 + i, \demo, [
+            \x1, xc - half, \y1, 0, \x2, xc + half, \y2, 0,
+            \width, 2 + i,
+            \rotation, { thisThread.seconds * 2pi * rps },
             \color, Color.hsv(i / 5, 0.8, 1.0),
             \dur, inf
         ]);
     };
-    "✓ 5 spinners created".postln;
+    "✓ 5 spinning lines created".postln;
 };
 )
 

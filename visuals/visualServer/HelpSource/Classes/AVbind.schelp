@@ -20,7 +20,7 @@ table::
 ## code::\vfill:: || fill vs stroke || code::true::
 ## code::\vstartSize \vendSize \vcurve:: || pulse sweep || 10 / code::amp*200:: / code::\exp::
 ## code::\vx1 \vy1 \vx2 \vy2 \vwidth:: || line || -0.5 / 0 / 0.5 / 0 / 1
-## code::\vlength \vspeed:: || spinner || def defaults
+## code::\vrotation:: || rotation (radians) about shape centre || 0 (pass a link::Classes/Function:: for animated spin)
 ## code::\vattack \vrelease \vlegato \vsustain \vstretch:: || envelope (link::Reference/VisualParameters::) || 0 / whole life / 1 / code::\vdur:: / 1
 ## code::\vtimeDelay:: || delay the visual by N seconds before it appears || the audio server's code::latency:: (so audio + visual coincide)
 ::

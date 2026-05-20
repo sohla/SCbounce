@@ -9,7 +9,7 @@ section:: Architecture
 
 list::
 ## link::Classes/VisualServer:: — manages views (windows) and nodes; server-like code::vnew::/code::vset::/code::vfree::.
-## link::Classes/VisualSynthDef:: — a visual "instrument": render function + default params + envelope. Built-ins: code::\circle \square \line \pulse \spinner \live::.
+## link::Classes/VisualSynthDef:: — a visual "instrument": render function + default params + envelope. Built-ins: code::\circle \square \line \pulse \live::. All accept code::\rotation:: (radians) for static or animated spin.
 ## link::Classes/VisualEventTypes:: — auto-registers the event types (code::\visual \vpulse \vline \vlive \audioVisual::) at class compile (its code::*initClass::).
 ## link::Classes/Vbind:: (and link::Classes/Vpulse::, link::Classes/Vline::, link::Classes/Vlive::, link::Classes/AVbind::, link::Classes/Vseq::, link::Classes/Vpar::, link::Classes/Vrand::, link::Classes/Vwrand::) — pattern factories that emit visual events.
 ## link::Classes/VisualRenderer:: — trails, grids, particles, performance monitor.
@@ -75,7 +75,7 @@ VisualServer.default.vnew(\live, nil, \demo, [\x, { ~imu.x }, \y, { ~imu.y }, \s
 
 section:: Audio-visual sync
 
-link::Classes/AVbind:: plays an audio note and a synchronised visual per event. strong::One rule:: every visual key is code::v::-prefixed (code::\vinstrument \vx \vy \vsize \vcolor \vfill \vdur \vview \vstartSize \vendSize \vcurve \vx1 \vy1 \vx2 \vy2 \vwidth \vlength \vspeed \vattack \vrelease \vlegato \vsustain \vstretch::); the audio side keeps the plain SC note keys (incl. its own code::\legato::/code::\sustain::). link::Classes/Vbind:: is visual-only, so it uses the plain names — the prefix is only needed where audio + visual share one event. See link::Reference/VisualParameters::.
+link::Classes/AVbind:: plays an audio note and a synchronised visual per event. strong::One rule:: every visual key is code::v::-prefixed (code::\vinstrument \vx \vy \vsize \vcolor \vfill \vrotation \vdur \vview \vstartSize \vendSize \vcurve \vx1 \vy1 \vx2 \vy2 \vwidth \vattack \vrelease \vlegato \vsustain \vstretch \vtimeDelay::); the audio side keeps the plain SC note keys (incl. its own code::\legato::/code::\sustain::). link::Classes/Vbind:: is visual-only, so it uses the plain names — the prefix is only needed where audio + visual share one event. See link::Reference/VisualParameters::.
 
 code::
 s.boot;
@@ -103,7 +103,7 @@ code::
 life = (sustain ? dur) * legato * stretch
 ::
 
-The envelope drives both strong::alpha:: and strong::size scale:: (grow in / shrink out); code::\pulse:: keeps its own code::startSize->endSize:: sweep. code::life == inf:: => persistent node (never freed) — the default for code::\live:: and code::\spinner::.
+The envelope drives both strong::alpha:: and strong::size scale:: (grow in / shrink out); code::\pulse:: keeps its own code::startSize->endSize:: sweep. code::life == inf:: => persistent node (never freed) — the default for code::\live::, and any def used with code::dur: inf:: (e.g. a rotating code::\line::).
 
 list::
 ## Defaults (code::legato:: 1, code::stretch:: 1, code::attack:: 0, code::release:: nil, code::sustain:: nil) reproduce the original "fade over code::dur::, free at code::dur::" — no overlap.

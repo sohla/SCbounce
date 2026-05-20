@@ -139,12 +139,21 @@ SynthDef(\pad, {|freq=220, amp=0.2, gate=1, cutoff=1000|
     \fill, { ~sensors.pressure > 0.1 } // Fill when pressure detected
 ]);
 
-// Rotating indicator
-~liveSpinner = v.vnew(\spinner, 4002, \hybrid, [
-    \x, { ~sensors.accel.x * 0.3 },
-    \y, { ~sensors.accel.y * 0.3 },
-    \length, { ~sensors.accel.magnitude * 40 + 30 },
-    \speed, { ~sensors.gyro.z * 0.3 },
+// Rotating indicator (rotating \line replaces the old \spinner def).
+// Position the line as a centred segment around (xc, yc); \rotation
+// integrates an angular velocity from gyro.z. Phase/time are kept in
+// environment vars so we don't need a nested block (var-at-top rule).
+~spinPhase = 0;
+~spinLastT = thisThread.seconds;
+~liveSpinner = v.vnew(\line, 4002, \hybrid, [
+    \x1, { (~sensors.accel.x * 0.3) - 0.06 }, \y1, { ~sensors.accel.y * 0.3 },
+    \x2, { (~sensors.accel.x * 0.3) + 0.06 }, \y2, { ~sensors.accel.y * 0.3 },
+    \rotation, {
+        var t = thisThread.seconds;
+        ~spinPhase = ~spinPhase + (~sensors.gyro.z * 0.3 * (t - ~spinLastT) * 2pi);
+        ~spinLastT = t;
+        ~spinPhase
+    },
     \color, Color.white.alpha_(0.8),
     \width, 2,
     \dur, inf

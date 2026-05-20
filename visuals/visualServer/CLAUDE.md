@@ -12,10 +12,16 @@ This is a SuperCollider Visual Server system - a pattern-based visual compositio
 The project consists of 5 main SuperCollider classes that must be installed in the Extensions folder:
 
 - **VisualServer.sc**: Core server managing visual views and nodes with server-like interface
-- **VisualSynthDef.sc**: Visual instrument definitions (circle, square, line, pulse, spinner, live)  
+- **VisualSynthDef.sc**: Visual instrument definitions (circle, square, line, pulse, live). All accept `\rotation` (radians) for static/animated spin — replaces the old `\spinner` def.
 - **VisualEvent.sc**: Event types for pattern integration (\visual, \vpulse, \vline, \vlive, \audioVisual)
 - **VisualPatterns.sc**: Pattern classes (Vbind, Vseq, Vpar, Vrand) extending Pbind
 - **VisualRenderer.sc**: Effects system (trails, grids, particles) and performance monitoring
+
+### Parameter Reference
+The complete, authoritative key list (defaults, plain↔`v`-prefixed naming,
+per-def matrix) lives in `HelpSource/Reference/VisualParameters.schelp`
+(also summarised in `README.md` § Visual Parameters). The whitelist itself
+is `VisualServer.visualArgsFrom`. Keep all three in sync when keys change.
 
 ### Key Design Patterns
 - **Server-like Architecture**: Uses `vnew`, `vset`, `vfree` commands similar to audio server

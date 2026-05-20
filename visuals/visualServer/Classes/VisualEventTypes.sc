@@ -84,11 +84,12 @@ VisualEventTypes {
             e[\dur]        = ~vdur ? (~dur ? 1);   // visual node base lifetime
 
             // Generic appearance/position
-            e[\x]     = ~vx ? 0;
-            e[\y]     = ~vy ? 0;
-            e[\size]  = ~vsize ?? ((~amp ? 0.5) * 100);   // audio amp -> default
-            e[\color] = ~vcolor ?? Color.hsv(((~freq ? 440).cpsmidi / 127).clip(0, 1), 1, 1);
-            e[\fill]  = ~vfill ? true;
+            e[\x]        = ~vx ? 0;
+            e[\y]        = ~vy ? 0;
+            e[\size]     = ~vsize ?? ((~amp ? 0.5) * 100);   // audio amp -> default
+            e[\color]    = ~vcolor ?? Color.hsv(((~freq ? 440).cpsmidi / 127).clip(0, 1), 1, 1);
+            e[\fill]     = ~vfill ? true;
+            e[\rotation] = ~vrotation;   // nil -> def default (0)
 
             // Pulse
             e[\startSize] = ~vstartSize ? 10;
@@ -99,10 +100,6 @@ VisualEventTypes {
             e[\x1] = ~vx1 ? -0.5;  e[\y1] = ~vy1 ? 0;
             e[\x2] = ~vx2 ? 0.5;   e[\y2] = ~vy2 ? 0;
             e[\width] = ~vwidth ? 1;
-
-            // Spinner (nil -> dropped by visualArgsFrom -> def default)
-            e[\length] = ~vlength;
-            e[\speed]  = ~vspeed;
 
             // Envelope (nil -> envState default; legato/sustain/etc. here are
             // the VISUAL ones, separate from the audio note's legato/sustain)

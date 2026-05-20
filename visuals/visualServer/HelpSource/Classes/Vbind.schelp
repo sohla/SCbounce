@@ -7,7 +7,7 @@ description::
 
 A factory that returns a link::Classes/Pbind:: pre-seeded with the defaults code::(type: \visual, dur: 1, instrument: \circle, view: \default)::. User pairs are appended strong::after:: the defaults, so they override them. Play it with link::#-vplay:: (preferred — uses an empty proto event so the audio event machinery does not leak into the visual model) or the ordinary code::.play::.
 
-Every key in link::Reference/VisualParameters:: may be used. code::\instrument:: selects the link::Classes/VisualSynthDef:: (code::\circle::, code::\square::, code::\pulse::, code::\spinner::, code::\live::, or a custom def). code::\view:: routes to a window (auto-created).
+Every key in link::Reference/VisualParameters:: may be used. code::\instrument:: selects the link::Classes/VisualSynthDef:: (code::\circle::, code::\square::, code::\line::, code::\pulse::, code::\live::, or a custom def). code::\view:: routes to a window (auto-created). For a rotating shape pass a link::Classes/Function:: for code::\rotation:: (radians).
 
 code::
 Vbind(

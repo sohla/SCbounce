@@ -110,16 +110,23 @@ v.vnew(\live, 3002, \liveDemo, [
 };
 )
 
-// Example 3: Gyroscope-driven spinner
+// Example 3: Gyroscope-driven rotating line (replaces the old \spinner def).
+// The line is centred on (0, yc); \rotation (radians) integrates an
+// angular velocity from gyro.z. The closure keeps phase + last-frame time
+// in its lexical scope — re-evaluated every frame by getParam.
 (
-v.vnew(\spinner, 3020, \liveDemo, [
-    \x, 0,
-    \y, { ~mockIMU.accel.y * 0.3 }, // Y position from accel
-    \length, { ~mockIMU.accel.z.abs * 80 + 40 }, // Length from accel Z
-    \speed, { ~mockIMU.gyro.z * 0.5 }, // Rotation speed from gyro Z
-    \color, { 
-        Color.hsv(~mockIMU.gyro.z.abs.linlin(0, pi, 0, 1), 0.8, 1.0)
+var phase = 0, lastT = thisThread.seconds;
+
+v.vnew(\line, 3020, \liveDemo, [
+    \x1, -0.08, \y1, { ~mockIMU.accel.y * 0.3 },
+    \x2,  0.08, \y2, { ~mockIMU.accel.y * 0.3 },
+    \rotation, {
+        var t = thisThread.seconds;
+        phase = phase + (~mockIMU.gyro.z * 0.5 * (t - lastT) * 2pi);
+        lastT = t;
+        phase
     },
+    \color, { Color.hsv(~mockIMU.gyro.z.abs.linlin(0, pi, 0, 1), 0.8, 1.0) },
     \width, 3,
     \dur, inf
 ]);

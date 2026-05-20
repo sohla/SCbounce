@@ -20,9 +20,9 @@ VisualServer {
     // Defined here (not as an environment var) so it resolves correctly
     // when called from inside an event-type function.
     *visualArgsFrom { |env|
-        var keys = [\x, \y, \size, \color, \dur, \fill,
+        var keys = [\x, \y, \size, \color, \dur, \fill, \rotation,
             \startSize, \endSize, \curve,
-            \x1, \y1, \x2, \y2, \width, \length, \speed,
+            \x1, \y1, \x2, \y2, \width,
             // envelope / lifetime (see VisualSynthDef.envState)
             \stretch, \legato, \sustain, \attack, \release];
         var args = [];

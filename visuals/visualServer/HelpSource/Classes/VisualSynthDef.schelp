@@ -13,13 +13,14 @@ subsection:: Built-in defs
 
 table::
 ## strong::name:: || strong::default params::
-## code::\circle::  || code::(x: 0, y: 0, size: 50, color: Color.white, dur: 1, fill: true)::
-## code::\square::  || code::(x: 0, y: 0, size: 50, color: Color.white, dur: 1, fill: true)::
-## code::\line::    || code::(x1: -0.5, y1: 0, x2: 0.5, y2: 0, color: Color.white, width: 1, dur: 1)::
-## code::\pulse::   || code::(x: 0, y: 0, startSize: 10, endSize: 100, color: Color.white, dur: 1, curve: \exp)::
-## code::\spinner:: || code::(x: 0, y: 0, length: 50, color: Color.white, speed: 1, dur: inf, width: 2)::
-## code::\live::    || code::(x: 0, y: 0, size: 50, color: Color.white, dur: inf, fill: true)::
+## code::\circle:: || code::(x: 0, y: 0, size: 50, color: Color.white, dur: 1, fill: true, rotation: 0)::
+## code::\square:: || code::(x: 0, y: 0, size: 50, color: Color.white, dur: 1, fill: true, rotation: 0)::
+## code::\line::   || code::(x1: -0.5, y1: 0, x2: 0.5, y2: 0, color: Color.white, width: 1, dur: 1, rotation: 0)::
+## code::\pulse::  || code::(x: 0, y: 0, startSize: 10, endSize: 100, color: Color.white, dur: 1, curve: \exp, rotation: 0)::
+## code::\live::   || code::(x: 0, y: 0, size: 50, color: Color.white, dur: inf, fill: true, rotation: 0)::
 ::
+
+All built-ins read code::\rotation:: (radians, default 0) and rotate about the shape centre — for code::\line:: that pivot is the midpoint of code::(x1,y1)–(x2,y2)::. Pass a link::Classes/Function:: for animated spin, e.g. code::\rotation, { thisThread.seconds * 2pi }::. This replaces the old code::\spinner:: def — build a spinner with code::Vbind(\instrument, \line, \rotation, { ... }, \dur, inf, ...)::.
 
 See link::Reference/VisualParameters:: for the meaning of every key.
 
@@ -31,7 +32,7 @@ code::
 life = (sustain ? dur) * legato * stretch
 ::
 
-with an code::[attack, hold, release]:: envelope spanning that life. code::\legato::/code::\stretch:: scale only the total life; code::\attack:: and code::\release:: are strong::absolute seconds:: (not scaled), clamped into life, the remainder being the hold. Defaults (code::legato:: 1, code::stretch:: 1, code::attack:: 0, code::release:: nil, code::sustain:: nil) reproduce the original "fade 1->0 over code::dur::, free at code::dur::" behaviour. code::life == inf:: => persistent node (e.g. code::\live::, code::\spinner::). Set code::\legato:: or code::\sustain:: to make animations overlap. See link::Guides/VisualServer:: §Envelope.
+with an code::[attack, hold, release]:: envelope spanning that life. code::\legato::/code::\stretch:: scale only the total life; code::\attack:: and code::\release:: are strong::absolute seconds:: (not scaled), clamped into life, the remainder being the hold. Defaults (code::legato:: 1, code::stretch:: 1, code::attack:: 0, code::release:: nil, code::sustain:: nil) reproduce the original "fade 1->0 over code::dur::, free at code::dur::" behaviour. code::life == inf:: => persistent node (e.g. code::\live::, or any def used with code::dur: inf::). Set code::\legato:: or code::\sustain:: to make animations overlap. See link::Guides/VisualServer:: §Envelope.
 
 CLASSMETHODS::
 

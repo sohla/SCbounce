@@ -122,16 +122,16 @@ if (VisualServer.notNil) {
     ]);
     "✓ Live visual created with simulated sensor data".postln;
 
-    // Create a spinner for additional visual interest
-    ~spinnerID = ~v.vnew(\spinner, nil, \test, [
-        \x, { ~sensorData[\x] * 0.5 },
-        \y, { ~sensorData[\y] * 0.5 },
-        \length, 80,
-        \speed, 2,
+    // Rotating line (replaces the old \spinner def) - \rotation in radians,
+    // a Function evaluated every frame => continuous spin at ~2 rev/sec.
+    ~spinID = ~v.vnew(\line, nil, \test, [
+        \x1, -0.1, \y1, 0, \x2, 0.1, \y2, 0,
+        \width, 3,
         \color, Color.white,
+        \rotation, { thisThread.seconds * 2pi * 2 },
         \dur, inf
     ]);
-    "✓ Live spinner created".postln;
+    "✓ Rotating line created (line + \\rotation)".postln;
 };
 )
 

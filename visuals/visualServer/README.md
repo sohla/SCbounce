@@ -73,7 +73,7 @@ A pattern-based visual system for SuperCollider that enables real-time visual ge
 
 ### VisualSynthDef
 - Defines reusable visual "instruments"
-- Built-in shapes: circle, square, line, pulse, spinner, live
+- Built-in shapes: circle, square, line, pulse, live (with `\rotation` for spin)
 - Custom rendering functions with parameter support
 
 ### VisualEvent & VisualPatterns
@@ -158,8 +158,12 @@ Vbind(
 - **square**: Rectangle shape
 - **line**: Line between two points
 - **pulse**: Animated expanding circle
-- **spinner**: Rotating line
 - **live**: Circle with live parameter functions
+
+All defs accept `\rotation` (radians, default 0) — pass a `Function` for
+animated spin, e.g. `\rotation, { thisThread.seconds * 2pi }`. Lines
+pivot around the midpoint of `(x1,y1)–(x2,y2)`; other shapes around
+their `(x,y)` centre.
 
 ### Custom VDefs
 ```supercollider
@@ -225,6 +229,62 @@ r.addPerformanceMonitor(\demo);
 - **Size**: Pixels (50 = 50 pixel radius)
 - **Colors**: SuperCollider Color objects
 - **Duration**: Seconds (inf = persistent)
+
+## Visual Parameters
+
+Every key forwarded to a visual node. Whitelist:
+`VisualServer.visualArgsFrom` (+ `\instrument`/`\view` routing,
+`\timeDelay` scheduling). Any value may be a `Function` (evaluated live
+every frame) **except** the envelope-timing keys, which must be numbers.
+
+**Naming:** plain names are used in `Vbind`/`Vpulse`/`Vline`/`Vlive`. In
+`AVbind` (audio + visual in one event) **every visual key is `v`-prefixed**
+(`\vx`, `\vsize`, `\vdur`, …) so it never collides with the audio note's
+plain keys. Same defaults, same meaning.
+
+### Routing
+
+| key | default | meaning |
+|---|---|---|
+| `\instrument` / `\vinstrument` | `\circle` (Vbind) | which VisualSynthDef |
+| `\view` / `\vview` | `\default` | target window (auto-created) |
+
+### Geometry & appearance
+
+| key | default | used by | meaning |
+|---|---|---|---|
+| `\x` `\y` | 0, 0 | circle, square, pulse, live | centre pos (normalised −1..1) |
+| `\size` | 50 | circle, square, live | diameter/side px (× envelope) |
+| `\color` | `Color.white` | all | colour; alpha × envelope |
+| `\fill` | `true` | circle, square, live | filled vs stroked |
+| `\rotation` | 0 | all | radians about shape centre (line: midpoint). Function ⇒ animated spin |
+| `\startSize` `\endSize` | 10, 100 | pulse | size swept over node life |
+| `\x1 \y1 \x2 \y2` | −0.5, 0, 0.5, 0 | line | line endpoints (normalised) |
+| `\width` | 1 | line | stroke width px (× envelope) |
+| `\curve` | `\exp` (pulse) / `\sin` | pulse + envelope | easing: `\linear \sin \cos \exp \log` |
+
+### Timing & envelope
+
+`life = (sustain ? dur) * legato * stretch`, with an
+`Env([0,1,1,0], [attack, hold, release], curve)` over that life.
+
+| key | default | meaning |
+|---|---|---|
+| `\dur` | 1 (circle/square/line/pulse), `inf` (live) | event spacing; base lifetime if no `\sustain` |
+| `\sustain` | nil → `\dur` | explicit base lifetime (sec) |
+| `\legato` | 1 | time-scale on total life only; `>1` ⇒ nodes overlap |
+| `\stretch` | 1 | extra global time-scale on life (also scales delta) |
+| `\attack` | 0 | fade/scale-in, **absolute seconds** (not scaled) |
+| `\release` | nil → whole life | fade/scale-out tail, **absolute seconds** |
+| `\timeDelay` / `\vtimeDelay` | 0 (Vbind) / `s.latency` (AVbind) | defer the visual N sec before it appears (consumed at scheduling, *not* a node param) |
+
+`life == inf` ⇒ **persistent** node: never auto-freed, `alpha = scale = 1`.
+Free with `VisualServer.default.vfree(id)` or `freeAll`. Defaults
+(`legato 1, stretch 1, attack 0, release nil, sustain nil`) reproduce the
+original "fade 1→0 over `\dur`, free at `\dur`" behaviour.
+
+Full reference: `HelpSource/Reference/VisualParameters.schelp` (Help
+browser → **"Visual Parameters"**), including a per-def key matrix.
 
 ## File Structure
 
