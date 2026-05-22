@@ -161,4 +161,11 @@ var systemView = {
 s.plotTreeView(0.5, nodeTree);
 
 ServerMeterView.new(s, meterView, 0@0, 2, 2);
+
+OSCFunc({ |msg, time, addr, recvPort|
+	s.quit({
+		0.exit;
+	});
+},'/airkit/quit'); //* not having an NetAddr makes this public ie. external control
+
 systemView;
