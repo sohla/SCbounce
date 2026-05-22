@@ -140,13 +140,22 @@ var freeAllBuffers = Button()
 	.action_({
 		Buffer.freeAll(s);
 	});
+	
+var version = File.readAllString(("~/Develop/SuperCollider/Projects/AirKit/VERSION").asAbsolutePath).stripWhiteSpace;
+
+var versionView = StaticText()
+	.font_(Font(size:14, bold:false))
+	.string_("Version : "++version)
+	.minWidth_(140)
+	.maxHeight_(bh);
+
 
 var systemView = {
 	View().layout_(VLayout(
 		HLayout(View().maxWidth_(140), serverView),
 		HLayout(meterView, nodeTree),
 		HLayout(
-			View(),
+			versionView,
 			networkReset,
 			oscThruButton,
 			freeAllBuffers,
