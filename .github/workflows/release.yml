@@ -20,16 +20,20 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     steps:
       - uses: actions/checkout@v4
 
       - name: Build release zip
         run: |
-          VERSION=${GITHUB_REF_NAME}
+          VERSION=${GITHUB_REF_NAME#v}
           DIRS=$(python3 -c "import json; d=json.load(open('release.config.json')); print(' '.join(d['release_dirs']))")
-          zip -r "airkit_app_${VERSION}.zip" $DIRS
-          echo "Built airkit_app_${VERSION}.zip"
-          unzip -l "airkit_app_${VERSION}.zip" | tail -5
+          echo "$VERSION" > VERSION
+          zip -r "airkit_app_v${VERSION}.zip" $DIRS VERSION
+          rm VERSION
+          echo "Built airkit_app_v${VERSION}.zip"
+          unzip -l "airkit_app_v${VERSION}.zip" | tail -5
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
