@@ -1,13 +1,14 @@
-var listsDir = "~/Develop/SuperCollider/Projects/SCbounce/lists/";//RPI
-var personalityDir = "~/Develop/SuperCollider/Projects/SCbounce/personalities/";//RPI
+var listsDir = "~/Develop/SuperCollider/Projects/AirKit/lists/";//RPI
+var personalityDir = "~/Develop/SuperCollider/Projects/AirKit/personalities/";//RPI
 // var personalityDir = "~/Develop/SuperCollider/Projects/scbounce/personalities/"; //laptop
 // var personalityDir = "~/Develop/SuperCollider/oscMusic/personalities/"; //mac mini cabin
 
-var list = "list_ITR_Mel.sc";
+// var list = "list_ITR_Mel.sc";
 // var list = "list_SiS_Alessio.sc";
-// var list = "list_yourDNA25.sc";
-
+// var list = "list_yourDNA26.sc";
 // var list = "list_glenroy.sc";
+var list = "list_dev.sc";
+
 var defaultLists = list!5;
 
 

@@ -2,7 +2,16 @@
 	[
 		"silence",
 
+		"waves",
+		"waves2",
+		"wind1",
+		"wind2",
+		"rain1",
+		"thunder",
+
+
 		"melbb1",
+		"suz4",
 		"melbb2",
 		"mel1",
 		"mel2",
@@ -17,19 +26,15 @@
 		"nic4",
 
 
-		"brenton1",
-		"brenton2",
-		"brenton3",
-		"brenton4",
+		// "brenton1",
+		// "brenton2",
+		// "brenton3",
+		// "brenton4",
 
-		"aless1",
-		"aless2",
-		"aless3",
-		"aless4",
-
-		"waves",
-		"rain1",
-		"thunder",
+		// "aless1",
+		// "aless2",
+		// "aless3",
+		// "aless4",
 
 		"funMelody",
 		"funBass",
@@ -42,7 +47,8 @@
 		"harp1",
 		"cymbals1",
 
-		
+		"button1",
+
 		
 		"melodicPerc1",
 		"melodicPerc2",
@@ -64,11 +70,8 @@
 
 		"inABottle",
 
-		"harp1",
-		"button1",
-		"cymbals1",
 		"melChair1",
-"temp_synth_4button",
+		"temp_synth_4button",
 	
 		"silence",
 ]

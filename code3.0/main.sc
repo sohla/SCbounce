@@ -10,12 +10,12 @@ var midiCC;
 var stack = {
 	var deviceView = Require("deviceView.scd");
 	var visualView = Require("visualView.scd");
-	var controlView = Require("controlView.scd");
+	// var controlView = Require("controlView.scd");
 	var systemView = Require("systemView.scd");
 	var view = View().layout_(staker =StackLayout(
 		deviceView.(),
 		visualView.(),
-		controlView.(),
+		// controlView.(),
 		systemView.()
 	));
 	
@@ -23,7 +23,7 @@ var stack = {
 };
 
 var tabButton = {|i|
-	var d = ["device","visual","control","system"];
+	var d = ["device","visual","system"];
 	UserView()
 	.background_( if(i==0,Color.black.lighten(0.25),Color.black))
 	.mouseDownAction_({|but|
@@ -39,7 +39,7 @@ var tabButton = {|i|
 	.drawFunc_({|v|Pen.stringAtPoint(d[i], (v.bounds.width-45/2)-40@25, Font(size:30), Color.white.darken(0.75))})
 	.animate_(false)
 
-}!4;
+}!3;
 
 var tabs = {|t|
 	View().layout_(HLayout(*tabButton.()).spacing_(2).margins_(0)).maxHeight_(100);
@@ -63,7 +63,7 @@ var initGUI = {
 		.bounds_(Rect(100,100,1000,700))
 		.layout_(mainView)
 		.front
-		.fullScreen
+		// .fullScreen
 		.background_(Color.black.lighten(0.25));
 	w.onClose = {
 		shutdown.();
