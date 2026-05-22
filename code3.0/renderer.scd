@@ -218,10 +218,10 @@ Event.addEventType(\customVisualEvent, {
 
     if(views[viewID].isNil.not,{ // must check in case gui has not been fully built yet
         views[viewID][\visualEvents] = views[viewID][\visualEvents].add(event);
+        // we are assuming there is sound....so let's play it
         ~type = \note;
         currentEnvironment.play;
     });
 });
-
 
 renderer;
