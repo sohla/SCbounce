@@ -77,7 +77,10 @@ s.options.numBuffers = 2048;  // more buffers
 s.options.memSize = 65536;    // more memory
 s.options.numOutputBusChannels = 2; // for quad output
 
+initGUI.();
+
 MIDIIn.connectAll;
+
 
 s.waitForBoot({
 
@@ -89,7 +92,7 @@ s.waitForBoot({
 	["local port:", NetAddr.localAddr.port].postln;
 	NetAddr.new("127.0.0.1", 57120).sendMsg("/airkit/startOSCListening", 57120);
 
-	initGUI.();
+	
 	
 	ShutDown.add({"shut down...".postln})
 });

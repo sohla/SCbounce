@@ -10,6 +10,7 @@
 		"pluck1",
 		"funBass",
 		"funMelody",
+		"button1",
 
 		"silence",
 ]

@@ -190,7 +190,7 @@ SynthDef(\versatilePerc, {
     ),
     );
 
-    // event.play;
+    event.play;
     if(bl == false, {
       bl = true;
       synth.set(\gate, 1);
