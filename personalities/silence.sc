@@ -1,5 +1,9 @@
 var m = ~model;
-
+var params = (
+    \volume: 0.8,
+    \sensitivity: 0.6,
+	\effectAmount: 0.2,
+);
 m.accelMassFilteredAttack = 0.7;
 m.accelMassFilteredDecay = 0.2;
 m.rrateMassFilteredAttack = 0.7;
@@ -114,6 +118,55 @@ m.rrateMassFilteredDecay = 0.4;
 
 };
 
+//------------------------------------------------------------
 
+~controlView = {|d|
+
+	var sliderView = {|lt="default", rt="", dd|
+  var st;
+  View().layout_(HLayout(
+    UserView()
+      .background_(Color.black.lighten(0.1))
+      // .maxHeight_(80)
+      .frameRate_(30)
+      .animate_(true)
+      .drawFunc_({|v|
+        var vw = v.bounds.width;
+        var vh = v.bounds.height;
+        var tw = 140;
+				var pos = (vw * params.at(lt.asSymbol)) - (tw/2);
+        // lt.drawLeftJustIn(Rect(10,0,vw/2,vh), Font(size:48), Color.black());
+        // rt.drawRightJustIn(Rect(vw/2,0,(vw/2)-10,vh), Font(size:48), Color.black());
+        Pen.fillColor = d.color.alpha_(0.5);
+        Pen.addRect(Rect(pos, 2, tw, vh - 4));
+        Pen.fill;
+        lt.drawCenteredIn(Rect(pos,0,tw,40), Font(size:24), Color.black());
+      })
+      .mouseMoveAction_({|v,x,y|
+        var vw = v.bounds.width;
+        var vh = v.bounds.height;
+        if(x<0,{x=0});
+				params.put(lt.asSymbol, x/vw);
+      })
+      .mouseUpAction_({|v,x,y|
+      })
+      .mouseDownAction_({|v,x,y|
+        var vw = v.bounds.width;
+        var vh = v.bounds.height;
+        if(x<0,{x=0});
+				params.put(lt.asSymbol, x/vw);
+      });
+  ));
+  
+};
+
+	var spacing = 4;
+  var sliders = params.collect({|v,k| 
+      [sliderView.(k.asString, "", d)]
+  });
+	View()
+		// .onClose_({osc.free})
+		.layout_(GridLayout.columns(sliders).hSpacing_(spacing).vSpacing_(spacing))
+};
 
 

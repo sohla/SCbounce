@@ -44,12 +44,18 @@ var sliderView = {|lt="default", rt="", d|
 };
 
 var controlsView = {|d|
-  var sliders = d.params.collect({|v,k| 
-      [sliderView.(k.asString, "", d)]
-  });
-	View()
-		// .onClose_({osc.free})
-		.layout_(GridLayout.columns(sliders).hSpacing_(spacing).vSpacing_(spacing))
+  // var sliders = d.params.collect({|v,k| 
+  //     [sliderView.(k.asString, "", d)]
+  // });
+	// View()
+	// 	// .onClose_({osc.free})
+	// 	.layout_(GridLayout.columns(sliders).hSpacing_(spacing).vSpacing_(spacing))
+  var view;
+    d.env.use{
+      view = ~controlView.(d);
+    };
+    view
+
 };
 
 var controlView = {
@@ -68,12 +74,10 @@ var controlView = {
 
 var addDeviceView = {|d|
 
-	var gl;
 	var numDevices = contentView.children.size;
-
 	var view = View()
 		.background_(Color.black)
-		.layout_(gl = GridLayout.rows(
+		.layout_(GridLayout.rows(
 			[				
 				[controlsView.(d), columns:2]
 			],[
