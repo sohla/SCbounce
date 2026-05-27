@@ -7,7 +7,8 @@ var personalityDir = "~/Develop/SuperCollider/Projects/AirKit/personalities/";//
 // var list = "list_SiS_Alessio.sc";
 // var list = "list_yourDNA26.sc";
 // var list = "list_glenroy.sc";
-var list = "list_dev.sc";
+// var list = "list_dev.sc";
+var list = "list_Mel_26.sc";
 
 var defaultLists = list!5;
 
