@@ -77,7 +77,7 @@ SynthDef(\drumkit2, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 			// \xEnv: ~xEnv ? defaultEnv,
 			// \yEnv: ~yEnv ? defaultEnv,
 
-			\startWidth, 10,
+			\startWidth, Pfunc{|e| e.dur.squared * 100},
 			\endWidth, 1,
 			// \widthEnv: ~sizeEnv ? defaultEnv,
 
@@ -113,7 +113,7 @@ SynthDef(\drumkit2, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 			\bufnum, Pfunc{|e|
 				buffers[e.bi];
 			},
-			\octave, Pseq([0].stutter(8), inf),
+			\octave, Pseq([0,1,2].stutter(1), inf),
 			\start, Pwhite(0.15,0.3),
 			\note, Pseq([30], inf),
 			\rate, Pxrand([5,6], inf),
@@ -135,7 +135,7 @@ SynthDef(\drumkit2, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 			\endWidth, 10,
 			// \widthEnv: ~sizeEnv ? defaultEnv,
 
-			\startSize, 100,
+			\startSize, Pfunc{|e| 100 - ((e.octave + 1) * 30)},
 			\endSize, 10,
 			// \sizeEnv: ~sizeEnv ? defaultEnv,
 

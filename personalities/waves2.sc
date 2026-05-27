@@ -72,6 +72,7 @@ SynthDef(\looper, {|bufnum=0, out=0, amp=1.0, rate=1, start=0, pan=0, freq=440,
 
 //------------------------------------------------------------
 ~deinit = ~deinit <> {
+	// this is broken!!!
 	Pdef(m.ptn).remove;
 	bgWaveSynth1.set(\gate, 0);
 	bgWaveSynth2.set(\gate, 0);
@@ -90,12 +91,69 @@ SynthDef(\looper, {|bufnum=0, out=0, amp=1.0, rate=1, start=0, pan=0, freq=440,
 ~next = {|d|
   var amp = m.accelMassFiltered.lincurve(0,2.0,0.3,2, 2);
 
+	var time = TempoClock.beats;
+	var xPos = [-0.8,-0.6,-0.3,0.0,0.2,0.5,0.7,1.0].choose; // Random x position
+	var baseY =  (sin(time) * 1); // Bottom half of screen
+	var squareSize = 200;//rrand(800,1000);
+	var duration = rrand(1, 2);
+	var wavePhase = rrand(0, 2pi); // Random phase offset for wave
+
+	// Oscillating vertical motion - sine wave
+	var waveHeight = 0.2;
+	var yEnv = Env(
+		[0, waveHeight, 0, waveHeight.neg, 0],
+		[0.25, 0.25, 0.25, 0.25] * 4,
+		\sine
+	);
+
+	// Oscillating rotation
+	var rotationAmount = rrand(0.2, 0.5);
+
+	// Ocean colors - blues and teals
+	var oceanColor = [
+		Color(0.1, 0.3, 0.6), // deep blue
+		Color(0.2, 0.5, 0.7), // ocean blue
+		Color(0.1, 0.4, 0.7), // medium blue
+		Color(0.3, 0.6, 0.8), // light blue
+		Color(0.2, 0.5, 0.6), // teal blue
+	].choose;
+
+	var ev = (
+		type: \customVisualEvent,
+		amp: 0,
+		viewID: d.port,
+		shape: \circle,
+		fill: false,
+		rotate: 0,
+		startSize: squareSize * 0.01,
+		endSize: squareSize * 1,
+		duration: duration,
+		startColor: oceanColor,
+		endColor: oceanColor.lighten(0.2).alpha_(0),
+		startWidth: 0.5,
+		endWidth: 1,
+		sx: (baseY * 0.5),//xPos * 0.1,
+		sy: (baseY * 0.5),//baseY * 0.1, // Start at base y position
+		ex: 0,//xPos, // Stay in same x position
+		ey: 1,//baseY.neg, // Stay in same y, oscillation via envelope
+		yEnv: yEnv, // Vertical oscillation
+		rotation: sin(time) * 0.003,
+      modulation: (
+        type: \noise,
+        freq: 3,
+        amp: 10,
+        harmonics: 15
+    ),
+	);
+
+
 	if(TempoClock.beats > (lastTime + 0.2),{
 		lastTime = TempoClock.beats;
 		if(m.accelMass>0.1,{
+	    ev.play;
 			synth = Synth(\waveSampler, [\bufnum, bi, \amp, amp]);
 			NodeWatcher.register(synth);
-			"next".postln;
+			// "next".postln;
 			bi = bi + 1;
 			if(bi >= (buffers.size-1),{bi=0});
 			trig = true;
