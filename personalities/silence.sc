@@ -119,7 +119,7 @@ m.rrateMassFilteredDecay = 0.4;
 };
 
 //------------------------------------------------------------
-
+/*
 ~controlView = {|d|
 
 	var sliderView = {|lt="default", rt="", dd|
@@ -170,3 +170,4 @@ m.rrateMassFilteredDecay = 0.4;
 };
 
 
+*/
