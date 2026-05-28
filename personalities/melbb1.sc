@@ -75,7 +75,7 @@ SynthDef(\drumkit2, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 			// \ex, 0,
 			// \ey, 0.4,
 			// \xEnv: ~xEnv ? defaultEnv,
-			// \yEnv: ~yEnv ? defaultEnv,
+			// \yEnv: ~yEnv ? defaultEnv,			
 
 			\startWidth, Pfunc{|e| e.dur.squared * 100},
 			\endWidth, 1,

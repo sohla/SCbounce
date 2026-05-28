@@ -3,7 +3,7 @@ var buffers;
 var bi = 0;
 var dur = 0.3;
 var synth;
-var trig = false;
+// var trig = false;
 var lastTime = 0;
 var bgWaveBuffer1;
 var bgWaveSynth1;
@@ -18,10 +18,31 @@ m.gyroFilteredAttack = 0.7;
 m.gyroFilteredDecay = 0.7;
 
 //------------------------------------------------------------
-SynthDef(\waveSampler, {|bufnum=0, out=0.5, amp=0.5, rate=1, start=0, pan=0, freq=440,
-	attack=0.01, decay=0.1, sustain=0.3, release=0.2, gate=1,cutoff=20000, rq=0.9|
+SynthDef(\simple, {|out=0, amp=0.0, freq=440, attack=0.001, decay=0.03, sustain=0.8, release=0.59, gate=1|
+	// var env = EnvGen.kr(Env.adsr(attack, decay, sustain, release), gate, doneAction: Done.freeSelf);
+	var env = EnvGen.kr(Env.perc(attack, release), gate, timeScale: 1,doneAction: 2);
+	var sig = SinOsc.ar(freq,0,0.5)!2;
+    Out.ar(out, sig * env * amp);
+}).add;
+
+SynthDef(\waveSampler, {|bufnum=0, out=0, amp=0.5, rate=1, start=0.2, pan=0, freq=440,
+	attack=0.01, decay=0.1, sustain=0.3, release=3.2, gate=1,cutoff=20000, rq=0.9|
 	var lr = rate * BufRateScale.kr(bufnum) * (freq/440.0);
-	var env = EnvGen.kr(Env.adsr(attack, decay, sustain, release), gate, timeScale: 2,doneAction: 2);
+	// var env = EnvGen.kr(Env.adsr(attack, decay, sustain, release), gate, timeScale: 2,doneAction: 2);
+	var env = EnvGen.kr(Env.perc(attack, release), gate, timeScale: 1,doneAction: 2);
+	var sig = PlayBuf.ar(2, bufnum, rate: lr, startPos: start * BufFrames.kr(bufnum), loop: 0);
+	// sig = RLPF.ar(sig, cutoff, rq);// + osc;
+	sig = Balance2.ar(sig[0], sig[1], pan, amp);
+	sig = LeakDC.ar(sig * env);
+	Out.ar(out, sig);
+}).add;
+
+
+SynthDef(\waveSampler, {|bufnum=0, out=0.5, amp=0.5, rate=1, start=0, pan=0, freq=440,
+	attack=0.01, decay=0.1, sustain=0.3, release=3.2, gate=1,cutoff=20000, rq=0.9|
+	var lr = rate * BufRateScale.kr(bufnum) * (freq/440.0);
+	// var env = EnvGen.kr(Env.adsr(attack, decay, sustain, release), gate, timeScale: 2,doneAction: 2);
+	var env = EnvGen.kr(Env.perc(attack, release), gate, timeScale: 1,doneAction: 2);
 	var sig = PlayBuf.ar(2, bufnum, rate: lr, startPos: start * BufFrames.kr(bufnum), loop: 0);
 	// sig = RLPF.ar(sig, cutoff, rq);// + osc;
 	sig = Balance2.ar(sig[0], sig[1], pan, amp);
@@ -53,6 +74,8 @@ SynthDef(\looper, {|bufnum=0, out=0, amp=1.0, rate=1, start=0, pan=0, freq=440,
 	buffers = folder.entries.collect({ |path,i|
 		Buffer.read(s, path.fullPath, action:{|buf|
 			postf("buffer alloc [%] \n", buf);
+			buf.normalize(0.8);
+
 			if(folder.entries.size - 1 == i,{   
 				"samples loaded".postln;
 			});
@@ -72,19 +95,25 @@ SynthDef(\looper, {|bufnum=0, out=0, amp=1.0, rate=1, start=0, pan=0, freq=440,
 
 //------------------------------------------------------------
 ~deinit = ~deinit <> {
-	// this is broken!!!
-	Pdef(m.ptn).remove;
+
 	bgWaveSynth1.set(\gate, 0);
 	bgWaveSynth2.set(\gate, 0);
-	fork{
-		1.0.yield;
-        buffers.do({|buf|
-            postf("buffer dealloc [%] \n", buf);
-            buf.free;
-            s.sync;
-        });
-		s.sync;
-	};
+
+	bgWaveSynth1.onFree({
+		"bg synth1 on free".postln;
+		bgWaveBuffer1.free;
+	});
+
+	bgWaveSynth2.onFree({
+		"bg synth2 on free".postln;
+		bgWaveBuffer2.free;
+	});
+
+	buffers.do({|buf|
+		postf("buffer dealloc [%] \n", buf);
+		buf.free;
+	});
+
 };
 
 //------------------------------------------------------------
@@ -146,22 +175,14 @@ SynthDef(\looper, {|bufnum=0, out=0, amp=1.0, rate=1, start=0, pan=0, freq=440,
     ),
 	);
 
-
-	if(TempoClock.beats > (lastTime + 0.2),{
+	if(TempoClock.beats > (lastTime + rrand(0.1,0.2)),{
 		lastTime = TempoClock.beats;
 		if(m.accelMass>0.1,{
 	    ev.play;
-			synth = Synth(\waveSampler, [\bufnum, bi, \amp, amp]);
-			NodeWatcher.register(synth);
-			// "next".postln;
+			synth = Synth(\waveSampler, [\bufnum, bi, \amp, amp * 0.2]);
 			bi = bi + 1;
 			if(bi >= (buffers.size-1),{bi=0});
-			trig = true;
 		},{
-			if(trig == true,{
-				synth.set(\gate, 0);
-				trig = false;
-			});
 		});
 	});
 
