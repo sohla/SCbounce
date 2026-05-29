@@ -39,7 +39,7 @@ SynthDef(\inabottle, { |out, frq=111, gate=0, amp = 0, dust=100, tone = 0.8, bit
 
 //------------------------------------------------------------
 ~next = {|d|
-  var amp = m.accelMassFiltered.lincurve(0.0,2.4,-13,-4,-7);
+  var amp = m.accelMassFiltered.lincurve(0.0,2.4,-13,0,-7);
   var pos = (d.sensors.gyroEvent.z / pi).fold(-0.5,0.5) * 2;
   var tone = pos.lincurve(-1,1,0.1,0.91,-3);
   var dust = m.rrateMassFiltered.lincurve(0,0.2,1,100,-3);

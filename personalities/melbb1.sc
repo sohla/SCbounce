@@ -198,12 +198,12 @@ SynthDef(\drumkit2, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 	Pdef(m.ptn).set(\viewID, d.port);
 	Pdef(\shaker).set(\viewID, d.port);
 
-	Pdef(m.ptn).set(\amp, amp * 0.2);
+	Pdef(m.ptn).set(\amp, amp * 0.4);
 	Pdef(m.ptn).set(\release, rel);
 	Pdef(m.ptn).set(\rate, roll);
 	step = 2.pow(m.accelMassFiltered.lincurve(0,1.0,-1,0, -1));
 
-	Pdef(\shaker).set(\amp, sa*0.7);	
+	Pdef(\shaker).set(\amp, sa*2);	
 	Pdef(m.ptn).set(\dur, dur);	
 
 

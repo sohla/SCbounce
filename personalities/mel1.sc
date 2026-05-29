@@ -14,14 +14,14 @@ m.gyroFilteredDecay = 0.4;
 SynthDef(\stereoSampler1, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=440,
 	attack=0.01, decay=0.1, sustain=0.3, release=1.2, gate=1,cutoff=20000, rq=0.9|
 	var lr = rate * BufRateScale.kr(bufnum) * (freq/440.0);
-	var env = EnvGen.kr(Env.adsr(attack, decay, sustain, release), gate, timeScale: 2,doneAction: 2);
+	var env = EnvGen.kr(Env.adsr(attack, decay, sustain, release), gate, timeScale: 1,doneAction: 2);
 	var sig = PlayBuf.ar(2, bufnum, rate: [lr, lr * 1.003], startPos: start * BufFrames.kr(bufnum), loop: 0);
 	var hs = RHPF.ar(sig, [6000,7000], 0.99,13).tanh;
 	sig = RLPF.ar(sig, cutoff, rq);// + osc;
 	sig = Pan2.ar(hs + sig, pan, amp * env);
 	sig = FreeVerb.ar(sig,0.5,0.4);
 	sig = LeakDC.ar(sig);
-	Out.ar(out, [((0)!0 ++ sig)]);
+	Out.ar(out, sig);
 }).add;
 
 //------------------------------------------------------------
@@ -69,13 +69,13 @@ SynthDef(\stereoSampler1, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, fr
 //------------------------------------------------------------
 ~next = {|d|
 
-	var dur = m.accelMassFiltered.lincurve(0,0.5,0.4,0.07,-3);
+	var dur = m.accelMassFiltered.lincurve(0,2.0,0.4,0.06,-3);
 	var start = m.gyroXFiltered.lincurve(0.0,1.0,0.1,0.9,0);
 	var amp = m.accelMassFiltered.lincurve(0,2.5,0,1,-6);
 	var rate= m.accelMass.linlin(0,1,0,2);
 	var range = m.accelMassFiltered.lincurve(0,2.0,1,notes.size,-2).asInteger;
 	var octave = m.gyroYFiltered.lincurve(-1.0,1.0,0,4,0).asInteger;
-	var bal = m.gyroYFiltered.lincurve(-1.0,1.0,4,1,0).asInteger;
+	var bal = m.gyroYFiltered.lincurve(-1.0,1.0,1,1,0).asInteger;
 
 	if(amp < 0.02, {amp = 0});
 

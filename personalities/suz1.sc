@@ -27,7 +27,7 @@ SynthDef(\suz1, {|out=0, amp=0.8, freq=440, attack=0.001, decay=0.03, sustain=0.
 	  \root, 0,
       \decay, 0.1,
       \sustain,0.1,
-	  \amp,0.3,
+	  \amp,0.8,
       \args, #[],
     )
   );

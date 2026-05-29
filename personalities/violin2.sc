@@ -18,7 +18,7 @@ SynthDef(\monoSampler, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=
     var env = EnvGen.kr(Env.adsr(attack, decay, sustain, release), gate, doneAction: 2);
 	var sig = PlayBuf.ar(1, bufnum, rate: [lr, lr * 1.003], startPos: start * BufFrames.kr(bufnum), loop: 0);
     sig = RLPF.ar(sig, cutoff, rq);
-    sig = Balance2.ar(sig[0], sig[1], pan.lag(2),  env);
+    sig = Balance2.ar(sig[0], sig[1], Lag.kr(pan, 3),  env);
 		sig = Compander.ar(sig, sig,
 						thresh: -32.dbamp,
 						slopeBelow: 1,

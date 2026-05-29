@@ -26,7 +26,7 @@ SynthDef(\bufGrainM, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=44
         relaxTime:  0.01
     );
 	sig = sig[0] * env * amp;
-    Out.ar(out, [((0)!0 ++ sig)]);
+    Out.ar(out, sig);
 }).add;
 
 //------------------------------------------------------------

@@ -97,7 +97,7 @@ SynthDef(\stereoSampler1, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, fr
     bi = index;
     
     if(amp < 0.02, { amp = 0; });
-	Pdef(m.ptn).set(\amp, amp * 4.0);
+	Pdef(m.ptn).set(\amp, amp * 2.3);
     Pdef(m.ptn).set(\start, start);
     Pdef(m.ptn).set(\cutoff, res);
     // Pdef(m.ptn).set(\octave, octave);
