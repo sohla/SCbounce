@@ -2,6 +2,28 @@ var m = ~model;
 var bi = [5,14].choose;
 var dur = 0.085;
 var limit = 0;
+
+
+	var ev = (
+		type: \customVisualEvent,
+		amp: 0,
+		viewID: ~device.port,
+		shape: \circle,
+		fill: true,
+		rotate: 0,
+		startSize: 10,
+		endSize: 20,
+		duration: 1.0,
+		startColor: Color.yellow.lighten(0.2).alpha_(0.8),
+		endColor: Color.green.darken(0.8).alpha_(0.1),
+		startWidth: 0.0,
+		endWidth: 1.0,
+		sx: 0,
+		sy: 0,
+		ex: 0.2,
+		ey: -0.3, 
+	);
+
 ~buffers;
 m.accelMassFilteredAttack = 0.99;
 m.accelMassFilteredDecay = 0.3;
@@ -32,6 +54,7 @@ SynthDef(\drumkit3, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 //--------------------------------------
 ~init = ~init <> {
 
+
 	var folder  = PathName("~/Downloads/melSamples/melbb");
 	postf("loading samples : % \n", folder);
 
@@ -44,25 +67,22 @@ SynthDef(\drumkit3, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 		});
 	});
 
-
-  Event.addEventType(\customBeatEvent, {
+  	Event.addEventType(\customBeatEvent, {
 		~subdiv = ~subdiv?1;
-
-    ~cnt = ~cnt.mod((8/~subdiv));
-    // (~subdiv).postln;
-    if(~cnt == 0,{
-      ~type = \note;
-      currentEnvironment.play;
-      // "-------".postln;
-    });
-  });
+		~cnt = ~cnt.mod((8/~subdiv));
+    	if(~cnt == 0,{
+      		~type = \note;
+			currentEnvironment.play;
+				ev.play;
+    	});
+  	});
 
 	Pdef(m.ptn,
 		Pbind(
 			\instrument, \drumkit3,			
-      \type, \customBeatEvent,
+      		\type, \customBeatEvent,
 			\bufnum, Pfunc{
-        bi = bi + 1;
+        		bi = bi + 1;
 				if(bi >= (~buffers.size-1),{bi=0});
 				~buffers[bi];
 			},
@@ -72,9 +92,14 @@ SynthDef(\drumkit3, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 			\dur, dur,
 			\pan, Pwhite(-0.4,0.4),
 			\attack, 0.02,
-      \release, 1.3,
-      \cnt, Pseries(0,1, inf),
-      \func, Pfunc({|e| ~onEvent.(e)}),
+      		\release, 1.3,
+      		\cnt, Pseries(0,1, inf),
+      		\func, Pfunc({|e| ~onEvent.(e)}),
+			// \vis, Pfunc({|e| 
+			// 	// ev.play;
+			// 	true
+			// }),
+
 			\args, #[],
 		)
 	);
@@ -105,12 +130,13 @@ SynthDef(\drumkit3, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 //------------------------------------------------------------
 ~next = {|d|
 
-  var ud = m.gyroYFiltered.clip(-0.5,0.5).lincurve(-0.5,0.5,1,4,1).round;
-  var rate = m.gyroYFiltered.clip(-0.5,0.5).lincurve(-0.5,0.5,-1,1,-1).floor;
+	var ud = m.gyroYFiltered.clip(-0.5,0.5).lincurve(-0.5,0.5,1,4,1).round;
+	var rate = m.gyroYFiltered.clip(-0.5,0.5).lincurve(-0.5,0.5,-1,1,-1).floor;
+	var time = TempoClock.beats;
 
-  Pdef(m.ptn).set(\subdiv,2.pow(ud));
-  Pdef(m.ptn).set(\amp,1);
-  Pdef(m.ptn).set(\rate,2.pow(rate));
+	Pdef(m.ptn).set(\subdiv,2.pow(ud));
+	Pdef(m.ptn).set(\amp,1);
+	Pdef(m.ptn).set(\rate,2.pow(rate));
 
 	if(m.accelMassFiltered > 0.05,{
 		if( Pdef(m.ptn).isPlaying.not,{
@@ -121,6 +147,26 @@ SynthDef(\drumkit3, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 			Pdef(m.ptn).pause();
 		});
 	});
+	ev = (
+		type: \customVisualEvent,
+		amp: 0,
+		viewID: ~device.port,
+		shape: \hexagon,
+		fill: false,
+		rotate: 0,
+		startSize: 0,
+		endSize: 180,
+		duration: 0.3,
+		startColor: Color.blue.lighten(0.8).alpha_(1),
+		endColor: Color.red.darken(0.9).alpha_(0.1),
+		startWidth: 1.0,
+		endWidth: ud.reciprocal * 30,
+		sx: 0,
+		sy: 0,
+		ex: sin(time * 2) * 0.1,
+		ey: cos(time * 2) * 0.1, 
+	);
+
 };
 
 //------------------------------------------------------------

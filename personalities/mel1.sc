@@ -45,11 +45,20 @@ SynthDef(\stereoSampler1, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, fr
 				\decay, 0.2,
 				\sustain,0.1,
 				\release,1.3,
-				// \rate, Pwhite(0.3,3.0),
 				\rate, Pslide(notes.midiratio, inf, Pkey(\range), 0, 0),
 
-				// \rate, Pseq(notes.midiratio, inf),
-				// \dur, Pseq([0.25], inf),
+
+			\type, \customVisualEvent,
+			\shape, \line,
+			\duration, 0.6,
+			\sx, 0.25.neg + Pfunc({|e| e.octave * 0.25}),
+			\sy, 1.5 - Pfunc({|e| e.rate * 0.75}),
+			\ex, Pkey(\sx),
+			\ey, Pkey(\sy),
+			\startWidth, 100,
+			\endWidth, 30,
+			\rotation, pi.half,
+
 				\args, #[],
 			)
 		);
@@ -78,6 +87,11 @@ SynthDef(\stereoSampler1, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, fr
 	var bal = m.gyroYFiltered.lincurve(-1.0,1.0,1,1,0).asInteger;
 
 	if(amp < 0.02, {amp = 0});
+
+	Pdef(m.ptn).set(\viewID, d.port);
+	Pdef(m.ptn).set(\startSize, amp * 50);
+	Pdef(m.ptn).set(\endSize, amp * 1);
+
 
 	Pdef(m.ptn).set(\dur, dur);
 	Pdef(m.ptn).set(\amp, amp * bal);
