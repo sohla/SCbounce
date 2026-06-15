@@ -10,9 +10,11 @@ SynthDef(\hl, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=440,
 
 	var lr = rate * BufRateScale.kr(bufnum) * (freq/440.0);
     var env = EnvGen.kr(Env.adsr(attack, decay, sustain, release), gate, doneAction: 2);
-	var sig = PlayBuf.ar(1, bufnum, rate: [lr, lr * 1.003], startPos: start * BufFrames.kr(bufnum), loop: 0);
+		var sig = PlayBuf.ar(1, bufnum, rate: [lr, lr * 0.96], startPos: start * BufFrames.kr(bufnum), loop: 0);
     sig = RLPF.ar(sig, cutoff, rq);
-    sig = Balance2.ar(sig[0], sig[1], pan,  env);
+    // sig = Balance2.ar(sig[0], sig[1], pan,  env);
+    // sig = Pan2.ar(sig[0], pan,  env);
+		// sig = sig * env;
  		sig = Compander.ar(sig, sig,
 						thresh: -32.dbamp,
 						slopeBelow: 1,
@@ -20,7 +22,7 @@ SynthDef(\hl, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=440,
 						clampTime:  0.02,
 						relaxTime:  0.01
 				);
-	   Out.ar(out, sig * amp);
+	   Out.ar(out, sig * amp * env);
 }).add;
 
 //------------------------------------------------------------
@@ -42,7 +44,7 @@ SynthDef(\hl, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=440,
 				\note, Pseq([33], inf),
 				\attack, 0.07,
 				\sustain,0.4,
-				\decay, 0.01,
+				\decay, 0.31,
 				\release,0.0,
 				\start, Pwhite(0.0,0.4),	
 				// \dur, Pseq([0.3] , inf),
@@ -68,36 +70,36 @@ SynthDef(\hl, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=440,
 
 	var dur = m.accelMassFiltered.linlin(0,1,0.6,0.3);
 	var start = (d.sensors.gyroEvent.y / 2pi) + 0.5;
-	var amp = m.accelMass.linlin(0,1,0,2);
+	var amp = m.accelMass.linlin(0,2,0,2);
 	var pan = d.sensors.gyroEvent.z.linlin(-1,1,-1,1);
 
 	Pdef(m.ptn).set(\pan, pan);
 	Pdef(m.ptn).set(\dur, dur);
 	// Pdef(m.ptn).set(\start, start.linlin(0,1,0,0.9));
 
-	if(d.sensors.digiInEvent[0] == 1, {
-		if( Pdef(m.ptn).isPlaying.not,{
-			Pdef(m.ptn).resume(quant:0);
-		});
-	},{
-		if( Pdef(m.ptn).isPlaying,{
-			Pdef(m.ptn).pause();
-		});
-	});
-
-
-	// if(amp < 0.15, {amp = 0});
-	// Pdef(m.ptn).set(\amp, amp * 0.3);
-	// if(m.accelMassFiltered > 0.07,{
+	// if(d.sensors.digiInEvent[0] == 1, {
 	// 	if( Pdef(m.ptn).isPlaying.not,{
-	// 		Pdef(m.ptn).resume(quant:0.5/3);
-	// 		// Pdef(m.ptn).set(\start, start.linlin(0,1,0,0.9));
+	// 		Pdef(m.ptn).resume(quant:0);
 	// 	});
 	// },{
 	// 	if( Pdef(m.ptn).isPlaying,{
 	// 		Pdef(m.ptn).pause();
 	// 	});
 	// });
+
+
+	if(amp < 0.15, {amp = 0});
+	Pdef(m.ptn).set(\amp, amp * 0.5);
+	if(m.accelMassFiltered > 0.07,{
+		if( Pdef(m.ptn).isPlaying.not,{
+			Pdef(m.ptn).resume(quant:0.5/3);
+			// Pdef(m.ptn).set(\start, start.linlin(0,1,0,0.9));
+		});
+	},{
+		if( Pdef(m.ptn).isPlaying,{
+			Pdef(m.ptn).pause();
+		});
+	});
 };
 
 //------------------------------------------------------------

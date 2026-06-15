@@ -43,7 +43,7 @@ SynthDef(\pullstretchMonoQ, {|out, amp = 1, buffer = 0, envbuf = -1, pch = 1.0, 
 
 	mas = HPF.ar(sp,445);
 
-	Out.ar(out,Pan2.ar(mas[0],pan));
+	Out.ar(out,Pan2.ar(mas[0],pan.lag(3)));
 }).add;
 //------------------------------------------------------------
 ~init = ~init <> {

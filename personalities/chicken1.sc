@@ -122,7 +122,9 @@ SynthDef(\miniMoogModel, { |freq = 440, amp = 0.5, gate = 1, pan = 0,
 	var sub = 2.pow(m.rrateMassFiltered.lincurve(0,0.2,0,2,-2).floor).reciprocal;
 	Pdef(m.ptn).set(\dur, 0.25 * sub);
 
-  if(d.sensors.digiInEvent[0] == 1, {
+  // if(d.sensors.digiInEvent[0] == 1, {
+	if(m.rrateMassFiltered > 0.022,{
+
 		if( Pdef(m.ptn).isPlaying.not,{
 			Pdef(m.ptn).resume(quant:0);
 		});

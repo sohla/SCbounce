@@ -7,7 +7,7 @@ m.accelMassFilteredDecay = 0.9;
 SynthDef(\tick, {
 		|out=0, gate=1, amp=0.3, pan=0, dcy=0.2, curve=40, frq = 1000|
 
-		var sig = PinkNoise.ar(EnvGen.ar(Env.perc(0.002,dcy,1,curve.neg), gate, doneAction:2));
+		var sig = PinkNoise.ar(EnvGen.ar(Env.perc(0.003,dcy,1,curve.neg), gate, doneAction:2));
         sig = HPF.ar(sig, frq);
 		Out.ar(out, Pan2.ar(sig,pan,amp))
 }).add;
@@ -42,9 +42,9 @@ SynthDef(\melodicPerc, {|out=0, freq=50, tension=0.1, decay=0.5, clickLevel=0.3,
 			\instrument, \melodicPerc,
 			\scale, Scale.major,
 			\root,Pseq([0,3,-3].stutter(16), inf),
-			\octave, Pseq([6,8,5,9,5,6].stutter(2)-2, inf),
+			\octave, Pseq([6,8,5,7,5,6].stutter(2)-2, inf),
     	\note, Pseq([0,4,11,2,7], inf),
-			\amp, Pwhite(0.1,0.2, inf)*0.4,
+			\amp, Pwhite(0.1,0.2, inf)*0.15,
       \func, Pfunc({|e| ~onEvent.(e)}),
 			\args, #[]
 		);
@@ -55,9 +55,10 @@ SynthDef(\melodicPerc, {|out=0, freq=50, tension=0.1, decay=0.5, clickLevel=0.3,
 		Pbind(
 			\instrument, \tick,
 			\octave, Pseq([7,8,8,7].stutter(1), inf),
-			\dur, 0.11,
-    		\decay, 0.3,
-			//\pan,Pseg( Pseq([-1,1], inf),Pseq([1,1],inf), \sine, inf),
+			\dur, 0.11 * 2,
+    		// \dcy, Pwhite(0.1,4.3, inf),
+				// \pan,1,
+			\pan,Pseg( Pseq([-1,1], inf),Pseq([4,4],inf), \sine, inf),
 			\args, #[]
 		);
 	);
@@ -83,23 +84,25 @@ SynthDef(\melodicPerc, {|out=0, freq=50, tension=0.1, decay=0.5, clickLevel=0.3,
 //------------------------------------------------------------
 ~next = {|d|
 
-	var dur = m.accelMassFiltered.lincurve(0,0.5,0,2,1).round;
+	var dur = m.accelMassFiltered.lincurve(0,1.5,0,2,1).round;
 	var dr = m.accelMassFiltered.lincurve(0,1.3,0.001,0.3,5);
 	var frq = m.gyroXFiltered.lincurve(-0.5,0.5,100,8000,0);
-	var amp = m.gyroYFiltered.lincurve(-1.0,1.0,0.0,0.4);
+	var amp = m.accelMassFiltered.lincurve(0,2.3,0.15,1.0,-2);//m.gyroYFiltered.lincurve(-1.0,1.0,0.0,0.4);
 	var pan = m.gyroZFiltered.linlin(-1.0,1.0,1.0,-1.0);
 	var decay = m.gyroZFiltered.abs.linlin(0.2,0.8,2.0,1.0);
 	var curve = m.gyroZFiltered.abs.linlin(0.0,1.0,40.0,10.0);
+	var dcy = m.accelMassFiltered.lincurve(0,2.0,0.04,10.3,1);
 
 	Pdef(tp).set(\curve, curve);
-	Pdef(tp).set(\amp,amp*0.5);
+	Pdef(tp).set(\amp,amp * 0.5.rrand(0.1,1.0));
 	Pdef(tp).set(\frq,frq);
 	Pdef(tp).set(\pan, pan);
+	Pdef(tp).set(\dcy, dcy);
     
   Pdef(m.ptn).set(\dur, 0.44 / 2.pow(dur));
 	Pdef(m.ptn).set(\decay, decay);
 	Pdef(m.ptn).set(\dr, dr);
-	// Pdef(m.ptn).set(\dist, 1);
+	// Pdef(m.ptn).set(\dist, 140);
 
 	if(m.accelMassFiltered > 0.12,{
 		if( Pdef(m.ptn).isPlaying.not,{

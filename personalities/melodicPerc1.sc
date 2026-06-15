@@ -45,7 +45,7 @@ SynthDef(\melodicPerc, {|out=0, freq=50, tension=0.1, decay=0.5, clickLevel=0.3,
 			\note,0,
 			\root, Pseq([0,1,5,4,-2,5,7,8,4,-2].stutter(24), inf),
 			\legato, 0.1,
-			\amp, Pwhite(0.1,0.2, inf)*0.8,
+			\amp, Pwhite(0.1,0.2, inf)*0.3,
 			\func, Pfunc({|e| ~onEvent.(e)}),
 			\args, #[]
 		);
@@ -58,7 +58,7 @@ SynthDef(\melodicPerc, {|out=0, freq=50, tension=0.1, decay=0.5, clickLevel=0.3,
 			\octave, Pseq([3,4,5,6].stutter(1), inf),
 			\dur, 0.22/2,
 			\pan, Pwhite(-0.1,0.1),
-			\amp, Pwhite(0.3,0.4, inf),
+			\amp, Pwhite(0.1,0.3, inf),
 			\args, #[]
 		);
 	);

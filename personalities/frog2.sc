@@ -70,12 +70,12 @@ SynthDef(\miniMoogModel, { |freq = 440, amp = 0.5, gate = 1, pan = 0,
 			\octave, Pseq([3].stutter(48), inf),
 			\rate, Pseq([0,12,0].midiratio, inf),
 			\legato, Prand([0.35,0.65], inf),
-			\start, Pwhite(0, 0.1),
+			\start, Pwhite(0, 0.2),
 			\note, Pseq([33,35,33,35,36,33,36,33,35,33,35,33,36,33,36,33,38,35,38,35].stutter(8), inf),
 			// \amp, 2,
 			\attack, 0.002,
 			\release,0.17,
-			\pan, 0.8,//Pseq([-1,1], inf),
+			\pan, Pseq([-0.2,0.2], inf),
 			\args, #[],
 		)
 	);
@@ -96,7 +96,7 @@ SynthDef(\miniMoogModel, { |freq = 440, amp = 0.5, gate = 1, pan = 0,
 //------------------------------------------------------------
 ~next = {|d|
 
-	var amp = m.accelMassFiltered.linexp(0,1.5,2,4);
+	var amp = m.accelMassFiltered.linexp(0,1.5,1,3);
 	Pdef(m.ptn).set(\amp, amp);
 
 	if(m.accelMassFiltered > 0.07,{

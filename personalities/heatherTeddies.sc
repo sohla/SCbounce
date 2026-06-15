@@ -27,14 +27,14 @@ SynthDef(\pullstretchMono, {|out, amp = 0.8, buffer = 0, envbuf = -1, pch = 1.0,
 	// my = MouseY.kr(0.01,1,1.0);//splay
 
 
-	sp = Splay.arFill(12,
-		{ |i| Warp1.ar(1, buffer, lfo, pch.lag(2),splay, envbuf, 8, 0.1, 2)  },
+	sp = Splay.arFill(2,
+		{ |i| Warp1.ar(1, buffer, lfo, pch.lag(2),splay, envbuf, 2, 0.02, 2)  },
 			1,
 			1,
 			0
 	) * amp.lag(1);
 
-	mas = HPF.ar(sp,245);
+	mas = HPF.ar(sp,1245);
 
 	Out.ar(out,mas);
 }).add;
@@ -67,9 +67,9 @@ SynthDef(\pullstretchMono, {|out, amp = 0.8, buffer = 0, envbuf = -1, pch = 1.0,
 
 	if(amp < 0.1, {amp = 0});
 	//
-	synth.set(\pch, rate);
+	// synth.set(\pch, rate);
 	synth.set(\speed, speed);
-	synth.set(\amp, amp);
+	synth.set(\amp, amp * 0.6);
 };
 //------------------------------------------------------------
 ~plotMin = -1;

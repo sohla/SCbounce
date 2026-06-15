@@ -169,15 +169,15 @@ SynthDef(\stereoSamplerH, {|bufnum=0, out=0, amp=1, rate=1, start=0, pan=0, freq
   Pdef(m.ptn).set(\root, root);
   Pdef(m.ptn).set(\octave, octave);
 
-	// if(m.accelMassFiltered > 0.07,{
-	// 	if( Pdef(m.ptn).isPlaying.not,{
-	// 		Pdef(m.ptn).resume(quant:dur);
-	// 	});
-	// },{
-	// 	if( Pdef(m.ptn).isPlaying,{
-	// 		Pdef(m.ptn).pause();
-	// 	});
-	// });
+	if(m.accelMassFiltered > 0.07,{
+		if( Pdef(m.ptn).isPlaying.not,{
+			Pdef(m.ptn).resume(quant:dur);
+		});
+	},{
+		if( Pdef(m.ptn).isPlaying,{
+			Pdef(m.ptn).pause();
+		});
+	});
 
 };
 

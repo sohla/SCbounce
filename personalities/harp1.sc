@@ -61,19 +61,19 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, start=0, pan=0, freq=
 
 
 SynthDef(\funBass, {
-    |out=0, freq = 440, gate = 1, amp = 0.8, filtFreq = 200, filtRes = 0.2, envAtk = 0.31, envDec = 0.1, envSus = 0.7, envRel = 3.2, rm = 0.5|
+    |out=0, freq = 440, gate = 1, amp = 0.8, filtFreq = 200, filtRes = 0.2, envAtk = 0.01, envDec = 0.1, envSus = 0.7, envRel = 3.2, rm = 0.5|
     var osc1, osc2, osc3, env, filter, output;
 		var osc4, osc5, osc6;
     // env = EnvGen.ar(Env.adsr(envAtk, envDec, envSus, envRel), gate, doneAction: Done.freeSelf);
     env = EnvGen.ar(Env.perc(envAtk,envRel), gate, doneAction: Done.freeSelf);
-    osc1 = Saw.ar(freq, 1);
+    osc1 = Saw.ar(freq, 0.6);
     osc2 = Pulse.ar(freq * 0.99, 0.3, 1);
     osc3 = SinOsc.ar(freq * 1.01, 0,1);
     osc4 = Saw.ar(freq, 2.002);
     osc5 = Pulse.ar(freq * 2.004, 0.3, 1);
     osc6 = SinOsc.ar(freq * 2.97, 0, 1);
     output = [Mix([osc1, osc2, osc3]), Mix([osc4, osc5, osc6])] * env * amp;
-    filter = RLPF.ar(output, filtFreq, filtRes);
+    filter = RLPF.ar(output, filtFreq.lag(0.7), filtRes);
 		// filter = [filter.distort, filter.tanh];
     Out.ar(out, LeakDC.ar(filter.softclip));
 }).add;
@@ -198,7 +198,7 @@ SynthDef(\funBass, {
 ~next = {|d|
 
 	var move = m.accelMassFiltered.lincurve(0,1.5,1,notes.size,1);
-	var amp = m.accelMassFiltered.lincurve(0,1.4,-50,-6,-1);
+	var amp = m.accelMassFiltered.lincurve(0,1.4,-50,-12,-1);
 	var ff = m.rrateMassFiltered.lincurve(0.0,2.0,200,2000,-3); 
 	var wd = m.rrateMassFiltered.lincurve(0.0,2.0,10,0.1,-3); 
 	var step = m.gyroXFiltered.linlin(-0.8,0.8,0,3).floor; //up down
@@ -273,7 +273,7 @@ SynthDef(\funBass, {
 			lastTime = TempoClock.beats;
 			~playNote.(n-12,0, 3,amp.dbamp * 0.04);
 			m.com.root = n;
-			bassSynth = Synth(\funBass, [\freq, (n + 24).midicps, \gate,1, \amp, amp.dbamp * 0.19]);
+			bassSynth = Synth(\funBass, [\freq, (n + 24).midicps, \gate,1, \amp, amp.dbamp * 0.29]);
 			NodeWatcher.register(bassSynth);
 			bassSynth.server.sendBundle(0.3,[\n_set, bassSynth.nodeID, \gate, 0]);
 			bass = bass.rotate(-1);

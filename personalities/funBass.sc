@@ -126,7 +126,7 @@ SynthDef(\versatilePerc, {
 			\envDec,0.3,
 			\envSus, 0.0,
 			\envRel,Pkey(\octave).squared * 0.05,
-   		\amp, 0.95,
+   		\amp, 0.55,
 			\pan, Pxrand([-0.5,0.5], inf),
    		\filtRes, 1,//Pwhite(0.4,0.7),
 			\func, Pfunc({|e| ~onEvent.(e)}),
@@ -187,7 +187,7 @@ SynthDef(\versatilePerc, {
 	if(a<0.03,{a=0});
 	if(a>0.9,{a=0.9});
 
-	synth.set(\amp, a * 0.4);
+	synth.set(\amp, a * 0.3);
 	synth.set(\filtSpeed, filtSpeed);
 	synth.set(\lfoFreq, lfoFreq);
 

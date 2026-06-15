@@ -26,11 +26,11 @@ SynthDef(\pullstretchMono, {|out, amp = 0.8, buffer = 0, envbuf = -1, pch = 1.0,
 	var lfo = LFSaw.kr( (1.0/len) * speed ,1,0.5,0.5);
 	// my = MouseY.kr(0.01,1,1.0);//splay
 	sp = Splay.arFill(12,
-		{ |i| Warp1.ar(1, buffer, lfo, pch,splay, envbuf, 8, 0.1, 2)  },
+		{ |i| Warp1.ar(1, buffer, lfo, pch,splay, envbuf, 2, 0.3, 2)  },
 			1,
 			1,
 			0
-	) * amp.lag(2);
+	) * amp.lag(0.3);
 
 	mas = HPF.ar(sp,245);
 
@@ -54,7 +54,7 @@ SynthDef(\pullstretchMono, {|out, amp = 0.8, buffer = 0, envbuf = -1, pch = 1.0,
 				\octave, Pxrand([3], inf),
 				\rate, Pwhite(1),
 				\root, 0,
-				\note, Pseq([0].stutter(8) + 33, inf),
+				\note, Pseq([0,5,-7].stutter(8) + 33, inf),
 				\attack, 0.07,
 				\release, 0.2,
 				\legato, 1,
@@ -79,9 +79,9 @@ SynthDef(\pullstretchMono, {|out, amp = 0.8, buffer = 0, envbuf = -1, pch = 1.0,
 //------------------------------------------------------------
 ~next = {|d|
 
-	var dur = m.accelMassFiltered.lincurve(0,3,0.4,0.1,-1).lag(0.9);
-	var leg= m.accelMassFiltered.linlin(0,1,0.6,0.2);
-	var start = d.sensors.gyroEvent.z.linlin(-1,1,0.0,1);
+	var dur = m.accelMassFiltered.lincurve(0,3,0.2,0.04,-1);
+	var leg= m.accelMassFiltered.linlin(0,1,0.6,1.2);
+	var start = d.sensors.gyroEvent.z.linlin(-1,1,0.1,0.5);
 	var amp = m.accelMass.lincurve(0,2.5,0,1.5,-5);
 	var co = (d.sensors.gyroEvent.y / pi).linexp(-1,1,540,14000);
 	var pan = d.sensors.gyroEvent.z.linlin(-1,1,-1,1);
@@ -94,14 +94,14 @@ SynthDef(\pullstretchMono, {|out, amp = 0.8, buffer = 0, envbuf = -1, pch = 1.0,
 	Pdef(m.ptn).set(\amp, amp);
 	Pdef(m.ptn).set(\dur, dur);
 	Pdef(m.ptn).set(\cutoff, co);
-	Pdef(m.ptn).set(\ts, leg);
+	// Pdef(m.ptn).set(\ts, leg);
 	Pdef(m.ptn).set(\start, start);
 	Pdef(m.ptn).set(\pan, pan);
 
 
 	//  synth.set(\pch, rate);
-	synth.set(\speed, speed);
-	synth.set(\amp, amp * 0.15);
+	synth.set(\speed, speed * 0.1);
+	synth.set(\amp, amp * 0.2);
 
 };
 

@@ -27,7 +27,8 @@ SynthDef(\glockenspiel2, {
 			\instrument, \glockenspiel2,
 			\note, Pseq([-5,0,4,7,-12,4],inf),
 			\decay, 2.5,
-			\func, Pfunc({|e| ~onEvent.(e)}),
+			\root, Pseq([0,3,-4].stutter(12),inf),
+			// \func, Pfunc({|e| ~onEvent.(e)}),
 			\args, #[],
 		)
 	);
@@ -41,7 +42,7 @@ SynthDef(\glockenspiel2, {
 };
 //------------------------------------------------------------
 ~onEvent = {|e|
-	Pdef(m.ptn).set(\root, m.com.root);
+	// Pdef(m.ptn).set(\root, m.com.root);
 };
 
 //------------------------------------------------------------

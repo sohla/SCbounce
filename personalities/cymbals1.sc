@@ -63,7 +63,7 @@ SynthDef(\drumkit, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 			\args, #[],
 
   		\type, \customVisualEvent,
-			\shape, \circle,
+			\shape, \square,
 			\sx, Pwhite(-0.02,0.02),
 			\sy, Pwhite(-0.02,0.02),
 			\ex, 0,

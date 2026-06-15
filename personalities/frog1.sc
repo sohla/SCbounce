@@ -82,25 +82,25 @@ SynthDef(\blobblob2, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 	var amp = m.accelMassFiltered.linexp(0,1.5,1,3);
 	Pdef(m.ptn).set(\amp, amp*1);
 
-	  if(d.sensors.digiInEvent[0] == 1, {
-		if( Pdef(m.ptn).isPlaying.not,{
-			Pdef(m.ptn).resume(quant:0);
-		});
-	},{
-		if( Pdef(m.ptn).isPlaying,{
-			Pdef(m.ptn).pause();
-		});
-	});
-
-	// if(m.accelMassFiltered > 0.07,{
-	// 	if( Pdef(~model.ptn).isPlaying.not,{
-	// 		Pdef(~model.ptn).resume(quant:0.25);
+	//   if(d.sensors.digiInEvent[0] == 1, {
+	// 	if( Pdef(m.ptn).isPlaying.not,{
+	// 		Pdef(m.ptn).resume(quant:0);
 	// 	});
 	// },{
-	// 	if( Pdef(~model.ptn).isPlaying,{
-	// 		Pdef(~model.ptn).pause();
+	// 	if( Pdef(m.ptn).isPlaying,{
+	// 		Pdef(m.ptn).pause();
 	// 	});
 	// });
+
+	if(m.accelMassFiltered > 0.07,{
+		if( Pdef(~model.ptn).isPlaying.not,{
+			Pdef(~model.ptn).resume(quant:0.25);
+		});
+	},{
+		if( Pdef(~model.ptn).isPlaying,{
+			Pdef(~model.ptn).pause();
+		});
+	});
 };
 
 //------------------------------------------------------------
