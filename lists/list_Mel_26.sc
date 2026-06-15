@@ -2,6 +2,13 @@
 	[
 		"silence",
 
+		"raindrops",
+		"aless1",
+		"aless2",
+		"aless3",
+		"aless4",
+		"melChair1",
+		"melChair2",
 		"melbb1",
 		"melbb2",
 		"mel1",

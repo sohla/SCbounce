@@ -4,6 +4,8 @@ var params = (
     \sensitivity: 0.6,
 	\effectAmount: 0.2,
 );
+
+var lastTime = 0;
 m.accelMassFilteredAttack = 0.7;
 m.accelMassFilteredDecay = 0.2;
 m.rrateMassFilteredAttack = 0.7;
@@ -31,7 +33,7 @@ m.rrateMassFilteredDecay = 0.4;
 	// Create oscillating squares in bottom half - ocean effect
 	var time = TempoClock.beats;
 	var xPos = [-0.8,-0.6,-0.3,0.0,0.2,0.5,0.7,1.0].choose; // Random x position
-	var baseY = 4.7 - (sin(time * 0.5) * 0.2); // Bottom half of screen
+	var baseY = 4.7 - (cos(time * 0.5) * 0.2); // Bottom half of screen
 	var squareSize = rrand(800,1000);
 	var duration = rrand(1.0, 4.0);
 	var wavePhase = rrand(0, 2pi); // Random phase offset for wave
@@ -78,6 +80,11 @@ m.rrateMassFilteredDecay = 0.4;
 		rotation: sin(time) * 0.1,
 	);
 	// ev.play;
+
+	// (TempoClock.seconds - lastTime).postln; 
+	// lastTime = TempoClock.seconds;
+	
+	
 };
 
 //------------------------------------------------------------
@@ -98,12 +105,42 @@ m.rrateMassFilteredDecay = 0.4;
 	// [d.sensors.rrateEvent.x, d.sensors.rrateEvent.y, d.sensors.rrateEvent.z].abs;
 	// [[d.sensors.rrateEvent.x, d.sensors.rrateEvent.y, d.sensors.rrateEvent.z].sumabs];
 
-	[m.accelMassFiltered * 3, m.rrateMassFiltered * 10, (d.sensors.gyroEvent.z / pi).fold(-0.5,0.5) * 2];
+	// [m.accelMassFiltered * 3, m.rrateMassFiltered * 10, (d.sensors.gyroEvent.z / pi).fold(-0.5,0.5) * 2];
 
 	// Gyro
-		// [(d.sensors.gyroEvent.x / pi).fold(-0.5,0.5) * 2];//roll
+	// [(d.sensors.gyroEvent.x / pi).fold(-0.5,0.5) * 2];//roll
 	// [(d.sensors.gyroEvent.y / pi.half)];//up down
 	// [(d.sensors.gyroEvent.z / pi).fold(-0.5,0.5) * 2];//left right
+	
+	var roll = (d.sensors.gyroEvent.x / pi).fold(-0.5,0.5) * 2;
+	var pitch = (d.sensors.gyroEvent.y / pi.half);
+	var yaw = (d.sensors.gyroEvent.z / pi).fold(-0.5,0.5) * 2;
+	var flip = (d.sensors.gyroEvent.x / pi).abs;
+	var val = 0;
+
+	if( (flip < 0.05) && (roll > -0.05) && (roll < 0.05) && (pitch > -0.05) && (pitch <0.05), {
+		val = 1;
+	});
+	if( (roll > 0.95) && (pitch > -0.05) && (pitch <0.05), {		val = 3;
+	});
+	if( (roll < -0.95) && (pitch > -0.05) && (pitch <0.05), {
+		val = 2;
+	});
+	if( (flip > 0.95) && (pitch > -0.05) && (pitch <0.05), {
+		val = 4;
+	});
+	if( (pitch > 0.9), {
+		val = 5;
+	});
+	if( (pitch < -0.9), {
+		val = 6;
+	});
+	// val.postln;
+	
+	// [roll, pitch, yaw];
+	[val / 6];
+		
+	
 	// [(d.sensors.gyroEvent.x / pi), (d.sensors.gyroEvent.y / pi.half), (d.sensors.gyroEvent.z / pi)];
 
 	// [[(d.sensors.gyroEvent.x / pi).fold(-0.5,0.5) * 2, (d.sensors.gyroEvent.y / pi.half), (d.sensors.gyroEvent.z / pi).fold(-0.5,0.5) * 2].sum] / 3;
