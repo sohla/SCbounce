@@ -10,6 +10,14 @@ var outAddr = NetAddr.new("192.168.100.40", 3333);
 var airstickListeners = [];
 var numAirwareVirtualDevices = 5;
 var oscThru = false;
+
+
+
+var date = Date.getDate;
+var genTitle= date.format("%A_%d_%m_%Y-%H_%M_%S");
+var file = File(("~/test_" ++ genTitle ++ ".txt").standardizePath,"a");
+
+
 //------------------------------------------------------------
 // Models
 //------------------------------------------------------------
@@ -340,6 +348,12 @@ var addOSCDeviceListeners = {|d|
                 ~devices.at(addr.port+i).sensors.velocity = vec3Scale.(~devices.at(addr.port+i).sensors.velocity, 0.3);
 
                 ~devices.at(addr.port+i).sensors.lastTimestamp = time;
+
+	            "Current Time: % Delta Time: %".format(time, deltaTime).postln;
+
+            	file.write("%, %,".format(time, deltaTime));
+
+
             });
         }, pattern, address);
     });
