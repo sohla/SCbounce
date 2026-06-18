@@ -1,6 +1,6 @@
 
 (
-var loadAndPlot;   // forward declaration so the function can re-invoke itself
+var loadAndPlot; 
 
 loadAndPlot = {
 	FileDialog({ |paths|
@@ -13,6 +13,9 @@ loadAndPlot = {
 		var settle = 2;    // drop the first N frames while the system settles
 		var colors = [Color.gray, Color.blue, Color.green(0.5)];
 		var labels;
+		var colX = [60, 230, 340, 450];      // x position of each column
+		var colW = [160, 100, 100, 100];     // width of each column
+		var headers = ["series", "min", "max", "mean"];
 		var prevOnClose;
 
 		data = data.reshape(data.size.half.asInteger,2);
@@ -40,20 +43,31 @@ loadAndPlot = {
 		a.plotColor = colors;
 		a.refresh;
 
-		// legend: color-matched labels overlaid on the plot window
+		// stats grid overlaid on the plot window
 		labels = ["raw", "running avg", "moving avg (" ++ window ++ ")"];
-		labels.do({ |str, i|
-			StaticText(a.parent, Rect(60 + (i * 130), 8, 125, 18))
-				.string_(str)
-				.stringColor_(colors[i])
+
+		headers.do({ |h, c|
+			StaticText(a.parent, Rect(colX[c], 8, colW[c], 18))
+				.string_(h)
+				.stringColor_(Color.black)
 				.background_(Color.white.alpha_(0.6))
 				.font_(Font.default.boldVariant);
 		});
 
-		data[0].size.postln;
+		[values, runningAvg, movingAvg].do({ |series, i|
+			var y = 28 + (i * 20);
+			[ labels[i],
+			  series.minItem.round(0.0001),
+			  series.maxItem.round(0.0001),
+			  series.mean.round(0.0001) ].do({ |val, c|
+				StaticText(a.parent, Rect(colX[c], y, colW[c], 18))
+					.string_(val.asString)
+					.stringColor_(colors[i])
+					.background_(Color.white.alpha_(0.6))
+					.font_(Font.default.boldVariant);
+			});
+		});
 
-		// when this plot window closes, run the Plotter's own cleanup then
-		// re-open the file dialog so we can pick & recalculate fresh data
 		prevOnClose = a.parent.onClose;
 		a.parent.onClose = { |win|
 			prevOnClose.value(win);
