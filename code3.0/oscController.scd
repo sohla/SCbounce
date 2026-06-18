@@ -350,7 +350,6 @@ var addOSCDeviceListeners = {|d|
                 ~devices.at(addr.port+i).sensors.lastTimestamp = time;
 
 	            "Current Time: % Delta Time: %".format(time, deltaTime).postln;
-
             	file.write("%, %,".format(time, deltaTime));
 
 
