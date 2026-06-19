@@ -13,9 +13,9 @@ var oscThru = false;
 
 
 
-var date = Date.getDate;
-var genTitle= date.format("%A_%d_%m_%Y-%H_%M_%S");
-var file = File(("~/test_" ++ genTitle ++ ".txt").standardizePath,"a");
+// var date = Date.getDate;
+// var genTitle= date.format("%A_%d_%m_%Y-%H_%M_%S");
+// var file = File(("~/test_" ++ genTitle ++ ".txt").standardizePath,"a");
 
 
 //------------------------------------------------------------
@@ -349,8 +349,8 @@ var addOSCDeviceListeners = {|d|
 
                 ~devices.at(addr.port+i).sensors.lastTimestamp = time;
 
-	            "Current Time: % Delta Time: %".format(time, deltaTime).postln;
-            	file.write("%, %,".format(time, deltaTime));
+	            // "Current Time: % Delta Time: %".format(time, deltaTime).postln;
+            	// file.write("%, %,".format(time, deltaTime));
 
 
             });

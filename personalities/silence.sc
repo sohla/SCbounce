@@ -24,56 +24,81 @@ m.rrateMassFilteredDecay = 0.4;
 //------------------------------------------------------------
 ~next = {|d|
 
-	// Create oscillating squares in bottom half - ocean effect
-	var time = TempoClock.beats;
-	var xPos = [-0.8,-0.6,-0.3,0.0,0.2,0.5,0.7,1.0].choose; // Random x position
-	var baseY = 4.7 - (sin(time * 0.5) * 0.2); // Bottom half of screen
-	var squareSize = rrand(800,1000);
-	var duration = rrand(1.0, 4.0);
-	var wavePhase = rrand(0, 2pi); // Random phase offset for wave
+	// // Create oscillating squares in bottom half - ocean effect
+	// var time = TempoClock.beats;
+	// var xPos = [-0.8,-0.6,-0.3,0.0,0.2,0.5,0.7,1.0].choose; // Random x position
+	// var baseY = 4.7 - (sin(time * 0.5) * 0.2); // Bottom half of screen
+	// var squareSize = rrand(800,1000);
+	// var duration = rrand(1.0, 4.0);
+	// var wavePhase = rrand(0, 2pi); // Random phase offset for wave
 
-	// Oscillating vertical motion - sine wave
-	var waveHeight = 0.1;
-	var yEnv = Env(
-		[0, waveHeight, 0, waveHeight.neg, 0],
-		[0.25, 0.25, 0.25, 0.25],
-		\sine
-	);
+	// // Oscillating vertical motion - sine wave
+	// var waveHeight = 0.1;
+	// var yEnv = Env(
+	// 	[0, waveHeight, 0, waveHeight.neg, 0],
+	// 	[0.25, 0.25, 0.25, 0.25],
+	// 	\sine
+	// );
 
-	// Oscillating rotation
-	var rotationAmount = rrand(0.2, 0.5);
+	// // Oscillating rotation
+	// var rotationAmount = rrand(0.2, 0.5);
 
-	// Ocean colors - blues and teals
-	var oceanColor = [
-		Color(0.1, 0.3, 0.6), // deep blue
-		Color(0.2, 0.5, 0.7), // ocean blue
-		Color(0.1, 0.4, 0.7), // medium blue
-		Color(0.3, 0.6, 0.8), // light blue
-		Color(0.2, 0.5, 0.6), // teal blue
-	].choose;
+	// // Ocean colors - blues and teals
+	// var oceanColor = [
+	// 	Color(0.1, 0.3, 0.6), // deep blue
+	// 	Color(0.2, 0.5, 0.7), // ocean blue
+	// 	Color(0.1, 0.4, 0.7), // medium blue
+	// 	Color(0.3, 0.6, 0.8), // light blue
+	// 	Color(0.2, 0.5, 0.6), // teal blue
+	// ].choose;
 
-	var ev = (
-		type: \customVisualEvent,
-		amp: 0,
-		viewID: d.port,
-		shape: \star,
-		fill: false,
-		rotate: 0,
-		startSize: squareSize * 0.001,
-		endSize: squareSize * 0.01,
-		duration: duration,
-		startColor: d.color.alpha_(0.8),
-		endColor: oceanColor.lighten(0.2).alpha_(0.1),
-		startWidth: 1,
-		endWidth: 1,
-		sx: xPos * 0.1,
-		sy: baseY - 4.5,
-		ex: xPos, // Stay in same x position
-		ey: baseY.neg, // Stay in same y, oscillation via envelope
-		yEnv: yEnv, // Vertical oscillation
-		rotation: sin(time) * 0.1,
-	);
+	// var ev = (
+	// 	type: \customVisualEvent,
+	// 	amp: 0,
+	// 	viewID: d.port,
+	// 	shape: \star,
+	// 	fill: false,
+	// 	rotate: 0,
+	// 	startSize: squareSize * 0.001,
+	// 	endSize: squareSize * 0.01,
+	// 	duration: duration,
+	// 	startColor: d.color.alpha_(0.8),
+	// 	endColor: oceanColor.lighten(0.2).alpha_(0.1),
+	// 	startWidth: 1,
+	// 	endWidth: 1,
+	// 	sx: xPos * 0.1,
+	// 	sy: baseY - 4.5,
+	// 	ex: xPos, // Stay in same x position
+	// 	ey: baseY.neg, // Stay in same y, oscillation via envelope
+	// 	yEnv: yEnv, // Vertical oscillation
+	// 	rotation: sin(time) * 0.1,
+	// );
 	// ev.play;
+
+	var roll = (d.sensors.gyroEvent.x / pi).fold(-0.5,0.5) * 2;
+	var pitch = (d.sensors.gyroEvent.y / pi.half);
+	var yaw = (d.sensors.gyroEvent.z / pi).fold(-0.5,0.5) * 2;
+	var flip = (d.sensors.gyroEvent.x / pi).abs;
+	var val = 0;
+
+	if( (flip < 0.05) && (roll > -0.05) && (roll < 0.05) && (pitch > -0.05) && (pitch <0.05), {
+		val = 1;
+	});
+	if( (roll > 0.95) && (pitch > -0.05) && (pitch <0.05), {		val = 3;
+	});
+	if( (roll < -0.95) && (pitch > -0.05) && (pitch <0.05), {
+		val = 2;
+	});
+	if( (flip > 0.95) && (pitch > -0.05) && (pitch <0.05), {
+		val = 4;
+	});
+	if( (pitch > 0.9), {
+		val = 5;
+	});
+	if( (pitch < -0.9), {
+		val = 6;
+	});
+	val.postln;	
 };
 
 //------------------------------------------------------------
@@ -110,6 +135,8 @@ m.rrateMassFilteredDecay = 0.4;
 	// [(d.sensors.gyroEvent.y / pi.half).lincurve(-1.0,1.0,-1.0,1.0,3)];
 	// [d.port,d.sensors.digiInEvent].postln;
 	// [d.sensors.digiInEvent[0],m.gyroXFiltered, m.gyroYFiltered];
+
+
 
 
 };
