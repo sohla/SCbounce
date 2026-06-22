@@ -98,7 +98,7 @@ m.rrateMassFilteredDecay = 0.4;
 	if( (pitch < -0.9), {
 		val = 6;
 	});
-	val.postln;	
+	// val.postln;	
 };
 
 //------------------------------------------------------------
