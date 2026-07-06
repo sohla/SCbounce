@@ -141,22 +141,9 @@ SynthDef(\funBass, {
 
 	Pdef(m.ptn,
 		Pbind(
-			\type, \customEvent,
-			\shape, \line,
-			\startSize, 30,
-			\duration, 1.2,
-			\endSize, 1430,
-			// \startWidth, 10,
-			\endWidth, 1,
-			\rotation,pi.half + Pwhite(-0.1,0.1),
-			\fill, true,
 			\instrument, \stereoSampler,
 			\dur, Pslide([dur,dur,dur,dur,dur,dur,dur,dur,dur,dur], inf, Pkey(\range), 0, 0),
 			\note, Pslide(notes, inf, Pkey(\range), 0, offset),
-			\sx, (Pkey(\note) * 0.1) - 0.8,
-			\sy, 0,
-			\ex, Pkey(\sx),
-			\ey, 0,
 			\octave, 5,//Pwhite(5,7),
 			\func, Pfunc({|e| ~onEvent.(e)}),
 			\args, #[]
@@ -180,10 +167,7 @@ SynthDef(\funBass, {
 		});
 	};
 	
-	if(bassSynth.isPlaying,{
-		bassSynth.set(\gate,0);
-		"deallocating bass synth".postln;
-	});
+	
 };
 
 //------------------------------------------------------------
@@ -198,93 +182,25 @@ SynthDef(\funBass, {
 
 	var move = m.accelMassFiltered.lincurve(0,1.5,1,notes.size,1);
 	var amp = m.accelMassFiltered.lincurve(0,1.4,-50,-6,-1);
-	var ff = m.rrateMassFiltered.lincurve(0.0,2.0,200,2000,-3); 
-	var wd = m.rrateMassFiltered.lincurve(0.0,2.0,10,0.1,-3); 
-	var step = m.gyroXFiltered.linlin(-0.8,0.8,0,3).floor; //up down
-	
-				var n = bass[0] + root[0];
-   			var event = (
-				type: \customVisualEvent,
-				amp: 0,
-				viewID: d.port,
-				shape: \circle,
-				fill: false,
-				startSize: 100,// * amp.dbamp,
-				endSize: 190,// * amp.dbamp,
-				duration: 3.4,
-				sizeEnv: Env([0,1], [1], [-3]),
-				startColor: Color.hsv(n/14.0,1,1).alpha_(amp.dbamp), //Color.red.alpha_(0.7),
-				endColor: Color.yellow.alpha_(amp.dbamp),
-				startWidth: 1,
-				endWidth: 0.1,
-				sx: 0,
-				sy: 0,
-				ex: 0,
-				ey: 0,
-				rotation: 2pi * (13/n) + 10.rand,
-				modulation: (
-					type: \radial,
-					freq: 0.2,
-					amp: amp.dbamp.squared * 140,
-					harmonics:2
-				),
-			);
-					
-
-
-
 
 	Pdef(m.ptn).set(\range, move.floor);
 	Pdef(m.ptn).set(\amp, amp.dbamp);
 	Pdef(m.ptn).set(\root, root[0]);
 
-	Pdef(m.ptn).set(\viewID, d.port);
-	// Pdef(m.ptn).set(\startColor, Color.hsv((frame/40.0).mod(1.0),0.5,1.0,1.0));
-	// Pdef(m.ptn).set(\endColor, Color.hsv((frame/40.0).mod(1.0),0.5,1.0,0.0));
-	Pdef(m.ptn).set(\startWidth, amp.dbamp * 10);
-	Pdef(m.ptn).set(\startColor, Color.yellow.alpha_(amp.dbamp + 0.1));
-	Pdef(m.ptn).set(\endColor, Color.red.alpha_(0));
-	// Pdef(m.ptn).set(\modulation, (
-	// 		type: \radial,
-	// 		freq: 4 ,
-	// 		amp: 30,
-	// 		harmonics: 2
-	// ));
 
+	// if(m.accelMassFiltered > 0.01,{
+	// 	if( Pdef(m.ptn).isPlaying.not,{
+	// 		Pdef(m.ptn).resume(quant:dur);
+	// 	});
+	// },{
+	// 	if( Pdef(m.ptn).isPlaying,{
+	// 		Pdef(m.ptn).pause();
+	// 	});
+	// });
 
-	if(bassSynth.isPlaying,{
-		if(ff<0,{ff=200});
-		bassSynth.set(\filtFreq, ff);
-	});
-
-	if(m.accelMassFiltered > 0.07,{
-		if( Pdef(m.ptn).isPlaying.not,{
-			Pdef(m.ptn).resume(quant:dur);
-		});
-	},{
-		if( Pdef(m.ptn).isPlaying,{
-			Pdef(m.ptn).pause();
-		});
-	});
-
-	if(m.accelMassFiltered > 3.2, {
-		if(TempoClock.beats > (lastTime + (dur*4)),{
-			lastTime = TempoClock.beats;
-			~playNote.(n-12,0, 3,amp.dbamp * 0.04);
-			m.com.root = n;
-			bassSynth = Synth(\funBass, [\freq, (n + 24).midicps, \gate,1, \amp, amp.dbamp * 0.19]);
-			NodeWatcher.register(bassSynth);
-			bassSynth.server.sendBundle(0.3,[\n_set, bassSynth.nodeID, \gate, 0]);
-			bass = bass.rotate(-1);
-			bassCount = bassCount + 1;
-			
-		});
-		event.play;
-	});
-	
 	
 	// topEnvironment.use{
-	// 	~globalTempoClock.postln;
+	// 	~beatClock.beats.postln;
 	// };
 
 

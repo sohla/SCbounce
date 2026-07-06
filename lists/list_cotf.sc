@@ -1,7 +1,7 @@
 (
 	[
 		"silence",
-		"harp1",
+		"cotf_simple1",
 		"silence",
     
 	]

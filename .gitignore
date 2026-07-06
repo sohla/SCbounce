@@ -2,3 +2,14 @@ liveSession/mball1 Project/Samples/*
 .DS_Store
 /embed/M5bounceX/.DS_Store
 /embed/WemosBN0055/.DS_Store
+*.wav
+*.aif
+*.aiff
+*.flac
+*.mp3
+*.m4a
+*.ogg
+*.opus
+*.wv
+out/
+data/

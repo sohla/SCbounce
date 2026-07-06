@@ -3,22 +3,51 @@ var spacing = 4;
 
 var controlView = {
 	View()
-    .maxHeight_(100)
-		.layout_(HLayout(
-      Button(),
-      Button()
-    )
+    .maxHeight_(70)
+		.layout_(GridLayout.rows([
+      [
+        Button()
+          .minHeight_(50)
+          .maxWidth_(100)
+          .states_([["Pause", Color.black, Color.red.darken(0.5)], ["Play", Color.black, Color.green.darken(0.5)]])
+          .action_({|b|
+            if(b.value == 0, {
+              ~stop.();
+            }, {
+              ~seek.(0);
+              ~scoreAnchorBeat = 3;
+            });
+          })
+      ],[
+        UserView()
+          .background_(Color.black)
+          .frameRate_(30)
+          .animate_(true)
+          .drawFunc_({|v|
+            var vw = v.bounds.width;
+            var vh = v.bounds.height;
+            Pen.fillColor = Color.red.alpha_(0.5);
+            Pen.addRect(Rect(0, 0, vw, vh));
+            Pen.fill;
+            Pen.fillColor = Color.grey;
+            Pen.addRect(Rect(2, 2, vw-4, vh-4));
+            Pen.fill;
+          })
+
+
+      ]
+    ])
       
     );
 };
 
-
-
 var root, libDir;
 
 root   = thisProcess.nowExecutingPath.dirname.dirname;
-libDir = root +/+ "sc" +/+ "lib";
+libDir = root +/+ "code3.0" +/+ "lib";
 
+// Same unconditional structural constants as sync_plan2_score.scd — see that
+// file's comment for the reasoning (re-runs must not inherit stale values).
 ~scoreTicksPerBeat  = 480;
 ~scoreEventsPerBeat = 4;
 ~scoreBeatsPerBar   = 2;
@@ -30,21 +59,29 @@ thisProcess.interpreter.executeFile(libDir +/+ "scorefile.scd");
 thisProcess.interpreter.executeFile(libDir +/+ "score_synth.scd");
 thisProcess.interpreter.executeFile(libDir +/+ "metafile.scd");
 
-~beatsPath = ~beatsPath ? (root +/+ "out"  +/+ "Beethoven4_4_MSO_beats_2_mul4.txt");
-~musicPath = ~musicPath ? (root +/+ "data" +/+ "audio" +/+ "Beethoven4_4_MSO.wav");
-~scorePath = ~scorePath ? (root +/+ "data" +/+ "score" +/+ "tick_index_2.json");
-~metaPath  = ~metaPath  ? (root +/+ "out"  +/+ "Beethoven4_4_MSO_beats_2_mul4_meta.json");
-~bufFrames = ~bufFrames ? 65536;
+~beatsPath = (root +/+ "out" +/+ "Beethoven4_4_MSO_beats_2_mul4.txt");
+~musicPath = (root +/+ "data" +/+ "audio" +/+ "Beethoven4_4_MSO.wav");
+~scorePath = (root +/+ "data" +/+ "score" +/+ "tick_index_2.json");
+~metaPath  = (root +/+ "out"  +/+ "Beethoven4_4_MSO_beats_2_mul4_meta.json");
+~bufFrames = 65536;
 ~addr      = NetAddr("127.0.0.1", NetAddr.langPort);
 
 ~loadBeats.(~beatsPath);
 ~loadScore.(~scorePath);
 ~loadMeta.(~metaPath);
 
-~scoreVoicePool = ~scoreVoicePool ? [69];
+// --- score-context state read by downstream Pdefs --------------------------
+~scoreVoicePool = ~scoreVoicePool ? [69];   // current half's MIDI pitches (Int)
 ~scoreVoiceAmp  = ~scoreVoiceAmp  ? 0.15;
+// ~scoreGroup is created inside s.waitForBoot (below), once the server is
+// live. Building it here would leave the env var pointing at a node ID that
+// the live server doesn't actually own — Pdefs targeting it would log
+// "FAILURE IN SERVER /s_new Group <id> not found".
 
-// --- TempoClock slaved to /beat (same as sync_plan2_pattern_score.scd) -----
+// --- TempoClock slaved to /beat -------------------------------------------
+// Body lifted from sc/beat_consumer.scd:7–91. The producer here is the
+// Routine in this file (which sends ~addr.sendMsg("/beat", i) per event); the
+// OSCdef catches its own producer in the same sclang process.
 ~beatClock       = ~beatClock ?? { TempoClock.new(2).permanent_(true) };
 ~smoothing       = 0.1;
 ~kPmin           = 0.9;
@@ -55,6 +92,7 @@ thisProcess.interpreter.executeFile(libDir +/+ "metafile.scd");
 ~anchorThreshold = 2.0;
 ~obsTempo        = 2;
 ~lastBeatT       = nil;
+// `?` preserves any hook a downstream block has already registered.
 ~onResync        = ~onResync ? { |idx| };
 
 OSCdef(\beatSync, { |msg|
@@ -85,19 +123,16 @@ OSCdef(\beatSync, { |msg|
     };
 }, "/beat");
 
-// --- audio setup (numFrames + total duration are extras needed by the GUI) ---
+// --- audio setup (same as sync_plan2_score.scd) ----------------------------
 block {
     var sf = SoundFile.new;
     if (sf.openRead(~musicPath.standardizePath).not) {
         Error("could not open audio: %".format(~musicPath)).throw;
     };
-    ~fileSR     = sf.sampleRate;
-    ~fileChans  = sf.numChannels;
-    ~fileFrames = sf.numFrames;
-    ~fileDur    = ~fileFrames / ~fileSR;
+    ~fileSR    = sf.sampleRate;
+    ~fileChans = sf.numChannels;
     sf.close;
-    "audio file: % Hz, % channels, % s"
-        .format(~fileSR, ~fileChans, ~fileDur.round(0.01)).postln;
+    "audio file: % Hz, % channels".format(~fileSR, ~fileChans).postln;
 };
 
 if (s.serverRunning and: { s.sampleRate.notNil and: { s.sampleRate != ~fileSR.asFloat } }) {
@@ -107,45 +142,7 @@ if (s.serverRunning and: { s.sampleRate.notNil and: { s.sampleRate != ~fileSR.as
 };
 s.options.sampleRate = ~fileSR;
 
-// --- playhead time estimate (used by the GUI cursor) ----------------------
-// ~playStartT is the SystemClock.seconds reading at which audio-time would
-// have been 0 — i.e. (now - ~playStartT) is the current audio position.
-// ~stop snapshots ~frozenT so the cursor stays put after stop.
-~playStartT = nil;
-~frozenT    = ~frozenT ? 0;
-~nowT       = {
-    if (~playStartT.notNil)
-        { (SystemClock.seconds - ~playStartT).clip(0, ~fileDur) }
-        { ~frozenT }
-};
-
-// --- score-curve precompute -----------------------------------------------
-// For every score entry, map its tick → true-beat → beats-file row → audio
-// time. Inverse of scorefile.scd's ~paramsAtBeat. Entries whose mapped beat
-// index falls outside the beats file are dropped (intro lead-in / tail).
-~buildCurves = {
-    var fields = ["tension", "brightness", "density", "register", "loudness"];
-    var pts = Array.new(~scoreEntries.size);
-    ~scoreEntries.do { |e|
-        var tick     = e["tick"].asInteger;
-        var trueBeat = (tick / ~scoreTicksPerBeat) - ~scoreAnchorBeat;
-        var beatIdx  = (trueBeat * ~scoreEventsPerBeat).round.asInteger;
-        if ((beatIdx >= 0) and: { beatIdx < ~beats.size }) {
-            pts.add([~beats[beatIdx]] ++ fields.collect({ |k|
-                var v = e[k];
-                if (v.isNil) { 0.0 } { v.asFloat.clip(0, 1) }
-            }));
-        };
-    };
-    ~curvePoints = pts;
-    ~curveFields = fields;
-    "built % curve points (% fields)".format(pts.size, fields.size).postln;
-    pts.size;
-};
-~buildCurves.value;
-
 s.waitForBoot({
-
     if (s.sampleRate != ~fileSR.asFloat) {
         "WARNING: server SR (%) doesn't match file SR (%). Audio device may have refused the requested rate."
             .format(s.sampleRate, ~fileSR).warn;
@@ -158,6 +155,9 @@ s.waitForBoot({
 
     s.sync;
 
+    // Always create a fresh score group on the live server. If a previous
+    // run left one behind, its node ID may not exist after a server reboot
+    // (or after s.freeAll). .free on a dead node is a noop.
     if (~scoreGroup.notNil) { ~scoreGroup.free; };
     ~scoreGroup = Group(s);
 
@@ -168,9 +168,18 @@ s.waitForBoot({
     ~playSynth = nil;
     ~routine   = nil;
 
-    // Identical Routine body to sync_plan2_pattern_score.scd — kept verbatim
-    // so the audible behaviour is byte-equivalent. The only env-var the GUI
-    // reads is ~playStartT, which is set by ~seek (below), not in here.
+    // The score-aware step. On every beats.txt event:
+    //   1. /beat OSC fires — OSCdef(\beatSync) updates ~beatClock so any Pdef
+    //      running on that clock is in phase with the audio.
+    //   2. State update for downstream patterns: ~scoreVoicePool gets the
+    //      current half's fitted_notes as integers, ~scoreVoiceAmp gets the
+    //      loudness-floored amp.
+    //   3. On D labels (tracked downbeats), play bass + chord stab + click.
+    //   4. Print the full per-bar score entry (every field from tick_index.json)
+    //      plus per-beat context (beat idx, half, isDown, isTrueBeat) on every event.
+    //
+    // No \scoreVoice is fired here — that's the downstream Pdef's job. See
+    // the example template at the bottom of this file.
     ~scheduleFromIndex = { |startIdx, anchorTime|
         var beatInBar = 0;
         var eventsPerBar = ~scoreBeatsPerBar * ~scoreEventsPerBeat;
@@ -193,18 +202,47 @@ s.waitForBoot({
                 chordAmp    = 0.08 + (0.20 * p["loudness"].asFloat);
                 chordCutoff = 600 + (3000 * p["tension"].asFloat);
 
+                // State update for downstream patterns. Replaces the
+                // ~playScoreVoice call in sync_plan2_score.scd.
                 ~scoreVoicePool = halves[half].collect(_.asInteger);
                 ~scoreVoiceAmp  = voiceAmp;
 
                 s.bind {
                     if (isTrueBeat) {
-                        ~playScoreChord.(p, 0, chordAmp, chordCutoff);
+                        // Same h0-pin workaround as sync_plan2_score.scd; see
+                        // that file for the rationale.
+						// ~playScoreChord.(p, 0, chordAmp, chordCutoff);
                     };
                     if (isDown) {
-                        ~playScoreBass.(p, half, bassAmp);
-                        ~playBeatClick.(true, -1);
+						// ~playScoreBass.(p, half, bassAmp);
+						// ~playBeatClick.(true, -1);
                     };
                 };
+
+                ("beat % | bar % | half % | down=% | trueBeat=% | tick=% | sec=% | phrase=% | key=% % | chord=%/% | T=% B=% D=% R=% L=% | scale=% | fitted=% | passing=% | motives=%".format(
+                    i, p["bar"], half, isDown, isTrueBeat,
+                    p["tick"], p["section_id"], p["phrase_id"],
+                    p["key"], p["mode"],
+                    p["chord_root"], p["chord_roman"],
+                    p["tension"].asFloat.round(0.01),
+                    p["brightness"].asFloat.round(0.01),
+                    p["density"].asFloat.round(0.01),
+                    p["register"].asFloat.round(0.01),
+                    p["loudness"].asFloat.round(0.01),
+                    p["active_scale"],
+                    p["fitted_notes"],
+                    p["fitted_passing_notes"],
+                    p["active_motives"]
+                )).postln;
+                ("  m: loud=% dens=% flat=% dom=%[%..%Hz] bands=%".format(
+                    m["loudness"].asFloat.round(0.01),
+                    m["density"].asFloat.round(0.01),
+                    m["flatness"].asFloat.round(0.01),
+                    m["dom_band"].asInteger,
+                    ~metaBandEdges[m["dom_band"].asInteger].asInteger,
+                    ~metaBandEdges[m["dom_band"].asInteger + 1].asInteger,
+                    m["bands"].collect({ |v| v.asFloat.round(0.01) })
+                )).postln;
 
                 ~addr.sendMsg("/beat", i);
             };
@@ -217,6 +255,7 @@ s.waitForBoot({
         Routine({
             var idx = ~beats.indexOfGreaterThan(seekT) ? ~beats.size;
             var startFrame = (seekT * ~fileSR).round.asInteger;
+            var startT;
 
             ~routine.stop;
             ~playSynth.free;
@@ -226,10 +265,12 @@ s.waitForBoot({
                 startFrame, ~fileChans, ~bufFrames);
             s.sync;
 
-            ~playStartT = SystemClock.seconds - seekT;
+            startT = SystemClock.seconds - seekT;
             s.bind { ~playSynth = Synth(\playStream, [\buf, ~stream]) };
+            // Force ~beatSync to re-anchor on the next /beat — the seek made
+            // the prior smoothing state stale.
             ~lastBeatT = nil;
-            ~scheduleFromIndex.(idx, ~playStartT);
+            ~scheduleFromIndex.(idx, startT);
             "/sc/seek % -> frame %, beat %".format(seekT, startFrame, idx).postln;
         }).play(AppClock);
     };
@@ -240,144 +281,21 @@ s.waitForBoot({
     };
 
     ~stop = {
-        ~frozenT = ~nowT.value;        // freeze cursor at last estimated position
         ~routine.stop;
         ~playSynth.free;
         ~playSynth = nil;
-        ~playStartT = nil;
     };
 
-    OSCdef(\plan2pgGo,    { ~go.value },                       '/sc/go');
-    OSCdef(\plan2pgSeek,  { |msg| ~seek.(msg[1].asFloat) },    '/sc/seek');
-    OSCdef(\plan2pgBeek,  { |msg| ~beek.(msg[1].asInteger) },  '/sc/beek');
-    OSCdef(\plan2pgPause, { ~stop.value },                     '/sc/pause');
+    OSCdef(\plan2pGo,    { ~go.value },                       '/sc/go');
+    OSCdef(\plan2pSeek,  { |msg| ~seek.(msg[1].asFloat) },    '/sc/seek');
+    OSCdef(\plan2pBeek,  { |msg| ~beek.(msg[1].asInteger) },  '/sc/beek');
+    OSCdef(\plan2pPause, { ~stop.value },                     '/sc/pause');
 
-    // --- GUI ---------------------------------------------------------------
-    // Built on AppClock (Qt widgets must be created on the GUI thread). The
-    // whole thing is one-shot — the closure returns nil so AppClock.sched
-    // doesn't re-schedule.
-    AppClock.sched(0, {
-        var win, sfView, paramView, infoText, sfTop;
-        var fields    = ~curveFields;
-        var laneColor = [
-            Color(0.95, 0.50, 0.40),    // tension   — warm red
-            Color(0.95, 0.85, 0.40),    // brightness — yellow
-            Color(0.50, 0.90, 0.60),    // density   — green
-            Color(0.40, 0.75, 0.95),    // register  — sky
-            Color(0.80, 0.55, 0.95)     // loudness  — violet
-        ];
-        var winW = 1200, winH = 560;
-        var sfH  = 200, paramH = winH - sfH - 60;
-        var infoH = 24;
-
-        if (~guiWin.notNil and: { ~guiWin.isClosed.not }) { ~guiWin.close };
-        if (~guiTick.notNil) { ~guiTick.stop };
-
-        win = Window("sync_plan2_pattern_score_gui — % | %"
-            .format(~musicPath.basename, ~scorePath.basename),
-            Rect(80, 80, winW, winH))
-            .background_(Color.gray(0.08));
-        ~guiWin = win;
-
-        infoText = StaticText(win, Rect(8, 4, winW - 16, infoH))
-            .stringColor_(Color.gray(0.85))
-            .string_("loading audio for waveform display…");
-
-        sfView = SoundFileView(win, Rect(8, infoH + 8, winW - 16, sfH))
-            .background_(Color.gray(0.12))
-            .waveColors_([Color(0.6, 0.85, 1.0)])
-            .gridOn_(false)
-            .timeCursorOn_(true)
-            .timeCursorColor_(Color(1.0, 0.4, 0.4))
-            .drawsWaveForm_(true);
-
-        sfTop = SoundFile.new;
-        if (sfTop.openRead(~musicPath.standardizePath)) {
-            sfView.soundfile = sfTop;
-            sfView.read(0, sfTop.numFrames);
-            sfTop.close;
-            infoText.string_(
-                "audio % Hz, %s   |   score % entries (% in-range)   |   beats %   |   anchor=%"
-                .format(~fileSR, ~fileDur.round(0.01),
-                    ~scoreEntries.size, ~curvePoints.size,
-                    ~beats.size, ~scoreAnchorBeat));
-        } {
-            infoText.string_("could not open audio for waveform: %".format(~musicPath));
-        };
-
-        ~sfView = sfView;
-
-        paramView = UserView(win, Rect(8, infoH + 8 + sfH + 8, winW - 16, paramH))
-            .background_(Color.gray(0.12))
-            .drawFunc_({ |v|
-                var w   = v.bounds.width;
-                var h   = v.bounds.height;
-                var dur = ~fileDur;
-                var pts = ~curvePoints;
-                var laneH;
-                if (pts.notNil and: { pts.size > 1 } and: { dur > 0 }) {
-                    laneH = h / fields.size;
-
-                    // lane separators + labels
-                    Pen.width = 1;
-                    fields.do { |name, lane|
-                        var y0 = lane * laneH;
-                        Pen.color = Color.gray(0.25);
-                        Pen.line((0 @ (y0 + laneH)), (w @ (y0 + laneH)));
-                        Pen.stroke;
-                        Pen.color = laneColor[lane];
-                        Pen.stringAtPoint(name, (6 @ (y0 + 4)));
-                    };
-
-                    // curves
-                    Pen.width = 1.4;
-                    fields.do { |name, lane|
-                        var y0 = lane * laneH;
-                        Pen.color = laneColor[lane];
-                        pts.do { |row, i|
-                            var t  = row[0];
-                            var v2 = row[lane + 1];
-                            var x  = t / dur * w;
-                            var y  = y0 + laneH - (v2 * laneH);
-                            if (i == 0) { Pen.moveTo(x @ y) } { Pen.lineTo(x @ y) };
-                        };
-                        Pen.stroke;
-                    };
-
-                    // playhead — aligned with the SoundFileView cursor
-                    Pen.color = Color(1.0, 0.4, 0.4, 0.9);
-                    Pen.width = 1.0;
-                    Pen.line(((~nowT.value / dur * w) @ 0),
-                             ((~nowT.value / dur * w) @ h));
-                    Pen.stroke;
-                };
-            });
-        ~paramView = paramView;
-
-        // GUI tick on AppClock. Reads ~nowT and pushes the audio position to
-        // both panes. Terminates cleanly when the window is closed.
-        ~guiTick = Routine({
-            while { win.isClosed.not } {
-                var t = ~nowT.value;
-                sfView.timeCursorPosition_((t * ~fileSR).asInteger);
-                paramView.refresh;
-                (1/30).wait;
-            };
-        }).play(AppClock);
-
-        win.onClose_({
-            if (~guiTick.notNil) { ~guiTick.stop; ~guiTick = nil };
-        });
-        win.front;
-        nil;
-    });
-
-    ("plan 2 + pattern score + GUI ready. % beats, % score entries, anchor=%."
+    ("plan 2 + pattern score ready. % beats, % score entries, anchor=%."
         .format(~beats.size, ~scoreEntries.size, ~scoreAnchorBeat)).postln;
-    "evaluate ~go.value to start. window shows waveform + 5 score curves.".postln;
-    "after editing ~scoreAnchorBeat: ~buildCurves.value; ~paramView.refresh.".postln;
+    "evaluate ~go.value to start. Define a Pdef on ~beatClock to play notes;".postln;
+    "the Pdef reads ~scoreVoicePool/Amp via Pfunc { } closures.".postln;
 });
-
 
 controlView;
 
