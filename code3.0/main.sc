@@ -4,6 +4,7 @@ var staker;
 var personalityController = Require("personalityController.scd");
 var oscController = Require("oscController.scd");
 var specsView;
+var conductorView = Require("conductorView.scd");
 
 var midiCC;
 
@@ -47,7 +48,8 @@ var tabs = {|t|
 
 var mainView = VLayout(
 		tabs.(),
-		stack.()
+		stack.(),
+		conductorView.()		
 ).spacing_(4).margins_(0);
 
 var shutdown = {
@@ -93,12 +95,12 @@ s.waitForBoot({
 	initGUI.();
 	
 	// add global params to topEnvironment
-	Routine {
-        loop{
-			~globalTempoClock = TempoClock.beats;
-			0.1.yield;
-		};
-	}.play;
+	// Routine {
+    //     loop{
+	// 		~globalTempoClock = TempoClock.beats;
+	// 		0.1.yield;
+	// 	};
+	// }.play;
 	
 	ShutDown.add({"shut down...".postln})
 });
