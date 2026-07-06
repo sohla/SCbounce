@@ -3,6 +3,7 @@ NetAddr.localAddr
 
 // configure to send
 b = NetAddr.new("192.168.50.105", 8888);
+b = NetAddr.new("10.1.1.4", 8888);
 
 
 // set LED
@@ -12,7 +13,7 @@ b.sendMsg("/Config/SetLED",1,0,0,255);
 b.sendMsg("/Config/SetID","1");
 
 // set diestination IP and Port
-b.sendMsg("/Config/RequestStream",192,168,70,1,57120);
+b.sendMsg("/Config/RequestStream",10,1,1,2,57120);
 
 // check data is coming thru
 OSCFunc.trace(true)

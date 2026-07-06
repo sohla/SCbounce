@@ -365,10 +365,10 @@ var addDevice = { |ip,port,index|
     var configListener = OSCFunc({ |msg2, time2, addr2, recvPort2|
         d.color = Color.fromArray(msg2.at([15,16,17])++[1.0]);
         "CONFIG % %".format(index,d.color).postln;
-        // {
-        //     var n = NetAddr.new("127.0.0.1", 57120);
-        //     n.sendMsg("/airkit/addDevice", port);
-        // }.defer;
+        {
+            var n = NetAddr.new("127.0.0.1", 57120);
+            n.sendMsg("/airkit/addDevice", port);
+        }.defer;
     }, configPattern).oneShot;
 
     var d = Event.new(proto:deviceProto);
