@@ -3,7 +3,8 @@ var personalityDir = "~/Develop/SuperCollider/Projects/AirKit/personalities/";//
 // var personalityDir = "~/Develop/SuperCollider/Projects/scbounce/personalities/"; //laptop
 // var personalityDir = "~/Develop/SuperCollider/oscMusic/personalities/"; //mac mini cabin
 
-var list = "list_performanceTests.sc";
+var list = "list_cotf.sc";
+// var list = "list_performanceTests.sc";
 // var list = "list_ITR_Mel.sc";
 // var list = "list_SiS_Alessio.sc";
 // var list = "list_yourDNA26.sc";

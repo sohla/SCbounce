@@ -26,7 +26,7 @@ var noteToMidi = { |noteName|
 		(octave + 1) * 12 + noteIndex;
 };
 
-var folder = PathName("~/Downloads/openLabSamples/harp");
+var folder = PathName("~/Music/cotf_samples/harp");
 var samplesLib;
 
 // scope issue!?!
@@ -165,7 +165,6 @@ SynthDef(\funBass, {
 	);
 	Pdef(m.ptn).play(quant:0.1);
 
-
 };
 
 //------------------------------------------------------------
@@ -282,6 +281,13 @@ SynthDef(\funBass, {
 		});
 		event.play;
 	});
+	
+	
+	// topEnvironment.use{
+	// 	~globalTempoClock.postln;
+	// };
+
+
 };
 
 //------------------------------------------------------------

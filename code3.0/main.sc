@@ -58,6 +58,7 @@ var shutdown = {
 };
 
 var initGUI = {
+
 	QtGUI.palette = QPalette.dark;
 	w = Window("AirKit")
 		.bounds_(Rect(100,100,1000,700))
@@ -90,6 +91,14 @@ s.waitForBoot({
 	NetAddr.new("127.0.0.1", 57120).sendMsg("/airkit/startOSCListening", 57120);
 
 	initGUI.();
+	
+	// add global params to topEnvironment
+	Routine {
+        loop{
+			~globalTempoClock = TempoClock.beats;
+			0.1.yield;
+		};
+	}.play;
 	
 	ShutDown.add({"shut down...".postln})
 });
