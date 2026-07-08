@@ -13,3 +13,5 @@ liveSession/mball1 Project/Samples/*
 *.wv
 out/
 data/
+*.png
+*.gif
