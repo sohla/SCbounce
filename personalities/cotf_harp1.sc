@@ -1,15 +1,6 @@
 
 var m = ~model;
-var lastTime = 0;
-var frame = 0;
 
-var synth, bassSynth;
-var dur = 0.11;
-var notes = [0,2,5,7,9,11,12,14,12,11] + 1;
-var bass = [2,9,5,12,5,9,2].stutter(2) + 1;
-var root = [0];
-var offset = 0;
-var bassCount = 0;
 //------------------------------------------------------------
 
 var noteToMidi = { |noteName|
@@ -102,27 +93,6 @@ SynthDef(\funBass, {
 		(name: path.fileNameWithoutExtension, buffer: buffer, midiNote: noteToMidi.(note))
 	});
 
-	~playNote = {|note,root,octave, amp=0.1|
-			var n = note + root + (12 * octave);
-			var bufnum,rate;
-
-			if(n.odd,{
-				bufnum = findSampleBuffer.(n-1);
-				rate = 1.midiratio;
-			},{
-				bufnum = findSampleBuffer.(n);
-				rate = 1;
-			});
-			synth = Synth(\stereoSampler, [
-				\bufnum, bufnum,
-				\rate,rate,
-				\freq, n.midicps,
-				\amp,amp*1
-			]);
-			synth.server.sendBundle(0.3,[\n_set, synth.nodeID, \gate, 0]);
-
-	};
-
 	Event.addEventType(\customEvent, {|e|
 		~note = ~note + ~root + (12 * ~octave);
 		if(~note.odd,{
@@ -132,26 +102,27 @@ SynthDef(\funBass, {
 			~bufnum = findSampleBuffer.(~note);
 				~rate = 1;
 		});
-			// ~instrument = \stereoSampler;
-			~type = \customVisualEvent;
-			// ~type = \note;
+			~type = \note;
 			currentEnvironment.play;
-		 	// ~bufnum.postln;
 	});
 
-	Pdef(m.ptn,
-		Pbind(
-			\instrument, \stereoSampler,
-			\dur, Pslide([dur,dur,dur,dur,dur,dur,dur,dur,dur,dur], inf, Pkey(\range), 0, 0),
-			\note, Pslide(notes, inf, Pkey(\range), 0, offset),
-			\octave, 5,//Pwhite(5,7),
-			\func, Pfunc({|e| ~onEvent.(e)}),
-			\args, #[]
-
+	topEnvironment.use{
+		Pdef(m.ptn,
+			Pbind(
+				\instrument, \stereoSampler,
+				\type, \customEvent,
+				\dur, 1,
+				\note, 0,
+				\root, Pfunc { ~scoreVoicePool.choose.wrap(0,11).asInteger},
+				// \octave, 6,
+				// \args, #[]
+			);
 		);
-	);
-	Pdef(m.ptn).play(quant:0.1);
+		~scoreAnchorBeat = 3;
 
+		Pdef(m.ptn).play(~beatClock, quant: ~scoreBeatsPerBar * ~scoreEventsPerBeat);
+
+	};
 };
 
 //------------------------------------------------------------
@@ -170,39 +141,14 @@ SynthDef(\funBass, {
 	
 };
 
-//------------------------------------------------------------
-~onEvent = {|e|
-	// m.com.root = bass[0];
-	frame = frame + 1;
-};
-
 
 //------------------------------------------------------------
 ~next = {|d|
 
-	var move = m.accelMassFiltered.lincurve(0,1.5,1,notes.size,1);
-	var amp = m.accelMassFiltered.lincurve(0,1.4,-50,-20,-1) -20;
-
-	Pdef(m.ptn).set(\range, move.floor);
+	var amp = m.accelMassFiltered.lincurve(0,2.4,-40,-1,-1);
+	var oct = (d.sensors.gyroEvent.y / pi.half).lincurve(-1,1,4,7,1).asInteger;
 	Pdef(m.ptn).set(\amp, amp.dbamp);
-	Pdef(m.ptn).set(\root, root[0]);
-
-
-	// if(m.accelMassFiltered > 0.01,{
-	// 	if( Pdef(m.ptn).isPlaying.not,{
-	// 		Pdef(m.ptn).resume(quant:dur);
-	// 	});
-	// },{
-	// 	if( Pdef(m.ptn).isPlaying,{
-	// 		Pdef(m.ptn).pause();
-	// 	});
-	// });
-
-	
-	// topEnvironment.use{
-	// 	~beatClock.beats.postln;
-	// };
-
+	Pdef(m.ptn).set(\octave, oct);
 
 };
 
@@ -211,25 +157,33 @@ SynthDef(\funBass, {
 ~plotMax = 1;
 ~plot = { |d,p|
 
-	// ACCEL
-	// [m.accelMass * 0.1, m.accelMassFiltered.linlin(0,3,0,1)];
+	// Velocity
+	// [d.sensors.velocity.x, d.sensors.velocity.y, d.sensors.velocity.z] * 30;
+	
+	// Acceleration
+	// [d.sensors.accelEvent.x, d.sensors.accelEvent.y, d.sensors.accelEvent.z] * 0.1;
+	// [m.accelMass, m.accelMassFiltered];
 
-	// ROTATE
-	[m.rrateMass/2, m.rrateMassFiltered.linlin(0,2,0,1)];
+	// Rotation
+	// [d.sensors.rrateEvent.x, d.sensors.rrateEvent.y, d.sensors.rrateEvent.z].abs;
+	// [[d.sensors.rrateEvent.x, d.sensors.rrateEvent.y, d.sensors.rrateEvent.z].sumabs];
+	// [m.rrateMass, m.rrateMassFiltered];
 
-	// X axis
-	// [d.sensors.gyroEvent.x/pi]; // norm
 
-	// Y axis
-	// [d.sensors.gyroEvent.y/pi]; // norm
+	// [m.gyroXFiltered.fold(-0.5,0.5)];
+	// Gyro
+	// [(d.sensors.gyroEvent.x / pi)];//roll
+	[(d.sensors.gyroEvent.y / pi.half)];//up down
+	// [(d.sensors.gyroEvent.z / pi)];//left right
+	// [m.gyroYFiltered.fold(-0.5,0.5).lincurve(-0.5,0.5,0,1,-1)];
+	// [m.gyroXFiltered.fold(-0.5,0.5).linlin(-0.5,0.5,-10,10).lcurve];
+	// [(d.sensors.gyroEvent.x / pi), (d.sensors.gyroEvent.y / pi.half), (d.sensors.gyroEvent.z / pi)];
 
-	// Z axis
-	// [d.sensors.gyroEvent.z/(pi/2)]; // norm
+	// [(d.sensors.gyroEvent.y / pi.half).lincurve(-1.0,1.0,-1.0,1.0,3)];
+	// [(d.sensors.gyroEvent.x / pi), (d.sensors.gyroEvent.y / pi.half), (d.sensors.gyroEvent.z / pi)];
 
-	// device [I• ]
-	// [(d.sensors.gyroEvent.x/pi).linlin(-0.8,0.8,0.9,-0.9)]  //up down
-	// [(d.sensors.gyroEvent.y/pi).linlin(-0.4,0.4,0.9,-0.9)]  //left right
-	// [(d.sensors.gyroEvent.z/(pi/2)).linlin(-0.3,1.0,-0.9,0.9)]  //wrist rotate
+	// [(d.sensors.gyroEvent.y / pi.half).lincurve(-1.0,1.0,-1.0,1.0,3)];
+
 
 
 };

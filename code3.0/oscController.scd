@@ -6,7 +6,7 @@
 
 // var oscMessageTag  = "CombinedDataPacket";
 var oscMessageTag  = "IMUFusedData"; // this is coming from AirSticks
-var outAddr = NetAddr.new("192.168.100.40", 3333);
+var outAddr = NetAddr.new("127.0.0.1", 5005);
 var airstickListeners = [];
 var numAirwareVirtualDevices = 5;
 var oscThru = false;
@@ -384,7 +384,7 @@ var addDevice = { |ip,port,index|
     d.params.sensitivity =  0.5;
     d.sensors.digiInEvent = Array.fill(4,0); // must allocate for each instance
 
-    d.color = [Color.red,Color.yellow,Color.green,Color.blue].choose;
+    // d.color = [Color.red,Color.yellow,Color.green,Color.blue].choose;
     
     // global storage : port is the key
     ~devices.put(port,d);
@@ -397,7 +397,7 @@ var addDevice = { |ip,port,index|
     // hack : try and get color from config
     NetAddr.new(ip,port-index+1).sendMsg("/Config/GetConfig", 57120);
     // ...wait then make then add devices
-	{ NetAddr.new("127.0.0.1", 57120).sendMsg("/airkit/addDevice", port) }.defer(0.2);
+	// { NetAddr.new("127.0.0.1", 57120).sendMsg("/airkit/addDevice", port) }.defer(0.2);
 
     // Use from AirStick 
     // NetAddr.new(ip,port-index+1).sendMsg("/Config/GetConfig", 57120);

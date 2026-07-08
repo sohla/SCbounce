@@ -11,21 +11,21 @@ m.gyroFilteredDecay = 0.7;
 //------------------------------------------------------------
 SynthDef(\simple, {|out=0, amp=0.0, freq=440, attack=0.001, decay=0.03, sustain=0.8, release=0.59, gate=1|
 	var env = EnvGen.kr(Env.adsr(attack, decay, sustain, release), gate, doneAction: Done.freeSelf);
-	var sig = SinOsc.ar(freq,0,0.5)!2;
+	var sig = SinOsc.ar(freq,0,1)!2;
     Out.ar(out, sig * env * amp);
 }).add;
 
 //------------------------------------------------------------
 ~init = ~init <> {
 	topEnvironment.use{
-		~scoreAnchorBeat = 3;
+	~scoreAnchorBeat = 3;
 
   Pdef(m.ptn,
     Pbind(
       \instrument, \simple,
       \octave, 0,
 	  \dur, 1,
-		\root,       Pfunc { ~scoreVoicePool.choose.asInteger},
+	\root,       Pfunc { ~scoreVoicePool.choose.asInteger},
       \note, 0,
       \attack,0.03,
       \decay, 0.1,
@@ -34,7 +34,6 @@ SynthDef(\simple, {|out=0, amp=0.0, freq=440, attack=0.001, decay=0.03, sustain=
       \args, #[],
     )
   );
-//   Pdef(m.ptn).play(quant:0.2);  
 		Pdef(m.ptn).play(~beatClock, quant: ~scoreBeatsPerBar * ~scoreEventsPerBeat);
 
 	};
@@ -53,24 +52,24 @@ SynthDef(\simple, {|out=0, amp=0.0, freq=440, attack=0.001, decay=0.03, sustain=
 //   Pdef(m.ptn).set(\dur, dur);
 // .play(~beatClock, quant: ~scoreBeatsPerBar * ~scoreEventsPerBeat)
 
-	// topEnvironment.use{
-	// 	// ~beatClock.beats.postln;
-	// 	if(m.accelMassFiltered > 0.01,{
-	// 		if( Pdef(m.ptn).isPlaying.not,{
-	// 			Pdef(m.ptn).resume(~beatClock, quant: ~scoreBeatsPerBar * ~scoreEventsPerBeat);
-	// 			~onResync = { |idx|
-	// 				Pdef(m.ptn).stop;
-	// 				// ~scoreGroup.freeAll;
-	// 				Pdef(m.ptn).play(~beatClock,
-	// 					quant: ~scoreBeatsPerBar * ~scoreEventsPerBeat);
-	// 			};
-	// 		});
-	// 	},{
-	// 		if( Pdef(m.ptn).isPlaying,{
-	// 			Pdef(m.ptn).pause();
-	// 		});
-	// 	});
-	// };
+	topEnvironment.use{
+		// ~beatClock.beats.postln;
+		if(m.accelMassFiltered > 0.03,{
+			if( Pdef(m.ptn).isPlaying.not,{
+				Pdef(m.ptn).resume(~beatClock, quant: ~scoreBeatsPerBar * ~scoreEventsPerBeat);
+				~onResync = { |idx|
+					Pdef(m.ptn).stop;
+					// ~scoreGroup.freeAll;
+					Pdef(m.ptn).play(~beatClock,
+						quant: ~scoreBeatsPerBar * ~scoreEventsPerBeat);
+				};
+			});
+		},{
+			if( Pdef(m.ptn).isPlaying,{
+				Pdef(m.ptn).pause();
+			});
+		});
+	};
 
 
 

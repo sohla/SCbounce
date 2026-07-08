@@ -1,96 +1,44 @@
-var waveformPeaks;
+// Plan 2 + score overlay (pattern-driven variant). Same transport as
+// sync_plan2_score.scd: SC plays the audio via DiskIn, a Routine walks
+// *_beats.txt and fires \scoreBass, \scoreChord, \beatClick on tracked
+// downbeats and true beats. The difference is that ~playScoreVoice (the
+// per-subdivision pluck) is *not* triggered from the Routine. Instead this
+// file:
+//
+//   - boots a ~beatClock = TempoClock slaved to the /beat OSC stream the
+//     Routine already emits (OSCdef \beatSync, lifted from beat_consumer.scd),
+//   - maintains ~scoreVoicePool / ~scoreVoiceAmp env vars holding the current
+//     half-bar's fitted_notes as integer MIDI pitches and the matching amp,
+//
+// so that any downstream interactive Pdef can play on ~beatClock and read
+// ~scoreVoicePool through a Pfunc { } closure. The file *does not* define
+// its own Pdef — the clock is left free for the user's interactive layer.
+// A commented-out template at the bottom shows the idiom.
+//
+// One ~beatClock "beat" == one beats.txt event (one subdivision). With
+// ~scoreEventsPerBeat = 4 (the _mul4 default), four ~beatClock beats fit one
+// true musical beat. Use `\dur, 4` in a Pbind for once-per-true-beat firing,
+// `\dur, 8` for once per 2/4 bar, `\dur, 1` for once per subdivision.
+//
+// Usage (same as sync_plan2_score.scd):
+//   sclang sc/sync_plan2_pattern_score.scd
+//   ~go.value;             // start audio + Routine + clock sync
+//   ~seek.(60.0);          // jump; ~onResync fires; downstream Pdefs restart
+//   ~beek.(100);
+//   ~stop.value;
+//
+//   ~scoreVoicePool        // -> [MIDI ints] for the current half (read-only;
+//                          //   the Routine updates this each event)
+//   ~scoreVoiceAmp         // -> float, current amp floor
+//
+// Overrides before running:
+//   ~beatsPath, ~musicPath, ~scorePath, ~scoreAnchorBeat, ~bufFrames.
 
-var computeMonoPeaks = { |path, nPeaks|
-    var sf = SoundFile.new;
-    var totalFrames, chan, peaks, samplesPerPeak;
-    var chunkFrames = 262144;
-    var chunkBuf, chunkStart = 0;
-    if (sf.openRead(path.standardizePath).not) {
-        Error("could not open %".format(path)).throw;
-    };
-    totalFrames    = sf.numFrames;
-    chan           = sf.numChannels;
-    peaks          = FloatArray.newClear(nPeaks);
-    samplesPerPeak = (totalFrames / nPeaks).ceil.asInteger.max(1);
-    chunkBuf       = FloatArray.newClear(chunkFrames * chan);
-    while { chunkStart < totalFrames } {
-        var thisFrames = (totalFrames - chunkStart).min(chunkFrames);
-        var chunkPeakLo, chunkPeakHi;
-        sf.seek(chunkStart, 0);
-        sf.readData(chunkBuf);
-        chunkPeakLo = (chunkStart / samplesPerPeak).floor.asInteger;
-        chunkPeakHi = ((chunkStart + thisFrames - 1) / samplesPerPeak).floor.asInteger
-            .min(nPeaks - 1);
-        (chunkPeakLo .. chunkPeakHi).do { |k|
-            var loFrame = (k * samplesPerPeak).max(chunkStart);
-            var hiFrame = (((k + 1) * samplesPerPeak) - 1).min(chunkStart + thisFrames - 1);
-            var loLocal = (loFrame - chunkStart) * chan;
-            var hiLocal = ((hiFrame - chunkStart + 1) * chan) - 1;
-            var chunkMax = chunkBuf.copyRange(loLocal, hiLocal).abs.maxItem;
-            if (chunkMax > peaks[k]) { peaks[k] = chunkMax };
-        };
-        chunkStart = chunkStart + thisFrames;
-    };
-    sf.close;
-    peaks
-};
-
-var waveView = UserView()
-    .background_(Color.gray(0.12))
-    .drawFunc_({ |vv|
-        var vw = vv.bounds.width, vh = vv.bounds.height, mid = vh / 2;
-        var dur = ~fileDur ? 0;
-        if (waveformPeaks.notNil and: { waveformPeaks.size > 0 }) {
-            var n = waveformPeaks.size;
-            Pen.color = Color(0.6, 0.85, 1.0);
-            Pen.width = 1;
-            waveformPeaks.do { |p, i|
-                var xp = (i / n) * vw;
-                Pen.moveTo(xp @ (mid - (p * mid * 0.95)));
-                Pen.lineTo(xp @ (mid + (p * mid * 0.95)));
-            };
-            Pen.stroke;
-        };
-        if (dur > 0) {
-            var xc = ~nowT.value / dur * vw;
-            Pen.color = Color(1.0, 0.4, 0.4, 0.9);
-            Pen.width = 1;
-            Pen.line((xc @ 0), (xc @ vh));
-            Pen.stroke;
-        };
-    })
-    .mouseDownAction_({ |vv, xarg|
-        var dur = ~fileDur ? 0;
-        if (dur > 0) {
-            ~seek.((xarg / vv.bounds.width * dur).clip(0, dur));
-        };
-    });
-
-var controlView = {
-    View().layout_(HLayout(
-        Button()
-            .minHeight_(100)
-            .maxWidth_(100)
-            .states_([
-                ["Play", Color.black, Color.green.darken(0.5)],
-                ["Stop", Color.black, Color.red.darken(0.5)]
-            ])
-            .action_({ |b|
-                if (b.value == 1) {
-                    ~seek.(~frozenT ? 0);
-                } {
-                    ~stop.();
-                };
-            }),
-        waveView
-    ).spacing_(4).margins_(0))
-    .maxHeight_(100);
-};
-
+(
 var root, libDir;
 
 root   = thisProcess.nowExecutingPath.dirname.dirname;
-libDir = root +/+ "code3.0" +/+ "lib";
+libDir = root +/+ "sc" +/+ "lib";
 
 // Same unconditional structural constants as sync_plan2_score.scd — see that
 // file's comment for the reasoning (re-runs must not inherit stale values).
@@ -98,16 +46,6 @@ libDir = root +/+ "code3.0" +/+ "lib";
 ~scoreEventsPerBeat = 4;
 ~scoreBeatsPerBar   = 2;
 ~scoreAnchorBeat    = ~scoreAnchorBeat ? 0;
-
-~playStartT = nil;
-~frozenT    = ~frozenT ? 0;
-~nowT       = {
-    if (~playStartT.notNil)
-        { (SystemClock.seconds - ~playStartT).clip(0, ~fileDur) }
-        { ~frozenT }
-};
-
-
 
 thisProcess.interpreter.executeFile(libDir +/+ "beatfile.scd");
 thisProcess.interpreter.executeFile(libDir +/+ "beatclick.scd");
@@ -187,18 +125,8 @@ block {
     };
     ~fileSR    = sf.sampleRate;
     ~fileChans = sf.numChannels;
-    ~fileFrames = sf.numFrames;
-    ~fileDur    = ~fileFrames / ~fileSR;
-
     sf.close;
     "audio file: % Hz, % channels".format(~fileSR, ~fileChans).postln;
-};
-
-~conductorPeaksCache = ~conductorPeaksCache ? ();
-waveformPeaks = ~conductorPeaksCache[~musicPath.asSymbol] ?? {
-    var p = computeMonoPeaks.(~musicPath, 2000);
-    ~conductorPeaksCache[~musicPath.asSymbol] = p;
-    p
 };
 
 if (s.serverRunning and: { s.sampleRate.notNil and: { s.sampleRate != ~fileSR.asFloat } }) {
@@ -214,7 +142,7 @@ s.waitForBoot({
             .format(s.sampleRate, ~fileSR).warn;
     };
 
-    SynthDef(\playStream, { |out = 0, buf, amp = 0.5|
+    SynthDef(\playStream, { |out = 0, buf, amp = 0.3|
         var sig = DiskIn.ar(2, buf, loop: 0);
         Out.ar(out, sig * amp);
     }).add;
@@ -285,30 +213,30 @@ s.waitForBoot({
                     };
                 };
 
-                // ("beat % | bar % | half % | down=% | trueBeat=% | tick=% | sec=% | phrase=% | key=% % | chord=%/% | T=% B=% D=% R=% L=% | scale=% | fitted=% | passing=% | motives=%".format(
-                //     i, p["bar"], half, isDown, isTrueBeat,
-                //     p["tick"], p["section_id"], p["phrase_id"],
-                //     p["key"], p["mode"],
-                //     p["chord_root"], p["chord_roman"],
-                //     p["tension"].asFloat.round(0.01),
-                //     p["brightness"].asFloat.round(0.01),
-                //     p["density"].asFloat.round(0.01),
-                //     p["register"].asFloat.round(0.01),
-                //     p["loudness"].asFloat.round(0.01),
-                //     p["active_scale"],
-                //     p["fitted_notes"],
-                //     p["fitted_passing_notes"],
-                //     p["active_motives"]
-                // )).postln;
-                // ("  m: loud=% dens=% flat=% dom=%[%..%Hz] bands=%".format(
-                //     m["loudness"].asFloat.round(0.01),
-                //     m["density"].asFloat.round(0.01),
-                //     m["flatness"].asFloat.round(0.01),
-                //     m["dom_band"].asInteger,
-                //     ~metaBandEdges[m["dom_band"].asInteger].asInteger,
-                //     ~metaBandEdges[m["dom_band"].asInteger + 1].asInteger,
-                //     m["bands"].collect({ |v| v.asFloat.round(0.01) })
-                // )).postln;
+                ("beat % | bar % | half % | down=% | trueBeat=% | tick=% | sec=% | phrase=% | key=% % | chord=%/% | T=% B=% D=% R=% L=% | scale=% | fitted=% | passing=% | motives=%".format(
+                    i, p["bar"], half, isDown, isTrueBeat,
+                    p["tick"], p["section_id"], p["phrase_id"],
+                    p["key"], p["mode"],
+                    p["chord_root"], p["chord_roman"],
+                    p["tension"].asFloat.round(0.01),
+                    p["brightness"].asFloat.round(0.01),
+                    p["density"].asFloat.round(0.01),
+                    p["register"].asFloat.round(0.01),
+                    p["loudness"].asFloat.round(0.01),
+                    p["active_scale"],
+                    p["fitted_notes"],
+                    p["fitted_passing_notes"],
+                    p["active_motives"]
+                )).postln;
+                ("  m: loud=% dens=% flat=% dom=%[%..%Hz] bands=%".format(
+                    m["loudness"].asFloat.round(0.01),
+                    m["density"].asFloat.round(0.01),
+                    m["flatness"].asFloat.round(0.01),
+                    m["dom_band"].asInteger,
+                    ~metaBandEdges[m["dom_band"].asInteger].asInteger,
+                    ~metaBandEdges[m["dom_band"].asInteger + 1].asInteger,
+                    m["bands"].collect({ |v| v.asFloat.round(0.01) })
+                )).postln;
 
                 ~addr.sendMsg("/beat", i);
             };
@@ -335,9 +263,6 @@ s.waitForBoot({
             s.bind { ~playSynth = Synth(\playStream, [\buf, ~stream]) };
             // Force ~beatSync to re-anchor on the next /beat — the seek made
             // the prior smoothing state stale.
-              
-            ~playStartT = SystemClock.seconds - seekT;
-
             ~lastBeatT = nil;
             ~scheduleFromIndex.(idx, startT);
             "/sc/seek % -> frame %, beat %".format(seekT, startFrame, idx).postln;
@@ -350,11 +275,9 @@ s.waitForBoot({
     };
 
     ~stop = {
-        ~frozenT    = ~nowT.value;
         ~routine.stop;
         ~playSynth.free;
         ~playSynth = nil;
-        ~playStartT = nil;
     };
 
     OSCdef(\plan2pGo,    { ~go.value },                       '/sc/go');
@@ -366,20 +289,87 @@ s.waitForBoot({
         .format(~beats.size, ~scoreEntries.size, ~scoreAnchorBeat)).postln;
     "evaluate ~go.value to start. Define a Pdef on ~beatClock to play notes;".postln;
     "the Pdef reads ~scoreVoicePool/Amp via Pfunc { } closures.".postln;
-
-
-    ~updater = Routine {
-        loop {
-            waveView.refresh;
-            (1/30).yield;
-        };
-    };
-
-  AppClock.play(~updater);
-
-
 });
+)
 
-controlView;
+~seek.(0)
+~scoreAnchorBeat = 3
+// ===========================================================================
+// Example downstream Pdef — uncomment, evaluate after ~go.value to hear it.
+// Picks one random pitch from the current half's fitted_notes per producer
+// beat (one beats.txt event in _mul4 = one sixteenth note). The Pdef plays
+// on ~beatClock, which is already in phase with the audio via OSCdef \beatSync.
+// ---------------------------------------------------------------------------
 
+(
+// quant aligns the Pdef's first event to a multiple of N ~beatClock beats.
+// One ~beatClock beat == one beats.txt event (one subdivision), so:
+//   quant: 1                                  -> next subdivision
+//   quant: ~scoreEventsPerBeat                -> next true beat (4 in _mul4)
+//   quant: ~scoreBeatsPerBar * ~scoreEventsPerBeat
+//                                             -> next bar start (8 in 2/4 _mul4)
+//   quant: [N, P]                             -> multiple of N + phase P
+//                                                (e.g. [8, 4] = mid-bar of a 2/4 bar)
+// `~beatClock.beats` is anchored at 0 on the first /beat (the file's first
+// tracked downbeat), so all multiples of (beats_per_bar * events_per_beat)
+// fall on subsequent downbeats.
+Pdef(\scoreVoicePattern, Pbind(
+    \instrument, \scoreVoice,
+    \group,      ~scoreGroup,
+	\dur,        Pseq([0.25, 0.25,0.25] * 4, inf),
+	\note,       Pseq([0], inf),
+	\octave ,	1,
+	\root,       Pfunc { ~scoreVoicePool.choose.asInteger},
+    \amp,        Pfunc { ~scoreVoiceAmp * 2},
+    \pan,        Pwhite(-0.3, 0.3),
+)).play(~beatClock, quant: ~scoreBeatsPerBar * ~scoreEventsPerBeat);
+
+// Restart the pattern on seek/big jump so it re-quants to the new position.
+~onResync = { |idx|
+    Pdef(\scoreVoicePattern).stop;
+    ~scoreGroup.freeAll;
+    Pdef(\scoreVoicePattern).play(~beatClock,
+        quant: ~scoreBeatsPerBar * ~scoreEventsPerBeat);
+};
+)
+
+ Pdef(\scoreVoicePattern).stop;        // halt the pattern (audio + Routine continue)
+
+// ===========================================================================
+// Cleanup — evaluate this block to fully tear down state between runs. Safe
+// to call multiple times (nil-guarded). Frees server-side group + buffer +
+// playStream, stops the slaved clock, frees OSCdefs and the example Pdef.
+// Use whenever the file is about to be re-evaluated to avoid leaking nodes
+// or stacking OSCdefs.
+// ---------------------------------------------------------------------------
+(
+"cleanup: sync_plan2_pattern_score".postln;
+
+Pdef(\scoreVoicePattern).stop;
+// Pdef.removeAt(\scoreVoicePattern);
+
+if (~routine.notNil)    { ~routine.stop;     ~routine    = nil; };
+if (~playSynth.notNil)  { ~playSynth.free;   ~playSynth  = nil; };
+if (~stream.notNil)     { ~stream.close;     ~stream.free; ~stream = nil; };
+if (~scoreGroup.notNil) { ~scoreGroup.free;  ~scoreGroup = nil; };
+if (~beatClock.notNil)  { ~beatClock.stop;   ~beatClock  = nil; };
+
+OSCdef(\beatSync).free;
+OSCdef(\plan2pGo).free;
+OSCdef(\plan2pSeek).free;
+OSCdef(\plan2pBeek).free;
+OSCdef(\plan2pPause).free;
+OSCdef(\scoreReload).free;                   // installed by scorefile.scd
+OSCdef(\metaReload).free;                    // installed by metafile.scd
+
+
+~lastBeatT      = nil;
+~onResync       = nil;
+~scoreVoicePool = nil;
+~scoreVoiceAmp  = nil;
+~metaEntries    = nil;
+
+"done.".postln;
+
+)
 
