@@ -8,13 +8,13 @@ if (VisualServer.isNil) {
     "Please run loadVisualServer.scd and follow installation instructions.".postln;
 } {
     "✓ Visual Server classes found".postln;
-    
+
     // Event types auto-register at class compile (no manual load needed)
 
     // Initialize the visual server
     ~v = VisualServer.default;
     ~v.start;
-    
+
     // Create a view
     ~view = ~v.createView(\demo, Rect(200, 200, 800, 600), Color.black);
     "✓ System initialized".postln;
@@ -98,7 +98,7 @@ if (Vline.notNil) {
 (
 if (VisualServer.notNil) {
     "Creating spinning lines...".postln;
-    5.do { |i|
+    500.do { |i|
         var xc   = (i - 2) * 0.3;         // centre x (normalised)
         var half = 0.05 + (i * 0.012);    // half-length (normalised)
         var rps  = 0.5 + (i * 0.2);       // revolutions per second

@@ -193,8 +193,8 @@ if (VisualServer.isNil) {
     // Pfunc runs with the event as currentEnvironment, so ~freq is the
     // just-resolved Pexprand value for THIS event. Each event gets a new
     // closure with its own captured rps.
-    \vrotation, Pfunc({
-        var rps = ~freq.linlin(200, 1200, 0.5, 6);
+    \vrotation, Pfunc({|e|
+        var rps = e.freq.linlin(200, 1200, 0.5, 6);
         { thisThread.seconds * 2pi * rps }
     }),
     \vwidth,  4,
@@ -272,7 +272,7 @@ if (VisualServer.isNil) {
     \instrument, \sine,
     \freq, Pexprand(200, 900),
     \amp,  Pexprand(0.1, 0.5),
-    \dur,  Pexprand(0.15, 0.5),
+    \dur,  Pexprand(0.35, 0.5),
     \store, Pfunc({ |ev| ~lastAmp = ev[\amp]; ~lastFreq = ev[\freq]; 0 })
 ).play(~clock2);
 
@@ -282,7 +282,7 @@ if (VisualServer.isNil) {
     \x, Pfunc({ ~lastFreq.linlin(200, 900, -0.8, 0.8) }),
     \size, Pfunc({ ~lastAmp * 250 + 20 }),
     \color, Pfunc({ Color.hsv(~lastFreq.linlin(200,900,0,1), 0.8, 1) }),
-    \dur, 0.12,
+    \dur, 0.42,
     \view, \demo
 ).vplay(~clock2);
 )
