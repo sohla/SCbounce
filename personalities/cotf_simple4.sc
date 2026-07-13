@@ -8,7 +8,7 @@ var barAnchor=nil;
 var beatOffset = 0;
 // How often to change pitch, in ~beatClock ticks (one tick == one 1/16 in
 // _mul4). 4=quarter, 2=eighth, 1=sixteenth, 8=half, 16=whole.
-var subdivTicks = 8;
+var subdivTicks = 4;
 // Wrap ~scoreVoicePool pitches into a single octave starting here (MIDI).
 // 60 = C4. Change to move the wrapped octave up or down.
 var baseMidi = 60-24;

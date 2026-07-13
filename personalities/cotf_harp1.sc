@@ -111,7 +111,7 @@ SynthDef(\funBass, {
 			Pbind(
 				\instrument, \stereoSampler,
 				\type, \customEvent,
-				\dur, 1,
+				\dur, 0.5,
 				\note, 0,
 				\root, Pfunc { ~scoreVoicePool.choose.wrap(0,11).asInteger},
 				// \octave, 6,
@@ -145,7 +145,7 @@ SynthDef(\funBass, {
 //------------------------------------------------------------
 ~next = {|d|
 
-	var amp = m.accelMassFiltered.lincurve(0,2.4,-40,-1,-1);
+	var amp = m.accelMassFiltered.lincurve(0,2.4,-50,-10,-1);
 	var oct = (d.sensors.gyroEvent.y / pi.half).lincurve(-1,1,4,7,1).asInteger;
 	Pdef(m.ptn).set(\amp, amp.dbamp);
 	Pdef(m.ptn).set(\octave, oct);
