@@ -3,6 +3,7 @@
 var staker;
 var personalityController = Require("personalityController.scd");
 var oscController = Require("oscController.scd");
+var conductorController = Require("conductorController.scd");
 var specsView;
 var conductorView = Require("conductorView.scd");
 
