@@ -262,8 +262,13 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, start=0, pan=0, freq=
 	// three simultaneous synths per hit — pull amp lower than the single-note
 	// personalities so the summed level stays in the same neighbourhood.
 	// (3 voices summing at max amp X is roughly +9.5 dB vs one voice at X.)
-	var amp = m.accelMassFiltered.lincurve(0, 1.4, -40, -4, -1);
+	var amp = m.accelMassFiltered.lincurve(0, 1, -40, -4, -1);
 	var oct = (d.sensors.gyroEvent.y / pi.half).lincurve(-1, 1, 4, 6, 1).asInteger;
+	
+	if(m.accelMass < 0.01,{
+		amp = -10;
+	});
+	
 	Pdef(m.ptn).set(\amp, amp.dbamp);
 	Pdef(m.ptn).set(\octave, oct);
 };
@@ -272,5 +277,5 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, start=0, pan=0, freq=
 ~plotMin = -1;
 ~plotMax = 1;
 ~plot = { |d,p|
-	[(d.sensors.gyroEvent.y / pi.half)];
+	[m.accelMassFiltered];
 };

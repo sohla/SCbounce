@@ -161,6 +161,24 @@ var interpretPersonality = {|d|
         };
 
         //------------------------------------------------------------
+        // Beat-aligned hooks dispatched from conductorController's score
+        // Routine (see ~scheduleFromIndex). Personalities override any of
+        // these by simple top-level assignment (~onBeat = { |ctx| ... }).
+        // ctx is an Event with: idx, beatInBar, isDown, isTrueBeat, barIdx,
+        // half, sectionId, phraseId, chord ("root roman"), key, mode, scale;
+        // matching prev* fields for each change-triggered value;
+        // voicePool + voiceAmp; p (score bar entry); m (meta bar entry).
+        // Change-triggered hooks fire only when the tracked field differs
+        // from its previous value.
+        ~onTick    = { |ctx| };  // every beats.txt event (per subdivision)
+        ~onHalf    = { |ctx| };  // when the half-bar index changes
+        ~onBeat    = { |ctx| };  // every true musical beat
+        ~onBar     = { |ctx| };  // every tracked downbeat (\D)
+        ~onPhrase  = { |ctx| };  // when p["phrase_id"] changes
+        ~onSection = { |ctx| };  // when p["section_id"] changes
+        ~onChord   = { |ctx| };  // when chord_root + chord_roman changes
+        ~onKey     = { |ctx| };  // when key + mode changes
+        ~onScale   = { |ctx| };  // when p["active_scale"] changes
 
         //------------------------------------------------------------
         interpret(str);

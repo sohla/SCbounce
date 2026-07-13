@@ -144,23 +144,39 @@ s.waitForBoot({
     ~routine   = nil;
 
     // The score-aware step. On every beats.txt event:
-    //   1. /beat OSC fires — OSCdef(\beatSync) updates ~beatClock so any
-    //      client running on that clock is in phase with the audio.
-    //   2. State update: ~scoreVoicePool gets the current half's
-    //      fitted_notes as integers, ~scoreVoiceAmp gets the loudness-
-    //      floored amp.
-    //   3. (Reserved for phase 2) — per-beat personality hooks will be
-    //      dispatched from here.
+    //   1. Update ~scoreVoicePool / ~scoreVoiceAmp state read by
+    //      downstream personalities.
+    //   2. Dispatch personality hooks (~onTick / ~onBeat / ~onBar /
+    //      ~onSection) to every enabled device's env, driven by this
+    //      Routine's SystemClock sleep against ~beats[i] — precise
+    //      beat timing, no AppClock polling.
+    //   3. Send /beat OSC so OSCdef(\beatSync) updates ~beatClock.
+    //
+    // barIdx / lastSectionId are declared inside ~scheduleFromIndex so
+    // every seek starts a fresh closure — barIdx resets, section change
+    // re-fires from prevSectionId = nil.
     ~scheduleFromIndex = { |startIdx, anchorTime|
         var beatInBar = 0;
+        var barIdx = -1;
+        var lastSectionId = nil;
+        var lastPhraseId  = nil;
+        var lastHalf      = -1;
+        var lastChord     = nil;
+        var lastKey       = nil;
+        var lastScale     = nil;
         var eventsPerBar = ~scoreBeatsPerBar * ~scoreEventsPerBeat;
         ~routine.stop;
         ~routine = Routine({
             (startIdx .. ~beats.size - 1).do { |i|
                 var isDown, isTrueBeat, p, m, half, halves, voiceAmp, bassAmp, chordAmp, chordCutoff;
+                var sectionId, sectionChanged;
+                var phraseId, phraseChanged, halfChanged;
+                var chord, chordChanged, key, keyChanged, scale, scaleChanged;
+                var ctx;
                 (anchorTime + ~beats[i] - SystemClock.seconds).max(0).wait;
                 isDown = (~labels[i] == \D);
                 if (isDown) { beatInBar = 0 } { beatInBar = beatInBar + 1 };
+                if (isDown) { barIdx = barIdx + 1 };
                 isTrueBeat = (beatInBar % ~scoreEventsPerBeat) == 0;
 
                 p      = ~paramsAtBeat.(i);
@@ -175,6 +191,74 @@ s.waitForBoot({
 
                 ~scoreVoicePool = halves[half].collect(_.asInteger);
                 ~scoreVoiceAmp  = voiceAmp;
+
+                // Change-detection: build a comparable string/int for each
+                // tracked field so identical-content values compare equal
+                // even if the underlying score returned a fresh dict.
+                sectionId = p["section_id"];
+                phraseId  = p["phrase_id"];
+                chord     = "% %".format(p["chord_root"], p["chord_roman"]);
+                key       = "% %".format(p["key"],        p["mode"]);
+                scale     = p["active_scale"];
+
+                sectionChanged = sectionId != lastSectionId;
+                phraseChanged  = phraseId  != lastPhraseId;
+                halfChanged    = half      != lastHalf;
+                chordChanged   = chord     != lastChord;
+                keyChanged     = key       != lastKey;
+                scaleChanged   = scale     != lastScale;
+
+                ctx = (
+                    idx:            i,
+                    beatInBar:      beatInBar,
+                    isDown:         isDown,
+                    isTrueBeat:     isTrueBeat,
+                    barIdx:         barIdx,
+                    half:           half,
+                    prevHalf:       lastHalf,
+                    halfChanged:    halfChanged,
+                    sectionId:      sectionId,
+                    prevSectionId:  lastSectionId,
+                    sectionChanged: sectionChanged,
+                    phraseId:       phraseId,
+                    prevPhraseId:   lastPhraseId,
+                    phraseChanged:  phraseChanged,
+                    chord:          chord,
+                    prevChord:      lastChord,
+                    chordChanged:   chordChanged,
+                    key:            key,
+                    prevKey:        lastKey,
+                    keyChanged:     keyChanged,
+                    scale:          scale,
+                    prevScale:      lastScale,
+                    scaleChanged:   scaleChanged,
+                    voicePool:      ~scoreVoicePool,
+                    voiceAmp:       voiceAmp,
+                    p:              p,
+                    m:              m
+                );
+
+                ~devices.keysValuesDo { |port, d|
+                    if (d.env.notNil and: { d.enabled == true }) {
+                        d.env.use {
+                            ~onTick.(ctx);
+                            if (halfChanged)    { ~onHalf.(ctx) };
+                            if (isTrueBeat)     { ~onBeat.(ctx) };
+                            if (isDown)         { ~onBar.(ctx) };
+                            if (phraseChanged)  { ~onPhrase.(ctx) };
+                            if (sectionChanged) { ~onSection.(ctx) };
+                            if (chordChanged)   { ~onChord.(ctx) };
+                            if (keyChanged)     { ~onKey.(ctx) };
+                            if (scaleChanged)   { ~onScale.(ctx) };
+                        };
+                    };
+                };
+                lastSectionId = sectionId;
+                lastPhraseId  = phraseId;
+                lastHalf      = half;
+                lastChord     = chord;
+                lastKey       = key;
+                lastScale     = scale;
 
                 s.bind {
                     if (isTrueBeat) {

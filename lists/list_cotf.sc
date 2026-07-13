@@ -1,6 +1,7 @@
 (
 	[
 		"silence",
+		"cotf_simple5",
 		"cotf_simple4",
 		"cotf_simple3",
 		"cotf_simple2",
