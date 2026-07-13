@@ -1,8 +1,9 @@
 var m = ~model;
 var bl=false;
+var synth;
 
 m.accelMassFilteredAttack = 0.98;
-m.accelMassFilteredDecay = 0.3;
+m.accelMassFilteredDecay = 0.2;
 m.rrateMassFilteredAttack = 0.95;
 m.rrateMassFilteredDecay = 0.5;
 m.gyroFilteredAttack = 0.7;
@@ -18,50 +19,24 @@ SynthDef(\simple, {|out=0, amp=0.0, freq=440, attack=0.001, decay=0.03, sustain=
 //------------------------------------------------------------
 ~init = ~init <> {
 	topEnvironment.use{
-
-		Pdef(m.ptn,
-			Pbind(
-				\instrument, \simple,
-				\octave, 0,
-				\dur, 1,
-				\root, Pfunc { ~scoreVoicePool.choose.asInteger },
-				\note, 0,
-				\attack,0.03,
-				\decay, 0.1,
-				\sustain,0.1,
-				\release,1.04,
-				\args, #[],
-			)
-		);
-		Pdef(m.ptn).play(~beatClock, quant: ~scoreBeatsPerBar * ~scoreEventsPerBeat);
-
+		synth = Synth(\simple, [\freq, ~scoreVoicePool.choose.asInteger.midicps, \amp, 0.3]);
 	};
 };
 
 //------------------------------------------------------------
 ~deinit = ~deinit <> {
-  Pdef(m.ptn).remove;
+  synth.set(\gate, 0);
 
 };
 
 //------------------------------------------------------------
 ~next = {|d|
+	var amp = m.accelMassFiltered.lincurve(0,2.5,-40,-10,3);
 
+	synth.set(\amp, amp.dbamp);
 	topEnvironment.use{
-		if(m.accelMass > 0.04,{
-			if( Pdef(m.ptn).isPlaying.not,{
-				Pdef(m.ptn).resume(~beatClock, quant: ~scoreBeatsPerBar * ~scoreEventsPerBeat);
-				~onResync = { |idx|
-					Pdef(m.ptn).stop;
-					Pdef(m.ptn).play(~beatClock,
-						quant: ~scoreBeatsPerBar * ~scoreEventsPerBeat);
-				};
-			});
-		},{
-			if( Pdef(m.ptn).isPlaying,{
-				Pdef(m.ptn).pause();
-			});
-		});
+		
+		synth.set(\freq, ~scoreVoicePool.choose.asInteger.midicps);
 	};
 
 };

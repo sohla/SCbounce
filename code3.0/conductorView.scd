@@ -97,7 +97,8 @@ libDir = root +/+ "code3.0" +/+ "lib";
 ~scoreTicksPerBeat  = 480;
 ~scoreEventsPerBeat = 4;
 ~scoreBeatsPerBar   = 2;
-~scoreAnchorBeat    = ~scoreAnchorBeat ? 0;
+// ~scoreAnchorBeat    = ~scoreAnchorBeat ? 0;
+~scoreAnchorBeat = 3;
 
 ~playStartT = nil;
 ~frozenT    = ~frozenT ? 0;
