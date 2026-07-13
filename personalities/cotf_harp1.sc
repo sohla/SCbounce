@@ -34,8 +34,8 @@ var samplesLib;
 
 m.accelMassFilteredAttack = 0.99;
 m.accelMassFilteredDecay = 0.5;
-m.rrateMassFilteredAttack = 0.7;
-m.rrateMassFilteredDecay = 0.3;
+m.rrateMassFilteredAttack = 0.99;
+m.rrateMassFilteredDecay = 0.5;
 m.gyroFilteredAttack = 0.7;
 m.gyroFilteredDecay = 0.7;
 
@@ -43,11 +43,14 @@ m.gyroFilteredDecay = 0.7;
 SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, start=0, pan=0, freq=440,
     attack=0.01, decay=0.1, sustain=0.3, release=1.2, gate=1,cutoff=20000, rq=1|
 	var lr = rate * BufRateScale.kr(bufnum);// * (freq/440.0);
+	var tone = SinOsc.ar(120 + (freq/440) * [1,1.03], 0, 0.03);
     var env = EnvGen.kr(Env.new([0, 1, 1, 0], [attack, sustain, release]), doneAction: 2);
 	var sig = PlayBuf.ar(2, bufnum, rate: [lr, lr * 1.0017], startPos: start * BufFrames.kr(bufnum), loop: 0);
+	// sig = sig * tone;
 	// sig = RLPF.ar(sig, cutoff, rq);
-    sig = Balance2.ar(sig[0], sig[1], pan, amp * env);
-    Out.ar(out, sig);
+    // sig = Balance2.ar(sig[0], sig[1], pan, amp * env * 2);
+
+    Out.ar(out, sig * amp * env);
 }).add;
 
 
@@ -145,7 +148,8 @@ SynthDef(\funBass, {
 //------------------------------------------------------------
 ~next = {|d|
 
-	var amp = m.accelMassFiltered.lincurve(0,2.4,-50,-10,-1);
+	// var amp = m.accelMassFiltered.lincurve(0,2.4,-50,-10,-1);
+	var amp = (m.accelMassFiltered + m.rrateMassFiltered).half.lincurve(0,1.5,-50,-13,-1);
 	var oct = (d.sensors.gyroEvent.y / pi.half).lincurve(-1,1,4,7,1).asInteger;
 	Pdef(m.ptn).set(\amp, amp.dbamp);
 	Pdef(m.ptn).set(\octave, oct);
@@ -168,12 +172,14 @@ SynthDef(\funBass, {
 	// [d.sensors.rrateEvent.x, d.sensors.rrateEvent.y, d.sensors.rrateEvent.z].abs;
 	// [[d.sensors.rrateEvent.x, d.sensors.rrateEvent.y, d.sensors.rrateEvent.z].sumabs];
 	// [m.rrateMass, m.rrateMassFiltered];
+	// [(1+m.accelMassFiltered) * (1+m.rrateMassFiltered).half.half,m.accelMassFiltered];
+	[(m.accelMassFiltered + m.rrateMassFiltered).half,m.accelMassFiltered];
 
 
 	// [m.gyroXFiltered.fold(-0.5,0.5)];
 	// Gyro
 	// [(d.sensors.gyroEvent.x / pi)];//roll
-	[(d.sensors.gyroEvent.y / pi.half)];//up down
+	// [(d.sensors.gyroEvent.y / pi.half)];//up down
 	// [(d.sensors.gyroEvent.z / pi)];//left right
 	// [m.gyroYFiltered.fold(-0.5,0.5).lincurve(-0.5,0.5,0,1,-1)];
 	// [m.gyroXFiltered.fold(-0.5,0.5).linlin(-0.5,0.5,-10,10).lcurve];

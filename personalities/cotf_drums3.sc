@@ -42,7 +42,7 @@ var bar4 = [0, nil,  2,  nil,  5,  2,   0,  nil,  9,  9,    7,  7,    13, 13, 4,
 // concatenate — 64 slots = 4 music 4/4 bars = 64 clock beats.
 // swap in your own bar arrays to compose different phrases; anything summing
 // to a multiple of the barLen quant works.
-var samples = bar1 ++ bar2 ++ bar3 ++ bar4;
+var samples = bar2  ++ bar4 ++ bar3 ++ bar1;
 var patternLen = samples.size;  // 64 clock beats
 
 ~buffers;
@@ -134,7 +134,7 @@ SynthDef(\drumkitt3, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 ~next = {|d|
 
 	var rate = (d.sensors.gyroEvent.y / pi.half).lincurve(-1,1,0.5,4,1);
-	var amp = m.accelMassFiltered.lincurve(0,2.5,0.2,1,1);
+	var amp = m.accelMassFiltered.lincurve(0,2.0,0.5,1,1);
 	Pdef(m.ptn).set(\amp, amp);
 	Pdef(m.ptn).set(\rate, rate);
 	topEnvironment.use{

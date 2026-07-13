@@ -51,6 +51,8 @@ SynthDef(\simple, {|out=0, amp=0.0, freq=440, attack=0.001, decay=0.03, sustain=
 // is not critical, response should feel live, so no s.bind.
 ~next = {|d|
 	var amp = (m.accelMass + m.rrateMass).lincurve(0, 2.0, -90, -2, -1);
+	// var amp = (m.accelMass + m.rrateMass).half.lincurve(0,1.5,-50,-10,-1);
+
 	synth.set(\amp, amp.dbamp);
 };
 
@@ -61,23 +63,37 @@ SynthDef(\simple, {|out=0, amp=0.0, freq=440, attack=0.001, decay=0.03, sustain=
 // ctx carries everything the hook needs. s.bind so the /n_set lands on
 // the same s.latency timeline as the audio.
 ~onTick = {|ctx|
+	s.bind {
+		synth.set(\freq,
+			((ctx.voicePool.first.asInteger % 12) + baseMidi - 24).midicps);
+	};
+};
+
+~onChord = {|ctx|
 	// s.bind {
 	// 	synth.set(\freq,
 	// 		((ctx.voicePool.first.asInteger % 12) + baseMidi - 12).midicps);
 	// };
 };
 
-~onChord = {|ctx|
-// ctx.keys.postln;
-	s.bind {
-		synth.set(\freq,
-			((ctx.voicePool.first.asInteger % 12) + baseMidi - 12).midicps);
-	};
+~onBar = {|ctx|
+	"onBar: %".format(ctx.barIdx).postln;
 };
+
+~onPhrase = {|ctx|
+	"onPhrase: %".format(ctx.phraseId).postln;
+};
+
+~onSection = {|ctx|
+	"onSection: %".format(ctx.sectionId).postln;
+};
+
 
 //------------------------------------------------------------
 ~plotMin = -1;
 ~plotMax = 1;
 ~plot = { |d,p|
-	[(m.accelMass + m.rrateMass).half.half];
+	[(m.accelMass + m.rrateMass).half, m.accelMassFiltered];
+	// [(m.accelMassFiltered + m.rrateMassFiltered).half, m.accelMassFiltered];
+	
 };
