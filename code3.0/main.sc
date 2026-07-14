@@ -86,6 +86,8 @@ MIDIIn.connectAll;
 
 s.waitForBoot({
 
+	"🎧 Welcome to AirConcert 🎧".postln;
+
 	midiCC = MIDIFunc.cc({|...args|
 		// args[1].postln;
 		NetAddr.new("127.0.0.1", 57120).sendMsg(format("/airkit/cc/%",args[1]), args[0]);	

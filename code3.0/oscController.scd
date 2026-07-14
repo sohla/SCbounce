@@ -425,7 +425,7 @@ var startOSCListening = {
 
                 if(~devices.at(addr.port+i) == nil,{
                     var d = addDevice.(addr.ip,addr.port+i,i+1);
-                    postf("device auto detected : % \n", d.index);
+                    postf("device auto detected: [%] ip: % port:%\n", d.index, d.ip, d.port);
                 });
             }.defer;
         }, pattern));
