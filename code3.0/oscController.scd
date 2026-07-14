@@ -366,7 +366,7 @@ var addDevice = { |ip,port,index|
         d.color = Color.fromArray(msg2.at([15,16,17])++[1.0]);
         "CONFIG % %".format(index,d.color).postln;
         {
-            var n = NetAddr.new("127.0.0.1", 57120);
+            var n = NetAddr.new("127.0.0.1", NetAddr.langPort);
             n.sendMsg("/airkit/addDevice", port);
         }.defer(0.2);
     }, configPattern).oneShot;
@@ -388,7 +388,7 @@ var addDevice = { |ip,port,index|
     
     // global storage : port is the key
     ~devices.put(port,d);
-	NetAddr.new("127.0.0.1", 57120).sendMsg("/airkit/loadPersonality", port, 0);
+	NetAddr.new("127.0.0.1", NetAddr.langPort).sendMsg("/airkit/loadPersonality", port, 0);
 
     // start listening to device data
     addOSCDeviceListeners.(d);
@@ -397,13 +397,13 @@ var addDevice = { |ip,port,index|
     // hack : try and get color from config
     // NetAddr.new(ip,port-index+1).sendMsg("/Config/GetConfig", 57120);
     // ...wait then make then add devices
-	{ NetAddr.new("127.0.0.1", 57120).sendMsg("/airkit/addDevice", port) }.defer(0.2);
+	{ NetAddr.new("127.0.0.1", NetAddr.langPort).sendMsg("/airkit/addDevice", port) }.defer(0.2);
 
 
     // Use from AirStick 
     // NetAddr.new(ip,port-index+1).sendMsg("/Config/GetConfig", 57120);
     // Use from Airware
-	// NetAddr.new("127.0.0.1", 57120).sendMsg("/airkit/addDevice", port);
+	// NetAddr.new("127.0.0.1", NetAddr.langPort).sendMsg("/airkit/addDevice", port);
 
     d // return the device
 };

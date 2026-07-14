@@ -110,7 +110,7 @@ var oscThruButton = Button()
 			["OSC Thru",Color.white(),Color.green(0.25)]
 			])
 		.action_({|b|
-			NetAddr.new("127.0.0.1", 57120).sendMsg("/airkit/oscThru", b.value.asBoolean);
+			NetAddr.new("127.0.0.1", NetAddr.langPort).sendMsg("/airkit/oscThru", b.value.asBoolean);
 		});
 
 

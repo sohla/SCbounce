@@ -88,11 +88,11 @@ s.waitForBoot({
 
 	midiCC = MIDIFunc.cc({|...args|
 		// args[1].postln;
-		NetAddr.new("127.0.0.1", 57120).sendMsg(format("/airkit/cc/%",args[1]), args[0]);	
+		NetAddr.new("127.0.0.1", NetAddr.langPort).sendMsg(format("/airkit/cc/%",args[1]), args[0]);
 	});
 
 	["local port:", NetAddr.localAddr.port].postln;
-	NetAddr.new("127.0.0.1", 57120).sendMsg("/airkit/startOSCListening", 57120);
+	NetAddr.new("127.0.0.1", NetAddr.langPort).sendMsg("/airkit/startOSCListening", NetAddr.langPort);
 
 	initGUI.();
 	

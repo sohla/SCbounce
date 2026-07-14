@@ -91,7 +91,7 @@ var addDetailView = {|d|
 		// })
 		// .mouseDownAction_({|but|
 		// 	view.background = Color.white.alpha_(0.1);
-		// 	NetAddr("127.0.0.1", 57120).sendMsg("/airkit/calibrate", d.port);
+		// 	NetAddr("127.0.0.1", NetAddr.langPort).sendMsg("/airkit/calibrate", d.port);
 		// });
 
 	gl.addSpanning(addPlotterView.(d,view), 1, 0, 1, 2);

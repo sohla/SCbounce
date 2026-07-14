@@ -88,7 +88,7 @@ block {
         .mouseDownAction_({ |vv, xarg|
             var dur = ~fileDur ? 0;
             if (dur > 0) {
-                NetAddr.new("127.0.0.1", 57120).sendMsg("/airkit/seek",
+                NetAddr.new("127.0.0.1", NetAddr.langPort).sendMsg("/airkit/seek",
                     (xarg / vv.bounds.width * dur).clip(0, dur));
             };
         });
@@ -115,9 +115,9 @@ block {
                 ])
                 .action_({ |b|
                     if (b.value == 1) {
-                        NetAddr.new("127.0.0.1", 57120).sendMsg("/airkit/seek", ~frozenT ? 0);
+                        NetAddr.new("127.0.0.1", NetAddr.langPort).sendMsg("/airkit/seek", ~frozenT ? 0);
                     } {
-                        NetAddr.new("127.0.0.1", 57120).sendMsg("/airkit/pause");
+                        NetAddr.new("127.0.0.1", NetAddr.langPort).sendMsg("/airkit/pause");
                     };
                 }),
             waveView

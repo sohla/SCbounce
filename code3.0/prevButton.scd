@@ -7,7 +7,7 @@ var addPrevButton = { |d|
 		])
 		.action_({|but|
 			d.personality = d.personality - 1;
-			NetAddr.new("127.0.0.1", 57120).sendMsg("/airkit/loadPersonality", d.port, d.personality);
+			NetAddr.new("127.0.0.1", NetAddr.langPort).sendMsg("/airkit/loadPersonality", d.port, d.personality);
 		});
 		button
 };

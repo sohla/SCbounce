@@ -47,7 +47,7 @@ var addDeviceView = {|d|
 		.mouseDownAction_({|but|
 			view.background = Color.white.alpha_(0.1);
 			d.personality = d.personality + 1;
-			NetAddr.new("127.0.0.1", 57120).sendMsg("/airkit/loadPersonality", d.port, d.personality);
+			NetAddr.new("127.0.0.1", NetAddr.langPort).sendMsg("/airkit/loadPersonality", d.port, d.personality);
 		});
 
 	// add device view
