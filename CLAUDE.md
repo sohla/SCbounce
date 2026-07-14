@@ -32,3 +32,28 @@ production sound engine for Concerts of the Future (COTF, Edinburgh Fringe
 - `lists/list_cotf.sc` — the COTF personality list.
 - COTF integration spec lives in the COTF repo:
   `docs/superpowers/specs/2026-07-14-airkit-integration-design.md`.
+
+## Machine setup (what a fresh host needs — every item broke the 2026-07-14 bench)
+
+1. **Quarks:** `Require` (scztt/Require.quark) + `Canvas3D` (supercollider-quarks/Canvas3D) cloned
+   into `~/Library/Application Support/SuperCollider/Extensions/`, then recompile. `main.sc`
+   errors with "Class not defined" without them.
+2. **Samples:** `~/Music/cotf_samples/` (harp, drums, celesta, marimba, dulcimer, …) — gitignored,
+   from the composer. Sampler personalities print "Buffer UGen: no buffer data" and play silence
+   without it. The `cotf_simple*` personalities need nothing.
+3. **Data:** `data/audio/Beethoven4_4_MSO.wav` (COTF hosts need the **48 kHz** resample — the
+   Aggregate device is 48k and the conductor pins server SR to the file), `data/score/tick_index_2.json`,
+   `out/Beethoven4_4_MSO_beats_2_mul4{.txt,_meta.json}`. COTF archive:
+   `/Users/m0/cotf-assets/airkit-data/` on M0.
+4. Never double-click a `.sc`/`.scd` file — open the SuperCollider app, then Cmd-O.
+
+## COTF show-profile notes (`code3.0/cotf/`)
+
+- Boot: evaluate `main_cotf.scd` (env `COTF_ROOM=2|3`, default 3). When QLab owns the Beethoven
+  audio, set `~conductorAudioEnabled = false` (env `COTF_CONDUCTOR_AUDIO=0`, or evaluate the line
+  in IDE sessions).
+- **No Cmd-. while the profile is up** — it kills the per-seat monitor synths, every personality
+  process loop, and the score walker, with no auto-rebuild. Recovery: `Server.killAll`, reboot
+  interpreter, evaluate `main_cotf.scd` once.
+- Device port on COTF hosts = router fixed source port + seat − 1 (seat 1 = 9001). The post
+  window's "device auto detected : N" prints the index/seat, not the port.
