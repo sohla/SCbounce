@@ -329,6 +329,36 @@ s.waitForBoot({
     OSCdef(\conductorBeek,  { |msg| ~beek.(msg[1].asInteger) },  '/airkit/beek');
     OSCdef(\conductorPause, { ~stop.value },                     '/airkit/pause');
 
+    // --- [COTF] room state: idle | tuning | piece (see API.md) --------------
+    // State != transport: entering piece does not start the score walker —
+    // /airkit/go|seek do. Setups that never send /airkit/state keep today's
+    // behaviour (~roomState stays \idle, nothing else changes).
+    ~roomState = ~roomState ? \idle;
+    OSCdef(\conductorState, { |msg|
+        var new = msg[1].asString.asSymbol;
+        var old = ~roomState;
+        if ([\idle, \tuning, \piece].includes(new).not) {
+            "unknown /airkit/state: %".format(msg[1]).postln;
+        } {
+            ~roomState = new;
+            switch(new,
+                \idle,   { ~stop.value },
+                \tuning, { ~stop.value; ~scoreVoicePool = [69]; ~scoreVoiceAmp = 0.15; },
+                \piece,  { }
+            );
+            ~devices.keysValuesDo { |port, d|
+                if (d.env.notNil and: { d.enabled == true }) {
+                    d.env.use { ~onState.(old, new) };
+                };
+            };
+            "room state: % -> %".format(old, new).postln;
+        };
+    }, '/airkit/state');
+
+    OSCdef(\conductorGetState, { |msg, time, addr|
+        addr.sendMsg("/airkit/state/reply", ~roomState.asString);
+    }, '/airkit/getState');
+
     ("conductor ready. % beats, % score entries, anchor=%."
         .format(~beats.size, ~scoreEntries.size, ~scoreAnchorBeat)).postln;
     "conductorController: send /airkit/go, /airkit/seek <t>, /airkit/beek <i>, /airkit/pause to drive transport.".postln;
