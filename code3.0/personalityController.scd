@@ -99,6 +99,16 @@ var interpretPersonality = {|d|
         ~secs = 0.03;
 
         //------------------------------------------------------------
+        // Output routing convention (COTF-compatible, additive).
+        // Personalities route audio via ~outBus (\out, ~outBus in Pbinds).
+        // Standalone: 0 (hardware out, today's behaviour). Under the COTF
+        // profile, topEnvironment holds ~cotfSeatBus (seat -> private Bus)
+        // and each device's audio lands on its seat bus -> monitor -> final.
+        ~outBus = topEnvironment.at(\cotfSeatBus) !? { |map|
+            map.at(d.index) !? { |bus| bus.index } ? 0
+        } ? 0;
+
+        //------------------------------------------------------------
         // process data->model
         ~processDeviceData = {|d|
             ~model.accelMass = d.sensors.accelEvent.sumabs * 0.33; // scale it
@@ -179,6 +189,7 @@ var interpretPersonality = {|d|
         ~onChord   = { |ctx| };  // when chord_root + chord_roman changes
         ~onKey     = { |ctx| };  // when key + mode changes
         ~onScale   = { |ctx| };  // when p["active_scale"] changes
+        ~onState   = { |old, new| };  // [COTF] /airkit/state change (see API.md)
 
         //------------------------------------------------------------
         interpret(str);

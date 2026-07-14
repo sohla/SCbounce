@@ -27,6 +27,11 @@ libDir = root +/+ "code3.0" +/+ "lib";
 ~playStartT = nil;
 ~frozenT    = ~frozenT ? 0;
 
+// COTF: at the show QLab owns the Beethoven audio; the conductor then walks
+// the score and drives ~beatClock WITHOUT local DiskIn playback. Default true
+// preserves standalone behaviour. Set false in cotf/config.scd.
+~conductorAudioEnabled = ~conductorAudioEnabled ? true;
+
 thisProcess.interpreter.executeFile(libDir +/+ "beatfile.scd");
 thisProcess.interpreter.executeFile(libDir +/+ "beatclick.scd");
 thisProcess.interpreter.executeFile(libDir +/+ "scorefile.scd");
@@ -136,9 +141,11 @@ s.waitForBoot({
     if (~scoreGroup.notNil) { ~scoreGroup.free; };
     ~scoreGroup = Group(s);
 
-    ~stream = Buffer.cueSoundFile(s, ~musicPath.standardizePath, 0, ~fileChans, ~bufFrames);
+    if (~conductorAudioEnabled) {
+        ~stream = Buffer.cueSoundFile(s, ~musicPath.standardizePath, 0, ~fileChans, ~bufFrames);
 
-    s.sync;
+        s.sync;
+    };
 
     ~playSynth = nil;
     ~routine   = nil;
@@ -287,14 +294,16 @@ s.waitForBoot({
             ~playSynth.free;
             if (~stream.notNil) { ~stream.close; ~stream.free; };
 
-            ~stream = Buffer.cueSoundFile(s, ~musicPath.standardizePath,
-                startFrame, ~fileChans, ~bufFrames);
-            s.sync;
+            if (~conductorAudioEnabled) {
+                ~stream = Buffer.cueSoundFile(s, ~musicPath.standardizePath,
+                    startFrame, ~fileChans, ~bufFrames);
+                s.sync;
+            };
 
             startT = SystemClock.seconds - seekT;
-            s.bind { ~playSynth = Synth(\playStream, [\buf, ~stream]) };
-            // Force ~beatSync to re-anchor on the next /beat — the seek
-            // made the prior smoothing state stale.
+            if (~conductorAudioEnabled) {
+                s.bind { ~playSynth = Synth(\playStream, [\buf, ~stream]) };
+            };
             ~playStartT = SystemClock.seconds - seekT;
             ~lastBeatT  = nil;
             ~scheduleFromIndex.(idx, startT);
