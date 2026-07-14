@@ -30,8 +30,13 @@ s.options.memSize = 65536;
 s.options.blockSize = 128;
 // [COTF] latency (E2b G4 knob, real home): request a small CoreAudio IO
 // buffer. Audio MIDI Setup has no such knob — each client asks for its own.
-// Env COTF_HW_BUFFER overrides (256/512 to step back on crackle).
-s.options.hardwareBufferSize = ("COTF_HW_BUFFER".getenv ? "128").asInteger;
+// OPT-IN via env COTF_HW_BUFFER (e.g. 128/256): on the 2026-07-14 bench,
+// unconditionally requesting 128 against the drift-corrected Aggregate
+// produced a server that booted and ticked but emitted pure silence on
+// every channel — device default it is until a value is bench-proven.
+("COTF_HW_BUFFER".getenv !? { |v|
+    if (v.asInteger > 0) { s.options.hardwareBufferSize = v.asInteger };
+});
 s.options.numBuffers = 2048; // sampler personalities load big libraries (matches composer main.sc)
 s.latency = 0.05;
 // Two instances coexist: distinct scsynth ports (Room 3 = 57110, Room 2 = 57111).

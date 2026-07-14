@@ -10,9 +10,12 @@ Chasing the gesture→headset delay (the VR headset leg, not your patches — th
 the room speakers). **Nothing changes for your `main.sc` workflow** — both edits are in our
 `cotf/` boot path only.
 
-- **`cotf/config.scd`**: asks CoreAudio for a 128-sample IO buffer (`s.options.hardwareBufferSize`),
-  env `COTF_HW_BUFFER` to step back to 256/512 if we ever hear crackle. Your `main.sc` doesn't
-  load this file.
+- **`cotf/config.scd`**: the small-IO-buffer request is now **opt-in** (env `COTF_HW_BUFFER`;
+  nothing set = device default). The first version unconditionally requested 128 samples and,
+  against our drift-corrected Aggregate device, produced a server that booted and ticked while
+  emitting pure silence on every channel — and left the loopback driver wedged machine-wide
+  until a `sudo killall coreaudiod`. Your `main.sc` doesn't load this file, but if you ever see
+  "server up, meters moving, zero sound" on an aggregate device, that's the shape of it.
 - **`cotf/main_cotf.scd`**: a comment documenting our bench measurement tap (one eval line that
   mirrors seat 1's monitor onto a room speaker so we can phone-record speaker-vs-headset onset
   gaps). No behaviour change.
