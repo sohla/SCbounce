@@ -1,8 +1,10 @@
 # CLAUDE.md — AirKit (branch AirConcert)
 
-AirKit is the composer's live-performance SuperCollider system AND the
-production sound engine for Concerts of the Future (COTF, Edinburgh Fringe
-2026). Both parties push directly to this branch. Treat it accordingly.
+AirKit is Steph's live-performance SuperCollider system AND the production
+sound engine for Concerts of the Future (COTF, Edinburgh Fringe 2026). Both
+parties push directly to this branch. Treat it accordingly. COTF-side pushes
+land in **batches, each with a plain-language entry in `COTF-CHANGELOG.md`**
+so the other side can catch up at a glance.
 
 ## Rules (both humans and Claude sessions)
 
