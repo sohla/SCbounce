@@ -46,9 +46,9 @@ SynthDef(\simple, {|out=0, amp=0.0, freq=440, attack=0.001, decay=0.03, sustain=
 ~plot = { |d,p|
 
 	// [yellow, cyan , magenta]??
-
 	// Velocity
 	// [d.sensors.velocity.x, d.sensors.velocity.y, d.sensors.velocity.z] * 30;
+	
 	
 	// Acceleration
 	// [d.sensors.accelEvent.x, d.sensors.accelEvent.y, d.sensors.accelEvent.z] * 0.1;
