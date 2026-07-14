@@ -44,6 +44,7 @@ All on the instance's sclang port unless noted.
 | `/airkit/oscThru` | `bool` | forward incoming IMU packets to outAddr |
 | `/airkit/remote/devices` | — | replies `/airkitremote/devices` with device ports |
 | `/airkit/cc/<num>` | `value` | MIDI CC rebroadcast (composer GUI path) |
+| `/airkit/getRoster` | — | replies `/airkit/roster/reply name1 name2 ...` to the sender: the loaded personality names in index order (index == `loadPersonality` index, both `silence` entries included). Used by the COTF server to enumerate patches. |
 
 ### Transport (conductor)
 | Address | Args | Notes |

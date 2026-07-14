@@ -366,3 +366,19 @@ OSCFunc({ |msg, time, addr, recvPort|
 // OSCFunc({ |msg, time, addr, recvPort|
 //     NetAddr.new("127.0.0.1", NetAddr.langPort).sendMsg("/airkit/personalityName", msg[1], ~devices.at(msg[1]).name);
 // },'/airkit/getPersonalityName', NetAddr("127.0.0.1", NetAddr.langPort));
+
+//------------------------------------------------------------
+// cotf: roster query — replies to the sender with the loaded personality
+// names in index order (index == loadPersonality index), both `silence`
+// entries included. loadPersonalityList is only in scope here (it's a
+// closure-captured local, not a global ~ var), so this handler lives
+// beside loadPersonality/unLoadPersonality rather than in
+// conductorController.scd where getState lives. All 5 devices share the
+// same defaultLists entry, so device 1's list (index 0) speaks for all.
+// Reply idiom matches conductorController.scd's /airkit/getState handler.
+// Additive; no composer behaviour change.
+//------------------------------------------------------------
+OSCFunc({ |msg, time, addr, recvPort|
+    var names = loadPersonalityList.(0);
+    addr.sendMsg("/airkit/roster/reply", *names);
+},'/airkit/getRoster');

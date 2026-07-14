@@ -4,6 +4,17 @@ One entry per push batch from the Concerts of the Future side, newest first: wha
 why, and what (if anything) behaves differently on your machine. The intent is that nothing
 here ever changes how AirKit behaves for you — if it does, that's a bug, tell us.
 
+## 2026-07-15 — merged your reload fix + logging; added roster query
+
+Merged your `reload p-file bug fix` and `welcome and device details logged` commits — clean
+merge, no conflicts, nothing on our side touched the same lines.
+
+- **`/airkit/getRoster`** (new) — replies `/airkit/roster/reply name1 name2 ...` to the sender
+  with the loaded personality names in list-index order, so our admin UI can list what's
+  available. Lives in `personalityController.scd` next to `loadPersonality` (that's where the
+  list is actually in scope). Additive, replies only to whoever asks — no behaviour change for
+  your `main.sc` workflow.
+
 ## 2026-07-14 (later) — headset latency bench
 
 Chasing the gesture→headset delay (the VR headset leg, not your patches — those feel tight on
