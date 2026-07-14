@@ -292,7 +292,12 @@ s.waitForBoot({
 
             ~routine.stop;
             ~playSynth.free;
-            if (~stream.notNil) { ~stream.close; ~stream.free; };
+            // nil out after freeing: with ~conductorAudioEnabled=false no new
+            // stream is cued below, so a stale reference here would make the
+            // NEXT seek close an already-freed Buffer — the throw aborts the
+            // routine before ~scheduleFromIndex and the score walker never
+            // restarts (found live on the 2026-07-14 bench, second QLab fire).
+            if (~stream.notNil) { ~stream.close; ~stream.free; ~stream = nil; };
 
             if (~conductorAudioEnabled) {
                 ~stream = Buffer.cueSoundFile(s, ~musicPath.standardizePath,
