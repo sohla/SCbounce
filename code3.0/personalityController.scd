@@ -218,14 +218,14 @@ var interpretPersonality = {|d|
 // 
 //------------------------------------------------------------
 
-var createProcRout = {|d|
+var createProcRout = {|d, index|
     Routine {
         loop{
             d.env.use{
                 if(~fileTime != File.mtime(~filePath),{
                     ~fileTime = File.mtime(~filePath);
                     "[file saved]".postln;
-                    NetAddr.new("127.0.0.1", NetAddr.langPort).sendMsg("/airkit/loadPersonality", d.port, d.personality);
+                    NetAddr.new("127.0.0.1", 57120).sendMsg("/airkit/loadPersonality", d.port, index);
                 }); 
                 if(d.enabled == true,{
                     // pre-process data -> personality model
@@ -278,7 +278,7 @@ var loadPersonality = { |port, index|
         }.play;
     };
 
-    d.procRout = createProcRout.(d);
+    d.procRout = createProcRout.(d, index);
     d.procRout.reset.play(AppClock);
 
     ~devices.put(d.port,d);
@@ -337,7 +337,7 @@ var reLoadPersonality = { |port, index|
         }.play;
     };
 
-    d.procRout = createProcRout.(d);
+    d.procRout = createProcRout.(d, index);
     d.procRout.reset.play(AppClock);
 
     ~devices.put(d.port,d);
