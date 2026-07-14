@@ -1,4 +1,5 @@
 var m = ~model;
+var ob = ~outBus ? 0; // capture NOW — ~init bodies run under topEnvironment.use
 var bl=false;
 var synth;
 var lastTime=0;
@@ -35,6 +36,7 @@ SynthDef(\simple, {|out=0, amp=0.0, freq=440, attack=0.001, decay=0.03, sustain=
 ~init = ~init <> {
 	topEnvironment.use{
 		synth = Synth(\simple, [
+			\out, ob,
 			\freq,    ((~scoreVoicePool.choose.asInteger % 12) + baseMidi).midicps,
 			\amp,     0,
 			\attack,  0.5,

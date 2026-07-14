@@ -1,4 +1,5 @@
 var m = ~model;
+var ob = ~outBus ? 0; // capture NOW — ~init bodies run under topEnvironment.use
 var bi = -1;
 // music-downbeat alignment inside a music bar, in ~beatClock.beats units.
 var phase = 4;
@@ -87,6 +88,7 @@ SynthDef(\drumkitt3, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 	Pdef(m.ptn,
 		Pbind(
 			\instrument, \drumkitt3,
+			\out, ob,
 			// uniform 16th grid — every event advances one 16th. rest slots
 			// are encoded as `nil` in samples[]; the Pfunc returns Rest()
 			// for those, which sets ~isRest on the event and Event.play

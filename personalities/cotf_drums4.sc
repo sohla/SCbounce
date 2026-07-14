@@ -1,4 +1,5 @@
 var m = ~model;
+var ob = ~outBus ? 0; // capture NOW — ~init bodies run under topEnvironment.use
 var bi = -1;
 // music-downbeat alignment inside a music bar, in ~beatClock.beats units.
 var phase = 4;
@@ -104,6 +105,7 @@ SynthDef(\drumkitt4, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 	Pdef(m.ptn,
 		Pbind(
 			\instrument, \drumkitt4,
+			\out, ob,
 			// both \dur and \bufnum are driven by ~beatClock, indexing into the
 			// durs and samples arrays via the precomputed eventStarts. this is
 			// a clock-derived form of Pseq(durs, inf) / Pseq(samples, inf) —

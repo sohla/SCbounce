@@ -1,5 +1,6 @@
 
 var m = ~model;
+var ob = ~outBus ? 0; // capture NOW — ~init bodies run under topEnvironment.use
 
 //------------------------------------------------------------
 // note-name → MIDI parser. same as cotf_harp1 / cotf_celesta1 — takes
@@ -116,6 +117,7 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, start=0, pan=0, freq=
 		Pdef(m.ptn,
 			Pbind(
 				\instrument, \stereoSampler,
+				\out, ob,
 				\type, \customEvent,
 				\dur, 1,
 				\note, 0,

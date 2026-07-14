@@ -1,5 +1,6 @@
 
 var m = ~model;
+var ob = ~outBus ? 0; // capture NOW — ~init bodies run under topEnvironment.use
 
 //------------------------------------------------------------
 
@@ -113,6 +114,7 @@ SynthDef(\funBass, {
 		Pdef(m.ptn,
 			Pbind(
 				\instrument, \stereoSampler,
+				\out, ob,
 				\type, \customEvent,
 				\dur, 0.5,
 				\note, 0,

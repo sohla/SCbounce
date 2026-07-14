@@ -1,4 +1,5 @@
 var m = ~model;
+var ob = ~outBus ? 0; // capture NOW — ~init bodies run under topEnvironment.use
 var bi = -1;
 var dur = 2;
 // where the music's downbeat sits inside a bar, in ~beatClock.beats units.
@@ -56,6 +57,7 @@ SynthDef(\drumkitt2, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 	Pdef(m.ptn,
 		Pbind(
 			\instrument, \drumkitt2,
+			\out, ob,
 			// derive index from ~beatClock so every bar restarts at drums[0]:
 			//   barLen (in clock beats) = ~scoreBeatsPerBar * ~scoreEventsPerBeat
 			//   position-in-bar         = (~beatClock.beats - phase) mod barLen

@@ -1,5 +1,6 @@
 
 var m = ~model;
+var ob = ~outBus ? 0; // capture NOW — ~init bodies run under topEnvironment.use
 var phase = 4;
 
 //------------------------------------------------------------
@@ -166,6 +167,7 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, start=0, pan=0, freq=
 		Pdef(m.ptn,
 			Pbind(
 				\instrument, \stereoSampler,
+				\out, ob,
 				\type, \customEvent,
 
 				\dur, Pfunc{ |e|

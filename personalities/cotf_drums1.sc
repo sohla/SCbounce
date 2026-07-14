@@ -1,4 +1,5 @@
 var m = ~model;
+var ob = ~outBus ? 0; // capture NOW — ~init bodies run under topEnvironment.use
 var bi = 0;
 
 // drum sound buffer index list : kick1, kick2, hihat close, hihat close soft, hit hat open, snare , snare soft, tom hi, tom hi soft, tom mid, tom mid soft, tom low, tom low soft, floor, floor soft
@@ -48,7 +49,8 @@ SynthDef(\drumkitt, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 
 	Pdef(m.ptn,
 		Pbind(
-			\instrument, \drumkitt,			
+			\instrument, \drumkitt,
+			\out, ob,
 			\bufnum, Pfunc{|e|
 				bi = bi + 1;
 				if(bi >= (drums.size),{bi=0});

@@ -1,4 +1,5 @@
 var m = ~model;
+var ob = ~outBus ? 0; // capture NOW — ~init bodies run under topEnvironment.use
 var synth;
 // Wrap ~scoreVoicePool pitches into a single octave starting here (MIDI).
 // 60 = C4. Change to move the wrapped octave up or down.
@@ -31,6 +32,7 @@ SynthDef(\simple, {|out=0, amp=0.0, freq=440, attack=0.001, decay=0.03, sustain=
 		// yet — read ~scoreVoicePool from topEnvironment for the first
 		// note only. Later notes come from ctx.voicePool in ~onBeat.
 		synth = Synth(\simple, [
+			\out, ob,
 			\freq,    ((~scoreVoicePool.first.asInteger % 12) + baseMidi).midicps,
 			\amp,     0,
 			\attack,  0.5,

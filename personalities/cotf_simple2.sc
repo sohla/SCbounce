@@ -1,4 +1,5 @@
 var m = ~model;
+var ob = ~outBus ? 0; // capture NOW — ~init bodies run under topEnvironment.use
 var bl=false;
 var lastTime=0;
 var barAnchor=nil;
@@ -37,6 +38,7 @@ SynthDef(\simple, {|out=0, amp=0.0, freq=440, attack=0.001, decay=0.03, sustain=
 		// Pdef(m.ptn,
 		// 	Pbind(
 		// 	\instrument, \simple,
+		// 	\out, ob,
 		// 	\octave, 0,
 		// 	\dur, 1,
 		// 	\root,       Pfunc { ~scoreVoicePool.choose.asInteger},
@@ -101,6 +103,7 @@ SynthDef(\simple, {|out=0, amp=0.0, freq=440, attack=0.001, decay=0.03, sustain=
 					// plays s.latency ahead of the music.
 					s.bind {
 						syn = Synth(\simple, [
+							\out, ob,
 							\amp,     0.4,
 							\freq,    ~scoreVoicePool.choose.asInteger.midicps,
 							\attack,  0.004,

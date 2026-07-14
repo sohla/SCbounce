@@ -1,5 +1,6 @@
 
 var m = ~model;
+var ob = ~outBus ? 0; // capture NOW — ~init bodies run under topEnvironment.use
 
 //------------------------------------------------------------
 // note-name → MIDI parser. handles the "INSTR_ES_mf_<NOTE>.wav" naming
@@ -99,6 +100,7 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, start=0, pan=0, freq=
 		Pdef(m.ptn,
 			Pbind(
 				\instrument, \stereoSampler,
+				\out, ob,
 				\type, \customEvent,
 				// half time vs. cotf_harp1 (which uses \dur, 1). one note per
 				// 8th note instead of per 16th — feels more spacious, gives the
