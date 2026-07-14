@@ -28,6 +28,7 @@ s.options.numOutputBusChannels = 144;
 s.options.numWireBufs = 1024;
 s.options.memSize = 65536;
 s.options.blockSize = 128;
+s.options.numBuffers = 2048; // sampler personalities load big libraries (matches composer main.sc)
 s.latency = 0.05;
 // Two instances coexist: distinct scsynth ports (Room 3 = 57110, Room 2 = 57111).
 s.addr = NetAddr("127.0.0.1", if(room == 2, 57111, 57110));
