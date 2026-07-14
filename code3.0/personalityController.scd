@@ -1,7 +1,11 @@
-var listsDir = "~/Develop/SuperCollider/Projects/AirKit/lists/";//RPI
-var personalityDir = "~/Develop/SuperCollider/Projects/AirKit/personalities/";//RPI
-// var personalityDir = "~/Develop/SuperCollider/Projects/scbounce/personalities/"; //laptop
-// var personalityDir = "~/Develop/SuperCollider/oscMusic/personalities/"; //mac mini cabin
+// Derive lists/personalities from this checkout so any machine (RPI, laptop,
+// mac mini, M1) works without editing paths. Same pattern conductorController
+// already uses for its data paths.
+var airkitRoot = thisProcess.nowExecutingPath.dirname.dirname;
+var listsDir = airkitRoot +/+ "lists" ++ "/";
+var personalityDir = airkitRoot +/+ "personalities" ++ "/";
+// var listsDir = "~/Develop/SuperCollider/Projects/AirKit/lists/";//RPI (pre-2026-07-14 hardcode)
+// var personalityDir = "~/Develop/SuperCollider/Projects/AirKit/personalities/";//RPI
 
 var list = "list_cotf.sc";
 // var list = "list_performanceTests.sc";
