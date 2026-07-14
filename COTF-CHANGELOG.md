@@ -4,6 +4,19 @@ One entry per push batch from the Concerts of the Future side, newest first: wha
 why, and what (if anything) behaves differently on your machine. The intent is that nothing
 here ever changes how AirKit behaves for you — if it does, that's a bug, tell us.
 
+## 2026-07-14 (later) — headset latency bench
+
+Chasing the gesture→headset delay (the VR headset leg, not your patches — those feel tight on
+the room speakers). **Nothing changes for your `main.sc` workflow** — both edits are in our
+`cotf/` boot path only.
+
+- **`cotf/config.scd`**: asks CoreAudio for a 128-sample IO buffer (`s.options.hardwareBufferSize`),
+  env `COTF_HW_BUFFER` to step back to 256/512 if we ever hear crackle. Your `main.sc` doesn't
+  load this file.
+- **`cotf/main_cotf.scd`**: a comment documenting our bench measurement tap (one eval line that
+  mirrors seat 1's monitor onto a room speaker so we can phone-record speaker-vs-headset onset
+  gaps). No behaviour change.
+
 ## 2026-07-14 — AirKit becomes the COTF show engine (bench day 1: it works!)
 
 We ran a real AirStick through the venue routing into AirKit on our audio Mac, playing

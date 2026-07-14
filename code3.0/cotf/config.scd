@@ -28,6 +28,10 @@ s.options.numOutputBusChannels = 144;
 s.options.numWireBufs = 1024;
 s.options.memSize = 65536;
 s.options.blockSize = 128;
+// [COTF] latency (E2b G4 knob, real home): request a small CoreAudio IO
+// buffer. Audio MIDI Setup has no such knob — each client asks for its own.
+// Env COTF_HW_BUFFER overrides (256/512 to step back on crackle).
+s.options.hardwareBufferSize = ("COTF_HW_BUFFER".getenv ? "128").asInteger;
 s.options.numBuffers = 2048; // sampler personalities load big libraries (matches composer main.sc)
 s.latency = 0.05;
 // Two instances coexist: distinct scsynth ports (Room 3 = 57110, Room 2 = 57111).

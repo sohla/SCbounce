@@ -37,6 +37,12 @@ s.waitForBoot({
             Synth.tail(s, \cotfMonitor, [\in, bus.index, \out, ~cotfFinalBus.(seat)]));
     };
 
+    // [COTF] latency bench tap: evaluate in the IDE to hear seat 1 on the
+    // Genelec (MOTU out 1) AND the headset simultaneously — one phone
+    // recording then measures the headset leg (scripts/onset-gap.py, COTF repo):
+    //   ~benchTap = Synth.tail(s, \cotfMonitor, [\in, ~cotfSeatBus.at(1).index, \out, 0]);
+    //   ~benchTap.free;
+
     // --- [COTF] /airkit/voiceMute <devicePort> <0|1> [fadeSec] (API.md) -----
     OSCdef(\cotfVoiceMute, { |msg|
         var d = ~devices.at(msg[1].asInteger);
