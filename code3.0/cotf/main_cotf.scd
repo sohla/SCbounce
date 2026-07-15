@@ -13,6 +13,32 @@ thisProcess.interpreter.executeFile(codeRoot +/+ "personalityController.scd");
 thisProcess.interpreter.executeFile(codeRoot +/+ "oscController.scd");
 thisProcess.interpreter.executeFile(codeRoot +/+ "conductorController.scd");
 
+// [COTF] beat-clock anchor fix (2026-07-15 bench). ~beatClock is a boot-long
+// singleton; every seek re-anchors ~beatClock.beats — possibly far BACKWARD
+// (seek 0 sets beats=0 after the clock has free-run since boot). A Pdef
+// already playing has its next event scheduled in OLD clock beats, which a
+// backward jump strands hours in the future: the instrument goes silent while
+// the walker, timer and everything else run happily (observed live: harp
+// muted at the first QLab seek, "FAILURE /n_set Node not found" red herring).
+// Fix: on every (re)anchor the conductor fires ~onResync — restart each live
+// device's pattern against the new clock time; the bar quant re-enters in
+// musical phase within one bar. COTF-profile only; composer's main.sc is
+// untouched (their ~onResync stays the default no-op).
+~onResync = { |idx|
+    ~devices.do { |d|
+        if (d.env.notNil and: { d.enabled == true }) {
+            d.env.use {
+                if (~model.notNil and: { Pdef(~model.ptn).isPlaying }) {
+                    Pdef(~model.ptn).stop;
+                    Pdef(~model.ptn).play(~beatClock,
+                        quant: ~scoreBeatsPerBar * ~scoreEventsPerBeat);
+                };
+            };
+        };
+    };
+    "[COTF] resync at idx %: live device patterns re-anchored".format(idx).postln;
+};
+
 s.waitForBoot({
     // Device bind check (pattern: COTF audio/supercollider/lib/bind-check.scd).
     thisProcess.interpreter.executeFile(codeRoot +/+ "cotf" +/+ "bind-check.scd");

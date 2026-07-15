@@ -82,3 +82,12 @@ needs the Beethoven WAV at 48 kHz (yours can stay 44.1k).
   personality pushes after a restart (found on the bench today). The server
   now polls this and re-pushes saved assignments. Additive, no behaviour
   change to anything of yours.
+
+## 2026-07-15 (bench fix) — patterns survive seek re-anchor
+- cotf/main_cotf.scd: implemented the ~onResync hook (your no-op default) —
+  restarts each live device's Pdef against ~beatClock's new time on every
+  anchor/re-anchor. Why: seek 0 jumps the boot-long beat clock BACKWARD, so a
+  pattern already playing had its next event stranded hours in the future —
+  instruments went dead-silent at the first QLab seek of the night. Probably
+  the same family as the gesture-delay we chased on the 14th. COTF profile
+  only; your main.sc behaviour unchanged.
