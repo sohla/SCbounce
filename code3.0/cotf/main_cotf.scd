@@ -25,13 +25,17 @@ thisProcess.interpreter.executeFile(codeRoot +/+ "conductorController.scd");
 // musical phase within one bar. COTF-profile only; composer's main.sc is
 // untouched (their ~onResync stays the default no-op).
 ~onResync = { |idx|
+    // Capture conductor-env values BEFORE entering each device env — inside
+    // d.env.use these ~vars resolve against the personality's environment
+    // (nil there; first version crashed on nil * nil).
+    var clock = ~beatClock;
+    var quant = ~scoreBeatsPerBar * ~scoreEventsPerBeat;
     ~devices.do { |d|
         if (d.env.notNil and: { d.enabled == true }) {
             d.env.use {
                 if (~model.notNil and: { Pdef(~model.ptn).isPlaying }) {
                     Pdef(~model.ptn).stop;
-                    Pdef(~model.ptn).play(~beatClock,
-                        quant: ~scoreBeatsPerBar * ~scoreEventsPerBeat);
+                    Pdef(~model.ptn).play(clock, quant: quant);
                 };
             };
         };
