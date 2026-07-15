@@ -51,9 +51,24 @@ so the other side can catch up at a glance.
 
 ## COTF show-profile notes (`code3.0/cotf/`)
 
-- Boot: evaluate `main_cotf.scd` (env `COTF_ROOM=2|3`, default 3). When QLab owns the Beethoven
-  audio, set `~conductorAudioEnabled = false` (env `COTF_CONDUCTOR_AUDIO=0`, or evaluate the line
-  in IDE sessions).
+- **Production boot (2026-07-15): PM2 on M1** — `cotf-airkit-room3` (config in the COTF repo,
+  `audio/airkit/ecosystem.config.cjs`) runs `sclang main_cotf.scd` headless with `COTF_ROOM=3`,
+  `COTF_CONDUCTOR_AUDIO=0`; `pm2 save`d into the boot chain. Bench/IDE fallback: `pm2 stop
+  cotf-airkit-room3`, then evaluate `main_cotf.scd` (or `main.sc` for the composer GUI). The COTF
+  server (M0) auto-loads saved seat personalities and reconciles drift via `/airkit/getSeats`
+  every ~10s — a hand-loaded personality that differs from the saved one will be REVERTED within
+  ~10s outside `piece`; save it from the Patches admin page instead when benching.
+- Boot (manual/IDE): evaluate `main_cotf.scd` (env `COTF_ROOM=2|3`, default 3). When QLab owns
+  the Beethoven audio, set `~conductorAudioEnabled = false` (env `COTF_CONDUCTOR_AUDIO=0`, or
+  evaluate the line in IDE sessions).
+- **Known open issue (2026-07-15 bench):** `cotf_harp1` goes silent in `piece` even after a clean
+  seek, while `cotf_simple5` tracks fine — the sampler personalities (harp/celesta/marimba/
+  dulcimer) have never been proven under the conductor. Seat shows on `cotf_simple*` until each
+  is benched. (`FAILURE /n_set Node not found` after a reload is a transient, not the cause.)
+- `~onResync` (COTF profile) restarts live device Pdefs on every beat-clock (re)anchor — without
+  it, a seek's backward `~beatClock.beats` jump strands playing patterns hours in the future
+  (dead-silent instruments at the first QLab fire of a long-running boot). Inside `d.env.use`,
+  conductor `~vars` resolve against the personality env (nil) — capture locals first.
 - **No Cmd-. while the profile is up** — it kills the per-seat monitor synths, every personality
   process loop, and the score walker, with no auto-rebuild. Recovery: `Server.killAll`, reboot
   interpreter, evaluate `main_cotf.scd` once.
