@@ -45,6 +45,7 @@ All on the instance's sclang port unless noted.
 | `/airkit/remote/devices` | — | replies `/airkitremote/devices` with device ports |
 | `/airkit/cc/<num>` | `value` | MIDI CC rebroadcast (composer GUI path) |
 | `/airkit/getRoster` | — | replies `/airkit/roster/reply name1 name2 ...` to the sender: the loaded personality names in index order (index == `loadPersonality` index, both `silence` entries included). Used by the COTF server to enumerate patches. |
+| `/airkit/getSeats` | — | replies `/airkit/seats/reply port1 name1 port2 name2 ...` to the sender: flat (devicePort, personalityName) pairs for every live device. Devices are lazily created on first IMU packet with personality `silence`; the COTF server polls this to reconcile actually-loaded vs saved assignments. |
 
 ### Transport (conductor)
 | Address | Args | Notes |

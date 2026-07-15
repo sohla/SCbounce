@@ -73,3 +73,12 @@ edit defaults to today's behaviour on a standalone machine.
 Things we learned that live outside the repo (documented in CLAUDE.md): the `Require` and
 `Canvas3D` quarks are prerequisites; sampler personalities need `~/Music/cotf_samples/`; our rig
 needs the Beethoven WAV at 48 kHz (yours can stay 44.1k).
+
+## 2026-07-15 (later) — /airkit/getSeats live-state query
+- New `/airkit/getSeats` (personalityController.scd, beside getRoster): replies
+  `/airkit/seats/reply port1 name1 ...` to the sender — what each live device
+  actually has loaded. Why: devices are created lazily on their first IMU
+  packet with the default "silence", which was overwriting the COTF server's
+  personality pushes after a restart (found on the bench today). The server
+  now polls this and re-pushes saved assignments. Additive, no behaviour
+  change to anything of yours.

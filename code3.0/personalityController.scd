@@ -382,3 +382,19 @@ OSCFunc({ |msg, time, addr, recvPort|
     var names = loadPersonalityList.(0);
     addr.sendMsg("/airkit/roster/reply", *names);
 },'/airkit/getRoster');
+
+//------------------------------------------------------------
+// cotf: live seats query — replies to the sender with flat
+// (devicePort, personalityName) pairs for every live device, e.g.
+// /airkit/seats/reply 9001 "cotf_harp1" 9002 "silence". Devices are
+// created lazily on their first IMU packet (default personality
+// "silence"), so the COTF server polls this to learn what is ACTUALLY
+// loaded and re-push a saved assignment that a fresh device wiped —
+// the boot-order race found on the 2026-07-15 bench. Additive; no
+// composer behaviour change.
+//------------------------------------------------------------
+OSCFunc({ |msg, time, addr, recvPort|
+    var pairs = List.new;
+    ~devices.keysValuesDo{ |port, d| pairs.add(port); pairs.add(d.name) };
+    addr.sendMsg("/airkit/seats/reply", *pairs.asArray);
+},'/airkit/getSeats');
