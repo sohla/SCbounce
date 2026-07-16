@@ -52,10 +52,18 @@ s.waitForBoot({
     // playing so unmute is instant and still beat-synced) and the per-seat
     // volume point. Alive from boot, matching the "process is up even when
     // silent" convention.
-    SynthDef(\cotfMonitor, { |in, out, gain = 1, lagT = 0.5|
-        Out.ar(out, In.ar(in, 2) * gain.lag(lagT));
+    // `trim` is a fixed, per-room output pad — distinct from `gain`, which the
+    // per-seat voiceMute owns (0/1). voiceMute never touches trim, so the pad
+    // survives every mute/unmute.
+    SynthDef(\cotfMonitor, { |in, out, gain = 1, lagT = 0.5, trim = 1|
+        Out.ar(out, In.ar(in, 2) * gain.lag(lagT) * trim);
     }).add;
     s.sync;
+
+    // [COTF] Baked-in −10 dB pad on the Room 2 warm-up voices (2026-07-16):
+    // they share the MOTU 9/10 Genelec cable and were running hot vs the
+    // atmosphere bed. Room 3 (headsets) is unchanged. 10^(-10/20) = 0.3162.
+    ~cotfMonitorTrim = if(~cotfRoom == 2, 0.3162, 1.0);
 
     ~cotfSeatBus = Dictionary();   // seat (1..5) -> private Bus (personalities' ~outBus)
     ~cotfMonitors = Dictionary();  // seat (1..5) -> monitor Synth
@@ -64,7 +72,7 @@ s.waitForBoot({
         var bus = Bus.audio(s, 2);
         ~cotfSeatBus.put(seat, bus);
         ~cotfMonitors.put(seat,
-            Synth.tail(s, \cotfMonitor, [\in, bus.index, \out, ~cotfFinalBus.(seat)]));
+            Synth.tail(s, \cotfMonitor, [\in, bus.index, \out, ~cotfFinalBus.(seat), \trim, ~cotfMonitorTrim]));
     };
 
     // [COTF] latency bench tap: evaluate in the IDE to hear seat 1 on the

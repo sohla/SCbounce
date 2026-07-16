@@ -4,6 +4,18 @@ One entry per push batch from the Concerts of the Future side, newest first: wha
 why, and what (if anything) behaves differently on your machine. The intent is that nothing
 here ever changes how AirKit behaves for you — if it does, that's a bug, tell us.
 
+## 2026-07-16 — Room 2 warm-up output pad (−10 dB)
+
+Purely a level trim on our Room 2 (warm-up) boot path — **nothing changes for your `main.sc`
+workflow or for Room 3.**
+
+- **`cotf/main_cotf.scd`**: the `\cotfMonitor` SynthDef gained a fixed `trim` arg (default 1,
+  i.e. no change) multiplied alongside the existing `gain`. On COTF Room 2 only (`COTF_ROOM=2`)
+  we set `trim = 0.3162` (−10 dB) when we spawn the per-seat monitors, because the warm-up
+  voices share one MOTU 9/10 cable to the Room 2 Genelecs with our ambient bed and were running
+  hot. `gain` (the per-seat voiceMute, 0/1) is untouched and still owns muting; `trim` is a
+  separate baked-in pad that survives every mute/unmute. Room 3 keeps `trim = 1`.
+
 ## 2026-07-15 — merged your reload fix + logging; added roster query
 
 Merged your `reload p-file bug fix` and `welcome and device details logged` commits — clean
