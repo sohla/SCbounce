@@ -18,6 +18,11 @@ Sent to the instance's sclang port (composer default 57120; COTF Room 3 =
 57120, Room 2 = 57121). `N` = virtual device 1..5. Devices are keyed by
 sender source port + (N−1): senders must keep a stable source port.
 
+**[COTF]** the COTF router binds a **fixed source port 9001** and addresses
+devices as `devicePort = 9001 + seat − 1` (seat 1 = 9001 … seat 5 = 9005) —
+this is the stable sender port the "device = source port + N−1" rule above
+relies on.
+
 | Address | Args | Notes |
 |---|---|---|
 | `/N/IMUFusedData` | `ax ay az qx qy qz qw` (floats; msg[1..7] read) | ~100 Hz IMU stream; first packet auto-creates the device |
@@ -54,6 +59,22 @@ All on the instance's sclang port unless noted.
 | `/airkit/seek` | `seconds (float)` | reposition score walker + beat clock (+ local audio if enabled) |
 | `/airkit/beek` | `beatIndex (int)` | seek by beat index |
 | `/airkit/pause` | — | stop transport, freeze playhead |
+
+### [COTF] Transport orchestration
+| Trigger | Action | Notes |
+|---|---|---|
+| Room 3 arrival | `/airkit/state tuning` | sent on group arrival, before any transport call |
+| Staff Start | `/airkit/state piece` | sent **before** the QLab cue |
+| Stop / reset / clear | `/airkit/state idle` | room reset to free play |
+
+The COTF server **never sends `/airkit/go`** — the conductor is QLab-slaved
+via the Network cue; QLab's cue drives transport, COTF only drives `state`.
+Staff seat-mute bridges to `/airkit/voiceMute devicePort muted [fadeSec=1]`
+(real audio fade — packet-drop alone would leave the pattern playing). The
+COTF monitor polls `/airkit/getState` + `/airkit/getSeats` on **both rooms**
+(57120 Room 3, 57121 Room 2) every ~10 s and re-pushes only drifted seats
+(never a sounding seat mid-piece); Room 2's desired state mirrors Room 3's
+saved seats.
 
 ### [COTF] Room state & voice mute
 | Address | Args | Notes |

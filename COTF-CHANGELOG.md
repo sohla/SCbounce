@@ -4,6 +4,24 @@ One entry per push batch from the Concerts of the Future side, newest first: wha
 why, and what (if anything) behaves differently on your machine. The intent is that nothing
 here ever changes how AirKit behaves for you — if it does, that's a bug, tell us.
 
+## 2026-07-16 — Docs-only: source-port convention + transport orchestration + Room 2 monitor heads-up
+
+No code changes at all, just catching `API.md` up to how our side actually talks to yours — nothing
+changes for your `main.sc` workflow.
+
+- Documented our sender-side convention: our router binds a **fixed source port 9001** and
+  addresses devices as `devicePort = 9001 + seat − 1` (seat 1 = 9001 … seat 5 = 9005). That's the
+  stable source port your "device = source port + N−1" rule has been keying off already — just
+  writing it down.
+- Added a **"COTF transport orchestration"** section spelling out exactly when we send what:
+  `state tuning` on Room 3 arrival, `state piece` before the QLab cue fires, `state idle` on
+  stop/reset/clear, and a reminder that **we never send `/airkit/go`** ourselves — QLab drives
+  transport via the Network cue, we only drive `state`.
+- Heads-up: our drift monitor now also polls `/airkit/getState` + `/airkit/getSeats` against your
+  Room 2 instance on port 57121 every ~10s (it already did this against Room 3 on 57120) — so
+  you'll start seeing periodic queries land on the Room 2 instance too. Read-only, same polling
+  pattern as before, nothing it does can touch a seat mid-piece.
+
 ## 2026-07-16 — Room 2 warm-up output pad (−10 dB)
 
 Purely a level trim on our Room 2 (warm-up) boot path — **nothing changes for your `main.sc`
