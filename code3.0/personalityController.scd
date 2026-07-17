@@ -193,7 +193,15 @@ var interpretPersonality = {|d|
         ~onChord   = { |ctx| };  // when chord_root + chord_roman changes
         ~onKey     = { |ctx| };  // when key + mode changes
         ~onScale   = { |ctx| };  // when p["active_scale"] changes
-        ~onState   = { |old, new| };  // [COTF] /airkit/state change (see API.md)
+        ~onRoomState = { |ctx| };  // when /airkit/state changes; ctx = (state:, prevState:, stateChanged:)
+
+        //------------------------------------------------------------
+        // State-gated ~next variants. Called from procRout in addition to
+        // ~next, only when the current room state matches. Same signature
+        // as ~next: receives device `d`, runs at IMU rate (~30 Hz).
+        ~idleNext   = { |d| };  // only when ~roomState == \idle
+        ~tuningNext = { |d| };  // only when ~roomState == \tuning
+        ~pieceNext  = { |d| };  // only when ~roomState == \piece
 
         //------------------------------------------------------------
         interpret(str);
@@ -232,6 +240,15 @@ var createProcRout = {|d, index|
                     ~processDeviceData.(d);
                     //post process : make changes in personlity file
                     ~next.(d);
+                    // State-gated tick: fires the ~<state>Next hook if
+                    // defined. ~roomState lives in topEnvironment (set by
+                    // conductorController), so we read it explicitly since
+                    // we're inside d.env.use.
+                    switch(topEnvironment[\roomState],
+                        \idle,   { ~idleNext.(d) },
+                        \tuning, { ~tuningNext.(d) },
+                        \piece,  { ~pieceNext.(d) }
+                    );
                 });
                 (~secs.()).yield;
             };

@@ -53,10 +53,13 @@ SynthDef(\simple, {|out=0, amp=0.0, freq=440, attack=0.001, decay=0.03, sustain=
 // is not critical, response should feel live, so no s.bind.
 ~next = {|d|
 	var amp = (m.accelMass + m.rrateMass).lincurve(0, 2.0, -90, -2, -1);
-	// var amp = (m.accelMass + m.rrateMass).half.lincurve(0,1.5,-50,-10,-1);
+	synth.set(\amp, 0);
+	// 	var amp = (m.accelMass + m.rrateMass).lincurve(0, 2.0, -90, -2, -1);
+	// synth.set(\amp, 0);
 
-	synth.set(\amp, amp.dbamp);
 };
+
+
 
 //------------------------------------------------------------
 // Beat-locked pitch. ctx.voicePool is the current half's MIDI pitches
@@ -69,6 +72,7 @@ SynthDef(\simple, {|out=0, amp=0.0, freq=440, attack=0.001, decay=0.03, sustain=
 		synth.set(\freq,
 			((ctx.voicePool.first.asInteger % 12) + baseMidi - 24).midicps);
 	};
+	ctx.state.postln;
 };
 
 ~onChord = {|ctx|
@@ -89,6 +93,11 @@ SynthDef(\simple, {|out=0, amp=0.0, freq=440, attack=0.001, decay=0.03, sustain=
 ~onSection = {|ctx|
 	"onSection: %".format(ctx.sectionId).postln;
 };
+
+~onRoomState = {|ctx|
+	"onRoomState: % -> %".format(ctx.prevState, ctx.state).postln;
+};
+
 
 
 //------------------------------------------------------------

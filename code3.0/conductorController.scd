@@ -241,6 +241,7 @@ s.waitForBoot({
                     scaleChanged:   scaleChanged,
                     voicePool:      ~scoreVoicePool,
                     voiceAmp:       voiceAmp,
+                    state:          ~roomState,
                     p:              p,
                     m:              m
                 );
@@ -351,9 +352,12 @@ s.waitForBoot({
                 \tuning, { ~stop.value; ~scoreVoicePool = [69]; ~scoreVoiceAmp = 0.15; },
                 \piece,  { }
             );
-            ~devices.keysValuesDo { |port, d|
-                if (d.env.notNil and: { d.enabled == true }) {
-                    d.env.use { ~onState.(old, new) };
+            block {
+                var stateCtx = (state: new, prevState: old, stateChanged: true);
+                ~devices.keysValuesDo { |port, d|
+                    if (d.env.notNil and: { d.enabled == true }) {
+                        d.env.use { ~onRoomState.(stateCtx) };
+                    };
                 };
             };
             "room state: % -> %".format(old, new).postln;
