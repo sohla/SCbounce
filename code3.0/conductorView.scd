@@ -101,6 +101,13 @@ block {
     };
     AppClock.play(~updater);
 
+    // Cmd+. → stop the refresh Routine before the window closes. Otherwise
+    // AppClock keeps ticking waveView.refresh after Qt has freed the view,
+    // and the queued drawFunc call sees a nil vv.bounds → nil.width throw.
+    CmdPeriod.doOnce({
+        if (~updater.notNil) { ~updater.stop; ~updater = nil };
+    });
+
     // Factory returned to main.sc's layout: builds the transport bar every
     // time it's invoked. Buttons and mouseDown talk to the controller via
     // /airkit/seek and /airkit/pause OSCdefs (defined in conductorController.scd).
