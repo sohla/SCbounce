@@ -125,3 +125,11 @@ needs the Beethoven WAV at 48 kHz (yours can stay 44.1k).
   instruments went dead-silent at the first QLab seek of the night. Probably
   the same family as the gesture-delay we chased on the 14th. COTF profile
   only; your main.sc behaviour unchanged.
+
+## 2026-07-17 — captured a stray bench edit (cotf_simple1)
+- personalities/cotf_simple1.sc: `~scoreAnchorBeat = 0;` added to ~init — found
+  sitting uncommitted on M1, almost certainly from the seek-anchor bench
+  session on the 15th (same family as ~onResync). Committing it so the branch
+  matches what the machine is actually running before your next push lands.
+  If this collides with your current work, your version wins — shout and we
+  will reconcile.
