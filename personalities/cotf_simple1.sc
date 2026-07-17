@@ -18,6 +18,7 @@ SynthDef(\simple, {|out=0, amp=0.0, freq=440, attack=0.001, decay=0.03, sustain=
 
 //------------------------------------------------------------
 ~init = ~init <> {
+	~scoreAnchorBeat = 0;
 	topEnvironment.use{
 
 		Pdef(m.ptn,
@@ -76,7 +77,7 @@ SynthDef(\simple, {|out=0, amp=0.0, freq=440, attack=0.001, decay=0.03, sustain=
 
 	// Velocity
 	// [d.sensors.velocity.x, d.sensors.velocity.y, d.sensors.velocity.z] * 30;
-	
+
 	// Acceleration
 	// [d.sensors.accelEvent.x, d.sensors.accelEvent.y, d.sensors.accelEvent.z] * 0.1;
 	// [m.accelMass, m.accelMassFiltered];

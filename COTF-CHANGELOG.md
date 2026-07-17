@@ -4,6 +4,10 @@ One entry per push batch from the Concerts of the Future side, newest first: wha
 why, and what (if anything) behaves differently on your machine. The intent is that nothing
 here ever changes how AirKit behaves for you — if it does, that's a bug, tell us.
 
+## 2026-07-17 — Room 3 physical chair speakers (cotf)
+- **Fix (same day, bench-caught):** the outputMode whitelist used `Array.includes`, which is identity-based in SC and always false for Strings — the env default and the OSC command were both silently ignored. Now `includesEqual` (commit 9ce7500). Verified live on M1: boot line reads `outputMode physical`, crossfade proven by ear both directions.
+- `\cotfMonitor` now dual-writes: stereo → BlackHole (webrtcGain, unchanged path) + mono sum → MOTU outs 12–16 per seat (physicalGain). Exactly one gain active; crossfade via new `/airkit/outputMode <mode> [fadeSec]` (Room 3 only, additive). Boot default from `COTF_OUTPUT_MODE` env; absent env = webrtc-only, i.e. behaviour before this change. Nothing changes for main.sc / Room 2.
+
 ## 2026-07-16 — Docs-only: source-port convention + transport orchestration + Room 2 monitor heads-up
 
 No code changes at all, just catching `API.md` up to how our side actually talks to yours — nothing
@@ -121,3 +125,11 @@ needs the Beethoven WAV at 48 kHz (yours can stay 44.1k).
   instruments went dead-silent at the first QLab seek of the night. Probably
   the same family as the gesture-delay we chased on the 14th. COTF profile
   only; your main.sc behaviour unchanged.
+
+## 2026-07-17 — captured a stray bench edit (cotf_simple1)
+- personalities/cotf_simple1.sc: `~scoreAnchorBeat = 0;` added to ~init — found
+  sitting uncommitted on M1, almost certainly from the seek-anchor bench
+  session on the 15th (same family as ~onResync). Committing it so the branch
+  matches what the machine is actually running before your next push lands.
+  If this collides with your current work, your version wins — shout and we
+  will reconcile.
