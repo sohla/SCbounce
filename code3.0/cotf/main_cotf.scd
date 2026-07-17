@@ -61,8 +61,9 @@ s.waitForBoot({
     // (/airkit/outputMode crossfades); the inactive side is HARD 0 because the
     // chair amps are powered in both modes. gain/trim semantics unchanged.
     SynthDef(\cotfMonitor, { |in, out, physOut = 0, gain = 1, lagT = 0.5, trim = 1,
-                              webrtcGain = 1, physicalGain = 0, modeLagT = 0.5|
-        var sig = In.ar(in, 2) * gain.lag(lagT) * trim;
+                              webrtcGain = 1, physicalGain = 0, modeLagT = 0.5,
+                              masterGain = 1, masterLagT = 0.5|
+        var sig = In.ar(in, 2) * gain.lag(lagT) * trim * masterGain.lag(masterLagT);
         Out.ar(out, sig * webrtcGain.lag(modeLagT));
         Out.ar(physOut, sig.sum * 0.7071 * physicalGain.lag(modeLagT));
     }).add;
@@ -127,6 +128,32 @@ s.waitForBoot({
             "[COTF] outputMode -> % (fade %s)".format(mode, fade).postln;
         };
     }, '/airkit/outputMode');
+
+    // --- [COTF] /airkit/masterLevel <linearGain> [fadeSec=0.5] (API.md) ------
+    // Per-room overall output level, applied to every seat monitor. Additive:
+    // independent of gain (voiceMute's 0/1) and trim (the boot-fixed room pad).
+    // M0 owns persistence (settings) and re-asserts on our dead->alive.
+    OSCdef(\cotfMasterLevel, { |msg|
+        var level = msg[1].asFloat.clip(0, 4.0);
+        var fade = (msg[2] ? 0.5).asFloat.max(0.05);
+        ~cotfMasterLevel = level;
+        ~cotfMonitors.do { |syn| syn.set(\masterLagT, fade, \masterGain, level) };
+        "[COTF] masterLevel -> % (fade %s)".format(level.round(0.001), fade).postln;
+    }, '/airkit/masterLevel');
+
+    // --- [COTF] /airkit/testTone <seat 1-5> [durSec=1.0] (API.md) -----------
+    // Speaker-test burst through the seat's monitor chain (so it proves
+    // masterGain + outputMode + the physical/webrtc leg end to end).
+    OSCdef(\cotfTestTone, { |msg|
+        var seat = msg[1].asInteger.clip(1, 5);
+        var dur = (msg[2] ? 1.0).asFloat.clip(0.1, 5.0);
+        ~cotfSeatBus.at(seat) !? { |bus|
+            { SinOsc.ar(440 * seat.midiratio.max(1), 0, 0.25)
+                * EnvGen.kr(Env.linen(0.02, dur - 0.1, 0.08), doneAction: 2) ! 2 }
+                .play(s, bus.index, addAction: \addToHead);
+            "[COTF] testTone seat % (%s)".format(seat, dur).postln;
+        };
+    }, '/airkit/testTone');
 
     NetAddr.localAddr.sendMsg("/airkit/startOSCListening", NetAddr.langPort);
 

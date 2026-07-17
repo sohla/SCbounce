@@ -83,6 +83,8 @@ saved seats.
 | `/airkit/getState` | — | replies `/airkit/state/reply <name>` to sender |
 | `/airkit/voiceMute` | `devicePort muted(0|1) [fadeSec=1]` | real audio mute on the device's monitor gain; pattern keeps playing so unmute is instant and beat-synced |
 | `/airkit/outputMode` | `"physical"\|"webrtc" [fadeSec=0.5]` | COTF Room 3 only: crossfade all five seat monitors between the MOTU chair-speaker outs (12–16, mono) and the BlackHole webrtc buses. Inactive side is hard 0. Room 2 ignores it. Boot default: env `COTF_OUTPUT_MODE` (absent = webrtc). |
+| `/airkit/masterLevel` | `linearGain(0–4.0) [fadeSec=0.5]` | per-room overall output level, applied to all five seat monitors independently of voiceMute (0/1) and the boot-fixed room trim. M0 owns persistence (settings) and re-asserts on both Room 2 and Room 3 dead→alive. |
+| `/airkit/testTone` | `seat(1–5) [durSec=1.0]` | speaker-test burst (440 Hz × seat.midiratio) routed through the seat's monitor chain, proving masterGain + outputMode + the physical/webrtc leg end to end. |
 
 ## Personality environment contract (informational)
 
