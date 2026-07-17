@@ -2,8 +2,7 @@ var m = ~model;
 var ob = ~outBus ? 0; // capture NOW — ~init bodies run under topEnvironment.use
 var synth;
 // Wrap ~scoreVoicePool pitches into a single octave starting here (MIDI).
-// 69 = A4 (default). Change to move the wrapped octave up or down.
-var baseMidi = 69;
+var baseMidi = 60; // C4
 var lastTime = 0;
 var tuneTime = 0;
 
@@ -131,7 +130,9 @@ SynthDef(\simple, {|out=0, amp=0.0, freq=440, attack=0.001, decay=0.03, sustain=
 };
 
 ~curtainNext = {|d|
-	synth.set(\amp, -20.dbamp);
+
+	var amp = (m.accelMass + m.rrateMass).lincurve(0, 1.0, -70, -20, 4);
+	synth.set(\amp, amp.dbamp);
 	synth.set(\lagAttack, 0.4);
 	synth.set(\lagRelease, 2.0);
 };
