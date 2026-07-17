@@ -199,9 +199,10 @@ var interpretPersonality = {|d|
         // State-gated ~next variants. Called from procRout in addition to
         // ~next, only when the current room state matches. Same signature
         // as ~next: receives device `d`, runs at IMU rate (~30 Hz).
-        ~idleNext   = { |d| };  // only when ~roomState == \idle
-        ~tuningNext = { |d| };  // only when ~roomState == \tuning
-        ~pieceNext  = { |d| };  // only when ~roomState == \piece
+        ~idleNext    = { |d| };  // only when ~roomState == \idle
+        ~tuningNext  = { |d| };  // only when ~roomState == \tuning
+        ~pieceNext   = { |d| };  // only when ~roomState == \piece
+        ~curtainNext = { |d| };  // only when ~roomState == \curtain
 
         //------------------------------------------------------------
         interpret(str);
@@ -245,9 +246,10 @@ var createProcRout = {|d, index|
                     // conductorController), so we read it explicitly since
                     // we're inside d.env.use.
                     switch(topEnvironment[\roomState],
-                        \idle,   { ~idleNext.(d) },
-                        \tuning, { ~tuningNext.(d) },
-                        \piece,  { ~pieceNext.(d) }
+                        \idle,    { ~idleNext.(d) },
+                        \tuning,  { ~tuningNext.(d) },
+                        \piece,   { ~pieceNext.(d) },
+                        \curtain, { ~curtainNext.(d) }
                     );
                 });
                 (~secs.()).yield;

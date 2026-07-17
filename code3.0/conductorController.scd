@@ -196,7 +196,13 @@ s.waitForBoot({
                 chordAmp    = 0.08 + (0.20 * p["loudness"].asFloat);
                 chordCutoff = 600 + (3000 * p["tension"].asFloat);
 
-                ~scoreVoicePool = halves[half].collect(_.asInteger);
+                // Bridge for malformed score entries: if halves[half] is nil
+                // or empty (fitted_notes[half] = []), fall back to A4 [69] so
+                // personalities never see an empty ctx.voicePool. Preferred
+                // long-term fix is upstream in the score exporter — this is a
+                // safety net.
+                ~scoreVoicePool = (halves[half] ?? { [] }).collect(_.asInteger);
+                if (~scoreVoicePool.isEmpty) { ~scoreVoicePool = [69] };
                 ~scoreVoiceAmp  = voiceAmp;
 
                 // Change-detection: build a comparable string/int for each
@@ -280,6 +286,12 @@ s.waitForBoot({
 
                 ~addr.sendMsg("/beat", i);
             };
+            // Score exhausted (loop ran to end, not interrupted). Signal
+            // curtain state via OSC-to-self so the existing OSCdef path
+            // handles logging + ~onRoomState dispatch. On manual ~stop
+            // the .do loop is aborted mid-iteration and this line is
+            // never reached — curtain only fires on natural completion.
+            ~addr.sendMsg("/airkit/state", "curtain");
         }).play(SystemClock);
     };
 
@@ -343,14 +355,15 @@ s.waitForBoot({
     OSCdef(\conductorState, { |msg|
         var new = msg[1].asString.asSymbol;
         var old = ~roomState;
-        if ([\idle, \tuning, \piece].includes(new).not) {
+        if ([\idle, \tuning, \piece, \curtain].includes(new).not) {
             "unknown /airkit/state: %".format(msg[1]).postln;
         } {
             ~roomState = new;
             switch(new,
-                \idle,   { ~stop.value },
-                \tuning, { ~stop.value; ~scoreVoicePool = [69]; ~scoreVoiceAmp = 0.15; },
-                \piece,  { }
+                \idle,    { ~stop.value },
+                \tuning,  { ~stop.value; ~scoreVoicePool = [69]; ~scoreVoiceAmp = 0.15; },
+                \piece,   { },
+                \curtain, { }  // internal trigger when score exhausts; personality decides tail behaviour
             );
             block {
                 var stateCtx = (state: new, prevState: old, stateChanged: true);

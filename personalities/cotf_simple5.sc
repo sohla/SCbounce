@@ -2,8 +2,12 @@ var m = ~model;
 var ob = ~outBus ? 0; // capture NOW — ~init bodies run under topEnvironment.use
 var synth;
 // Wrap ~scoreVoicePool pitches into a single octave starting here (MIDI).
-// 60 = C4. Change to move the wrapped octave up or down.
-var baseMidi = 60;
+// 69 = A4 (default). Change to move the wrapped octave up or down.
+var baseMidi = 69;
+var lastTime = 0;
+var tuneTime = 0;
+
+var ideleNotes = [45,49,52,57,52,49,45,46,50,53,58,53,50,46,47,51,54,59,54,51,47,46,50,53,58,53,50,46];
 
 m.accelMassFilteredAttack = 0.98;
 m.accelMassFilteredDecay = 0.2;
@@ -13,10 +17,11 @@ m.gyroFilteredAttack = 0.7;
 m.gyroFilteredDecay = 0.7;
 
 //------------------------------------------------------------
-SynthDef(\simple, {|out=0, amp=0.0, freq=440, attack=0.001, decay=0.03, sustain=0.8, release=0.59, gate=1|
+SynthDef(\simple, {|out=0, amp=0.0, freq=440, attack=0.001, decay=0.03, sustain=0.8, release=0.59, gate=1, lagAttack=0.02, lagRelease=1.9, ffreq = 440|
 	var env = EnvGen.kr(Env.adsr(attack, decay, sustain, release), gate, doneAction: Done.freeSelf);
-	var sig = Saw.ar(freq,0.2,0.1) + SinOsc.ar(freq/2,0,1)!2;
-    Out.ar(out, sig * env * amp.lagud(0.03, 2.1));
+	var sig = Saw.ar(freq ,0.2,0.1) + SinOsc.ar(freq/2,0,1);
+	var filter = RLPF.ar(sig, ffreq, 0.2);
+    Out.ar(out, filter!2 * env * amp.lagud(lagAttack, lagRelease));
 }).add;
 
 //------------------------------------------------------------
@@ -39,6 +44,7 @@ SynthDef(\simple, {|out=0, amp=0.0, freq=440, attack=0.001, decay=0.03, sustain=
 			\decay,   0.1,
 			\sustain, 1.0,
 			\release, 1.0,
+			\ffreq,   440,
 		]);
 	};
 };
@@ -51,15 +57,84 @@ SynthDef(\simple, {|out=0, amp=0.0, freq=440, attack=0.001, decay=0.03, sustain=
 //------------------------------------------------------------
 // Gesture-driven amp. Runs at ~30 Hz on AppClock (IMU rate) — timing
 // is not critical, response should feel live, so no s.bind.
-~next = {|d|
-	var amp = (m.accelMass + m.rrateMass).lincurve(0, 2.0, -90, -2, -1);
-	synth.set(\amp, 0);
-	// 	var amp = (m.accelMass + m.rrateMass).lincurve(0, 2.0, -90, -2, -1);
-	// synth.set(\amp, 0);
+// ~next = {|d|
+// 	// var amp = (m.accelMass + m.rrateMass).lincurve(0, 2.0, -90, -2, -1);
+// 	// synth.set(\amp, 0);
+// 	// 	var amp = (m.accelMass + m.rrateMass).lincurve(0, 2.0, -90, -2, -1);
+// 	// synth.set(\amp, 0);
+
+// };
+
+//------------------------------------------------------------
+// State-gated tick hooks. Each fires at IMU rate (~30 Hz) in addition to
+// ~next, only while the matching ~roomState is current. Throttled postlns
+// (once/sec) so we can see the routing without spamming the post window.
+~idleNext = {|d|
+
+	var amp = (m.accelMass + m.rrateMass).lincurve(0, 1.0, -70, -2, 4);
+	var ffreq = ((d.sensors.gyroEvent.x / pi).fold(-0.5,0.5) * 2).lincurve(-1.0, 1.0, 500, 12000, 3);
+
+	synth.set(\amp, amp.dbamp);
+	synth.set(\lagAttack, 0.4);
+	synth.set(\lagRelease, 1.1);
+	synth.set(\ffreq, ffreq);
+	
+	if(amp < -69, {
+		if(TempoClock.beats > (lastTime + 0.3),{
+			ideleNotes = ideleNotes.rotate(-1);
+			{synth.set(\freq, (ideleNotes[0]).midicps)}.defer(0.4);
+			lastTime = TempoClock.beats;
+		});
+	});
+	
+};
+
+~tuningNext = {|d|
+
+	var amp = (m.accelMass + m.rrateMass).lincurve(0, 1.0, -70, -2, 4);
+	var ffreq = ((d.sensors.gyroEvent.x / pi).fold(-0.5,0.5) * 2).lincurve(-1.0, 1.0, 500, 12000, 3);
+	var fmod = ((d.sensors.gyroEvent.y / pi.half).lincurve(-1.0,1.0,0.95,1.03,3));
+	var famp = 0.0;
+	if( (TempoClock.beats-tuneTime) < 20, {
+		((TempoClock.beats-tuneTime) / 20.0).postln;
+		famp = ((TempoClock.beats-tuneTime) / 25.0) * 0.2;
+	});
+
+	fmod = ((d.sensors.gyroEvent.y / pi.half).lincurve(-1.0,1.0,1-famp,1.0+famp,-1));
+
+
+	synth.set(\amp, amp.dbamp);
+	synth.set(\lagAttack, 0.4);
+	synth.set(\lagRelease, 2.1);
+	synth.set(\ffreq, ffreq);
+	synth.set(\freq, (ideleNotes[1]).midicps * fmod);
+	
+	if(amp < -69, {
+		if(TempoClock.beats > (lastTime + 1),{
+			lastTime = TempoClock.beats;
+		});
+	});
+
 
 };
 
+~pieceNext = {|d|
 
+	var amp = (m.accelMass + m.rrateMass).lincurve(0, 2.0, -90, -2, -1);
+	var ffreq = ((d.sensors.gyroEvent.x / pi).fold(-0.5,0.5) * 2).lincurve(-1.0, 1.0, 500, 12000, 3);
+
+	synth.set(\amp, amp.dbamp);
+	synth.set(\lagAttack, 0.1);
+	synth.set(\lagRelease, 1.01);
+	synth.set(\ffreq, ffreq);
+
+};
+
+~curtainNext = {|d|
+	synth.set(\amp, -20.dbamp);
+	synth.set(\lagAttack, 0.4);
+	synth.set(\lagRelease, 2.0);
+};
 
 //------------------------------------------------------------
 // Beat-locked pitch. ctx.voicePool is the current half's MIDI pitches
@@ -72,7 +147,6 @@ SynthDef(\simple, {|out=0, amp=0.0, freq=440, attack=0.001, decay=0.03, sustain=
 		synth.set(\freq,
 			((ctx.voicePool.first.asInteger % 12) + baseMidi - 24).midicps);
 	};
-	ctx.state.postln;
 };
 
 ~onChord = {|ctx|
@@ -83,19 +157,35 @@ SynthDef(\simple, {|out=0, amp=0.0, freq=440, attack=0.001, decay=0.03, sustain=
 };
 
 ~onBar = {|ctx|
-	"onBar: %".format(ctx.barIdx).postln;
+	// "onBar: %".format(ctx.barIdx).postln;
 };
 
 ~onPhrase = {|ctx|
-	"onPhrase: %".format(ctx.phraseId).postln;
+	// "onPhrase: %".format(ctx.phraseId).postln;
 };
 
 ~onSection = {|ctx|
-	"onSection: %".format(ctx.sectionId).postln;
+	// "onSection: %".format(ctx.sectionId).postln;
 };
 
+//------------------------------------------------------------
+// State change hook
 ~onRoomState = {|ctx|
-	"onRoomState: % -> %".format(ctx.prevState, ctx.state).postln;
+	// "onRoomState: % -> %".format(ctx.prevState, ctx.state).postln;
+
+	switch(ctx.state,
+		\idle, {
+
+		},
+		\tuning, {
+			tuneTime = TempoClock.beats;
+		},
+		\piece, {
+		},
+		\curtain, {
+			// fired internally by the conductor when the score routine finishes
+		},
+	);
 };
 
 
@@ -104,7 +194,34 @@ SynthDef(\simple, {|out=0, amp=0.0, freq=440, attack=0.001, decay=0.03, sustain=
 ~plotMin = -1;
 ~plotMax = 1;
 ~plot = { |d,p|
-	[(m.accelMass + m.rrateMass).half, m.accelMassFiltered];
-	// [(m.accelMassFiltered + m.rrateMassFiltered).half, m.accelMassFiltered];
+	// [yellow, magenta, cyan]
+
+	// Velocity
+	// [d.sensors.velocity.x, d.sensors.velocity.y, d.sensors.velocity.z] * 30;
+	
+	// Acceleration
+	// [d.sensors.accelEvent.x, d.sensors.accelEvent.y, d.sensors.accelEvent.z] * 0.5;
+	// [m.accelMass, m.accelMassFiltered];
+	// [d.sensors.accelEvent.x.abs * d.sensors.accelEvent.y.abs, m.accelMassFiltered];
+	// Rotation
+	// [d.sensors.rrateEvent.x, d.sensors.rrateEvent.y, d.sensors.rrateEvent.z].abs;
+	// [[d.sensors.rrateEvent.x, d.sensors.rrateEvent.y, d.sensors.rrateEvent.z].sumabs];
+
+	// [m.accelMassFiltered * 3, m.rrateMassFiltered * 10, (d.sensors.gyroEvent.z / pi).fold(-0.5,0.5) * 2];
+
+	// Gyro
+		[(d.sensors.gyroEvent.x / pi).fold(-0.5,0.5) * 2];//roll
+	// [(d.sensors.gyroEvent.y / pi.half)];//up down
+	// [(d.sensors.gyroEvent.z / pi).fold(-0.5,0.5) * 2];//left right
+	// [(d.sensors.gyroEvent.x / pi), (d.sensors.gyroEvent.y / pi.half), (d.sensors.gyroEvent.z / pi)];
+
+	// [[(d.sensors.gyroEvent.x / pi).fold(-0.5,0.5) * 2, (d.sensors.gyroEvent.y / pi.half), (d.sensors.gyroEvent.z / pi).fold(-0.5,0.5) * 2].sum] / 3;
+
+	
+	// [m.gyroXFiltered, m.gyroYFiltered, m.gyroZFiltered];
+
+	// [(d.sensors.gyroEvent.y / pi.half).lincurve(-1.0,1.0,-1.0,1.0,3)];
+	// [d.port,d.sensors.digiInEvent].postln;
+	// [d.sensors.digiInEvent[0],m.gyroXFiltered, m.gyroYFiltered];
 	
 };

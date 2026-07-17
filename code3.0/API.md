@@ -79,14 +79,30 @@ saved seats.
 ### [COTF] Room state & voice mute
 | Address | Args | Notes |
 |---|---|---|
-| `/airkit/state` | `idle\|tuning\|piece` | room-wide. `idle`: transport stopped, free play. `tuning`: transport stopped, `~scoreVoicePool` pinned to `[69]` (A4). `piece`: conductor owns pool/hooks; transport still started by go/seek. Dispatches `~onState.(old, new)` to personalities. |
+| `/airkit/state` | `idle\|tuning\|piece\|curtain` | room-wide. `idle`: transport stopped, free play. `tuning`: transport stopped, `~scoreVoicePool` pinned to `[69]` (A4). `piece`: conductor owns pool/hooks; transport still started by go/seek. `curtain`: piece is over; transport untouched, personalities decide tail behaviour. Can be sent externally, but is **also triggered internally** by the conductor when the score walker exhausts (natural end — not on manual `~stop`). Dispatches `~onRoomState.(ctx)` to personalities, where `ctx = (state:, prevState:, stateChanged:)`. |
 | `/airkit/getState` | — | replies `/airkit/state/reply <name>` to sender |
 | `/airkit/voiceMute` | `devicePort muted(0|1) [fadeSec=1]` | real audio mute on the device's monitor gain; pattern keeps playing so unmute is instant and beat-synced |
 
 ## Personality environment contract (informational)
 
-Personalities may override: `~init`, `~deinit`, `~next`, `~onEvent`, `~plot`,
-beat hooks (`~onTick ~onHalf ~onBeat ~onBar ~onPhrase ~onSection ~onChord
-~onKey ~onScale`), `~onResync`, **[COTF]** `~onState`. Output convention:
-route audio via `~outBus` (`\out, ~outBus` in Pbinds / `out:` on Synths);
-defaults to 0 on composer machines, points at a per-seat bus under COTF.
+Personalities may override:
+
+- Lifecycle: `~init`, `~deinit`, `~plot`.
+- IMU-rate tick: `~next` (always fires when device is enabled, ~30 Hz).
+- **[COTF]** state-gated ticks (fire alongside `~next` only while the
+  matching `~roomState` is current, same signature `|d|`, same rate):
+  `~idleNext`, `~tuningNext`, `~pieceNext`, `~curtainNext`.
+- Beat-aligned hooks dispatched from the conductor's score Routine
+  (single ctx Event arg): `~onTick`, `~onHalf`, `~onBeat`, `~onBar`,
+  `~onPhrase`, `~onSection`, `~onChord`, `~onKey`, `~onScale`. ctx
+  fields: `idx, beatInBar, isDown, isTrueBeat, barIdx, half, sectionId,
+  phraseId, chord, key, scale` (each with matching `prev*` +
+  `*Changed` where applicable), `voicePool`, `voiceAmp`, `state`
+  (current `~roomState`), `p` (score bar entry), `m` (meta bar entry).
+- Clock re-anchor: `~onResync.(idx)`.
+- **[COTF]** Room state change: `~onRoomState.(ctx)` with `ctx = (state:,
+  prevState:, stateChanged:)`.
+
+Output convention: route audio via `~outBus` (`\out, ~outBus` in Pbinds
+/ `out:` on Synths); defaults to 0 on composer machines, points at a
+per-seat bus under COTF.
