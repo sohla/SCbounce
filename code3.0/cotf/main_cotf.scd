@@ -116,7 +116,8 @@ s.waitForBoot({
     OSCdef(\cotfOutputMode, { |msg|
         var mode = msg[1].asString;
         var fade = (msg[2] ? 0.5).asFloat.max(0.05);
-        if ((~cotfRoom == 3) and: { ["physical", "webrtc"].includes(mode) }) {
+        // includesEqual, NOT includes (identity trap — see config.scd note).
+        if ((~cotfRoom == 3) and: { ["physical", "webrtc"].includesEqual(mode) }) {
             ~cotfOutputMode = mode;
             ~cotfMonitors.do { |syn|
                 syn.set(\modeLagT, fade,

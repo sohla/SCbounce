@@ -56,7 +56,10 @@ s.addr = NetAddr("127.0.0.1", if(room == 2, 57111, 57110));
 // preserving pre-chair-speaker behaviour (composer default untouched).
 ~cotfPhysicalBus = { |seat| 11 + (seat - 1) };
 ~cotfOutputMode = "COTF_OUTPUT_MODE".getenv ? "webrtc";
-if (["physical", "webrtc"].includes(~cotfOutputMode).not) { ~cotfOutputMode = "webrtc" };
+// includesEqual, NOT includes: SC Array.includes is identity-based, so it is
+// always false for a freshly-built String (bench-caught 2026-07-17 — the env
+// value was silently discarded and boot forced webrtc).
+if (["physical", "webrtc"].includesEqual(~cotfOutputMode).not) { ~cotfOutputMode = "webrtc" };
 
 // QLab owns Beethoven audio at the show (-> "0"). Bench day: "1" (SC DiskIn
 // plays Beethoven on the monitors, no QLab audio needed).
