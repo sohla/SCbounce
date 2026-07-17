@@ -1,7 +1,7 @@
 
 var m = ~model;
 var ob = ~outBus ? 0; // capture NOW — ~init bodies run under topEnvironment.use
-
+var lastTime = 0;
 //------------------------------------------------------------
 
 var noteToMidi = { |noteName|
@@ -116,7 +116,7 @@ SynthDef(\funBass, {
 				\instrument, \stereoSampler,
 				\out, ob,
 				\type, \customEvent,
-				\dur, 0.5,
+				// \dur, 1,
 				\note, 0,
 				\root, Pfunc { ~scoreVoicePool.choose.wrap(0,11).asInteger},
 				// \octave, 6,
@@ -126,7 +126,6 @@ SynthDef(\funBass, {
 		~scoreAnchorBeat = 3;
 
 		Pdef(m.ptn).play(~beatClock, quant: ~scoreBeatsPerBar * ~scoreEventsPerBeat);
-
 	};
 };
 
@@ -151,12 +150,72 @@ SynthDef(\funBass, {
 ~next = {|d|
 
 	// var amp = m.accelMassFiltered.lincurve(0,2.4,-50,-10,-1);
-	var amp = (m.accelMassFiltered + m.rrateMassFiltered).half.lincurve(0,1.5,-50,-13,-1);
-	var oct = (d.sensors.gyroEvent.y / pi.half).lincurve(-1,1,4,7,1).asInteger;
+	var amp = (m.accelMassFiltered + m.rrateMassFiltered).half.lincurve(0,1.5,-70,-18,-1);
+	var oct = (d.sensors.gyroEvent.y / pi.half).lincurve(-1,1,4,9,1).asInteger;
 	Pdef(m.ptn).set(\amp, amp.dbamp);
 	Pdef(m.ptn).set(\octave, oct);
 
+	// if(amp > -20, {
+		// if(TempoClock.beats > (lastTime + 1),{
+			Pdef(m.ptn).set(\dur, 0.25);
+			// lastTime = TempoClock.beats;
+		// },{
+		// });
+	// },{
+		// Pdef(m.ptn).set(\dur, 1.0);
+
+	// });
+
+
 };
+
+//------------------------------------------------------------
+// Room-state routing — Pdef stays playing across all states; per-state
+// amp is set by the state-gated ticks (~idleNext etc.) so we only hear
+// the arpeggio during \piece. This switch is a hook site for any
+// one-shot state-entry logic (e.g. reset counters, re-seed patterns).
+~onRoomState = {|ctx|
+	switch(ctx.state,
+		\idle,    { },
+		\tuning,  { },
+		\piece,   { },
+		\curtain, { }
+	);
+};
+
+//------------------------------------------------------------
+// State-gated ticks — ~next always runs (gesture → amp/octave), these
+// override amp per state so silence is enforced regardless of gesture.
+~idleNext    = {|d| Pdef(m.ptn).set(\amp, 0); };
+~tuningNext  = {|d| Pdef(m.ptn).set(\amp, 0); };
+~pieceNext   = {|d| /* gesture-driven amp already set by ~next */ };
+~curtainNext = {|d| Pdef(m.ptn).set(\amp, -60.dbamp); };
+
+//------------------------------------------------------------
+// Beat-aligned hooks. Empty stubs are placeholders — fill in as ideas
+// arise. Basic ideas populated in ~onSection and ~onBar for testing.
+~onTick    = {|ctx| /* every subdivision */ };
+~onHalf    = {|ctx| /* on half-bar change */ };
+~onBeat    = {|ctx| /* every true beat */ };
+~onBar     = {|ctx|
+	// "harp onBar %  (sec % / phr %)".format(ctx.barIdx, ctx.sectionId, ctx.phraseId).postln;
+};
+~onPhrase  = {|ctx| /* on phrase change */ };
+~onSection = {|ctx|
+	// Character shift per section: shorten dur in dev sections, hold
+	// long in intro/coda. Only kicks in when Pdef is playing (\piece).
+	// switch(ctx.sectionId,
+	// 	"intro",  { Pdef(m.ptn).set(\dur, 1.0); },
+	// 	"A",      { Pdef(m.ptn).set(\dur, 1.0); },
+	// 	"dev",    { Pdef(m.ptn).set(\dur, 0.5); },
+	// 	"B",      { Pdef(m.ptn).set(\dur, 0.5); },
+	// 	"recap",  { Pdef(m.ptn).set(\dur, 1.0); },
+	// 	"coda",   { Pdef(m.ptn).set(\dur, 2.0); }
+	// );
+};
+~onChord   = {|ctx| /* on chord change: could tilt attack/decay */ };
+~onKey     = {|ctx| /* on key change */ };
+~onScale   = {|ctx| /* on active_scale change */ };
 
 //------------------------------------------------------------
 ~plotMin = -1;

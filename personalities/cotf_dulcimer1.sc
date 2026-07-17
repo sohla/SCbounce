@@ -196,6 +196,11 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, start=0, pan=0, freq=
 		~scoreAnchorBeat = 3;
 
 		Pdef(m.ptn).play(~beatClock, quant: [~scoreBeatsPerBar * ~scoreEventsPerBeat, phase]);
+
+		// If the personality loads mid-run and the room isn't in \piece,
+		// pause immediately so the dulcimer doesn't play during \idle
+		// or \tuning while waiting for the first state transition.
+		if (~roomState != \piece) { Pdef(m.ptn).pause };
 	};
 };
 
@@ -221,6 +226,54 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, start=0, pan=0, freq=
 	Pdef(m.ptn).set(\amp, amp.dbamp);
 	Pdef(m.ptn).set(\octave, oct);
 };
+
+//------------------------------------------------------------
+// Room-state routing — pause the Pdef outside \piece so the dulcimer
+// melody only plays during the actual piece. On \piece, resume with
+// the same [barLen, phase] quant as ~init so the pattern re-aligns.
+~onRoomState = {|ctx|
+	switch(ctx.state,
+		\idle,    { Pdef(m.ptn).pause; },
+		\tuning,  { Pdef(m.ptn).pause; },
+		\piece,   { Pdef(m.ptn).resume(~beatClock, quant: [~scoreBeatsPerBar * ~scoreEventsPerBeat, phase]); },
+		\curtain, { /* let ~curtainNext fade; pause happens on next state change */ },
+	);
+};
+
+//------------------------------------------------------------
+// State-gated ticks — ~next always runs (gesture → amp/octave), these
+// override amp per state so silence is enforced regardless of gesture.
+~idleNext    = {|d| Pdef(m.ptn).set(\amp, 0); };
+~tuningNext  = {|d| Pdef(m.ptn).set(\amp, 0); };
+~pieceNext   = {|d| /* gesture-driven amp already set by ~next */ };
+~curtainNext = {|d| Pdef(m.ptn).set(\amp, -60.dbamp); };
+
+//------------------------------------------------------------
+// Beat-aligned hooks. Empty stubs are placeholders — fill in as ideas
+// arise. Basic ideas populated in ~onSection and ~onBar for testing.
+~onTick    = {|ctx| /* every subdivision */ };
+~onHalf    = {|ctx| /* on half-bar change */ };
+~onBeat    = {|ctx| /* every true beat */ };
+~onBar     = {|ctx|
+	// "dulcimer onBar %  (sec % / phr %)".format(ctx.barIdx, ctx.sectionId, ctx.phraseId).postln;
+};
+~onPhrase  = {|ctx| /* on phrase change */ };
+~onSection = {|ctx|
+	// Character shift per section: scale the pattern's amp base — quieter
+	// in intro/coda, fuller in dev sections. Applied on top of ~next's
+	// gesture amp so it acts as a section-wide loudness envelope.
+	switch(ctx.sectionId,
+		"intro",  { Pdef(m.ptn).set(\amp, -18.dbamp); },
+		"A",      { Pdef(m.ptn).set(\amp, -12.dbamp); },
+		"dev",    { Pdef(m.ptn).set(\amp,  -8.dbamp); },
+		"B",      { Pdef(m.ptn).set(\amp, -10.dbamp); },
+		"recap",  { Pdef(m.ptn).set(\amp, -12.dbamp); },
+		"coda",   { Pdef(m.ptn).set(\amp, -20.dbamp); }
+	);
+};
+~onChord   = {|ctx| /* on chord change */ };
+~onKey     = {|ctx| /* on key change */ };
+~onScale   = {|ctx| /* on active_scale change */ };
 
 //------------------------------------------------------------
 ~plotMin = -1;

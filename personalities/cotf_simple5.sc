@@ -119,12 +119,12 @@ SynthDef(\simple, {|out=0, amp=0.0, freq=440, attack=0.001, decay=0.03, sustain=
 
 ~pieceNext = {|d|
 
-	var amp = (m.accelMass + m.rrateMass).lincurve(0, 2.0, -90, -2, -1);
+	var amp = (m.accelMass + m.rrateMass).lincurve(0, 2.0, -90, -10, -1);
 	var ffreq = ((d.sensors.gyroEvent.x / pi).fold(-0.5,0.5) * 2).lincurve(-1.0, 1.0, 500, 12000, 3);
 
 	synth.set(\amp, amp.dbamp);
-	synth.set(\lagAttack, 0.1);
-	synth.set(\lagRelease, 1.01);
+	synth.set(\lagAttack, 0.002);
+	synth.set(\lagRelease, 0.9);
 	synth.set(\ffreq, ffreq);
 
 };
@@ -146,7 +146,7 @@ SynthDef(\simple, {|out=0, amp=0.0, freq=440, attack=0.001, decay=0.03, sustain=
 ~onTick = {|ctx|
 	s.bind {
 		synth.set(\freq,
-			((ctx.voicePool.first.asInteger % 12) + baseMidi - 24).midicps);
+			((ctx.voicePool.first.asInteger % 12) + baseMidi - 12).midicps);
 	};
 };
 
