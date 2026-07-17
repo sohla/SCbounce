@@ -63,9 +63,14 @@ All on the instance's sclang port unless noted.
 ### [COTF] Transport orchestration
 | Trigger | Action | Notes |
 |---|---|---|
-| Room 3 arrival | `/airkit/state tuning` | sent on group arrival, before any transport call |
-| Staff Start | `/airkit/state piece` | sent **before** the QLab cue |
+| Room 3 arrival | `/airkit/state idle` | sent on group arrival (2026-07-17: was `tuning`) |
 | Stop / reset / clear | `/airkit/state idle` | room reset to free play |
+
+**Single-writer rule (2026-07-17):** the COTF server now sends **only `idle`**.
+`tuning` and `piece` come from QLab's own timeline OSC cues (network patch
+`airkit-room3` → 127.0.0.1:57120) at the musically-correct moments, and
+`curtain` fires internally from the conductor at score end — the server sends
+neither. The admin manual-override endpoint can still send any state.
 
 The COTF server **never sends `/airkit/go`** — the conductor is QLab-slaved
 via the Network cue; QLab's cue drives transport, COTF only drives `state`.

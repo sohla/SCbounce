@@ -4,6 +4,26 @@ One entry per push batch from the Concerts of the Future side, newest first: wha
 why, and what (if anything) behaves differently on your machine. The intent is that nothing
 here ever changes how AirKit behaves for you — if it does, that's a bug, tell us.
 
+## 2026-07-18 (overnight) — Master level + speaker-test tone + state single-writer (cotf)
+
+Two small additive OSC controls on `\cotfMonitor` (both rooms, `main_cotf.scd` only — your
+`main.sc` untouched), plus a change in *which* states our server sends (no AirKit code change):
+
+- **`/airkit/masterLevel <linearGain> [fadeSec=0.5]`** — per-room overall output level, a new
+  independent `masterGain` multiplier on every seat monitor (alongside `gain`/voiceMute and the
+  Room 2 `trim` pad, never through them). Default 1 = exactly today's loudness; the level is
+  dialled from our admin iPad (−24…+6 dB) and re-pushed automatically after every engine restart,
+  same as seat personalities. Never receiving the message = nothing changes.
+- **`/airkit/testTone <seat 1-5> [durSec=1.0]`** — a short sine burst into that seat's monitor
+  input bus, for our start-of-day speaker test (proves the whole chain incl. masterGain +
+  outputMode). One-shot, self-freeing, harmless to a running piece but we only fire it between
+  groups.
+- **State single-writer (server-side change, heads-up):** our server now sends **only
+  `/airkit/state idle`** (on Room 3 arrival and on stop/reset/clear). `tuning`/`piece` come from
+  the QLab timeline cues, `curtain` from your conductor's own score-end trigger — so AirKit will
+  no longer see a server `tuning` on group walk-in or a server `piece` at staff Start. API.md's
+  transport-orchestration table updated to match.
+
 ## 2026-07-17 — Room 3 physical chair speakers (cotf)
 - **Fix (same day, bench-caught):** the outputMode whitelist used `Array.includes`, which is identity-based in SC and always false for Strings — the env default and the OSC command were both silently ignored. Now `includesEqual` (commit 9ce7500). Verified live on M1: boot line reads `outputMode physical`, crossfade proven by ear both directions.
 - `\cotfMonitor` now dual-writes: stereo → BlackHole (webrtcGain, unchanged path) + mono sum → MOTU outs 12–16 per seat (physicalGain). Exactly one gain active; crossfade via new `/airkit/outputMode <mode> [fadeSec]` (Room 3 only, additive). Boot default from `COTF_OUTPUT_MODE` env; absent env = webrtc-only, i.e. behaviour before this change. Nothing changes for main.sc / Room 2.
