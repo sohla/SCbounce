@@ -55,8 +55,16 @@ s.waitForBoot({
     // `trim` is a fixed, per-room output pad — distinct from `gain`, which the
     // per-seat voiceMute owns (0/1). voiceMute never touches trim, so the pad
     // survives every mute/unmute.
-    SynthDef(\cotfMonitor, { |in, out, gain = 1, lagT = 0.5, trim = 1|
-        Out.ar(out, In.ar(in, 2) * gain.lag(lagT) * trim);
+    // Dual-destination monitor (2026-07-17 chair speakers): stereo to the
+    // BlackHole webrtc bus (as ever) behind webrtcGain, mono sum to the seat's
+    // MOTU chair out behind physicalGain. Exactly one gain is 1 at a time
+    // (/airkit/outputMode crossfades); the inactive side is HARD 0 because the
+    // chair amps are powered in both modes. gain/trim semantics unchanged.
+    SynthDef(\cotfMonitor, { |in, out, physOut = 0, gain = 1, lagT = 0.5, trim = 1,
+                              webrtcGain = 1, physicalGain = 0, modeLagT = 0.5|
+        var sig = In.ar(in, 2) * gain.lag(lagT) * trim;
+        Out.ar(out, sig * webrtcGain.lag(modeLagT));
+        Out.ar(physOut, sig.sum * 0.7071 * physicalGain.lag(modeLagT));
     }).add;
     s.sync;
 
@@ -70,9 +78,17 @@ s.waitForBoot({
     5.do { |i|
         var seat = i + 1;
         var bus = Bus.audio(s, 2);
+        var physical = (~cotfRoom == 3) and: { ~cotfOutputMode == "physical" };
         ~cotfSeatBus.put(seat, bus);
         ~cotfMonitors.put(seat,
-            Synth.tail(s, \cotfMonitor, [\in, bus.index, \out, ~cotfFinalBus.(seat), \trim, ~cotfMonitorTrim]));
+            Synth.tail(s, \cotfMonitor, [
+                \in, bus.index, \out, ~cotfFinalBus.(seat), \trim, ~cotfMonitorTrim,
+                // Room 2 has no chair speakers: physOut parks on its own final
+                // bus with physicalGain pinned 0 (writes nothing audible).
+                \physOut, if(~cotfRoom == 3, { ~cotfPhysicalBus.(seat) }, { ~cotfFinalBus.(seat) }),
+                \webrtcGain, if(physical, 0, 1),
+                \physicalGain, if(physical, 1, 0),
+            ]));
     };
 
     // [COTF] latency bench tap: evaluate in the IDE to hear seat 1 on the
@@ -94,9 +110,26 @@ s.waitForBoot({
         };
     }, '/airkit/voiceMute');
 
+    // --- [COTF] /airkit/outputMode <"physical"|"webrtc"> [fadeSec=0.5] (API.md)
+    // Crossfades ALL Room 3 seats between chair-speaker and webrtc outs.
+    // Room 2 instances ignore it. Additive — never repurposes an address.
+    OSCdef(\cotfOutputMode, { |msg|
+        var mode = msg[1].asString;
+        var fade = (msg[2] ? 0.5).asFloat.max(0.05);
+        if ((~cotfRoom == 3) and: { ["physical", "webrtc"].includes(mode) }) {
+            ~cotfOutputMode = mode;
+            ~cotfMonitors.do { |syn|
+                syn.set(\modeLagT, fade,
+                    \physicalGain, if(mode == "physical", 1, 0),
+                    \webrtcGain, if(mode == "webrtc", 1, 0));
+            };
+            "[COTF] outputMode -> % (fade %s)".format(mode, fade).postln;
+        };
+    }, '/airkit/outputMode');
+
     NetAddr.localAddr.sendMsg("/airkit/startOSCListening", NetAddr.langPort);
 
-    "COTF AirKit up: room %, langPort %, scsynth %, audio %"
-        .format(~cotfRoom, NetAddr.langPort, s.addr.port, ~conductorAudioEnabled).postln;
+    "COTF AirKit up: room %, langPort %, scsynth %, audio %, outputMode %"
+        .format(~cotfRoom, NetAddr.langPort, s.addr.port, ~conductorAudioEnabled, ~cotfOutputMode).postln;
 });
 )
