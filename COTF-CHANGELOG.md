@@ -5,6 +5,7 @@ why, and what (if anything) behaves differently on your machine. The intent is t
 here ever changes how AirKit behaves for you — if it does, that's a bug, tell us.
 
 ## 2026-07-17 — Room 3 physical chair speakers (cotf)
+- **Fix (same day, bench-caught):** the outputMode whitelist used `Array.includes`, which is identity-based in SC and always false for Strings — the env default and the OSC command were both silently ignored. Now `includesEqual` (commit 9ce7500). Verified live on M1: boot line reads `outputMode physical`, crossfade proven by ear both directions.
 - `\cotfMonitor` now dual-writes: stereo → BlackHole (webrtcGain, unchanged path) + mono sum → MOTU outs 12–16 per seat (physicalGain). Exactly one gain active; crossfade via new `/airkit/outputMode <mode> [fadeSec]` (Room 3 only, additive). Boot default from `COTF_OUTPUT_MODE` env; absent env = webrtc-only, i.e. behaviour before this change. Nothing changes for main.sc / Room 2.
 
 ## 2026-07-16 — Docs-only: source-port convention + transport orchestration + Room 2 monitor heads-up
