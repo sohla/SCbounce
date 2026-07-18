@@ -2,6 +2,8 @@
 var m = ~model;
 var ob = ~outBus ? 0; // capture NOW — ~init bodies run under topEnvironment.use
 var lastTime = 0;
+var idleNotes = [0,2,4,5,7,5,4,2];
+var tuneTime = 0;
 //------------------------------------------------------------
 
 var noteToMidi = { |noteName|
@@ -34,16 +36,16 @@ var samplesLib;
 //------------------------------------------------------------
 
 m.accelMassFilteredAttack = 0.99;
-m.accelMassFilteredDecay = 0.5;
-m.rrateMassFilteredAttack = 0.99;
-m.rrateMassFilteredDecay = 0.5;
+m.accelMassFilteredDecay = 0.3;
+m.rrateMassFilteredAttack = 0.999;
+m.rrateMassFilteredDecay = 0.6;
 m.gyroFilteredAttack = 0.7;
 m.gyroFilteredDecay = 0.7;
 
 //------------------------------------------------------------
-SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, start=0, pan=0, freq=440,
+SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, start=0, pan=0, freq=440, ptch=1,
     attack=0.01, decay=0.1, sustain=0.3, release=1.2, gate=1,cutoff=20000, rq=1|
-	var lr = rate * BufRateScale.kr(bufnum);// * (freq/440.0);
+	var lr = rate * BufRateScale.kr(bufnum) * ptch;// * (freq/440.0);
 	var tone = SinOsc.ar(120 + (freq/440) * [1,1.03], 0, 0.03);
     var env = EnvGen.kr(Env.new([0, 1, 1, 0], [attack, sustain, release]), doneAction: 2);
 	var sig = PlayBuf.ar(2, bufnum, rate: [lr, lr * 1.0017], startPos: start * BufFrames.kr(bufnum), loop: 0);
@@ -98,7 +100,9 @@ SynthDef(\funBass, {
 	});
 
 	Event.addEventType(\customEvent, {|e|
-		~note = ~note + ~root + (12 * ~octave);
+		// asInteger because SC's default ~octave is 5.0 (Float); the
+		// addition promotes ~note to Float and .odd is not defined on Float.
+		~note = (~note + ~root + (12 * ~octave)).asInteger;
 		if(~note.odd,{
 			~bufnum = findSampleBuffer.(~note-1);
 				~rate = 1.midiratio;
@@ -116,7 +120,6 @@ SynthDef(\funBass, {
 				\instrument, \stereoSampler,
 				\out, ob,
 				\type, \customEvent,
-				// \dur, 1,
 				\note, 0,
 				\root, Pfunc { ~scoreVoicePool.choose.wrap(0,11).asInteger},
 				// \octave, 6,
@@ -147,27 +150,27 @@ SynthDef(\funBass, {
 
 
 //------------------------------------------------------------
-~next = {|d|
+// ~next = {|d|
 
-	// var amp = m.accelMassFiltered.lincurve(0,2.4,-50,-10,-1);
-	var amp = (m.accelMassFiltered + m.rrateMassFiltered).half.lincurve(0,1.5,-70,-18,-1);
-	var oct = (d.sensors.gyroEvent.y / pi.half).lincurve(-1,1,4,9,1).asInteger;
-	Pdef(m.ptn).set(\amp, amp.dbamp);
-	Pdef(m.ptn).set(\octave, oct);
+// 	// var amp = m.accelMassFiltered.lincurve(0,2.4,-50,-10,-1);
+// 	var amp = (m.accelMassFiltered + m.rrateMassFiltered).half.lincurve(0,1.5,-70,-18,-1);
+// 	var oct = (d.sensors.gyroEvent.y / pi.half).lincurve(-1,1,4,9,1).asInteger;
+// 	Pdef(m.ptn).set(\amp, amp.dbamp);
+// 	Pdef(m.ptn).set(\octave, oct);
 
-	// if(amp > -20, {
-		// if(TempoClock.beats > (lastTime + 1),{
-			Pdef(m.ptn).set(\dur, 0.25);
-			// lastTime = TempoClock.beats;
-		// },{
-		// });
-	// },{
-		// Pdef(m.ptn).set(\dur, 1.0);
+// 	// if(amp > -20, {
+// 		// if(TempoClock.beats > (lastTime + 1),{
+// 			Pdef(m.ptn).set(\dur, 0.25);
+// 			// lastTime = TempoClock.beats;
+// 		// },{
+// 		// });
+// 	// },{
+// 		// Pdef(m.ptn).set(\dur, 1.0);
 
-	// });
+// 	// });
 
 
-};
+// };
 
 //------------------------------------------------------------
 // Room-state routing — Pdef stays playing across all states; per-state
@@ -177,7 +180,7 @@ SynthDef(\funBass, {
 ~onRoomState = {|ctx|
 	switch(ctx.state,
 		\idle,    { },
-		\tuning,  { },
+		\tuning,  { tuneTime = TempoClock.beats },
 		\piece,   { },
 		\curtain, { }
 	);
@@ -186,10 +189,67 @@ SynthDef(\funBass, {
 //------------------------------------------------------------
 // State-gated ticks — ~next always runs (gesture → amp/octave), these
 // override amp per state so silence is enforced regardless of gesture.
-~idleNext    = {|d| Pdef(m.ptn).set(\amp, 0); };
-~tuningNext  = {|d| Pdef(m.ptn).set(\amp, 0); };
-~pieceNext   = {|d| /* gesture-driven amp already set by ~next */ };
-~curtainNext = {|d| Pdef(m.ptn).set(\amp, -60.dbamp); };
+~idleNext    = {|d| 
+	var amp = ((m.rrateMassFiltered) * 2.0).lincurve(0, 1.0, -60, -18, -4);
+	Pdef(m.ptn).set(\octave, [3,4,5,6].choose);
+	Pdef(m.ptn).set(\root,0);
+	Pdef(m.ptn).set(\amp, amp.dbamp);
+
+	if(amp > -25, {
+		if(TempoClock.beats > (lastTime + 1),{
+			Pdef(m.ptn).set(\dur, 0.5);
+			lastTime = TempoClock.beats;
+		},{
+		});
+	},{
+		Pdef(m.ptn).set(\dur, 1);
+	});
+
+};
+
+~tuningNext  = {|d| 
+	var amp = ((m.rrateMassFiltered) * 2.0).lincurve(0, 1.0, -60, -18, -4);
+	Pdef(m.ptn).set(\octave, [5].choose);
+	Pdef(m.ptn).set(\root,0);
+	Pdef(m.ptn).set(\amp, amp.dbamp);
+	Pdef(m.ptn).set(\ptch, 0.8);
+
+	if( (TempoClock.beats-tuneTime) < 20, {
+		Pdef(m.ptn).set(\ptch, 1.0 + ((TempoClock.beats-tuneTime) / 25.0));
+	});
+
+
+	Pdef(m.ptn).set(\dur, 1);
+	
+	
+};
+
+~pieceNext   = {|d|
+
+	var amp = (m.accelMassFiltered + m.rrateMassFiltered).half.lincurve(0,1.5,-70,-18,-1);
+	var oct = (d.sensors.gyroEvent.y / pi.half).lincurve(-1,1,4,9,1).asInteger;
+
+	Pdef(m.ptn).set(\amp, amp.dbamp);
+	Pdef(m.ptn).set(\octave, oct);
+
+	if(amp > -30, {
+		if(TempoClock.beats > (lastTime + 1),{
+			Pdef(m.ptn).set(\dur, 0.5);
+			lastTime = TempoClock.beats;
+		},{
+		});
+	},{
+		Pdef(m.ptn).set(\dur, 1.0);
+	});
+
+};
+
+~curtainNext = {|d| 
+	var amp = ((m.rrateMassFiltered) * 2.0).lincurve(0, 1.0, -60, -28, -4);
+	Pdef(m.ptn).set(\amp, amp.dbamp); 
+	Pdef(m.ptn).set(\dur, 0.5);
+};
+
 
 //------------------------------------------------------------
 // Beat-aligned hooks. Empty stubs are placeholders — fill in as ideas
@@ -234,9 +294,9 @@ SynthDef(\funBass, {
 	// [[d.sensors.rrateEvent.x, d.sensors.rrateEvent.y, d.sensors.rrateEvent.z].sumabs];
 	// [m.rrateMass, m.rrateMassFiltered];
 	// [(1+m.accelMassFiltered) * (1+m.rrateMassFiltered).half.half,m.accelMassFiltered];
-	[(m.accelMassFiltered + m.rrateMassFiltered).half,m.accelMassFiltered];
+	// [(m.accelMassFiltered + m.rrateMassFiltered).half,m.accelMassFiltered];
 
-
+	[(m.rrateMassFiltered * 2.0)];
 	// [m.gyroXFiltered.fold(-0.5,0.5)];
 	// Gyro
 	// [(d.sensors.gyroEvent.x / pi)];//roll

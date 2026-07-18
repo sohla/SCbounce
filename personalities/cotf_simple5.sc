@@ -95,7 +95,7 @@ SynthDef(\simple, {|out=0, amp=0.0, freq=440, attack=0.001, decay=0.03, sustain=
 	var fmod = ((d.sensors.gyroEvent.y / pi.half).lincurve(-1.0,1.0,0.95,1.03,3));
 	var famp = 0.0;
 	if( (TempoClock.beats-tuneTime) < 20, {
-		((TempoClock.beats-tuneTime) / 20.0).postln;
+		// ((TempoClock.beats-tuneTime) / 20.0).postln;
 		famp = ((TempoClock.beats-tuneTime) / 25.0) * 0.2;
 	});
 
