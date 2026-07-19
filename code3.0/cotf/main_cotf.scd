@@ -92,6 +92,12 @@ s.waitForBoot({
             ]));
     };
 
+    // [COTF] last voiceMute-set gain per seat (1 = unmuted, default). Read by
+    // resetSeat's un-duck restore so a reset never un-mutes a seat that a
+    // staff voiceMute muted before the reset fired — written additively by
+    // \cotfVoiceMute below, never by anything else.
+    ~cotfSeatGain = Dictionary.new;
+
     // --- COTF per-seat output meter (day-1 fixes, 2026-07-19) ---------------
     // Taps ~cotfSeatBus (pre gain/trim/master) so a masterLevel dip can't fake
     // five dead seats. Peak-hold between /airkit/getLevels polls so sparse
@@ -134,24 +140,41 @@ s.waitForBoot({
         if (d.isNil) {
             "[COTF] resetSeat %: no live device — no-op".format(seat).postln;
         } {
-            mon !? { mon.set(\gain, 0) };            // duck: silence wins over elegance
+            // duck: silence wins over elegance. Fast, fixed lagT — never
+            // inherit a sticky \lagT left over from a prior voiceMute call.
+            mon !? { mon.set(\lagT, 0.02, \gain, 0) };
             if (d.env.notNil) {
                 d.env.use { ~model !? { Pdef(~model.ptn).stop } };
             };
             // Full teardown via the shared unload path (procRout free + ~deinit):
             NetAddr.localAddr.sendMsg("/airkit/unLoadPersonality", d.port);
+            // [COTF] d.name is left stale by unLoadPersonality (it only frees
+            // procRout + runs ~deinit, it never resets the personality label).
+            // Mark it explicitly so M0's getSeats reconcile backstop and the
+            // Patches admin page don't keep reporting the torn-down
+            // personality as still loaded if the explicit reload is lost.
+            // Task 6 (M0-driven reload) should treat "none" the same as any
+            // other drifted/silent seat.
+            d.name = "none";
             // Restore the duck after the dust settles; the reload (server-driven)
-            // arrives with gain audible. 1 = unmuted; a server-side voiceMute, if
-            // any, is re-asserted by M0's monitor on its next tick.
-            { mon !? { mon.set(\gain, 1) } }.defer(0.6);
+            // arrives with gain audible. Restore to the last voiceMute-set gain
+            // (default 1) rather than a literal 1, so a reset never un-mutes a
+            // seat that a staff voiceMute muted before the reset fired.
+            {
+                mon !? { mon.set(\lagT, 0.2, \gain, ~cotfSeatGain.at(seat) ? 1) };
+            }.defer(0.6);
             "[COTF] resetSeat %: torn down (port %)".format(seat, d.port).postln;
         };
     };
 
     OSCdef(\cotfResetSeat, { |msg|
-        var seat = msg[1].asInteger;
-        if ((seat >= 1) and: { seat <= 5 }) { ~cotfResetSeat.(seat) } {
-            "[COTF] resetSeat: bad seat %".format(seat).postln;
+        if (msg.size > 1) {
+            var seat = msg[1].asInteger;
+            if ((seat >= 1) and: { seat <= 5 }) { ~cotfResetSeat.(seat) } {
+                "[COTF] resetSeat: bad seat %".format(seat).postln;
+            };
+        } {
+            "[COTF] resetSeat: bad seat (no arg)".postln;
         };
     }, '/airkit/resetSeat');
 
@@ -173,7 +196,9 @@ s.waitForBoot({
         var fade = (msg[3] ? 1).asFloat.max(0.01);
         d !? {
             ~cotfMonitors.at(d.index) !? { |syn|
-                syn.set(\lagT, fade, \gain, 1 - muted);
+                var g = 1 - muted;
+                ~cotfSeatGain.put(d.index, g);   // [COTF] resetSeat's un-duck reads this
+                syn.set(\lagT, fade, \gain, g);
                 "voiceMute: device % (seat %) -> %".format(d.port, d.index, muted).postln;
             };
         };
