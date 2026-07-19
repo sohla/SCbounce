@@ -123,6 +123,43 @@ s.waitForBoot({
         addr.sendMsg("/airkit/levels/reply", ~cotfRoom, *(peaks.collect(_.asFloat)));
     }, '/airkit/getLevels');
 
+    // --- COTF seat-scoped reset (day-1 fixes) -------------------------------
+    // Teardown + silence ONLY. The M0 server re-pushes the saved personality
+    // (~300ms later) through the ordinary /airkit/loadPersonality path, so a
+    // reloaded seat rejoins exactly like any mid-piece personality load — the
+    // conductor, ~beatClock and score position are NEVER touched here.
+    ~cotfResetSeat = { |seat|
+        var d = ~devices.detect { |dev| dev.index == seat };
+        var mon = ~cotfMonitors.at(seat);
+        if (d.isNil) {
+            "[COTF] resetSeat %: no live device — no-op".format(seat).postln;
+        } {
+            mon !? { mon.set(\gain, 0) };            // duck: silence wins over elegance
+            if (d.env.notNil) {
+                d.env.use { ~model !? { Pdef(~model.ptn).stop } };
+            };
+            // Full teardown via the shared unload path (procRout free + ~deinit):
+            NetAddr.localAddr.sendMsg("/airkit/unLoadPersonality", d.port);
+            // Restore the duck after the dust settles; the reload (server-driven)
+            // arrives with gain audible. 1 = unmuted; a server-side voiceMute, if
+            // any, is re-asserted by M0's monitor on its next tick.
+            { mon !? { mon.set(\gain, 1) } }.defer(0.6);
+            "[COTF] resetSeat %: torn down (port %)".format(seat, d.port).postln;
+        };
+    };
+
+    OSCdef(\cotfResetSeat, { |msg|
+        var seat = msg[1].asInteger;
+        if ((seat >= 1) and: { seat <= 5 }) { ~cotfResetSeat.(seat) } {
+            "[COTF] resetSeat: bad seat %".format(seat).postln;
+        };
+    }, '/airkit/resetSeat');
+
+    OSCdef(\cotfPanic, {
+        "[COTF] panic: resetting all seats".postln;
+        (1..5).do { |seat| ~cotfResetSeat.(seat) };
+    }, '/airkit/panic');
+
     // [COTF] latency bench tap: evaluate in the IDE to hear seat 1 on the
     // Genelec (MOTU out 1) AND the headset simultaneously — one phone
     // recording then measures the headset leg (scripts/onset-gap.py, COTF repo):
