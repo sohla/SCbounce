@@ -27,7 +27,7 @@ these are staff-side operational tools.
   die cleanly without requiring an engine stop. Why: a harp lingered in Room 2 long after its
   performer had moved to Room 3 — likely an un-released voice or held OSC value. This might be
   the same family as the stuck note at end-of-day, which we'll track alongside.
-- **New `COTF-ISSUES.md`** — shared issue tracking for you and us. Room 1 shows what we found
+- **New `COTF-ISSUES.md`** — shared issue tracking for you and us. The first entries show what we found
   on 2026-07-18 (stuck note, hanging voices, a dead seat, and your compositional balance notes);
   feel free to add and comment. Checkbox on each when it's closed.
 
