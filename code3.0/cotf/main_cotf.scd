@@ -92,6 +92,37 @@ s.waitForBoot({
             ]));
     };
 
+    // --- COTF per-seat output meter (day-1 fixes, 2026-07-19) ---------------
+    // Taps ~cotfSeatBus (pre gain/trim/master) so a masterLevel dip can't fake
+    // five dead seats. Peak-hold between /airkit/getLevels polls so sparse
+    // plucks register at ~1 Hz polling. Cost: 5 synths, SendReply at 10 Hz.
+    SynthDef(\cotfMeter, { |in = 0, seat = 1|
+        var sig = In.ar(in, 2);
+        var amp = Amplitude.kr(Mix(sig) * 0.5, attackTime: 0.001, releaseTime: 0.1);
+        SendReply.kr(Impulse.kr(10), '/cotf/meter', amp, replyID: seat);
+    }).add;
+    s.sync;
+
+    ~cotfPeaks = Array.fill(5, 0.0);
+    ~cotfMeters = Dictionary();
+    (1..5).do { |seat|
+        ~cotfMeters.put(seat,
+            Synth.tail(s, \cotfMeter, [\in, ~cotfSeatBus.at(seat).index, \seat, seat]));
+    };
+
+    OSCdef(\cotfMeterAccum, { |msg|
+        var seat = msg[2].asInteger, amp = msg[3];
+        if ((seat >= 1) and: { seat <= 5 }) {
+            ~cotfPeaks[seat - 1] = max(~cotfPeaks[seat - 1], amp);
+        };
+    }, '/cotf/meter', s.addr);
+
+    OSCdef(\cotfGetLevels, { |msg, time, addr|
+        var peaks = ~cotfPeaks.copy;
+        ~cotfPeaks = Array.fill(5, 0.0);
+        addr.sendMsg("/airkit/levels/reply", ~cotfRoom, *(peaks.collect(_.asFloat)));
+    }, '/airkit/getLevels');
+
     // [COTF] latency bench tap: evaluate in the IDE to hear seat 1 on the
     // Genelec (MOTU out 1) AND the headset simultaneously — one phone
     // recording then measures the headset leg (scripts/onset-gap.py, COTF repo):
