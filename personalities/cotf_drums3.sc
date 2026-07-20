@@ -72,7 +72,6 @@ SynthDef(\drumkitt3, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 	var folder = PathName("~/Music/cotf_samples/drums");
 
 	topEnvironment.use{
-	~scoreAnchorBeat = 3;
 
 	postf("loading samples : % \n", folder);
 

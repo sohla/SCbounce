@@ -126,7 +126,6 @@ SynthDef(\funBass, {
 				// \args, #[]
 			);
 		);
-		~scoreAnchorBeat = 3;
 
 		Pdef(m.ptn).play(~beatClock, quant: ~scoreBeatsPerBar * ~scoreEventsPerBeat);
 	};

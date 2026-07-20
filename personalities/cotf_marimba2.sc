@@ -240,7 +240,6 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, start=0, pan=0, freq=
 				\root, 0,
 			);
 		);
-		~scoreAnchorBeat = 3;
 
 		Pdef(m.ptn).play(~beatClock, quant: [~scoreBeatsPerBar * ~scoreEventsPerBeat, phase]);
 	};

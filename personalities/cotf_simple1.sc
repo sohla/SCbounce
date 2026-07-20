@@ -1,8 +1,11 @@
-
-
+/*
+gestures: [beat, shake]
+sound:    warm sine + saw drone; state-driven filter (dark idle, bright piece); pitch tracks score voice pool per subdivision
+pairs:    [Aetherharp, Cellaris]
+*/
 
 var m = ~model;
-var ob = ~outBus ? 0; 
+var ob = ~outBus ? 0;
 var synth;
 var baseMidi = 60; // C4
 var lastTime = 0;
@@ -27,7 +30,6 @@ SynthDef(\simple, {|out=0, amp=0.0, freq=440, attack=0.001, decay=0.03, sustain=
 
 //------------------------------------------------------------
 ~init = ~init <> {
-	~scoreAnchorBeat = 0;
 	topEnvironment.use{
 		synth = Synth(\simple, [
 			\out,     ob,
@@ -117,13 +119,16 @@ SynthDef(\simple, {|out=0, amp=0.0, freq=440, attack=0.001, decay=0.03, sustain=
 // runs inside d.env.use, so we read from ctx (not topEnvironment).
 // s.bind so the /n_set lands on the same s.latency timeline as audio.
 ~onTick = {|ctx|
+};
+~onHalf    = {|ctx|
+};
+~onBeat    = {|ctx| 
 	s.bind {
 		synth.set(\freq,
 			((ctx.voicePool.first.asInteger % 12) + baseMidi - 12).midicps);
 	};
+
 };
-~onHalf    = {|ctx| /* on half-bar change */ };
-~onBeat    = {|ctx| /* every true beat */ };
 ~onBar     = {|ctx| /* every downbeat */ };
 ~onPhrase  = {|ctx| /* on phrase change */ };
 ~onSection = {|ctx| /* on section change */ };

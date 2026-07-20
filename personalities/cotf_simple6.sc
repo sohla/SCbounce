@@ -50,7 +50,6 @@ SynthDef(\simple, {|out=0, amp=0.0, freq=440, detune=1,
 
 			);
 		);
-		~scoreAnchorBeat = 3;
 
 		// Pdef(m.ptn).play(~beatClock, quant: ~scoreBeatsPerBar * ~scoreEventsPerBeat);
 		Pdef(m.ptn).set(\dur, 0.5);
