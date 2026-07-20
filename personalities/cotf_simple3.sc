@@ -1,10 +1,10 @@
 /*
 gestures:    [beat, shake, tilt]
-description: Pdef pattern firing per-note sine synths on ~beatClock; per-state octave, dur, and detune shifts; gesture maps to amp
-sound:       pulsing sine pattern with per-state character; tuning slides drone in from below over ~20 s
-pitch:       random choice from score voice pool, wrapped to a pitch class then transposed by \octave (per event via Pfunc)
-rhythm:      note per \dur ~beatClock ticks (state sets dur: 0.125 idle, 0.5–1.0 piece, 0.75 tuning)
-instruments: [Velaphone, Lumivox]
+description: Pdef pattern firing per-note Saw+Sine synths through an RLPF on ~beatClock; state sets pitch and envelope, gesture drives amp and filter cutoff (roll → ffreq)
+sound:       pulsing filtered saw+sine; state-driven pitch and envelope shape; tuning slides down from ~88 to 84 over ~15 s
+pitch:       per-state — idle holds A4 (69); tuning slides ~88 → 84; piece picks a pitch class from score voice pool, gesture-tilted octave 7–10; curtain inherits last freq
+rhythm:      note per \dur ~beatClock tick; state sets dur (idle 1–2 from accel, tuning 0.75, piece 1 or 2 from accel, curtain 1)
+instruments: [Template]
 */
 
 var m = ~model;
