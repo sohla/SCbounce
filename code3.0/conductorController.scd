@@ -49,6 +49,21 @@ thisProcess.interpreter.executeFile(libDir +/+ "metafile.scd");
 ~loadScore.(~scorePath);
 ~loadMeta.(~metaPath);
 
+// Piece average subdivision rate — used as ~beatClock's default tempo.
+// Any Pdef running on ~beatClock ticks at this rate before playback
+// starts (previously 2 = 30 BPM, way too slow) AND after ~stop (so
+// paused personalities don't inherit whatever mid-piece rubato tempo
+// the PLL last settled on). Actual per-beat rate is set by the PLL
+// during playback.
+~beatClockAvgTempo = if (~beats.notNil and: { ~beats.size > 1 }) {
+    ~beats.size / (~beats.last - ~beats.first).max(1e-6)
+} { 2 };  // fallback if beats file unavailable
+"beat clock default tempo: % (from % events over % s)".format(
+    ~beatClockAvgTempo.round(0.01),
+    ~beats.size,
+    (~beats.last - ~beats.first).round(0.01)
+).postln;
+
 // --- score-context state read by downstream personalities -----------------
 ~scoreVoicePool = ~scoreVoicePool ? [69];   // current half's MIDI pitches (Int)
 
@@ -73,7 +88,9 @@ thisProcess.interpreter.executeFile(libDir +/+ "metafile.scd");
 // --- TempoClock slaved to /beat -------------------------------------------
 // The producer here is the Routine below (which sends ~addr.sendMsg("/beat", i)
 // per event); the OSCdef catches its own producer in the same sclang process.
-~beatClock       = ~beatClock ?? { TempoClock.new(2).permanent_(true) };
+~beatClock       = ~beatClock ?? { TempoClock.new(~beatClockAvgTempo).permanent_(true) };
+// Force-set even on re-eval (?? above only creates on first load).
+~beatClock.tempo = ~beatClockAvgTempo;
 ~smoothing       = 0.1;
 ~kPmin           = 0.9;
 ~kPmax           = 1.0;
@@ -81,7 +98,7 @@ thisProcess.interpreter.executeFile(libDir +/+ "metafile.scd");
 ~tempoMin        = 0.05;
 ~tempoMax        = 50;
 ~anchorThreshold = 2.0;
-~obsTempo        = 2;
+~obsTempo        = ~beatClockAvgTempo;
 ~lastBeatT       = nil;
 // `?` preserves any hook a downstream block has already registered.
 ~onResync        = ~onResync ? { |idx| };
@@ -92,13 +109,13 @@ OSCdef(\beatSync, { |msg|
     var interval, observedTempo, phaseError, kPdyn, newTempo;
     if(~lastBeatT.isNil) {
         ~beatClock.beats = idx;
-        // Reset tempo to baseline on anchor. PLL smoothing branch will
-        // converge to observedTempo (typically 8 for _mul4) within a
+        // Reset tempo to piece average on anchor. PLL smoothing branch
+        // will converge to observedTempo (varies with rubato) within a
         // couple of /beat events. Without this, a tempo that drifted
-        // to the clip (50) from a previous burst stays clipped and the
-        // clock races ahead of idx, triggering the re-anchor loop.
-        ~beatClock.tempo = 2;
-        ~obsTempo = 2;
+        // (e.g. clipped to 50 during a burst) stays there and the clock
+        // races ahead of idx, triggering the re-anchor loop.
+        ~beatClock.tempo = ~beatClockAvgTempo;
+        ~obsTempo = ~beatClockAvgTempo;
         ~lastBeatT = now;
         ~onResync.value(idx);
         "beat sync: anchored at idx %".format(idx).postln;
@@ -106,8 +123,8 @@ OSCdef(\beatSync, { |msg|
         phaseError = idx - ~beatClock.beats;
         if(phaseError.abs > ~anchorThreshold) {
             ~beatClock.beats = idx;
-            ~beatClock.tempo = 2;   // reset tempo — see comment above
-            ~obsTempo = 2;
+            ~beatClock.tempo = ~beatClockAvgTempo;   // reset tempo — see comment above
+            ~obsTempo = ~beatClockAvgTempo;
             ~lastBeatT = now;
             ~onResync.value(idx);
             "beat sync: re-anchored at idx % (err was %)".format(idx, phaseError.round(0.001)).postln;
@@ -394,6 +411,15 @@ s.waitForBoot({
         ~playSynth.free;
         ~playSynth  = nil;
         ~playStartT = nil;
+        // Return ~beatClock to the piece's average tempo. Otherwise any
+        // Pdef running on it keeps ticking at whatever rubato-adjusted
+        // tempo the PLL last set — pauses in a fast section leave
+        // patterns firing fast until the next /airkit/go re-anchors.
+        // ~lastBeatT = nil forces the next /beat to hit the anchor
+        // branch anyway (belt + braces).
+        ~beatClock.tempo = ~beatClockAvgTempo;
+        ~obsTempo   = ~beatClockAvgTempo;
+        ~lastBeatT  = nil;
     };
 
     OSCdef(\conductorGo,    { ~go.value },                       '/airkit/go');
