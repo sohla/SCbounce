@@ -119,3 +119,32 @@ Personalities may override:
 Output convention: route audio via `~outBus` (`\out, ~outBus` in Pbinds
 / `out:` on Synths); defaults to 0 on composer machines, points at a
 per-seat bus under COTF.
+
+### Personality front matter (informational)
+
+Each personality file starts with a YAML-ish block comment describing
+what it does. Not consumed by SC — for humans and LLMs reading the
+file. All keys optional; keep to one line each (arrays inline in
+`[ ]`). Reference example is `personalities/cotf_simple1.sc`.
+
+| key           | purpose                                                       |
+|---------------|---------------------------------------------------------------|
+| `gestures`    | tags from an open vocabulary (beat, shake, tilt, roll, swing, sweep, stab, hover…) — which IMU motions the personality responds to |
+| `description` | one-line technical / architectural summary (what it *is*, not what it sounds like) |
+| `sound`       | one-line character / timbre (what you *hear*) |
+| `pitch`       | how notes are chosen (score voice pool, fixed array, algorithmic…) |
+| `rhythm`      | rhythmic pattern (continuous drone, per-beat, pattern-based, gesture-triggered…) |
+| `instruments` | fixed set: `Lumivox`, `Gravitone`, `Velaphone`, `Aetherharp`, `Cellaris` — which physical instruments this pairs with |
+
+Template:
+
+```
+/*
+gestures:    [beat, shake]
+description: <what the personality is, architecturally>
+sound:       <what it sounds like, one sentence>
+pitch:       <where notes come from>
+rhythm:      <rhythmic behaviour>
+instruments: [Aetherharp]
+*/
+```
