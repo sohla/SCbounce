@@ -321,9 +321,9 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, ptch=1, start=0, pan=
 // from a preceding \tuning state is cleared. dur = 1 (uniform 16th grid
 // matching the original patternDur design).
 ~pieceNext = {|d, ctx|
-	var amp = m.accelMassFiltered.lincurve(0, 1.4, -60, -18, -1);
+	var amp = m.accelMassFiltered.lincurve(0, 1.4, -60, -14, -1);
 	var oct = (d.sensors.gyroEvent.y / pi.half).lincurve(-1, 1, 3, 6, 1).asInteger;
-	Pdef(m.ptn).set(\amp, amp.dbamp);
+	Pdef(m.ptn).set(\amp, amp.dbamp * ctx.loudness.linlin(0, 1, 0.3, 1.4));
 	Pdef(m.ptn).set(\octave, oct);
 	Pdef(m.ptn).set(\ptch, 1);
 	Pdef(m.ptn).set(\dur, 1);

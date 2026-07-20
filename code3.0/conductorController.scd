@@ -167,7 +167,7 @@ s.waitForBoot({
             .format(s.sampleRate, ~fileSR).warn;
     };
 
-    SynthDef(\playStream, { |out = 0, buf, amp = 0.5|
+    SynthDef(\playStream, { |out = 0, buf, amp = 0.75|
         var sig = DiskIn.ar(2, buf, loop: 0);
         Out.ar(out, sig * amp);
     }).add;

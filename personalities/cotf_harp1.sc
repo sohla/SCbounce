@@ -261,10 +261,10 @@ SynthDef(\funBass, {
 
 ~pieceNext   = {|d, ctx|
 
-	var amp = (m.accelMassFiltered + m.rrateMassFiltered).half.lincurve(0,1.5,-70,-18,-1);
-	var oct = (d.sensors.gyroEvent.y / pi.half).lincurve(-1,1,4,9,1).asInteger;
+	var amp = (m.accelMassFiltered + m.rrateMassFiltered).half.lincurve(0,1.5,-70,-14,-1);
+	var oct = (d.sensors.gyroEvent.y / pi.half).lincurve(-1,1,4,8,1).asInteger;
 
-	Pdef(m.ptn).set(\amp, amp.dbamp);
+	Pdef(m.ptn).set(\amp, amp.dbamp * ctx.loudness.linlin(0, 1, 0.1, 1.0));
 	Pdef(m.ptn).set(\octave, oct);
 
 	if(amp > -30, {
