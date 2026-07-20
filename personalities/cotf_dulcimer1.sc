@@ -259,7 +259,7 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, ptch=1, start=0, pan=
 ~onRoomState = {|ctx|
 	switch(ctx.state,
 		\idle,    { 
-
+			Pdef(m.ptn).set(\ptch, 1.0);
 		},
 		\tuning,  { 
 			tuneTime = TempoClock.beats; 

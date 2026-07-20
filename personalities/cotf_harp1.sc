@@ -209,7 +209,7 @@ SynthDef(\funBass, {
 // one-shot state-entry logic (e.g. reset counters, re-seed patterns).
 ~onRoomState = {|ctx|
 	switch(ctx.state,
-		\idle,    { },
+		\idle,    { Pdef(m.ptn).set(\ptch, 1.0) },
 		\tuning,  { tuneTime = TempoClock.beats },
 		\piece,   { Pdef(m.ptn).set(\ptch, 1.0) },
 		\curtain, { },
@@ -267,8 +267,8 @@ SynthDef(\funBass, {
 	Pdef(m.ptn).set(\amp, amp.dbamp * ctx.loudness.linlin(0, 1, 0.1, 1.0));
 	Pdef(m.ptn).set(\octave, oct);
 
-	if(amp > -30, {
-		if(TempoClock.beats > (lastTime + 1),{
+	if(amp > -20, {
+		if(TempoClock.beats > (lastTime + 0.5),{
 			Pdef(m.ptn).set(\dur, 0.5);
 			lastTime = TempoClock.beats;
 		},{
