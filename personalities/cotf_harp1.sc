@@ -136,7 +136,7 @@ SynthDef(\funBass, {
 				\note, 0,
 				\root, Pfunc { ~scoreVoicePool.choose.wrap(0,11).asInteger},
 				// \octave, 6,
-				// \args, #[]
+				\args, #[]
 			);
 		);
 
@@ -211,7 +211,7 @@ SynthDef(\funBass, {
 	switch(ctx.state,
 		\idle,    { },
 		\tuning,  { tuneTime = TempoClock.beats },
-		\piece,   { },
+		\piece,   { Pdef(m.ptn).set(\ptch, 1.0) },
 		\curtain, { },
 		\silent,  { Pdef(m.ptn).set(\amp, 0); }
 	);

@@ -5,12 +5,10 @@
 		"cotf_simple2",
 		"cotf_simple3",
 		"cotf_harp1",
-
-
-
-
 		"cotf_dulcimer1",
-		
+
+
+
 		
 		"cotf_drums1",
 		"cotf_drums2",

@@ -1,7 +1,18 @@
+/*
+gestures:    [beat, shake, tilt]
+description: Pdef pattern firing per-note dulcimer sample synths on ~beatClock; fixed 2-bar melody pattern with pool-driven pitch; state controls amp/octave/ptch, gesture drives amp + octave (piece) or amp only (idle/curtain)
+sound:       hammered-dulcimer repeated-note phrase; melody hovers on top of ~scoreVoicePool with dips to lower voices; sample-based; tuning bends smoothly into pitch via \ptch
+pitch:       score voice pool, offset-from-top per pattern step (offsets [0,1,2,3]); octave-folded into [C3..C5]; \octave state-driven; \ptch = sample rate multiplier for continuous bend (tuning ramps 0.7 → 1.0 over 20 s)
+rhythm:      fixed 2-bar 16th-note pattern from patternOffset array; phase offset = 4 for pickup alignment; runs on ~beatClock always, amp gated per state
+instruments: [Cellaris]
+*/
 
 var m = ~model;
 var ob = ~outBus ? 0; // capture NOW — ~init bodies run under topEnvironment.use
 var phase = 4;
+var tuneTime = 0;
+var group;   // dedicated Group for this personality's synths — see
+             // concert_p_files.md §5 (Pdef personalities need this)
 
 //------------------------------------------------------------
 // shared: note-name → MIDI parser.
@@ -90,9 +101,11 @@ m.gyroFilteredAttack = 0.7;
 m.gyroFilteredDecay = 0.7;
 
 //------------------------------------------------------------
-SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, start=0, pan=0, freq=440,
+SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, ptch=1, start=0, pan=0, freq=440,
     attack=0.01, decay=0.1, sustain=0.3, release=1.2, gate=1, cutoff=20000, rq=1|
-	var lr = rate * BufRateScale.kr(bufnum);
+	// ptch multiplies the sample playback rate — continuous pitch bend,
+	// analogous to harp1. ptch < 1 = lower/slower; ptch > 1 = higher/faster.
+	var lr = rate * BufRateScale.kr(bufnum) * ptch;
 	var env = EnvGen.kr(Env.new([0, 1, 1, 0], [attack, sustain, release]), doneAction: 2);
 	var sig = PlayBuf.ar(2, bufnum, rate: [lr, lr * 1.0017], startPos: start * BufFrames.kr(bufnum), loop: 0);
 	sig = Balance2.ar(sig[0], sig[1], pan, amp * env);
@@ -164,17 +177,14 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, start=0, pan=0, freq=
 	});
 
 	topEnvironment.use{
+		group = Group.new;
+
 		Pdef(m.ptn,
 			Pbind(
 				\instrument, \stereoSampler,
 				\out, ob,
+				\group, group,   // route every event's synth into our group
 				\type, \customEvent,
-
-				\dur, Pfunc{ |e|
-					var pos = (~beatClock.beats - phase).mod(patternLen);
-					var slot = (eventStarts.indexOfGreaterThan(pos) ? patternOffset.size) - 1;
-					patternDur.wrapAt(slot.max(0))
-				},
 
 				// note — clock-derived slot → pool offset → MIDI note, then
 				// converted to an offset from baseMidi=60 so ~octave still
@@ -191,69 +201,167 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, start=0, pan=0, freq=
 				},
 
 				\root, 0,
+				\args, #[],
 			);
 		);
 
 		Pdef(m.ptn).play(~beatClock, quant: [~scoreBeatsPerBar * ~scoreEventsPerBeat, phase]);
+		// Default dur = 1 (uniform 16th grid, matches the old Pfunc behaviour).
+		// State hooks override this to change the melody firing rate — the
+		// \note Pfunc still tracks pattern position on ~beatClock so the
+		// melody continues to cycle regardless of dur.
+		Pdef(m.ptn).set(\dur, 1);
 
-		// If the personality loads mid-run and the room isn't in \piece,
-		// pause immediately so the dulcimer doesn't play during \idle
-		// or \tuning while waiting for the first state transition.
-		if (~roomState != \piece) { Pdef(m.ptn).pause };
+		// On beat-clock re-anchor (seek): stop the Pdef so TempoClock
+		// doesn't dump backlog, kill in-flight synths in the group so
+		// nothing is stuck at sustain, then restart. freeAll wrapped in
+		// s.bind so it lands after any /s_new bundle still in flight —
+		// see concert_p_files.md §6.
+		~onResync = { |idx|
+			Pdef(m.ptn).stop;
+			s.bind { group.freeAll };
+			Pdef(m.ptn).play(~beatClock, quant: [~scoreBeatsPerBar * ~scoreEventsPerBeat, phase]);
+		};
 	};
 };
 
 //------------------------------------------------------------
 ~deinit = ~deinit <> {
 	Pdef(m.ptn).remove;
-	samplesLib.do({|sample|
-		postf("buffer dealloc [%] \n", sample.buffer);
-		sample.buffer.free;
-		s.sync;
-	});
+
+	// Kill synths first (latency-safe /g_freeAll), then free sample
+	// buffers — order matters so no PlayBuf is still reading from a
+	// buffer we're about to /b_free. fork so s.sync actually waits
+	// for the server (s.sync only meaningful inside a Routine).
+	fork {
+		if (group.notNil) {
+			s.bind { group.freeAll };
+			s.sync;
+			group.free;
+			group = nil;
+		};
+		samplesLib.do({|sample|
+			postf("buffer dealloc [%] \n", sample.buffer);
+			sample.buffer.free;
+			s.sync;
+		});
+	};
 };
 
 //------------------------------------------------------------
-~next = {|d|
-	// dulcimer melody sits around C4 by default (baseMidi=60 + ~octave=5).
-	// ~octave 4..6 lets the tilt shift the whole line ±12 semitones.
-	var amp = m.accelMassFiltered.lincurve(0, 1.4, -40, -8, -1);
-	var oct = (d.sensors.gyroEvent.y / pi.half).lincurve(-1, 1, 1, 6, 1).asInteger;
-	Pdef(m.ptn).set(\amp, amp.dbamp);
-	Pdef(m.ptn).set(\octave, oct);
-};
+// ~next = {|d| };  // state-gated ticks handle everything
 
 //------------------------------------------------------------
-// Room-state routing — pause the Pdef outside \piece so the dulcimer
-// melody only plays during the actual piece. On \piece, resume with
-// the same [barLen, phase] quant as ~init so the pattern re-aligns.
+// Room-state routing — Pdef stays playing across all states; per-state
+// amp is set by the state-gated ticks so we only hear the melody during
+// \piece. \silent handled one-shot here (no ~silentNext). Capture
+// tuneTime on \tuning entry for any time-based envelope.
 ~onRoomState = {|ctx|
 	switch(ctx.state,
-		\idle,    { Pdef(m.ptn).pause; },
-		\tuning,  { Pdef(m.ptn).pause; },
-		\piece,   { Pdef(m.ptn).resume(~beatClock, quant: [~scoreBeatsPerBar * ~scoreEventsPerBeat, phase]); },
-		\curtain, { /* let ~curtainNext fade; pause happens on next state change */ },
+		\idle,    { 
+
+		},
+		\tuning,  { 
+			tuneTime = TempoClock.beats; 
+		},
+		\piece,   { 
+			Pdef(m.ptn).set(\ptch, 1.0);
+		},
+		\curtain, { 
+
+		},
+		\silent,  { 
+			Pdef(m.ptn).set(\amp, 0); 
+		}
 	);
 };
 
 //------------------------------------------------------------
-// State-gated ticks — ~next always runs (gesture → amp/octave), these
-// override amp per state so silence is enforced regardless of gesture.
-~idleNext    = {|d| Pdef(m.ptn).set(\amp, 0); };
-~tuningNext  = {|d| Pdef(m.ptn).set(\amp, 0); };
-~pieceNext   = {|d| /* gesture-driven amp already set by ~next */ };
-~curtainNext = {|d| Pdef(m.ptn).set(\amp, -60.dbamp); };
+// State-gated ticks. Each fires at ~30 Hz while its state is current.
+// dulcimer melody sits around C4 by default (baseMidi=60 + ~octave=5).
+// Only \amp and \octave are state-modulatable — \dur and \note are
+// Pfunc-locked in the Pbind (fixed pattern + voice-pool-driven pitch).
+
+// Idle: quiet, wandering — pick a fresh random octave per tick so
+// consecutive melody events land in different registers. Gesture
+// (rotation rate) drives amp within a soft range. Melody pattern from
+// the Pbind still plays underneath, spaced wider (dur 2) so it feels
+// meditative. \ptch reset to 1 (in case we're arriving from \tuning
+// mid-bend).
+~idleNext = {|d, ctx|
+	var amp = m.rrateMassFiltered.lincurve(0, 1.0, -60, -22, -4);
+	Pdef(m.ptn).set(\amp, amp.dbamp);
+	Pdef(m.ptn).set(\octave, [3, 4, 5].choose);
+	Pdef(m.ptn).set(\ptch, 1);
+	Pdef(m.ptn).set(\dur, 2);
+};
+
+// Tuning: "warming up" — hold quiet at octave 5, and over the first
+// 20 s of the tuning state ramp \ptch from 0.7 up to 1.0 for a smooth
+// pitch bend (starts flat, settles in tune). tuneTime captured on
+// \tuning entry in ~onRoomState. After 20 s, sits at ptch = 1.
+~tuningNext = {|d, ctx|
+	var amp = m.rrateMassFiltered.lincurve(0, 1.0, -70, -24, -4);
+	var tt = 20.0;
+	var elapsed = TempoClock.beats - tuneTime;
+
+	Pdef(m.ptn).set(\amp, amp.dbamp);
+	Pdef(m.ptn).set(\octave, 3);
+	Pdef(m.ptn).set(\dur, 5.0.rrand(7.0));
+
+	if (elapsed < tt, {
+		Pdef(m.ptn).set(\ptch, (elapsed / tt).linlin(0, 1, 0.7, 1.0));
+	}, {
+		Pdef(m.ptn).set(\ptch, 1);
+	});
+};
+
+// Piece: full gesture-driven amp + octave. \accelMassFiltered → amp,
+// gyro Y (up/down tilt) → octave. \ptch reset to 1 so any residual bend
+// from a preceding \tuning state is cleared. dur = 1 (uniform 16th grid
+// matching the original patternDur design).
+~pieceNext = {|d, ctx|
+	var amp = m.accelMassFiltered.lincurve(0, 1.4, -60, -18, -1);
+	var oct = (d.sensors.gyroEvent.y / pi.half).lincurve(-1, 1, 3, 6, 1).asInteger;
+	Pdef(m.ptn).set(\amp, amp.dbamp);
+	Pdef(m.ptn).set(\octave, oct);
+	Pdef(m.ptn).set(\ptch, 1);
+	Pdef(m.ptn).set(\dur, 1);
+};
+
+// Curtain: soft farewell — quieter amp curve than idle, drop into
+// lower octaves for a descending feel. Random-choose octave from a
+// low pair so successive notes stagger between two registers. \ptch
+// reset to 1 for safety. dur wider (3) — melody thins out as we exit.
+~curtainNext = {|d, ctx|
+	var amp = m.rrateMassFiltered.lincurve(0, 1.0, -70, -30, -4);
+	Pdef(m.ptn).set(\amp, amp.dbamp);
+	Pdef(m.ptn).set(\octave, [3, 4].choose);
+	Pdef(m.ptn).set(\ptch, 1);
+	Pdef(m.ptn).set(\dur, 3);
+};
 
 //------------------------------------------------------------
 // Beat-aligned hooks. Empty stubs are placeholders — fill in as ideas
 // arise. Basic ideas populated in ~onSection and ~onBar for testing.
-~onTick    = {|ctx| /* every subdivision */ };
-~onHalf    = {|ctx| /* on half-bar change */ };
-~onBeat    = {|ctx| /* every true beat */ };
+~onTick    = {|ctx| 
+};
+
+~onHalf    = {|ctx|
+
+};
+
+~onBeat    = {|ctx| 
+
+};
+
 ~onBar     = {|ctx|
 	// "dulcimer onBar %  (sec % / phr %)".format(ctx.barIdx, ctx.sectionId, ctx.phraseId).postln;
 };
-~onPhrase  = {|ctx| /* on phrase change */ };
+
+~onPhrase  = {|ctx| 
+};
+
 ~onSection = {|ctx|
 	// Character shift per section: scale the pattern's amp base — quieter
 	// in intro/coda, fuller in dev sections. Applied on top of ~next's
