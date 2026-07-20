@@ -91,13 +91,13 @@ SynthDef(\simple, {|out=0, amp=0.0, freq=440, attack=0.001, decay=0.03, sustain=
 
 // ~next = {|d| };  // state-gated ticks handle everything, always gets called regardless of roomState
 
-~idleNext = {|d|
+~idleNext = {|d, ctx|
 	var amp = m.accelMassFiltered.lincurve(0, 2.5, -90, -18, -1);
 	synth.set(\amp, amp.dbamp);
 	synth.set(\freq, 60.midicps);
 };
 
-~tuningNext = {|d|
+~tuningNext = {|d, ctx|
 	var amp = m.accelMassFiltered.lincurve(0, 2.5, -90, -18, -1);
 	var tt = 5.0;
 	synth.set(\amp, amp.dbamp);
@@ -110,12 +110,12 @@ SynthDef(\simple, {|out=0, amp=0.0, freq=440, attack=0.001, decay=0.03, sustain=
 	});
 };
 
-~pieceNext = {|d|
+~pieceNext = {|d, ctx|
 	var amp = (m.accelMass + m.rrateMass).lincurve(0, 2.0, -90, -10, -1);
-	synth.set(\amp, amp.dbamp);
+	synth.set(\amp, amp.dbamp * ctx.loudness.linlin(0, 1, 0.3, 1.0));
 };
 
-~curtainNext = {|d|
+~curtainNext = {|d, ctx|
 	var amp = (m.accelMass + m.rrateMass).lincurve(0, 2.0, -90, -30, -1);
 	synth.set(\amp, amp.dbamp);
 };
@@ -125,6 +125,7 @@ SynthDef(\simple, {|out=0, amp=0.0, freq=440, attack=0.001, decay=0.03, sustain=
 // runs inside d.env.use, so we read from ctx (not topEnvironment).
 // s.bind so the /n_set lands on the same s.latency timeline as audio.
 ~onTick = {|ctx|
+	
 };
 ~onHalf    = {|ctx|
 };

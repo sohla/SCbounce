@@ -77,7 +77,7 @@ SynthDef(\simple, {|out=0, amp=0.0, freq=440, attack=0.001, decay=0.03, sustain=
 // State-gated tick hooks. Each fires at IMU rate (~30 Hz) in addition to
 // ~next, only while the matching ~roomState is current. Throttled postlns
 // (once/sec) so we can see the routing without spamming the post window.
-~idleNext = {|d|
+~idleNext = {|d, ctx|
 
 	var amp = (m.accelMass + m.rrateMass).lincurve(0, 1.0, -70, -12, 4);
 	var ffreq = ((d.sensors.gyroEvent.x / pi).fold(-0.5,0.5) * 2).lincurve(-1.0, 1.0, 200, 600, 3);
@@ -95,7 +95,7 @@ SynthDef(\simple, {|out=0, amp=0.0, freq=440, attack=0.001, decay=0.03, sustain=
 	
 };
 
-~tuningNext = {|d|
+~tuningNext = {|d, ctx|
 
 	var amp = (m.accelMass + m.rrateMass).lincurve(0, 1.0, -70, -12, 4);
 	var ffreq = ((d.sensors.gyroEvent.x / pi).fold(-0.5,0.5) * 2).lincurve(-1.0, 1.0, 200, 800, 3);
@@ -124,7 +124,7 @@ SynthDef(\simple, {|out=0, amp=0.0, freq=440, attack=0.001, decay=0.03, sustain=
 
 };
 
-~pieceNext = {|d|
+~pieceNext = {|d, ctx|
 
 	var amp = (m.accelMass + m.rrateMass).lincurve(0, 2.0, -90, -10, -1);
 	var ffreq = ((d.sensors.gyroEvent.x / pi).fold(-0.5,0.5) * 2).lincurve(-1.0, 1.0, 500, 12000, 3);
@@ -136,7 +136,7 @@ SynthDef(\simple, {|out=0, amp=0.0, freq=440, attack=0.001, decay=0.03, sustain=
 
 };
 
-~curtainNext = {|d|
+~curtainNext = {|d, ctx|
 
 	var amp = (m.accelMass + m.rrateMass).lincurve(0, 1.0, -70, -30, 4);
 	var ffreq = ((d.sensors.gyroEvent.x / pi).fold(-0.5,0.5) * 2).lincurve(-1.0, 1.0, 300, 500, 3);

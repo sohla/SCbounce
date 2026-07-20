@@ -51,6 +51,20 @@ thisProcess.interpreter.executeFile(libDir +/+ "metafile.scd");
 
 // --- score-context state read by downstream personalities -----------------
 ~scoreVoicePool = ~scoreVoicePool ? [69];   // current half's MIDI pitches (Int)
+
+// State-tick ctx snapshot — updated each beat from the score Routine.
+// Passed as second arg to ~idleNext/~tuningNext/~pieceNext/~curtainNext
+// so they can mix gesture with score features at IMU rate. Only
+// "current value" fields (no change flags, no beat-event booleans) —
+// change flags belong to beat hooks, not state ticks. Nil-safe defaults
+// so ticks that fire before the first beat still see a valid ctx.
+~stateCtx = ~stateCtx ? (
+    state:      \idle,
+    voicePool:  [69],
+    loudness:   0, tension: 0, brightness: 0, density: 0, register: 0,
+    sectionId:  nil, phraseId: nil, chord: nil, key: nil, scale: nil,
+    p:          nil, m: nil
+);
 // ~scoreGroup is created inside s.waitForBoot (below), once the server is
 // live. Building it here would leave the env var pointing at a node ID that
 // the live server doesn't actually own — synths targeting it would log
@@ -256,6 +270,27 @@ s.waitForBoot({
                     state:          ~roomState,
                     p:              p,
                     m:              m
+                );
+
+                // Refresh the state-tick ctx snapshot — trimmed to only
+                // "current value" fields. procRout in personalityController
+                // reads topEnvironment[\stateCtx] and hands it to the
+                // state-gated ticks as their second arg.
+                ~stateCtx = (
+                    state:      ~roomState,
+                    voicePool:  ~scoreVoicePool,
+                    loudness:   loudness,
+                    tension:    tension,
+                    brightness: brightness,
+                    density:    density,
+                    register:   register,
+                    sectionId:  sectionId,
+                    phraseId:   phraseId,
+                    chord:      chord,
+                    key:        key,
+                    scale:      scale,
+                    p:          p,
+                    m:          m
                 );
 
                 ~devices.keysValuesDo { |port, d|

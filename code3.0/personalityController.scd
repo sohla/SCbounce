@@ -200,10 +200,15 @@ var interpretPersonality = {|d|
         // State-gated ~next variants. Called from procRout in addition to
         // ~next, only when the current room state matches. Same signature
         // as ~next: receives device `d`, runs at IMU rate (~30 Hz).
-        ~idleNext    = { |d| };  // only when ~roomState == \idle
-        ~tuningNext  = { |d| };  // only when ~roomState == \tuning
-        ~pieceNext   = { |d| };  // only when ~roomState == \piece
-        ~curtainNext = { |d| };  // only when ~roomState == \curtain
+        // Second arg is ~stateCtx — a trimmed snapshot of the score
+        // context (state, voicePool, loudness/tension/brightness/
+        // density/register, sectionId, phraseId, chord, key, scale, p, m).
+        // No change flags — those belong to beat hooks. Lets state ticks
+        // mix gesture with score features at IMU rate.
+        ~idleNext    = { |d, ctx| };  // only when ~roomState == \idle
+        ~tuningNext  = { |d, ctx| };  // only when ~roomState == \tuning
+        ~pieceNext   = { |d, ctx| };  // only when ~roomState == \piece
+        ~curtainNext = { |d, ctx| };  // only when ~roomState == \curtain
         // note: \silent has no per-tick hook — it's a one-shot hard mute.
         // Personalities handle it in ~onRoomState by setting amp/gain to 0
         // on the \silent case (and restoring on state exit as needed).
@@ -252,12 +257,16 @@ var createProcRout = {|d, index|
                     // No case for \silent — mute is handled one-shot in the
                     // personality's ~onRoomState \silent branch. Continuous
                     // amp updates would just re-set 0 every 30 ms.
-                    switch(topEnvironment[\roomState],
-                        \idle,    { ~idleNext.(d) },
-                        \tuning,  { ~tuningNext.(d) },
-                        \piece,   { ~pieceNext.(d) },
-                        \curtain, { ~curtainNext.(d) }
-                    );
+                    // Second arg is the score-ctx snapshot (see conductor).
+                    block {
+                        var ctx = topEnvironment[\stateCtx];
+                        switch(topEnvironment[\roomState],
+                            \idle,    { ~idleNext.(d, ctx) },
+                            \tuning,  { ~tuningNext.(d, ctx) },
+                            \piece,   { ~pieceNext.(d, ctx) },
+                            \curtain, { ~curtainNext.(d, ctx) }
+                        );
+                    };
                 });
                 (~secs.()).yield;
             };

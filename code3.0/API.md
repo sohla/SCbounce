@@ -101,10 +101,18 @@ Personalities may override:
 - Lifecycle: `~init`, `~deinit`, `~plot`.
 - IMU-rate tick: `~next` (always fires when device is enabled, ~30 Hz).
 - **[COTF]** state-gated ticks (fire alongside `~next` only while the
-  matching `~roomState` is current, same signature `|d|`, same rate):
-  `~idleNext`, `~tuningNext`, `~pieceNext`, `~curtainNext`. Note: the
-  `\silent` state has no per-tick hook — it's a one-shot hard mute
-  handled in `~onRoomState` (set amp to 0 in the `\silent` branch).
+  matching `~roomState` is current, same rate ~30 Hz):
+  `~idleNext`, `~tuningNext`, `~pieceNext`, `~curtainNext`. Signature
+  is `|d, ctx|` — `d` is the device, `ctx` is a trimmed snapshot of
+  the score context (fields: `state`, `voicePool`, `loudness`,
+  `tension`, `brightness`, `density`, `register`, `sectionId`,
+  `phraseId`, `chord`, `key`, `scale`, `p`, `m`). No change flags or
+  beat-event booleans — those live on the full ctx passed to beat
+  hooks. Lets state ticks mix gesture and score features at IMU rate.
+  Nil-safe defaults are set at controller boot, so `ctx` is always a
+  valid Event even before the first beat. The `\silent` state has no
+  per-tick hook — it's a one-shot hard mute handled in `~onRoomState`
+  (set amp to 0 in the `\silent` branch).
 - Beat-aligned hooks dispatched from the conductor's score Routine
   (single ctx Event arg): `~onTick`, `~onHalf`, `~onBeat`, `~onBar`,
   `~onPhrase`, `~onSection`, `~onChord`, `~onKey`, `~onScale`. ctx
