@@ -1,9 +1,19 @@
+/*
+gestures:    [beat, shake, tilt]
+description: Pdef pattern firing per-note sample-playback synths on ~beatClock; state sets pitch/octave/dur; gesture drives amp and (in piece) octave via gyro tilt
+sound:       harp sample library; soft rolling idle drone; tuning bends up over ~20 s; active arpeggios during piece
+pitch:       \root from score voice pool wrapped to pitch class; \octave state-driven (idle 3–6, tuning 5, piece 4–9 from tilt, curtain last-value)
+rhythm:      note per \dur ~beatClock tick; state sets dur (idle 0.5–1 by amp threshold, tuning 0.75, piece 0.5–1 by amp threshold, curtain 0.5)
+instruments: [Aetherharp]
+*/
 
 var m = ~model;
 var ob = ~outBus ? 0; // capture NOW — ~init bodies run under topEnvironment.use
 var lastTime = 0;
 var idleNotes = [0,2,4,5,7,5,4,2];
 var tuneTime = 0;
+var group;   // dedicated Group for this personality's synths — see
+             // concert_p_files.md §5 (Pdef personalities need this)
 //------------------------------------------------------------
 
 var noteToMidi = { |noteName|
@@ -115,10 +125,13 @@ SynthDef(\funBass, {
 	});
 
 	topEnvironment.use{
+		group = Group.new;
+
 		Pdef(m.ptn,
 			Pbind(
 				\instrument, \stereoSampler,
 				\out, ob,
+				\group, group,    // route every event's synth into our group
 				\type, \customEvent,
 				\note, 0,
 				\root, Pfunc { ~scoreVoicePool.choose.wrap(0,11).asInteger},
@@ -128,6 +141,17 @@ SynthDef(\funBass, {
 		);
 
 		Pdef(m.ptn).play(~beatClock, quant: ~scoreBeatsPerBar * ~scoreEventsPerBeat);
+
+		// On beat-clock re-anchor (seek): stop the Pdef so TempoClock
+		// doesn't dump backlog, kill in-flight synths in the group so
+		// nothing is stuck at sustain, then restart. freeAll wrapped in
+		// s.bind so it lands after any /s_new bundle still in flight —
+		// see concert_p_files.md §6.
+		~onResync = { |idx|
+			Pdef(m.ptn).stop;
+			s.bind { group.freeAll };
+			Pdef(m.ptn).play(~beatClock, quant: ~scoreBeatsPerBar * ~scoreEventsPerBeat);
+		};
 	};
 };
 
@@ -135,13 +159,23 @@ SynthDef(\funBass, {
 ~deinit = ~deinit <> {
 	Pdef(m.ptn).remove;
 
-	samplesLib.do({|sample|
-		postf("buffer dealloc [%] \n", sample.buffer);
-		sample.buffer.free;
-		s.sync;
-	});
-	
-	
+	// Kill synths first (with latency-safe /g_freeAll), then free
+	// sample buffers — order matters so no PlayBuf is still reading
+	// from a buffer we're about to /b_free. fork so s.sync actually
+	// waits for the server (s.sync is only meaningful inside a Routine).
+	fork {
+		if (group.notNil) {
+			s.bind { group.freeAll };
+			s.sync;                    // wait for /g_freeAll to complete
+			group.free;
+			group = nil;
+		};
+		samplesLib.do({|sample|
+			postf("buffer dealloc [%] \n", sample.buffer);
+			sample.buffer.free;
+			s.sync;
+		});
+	};
 };
 
 
@@ -178,14 +212,15 @@ SynthDef(\funBass, {
 		\idle,    { },
 		\tuning,  { tuneTime = TempoClock.beats },
 		\piece,   { },
-		\curtain, { }
+		\curtain, { },
+		\silent,  { Pdef(m.ptn).set(\amp, 0); }
 	);
 };
 
 //------------------------------------------------------------
 // State-gated ticks — ~next always runs (gesture → amp/octave), these
 // override amp per state so silence is enforced regardless of gesture.
-~idleNext    = {|d| 
+~idleNext    = {|d, ctx|
 	var amp = ((m.rrateMassFiltered) * 2.0).lincurve(0, 1.0, -60, -18, -4);
 	Pdef(m.ptn).set(\octave, [3,4,5,6].choose);
 	Pdef(m.ptn).set(\root,0);
@@ -203,7 +238,7 @@ SynthDef(\funBass, {
 
 };
 
-~tuningNext  = {|d| 
+~tuningNext  = {|d, ctx|
 	var amp = ((m.rrateMassFiltered) * 2.0).lincurve(0, 1.0, -60, -18, -4);
 	Pdef(m.ptn).set(\octave, 5);
 	Pdef(m.ptn).set(\root,0);
@@ -220,7 +255,7 @@ SynthDef(\funBass, {
 	
 };
 
-~pieceNext   = {|d|
+~pieceNext   = {|d, ctx|
 
 	var amp = (m.accelMassFiltered + m.rrateMassFiltered).half.lincurve(0,1.5,-70,-18,-1);
 	var oct = (d.sensors.gyroEvent.y / pi.half).lincurve(-1,1,4,9,1).asInteger;
@@ -240,7 +275,7 @@ SynthDef(\funBass, {
 
 };
 
-~curtainNext = {|d| 
+~curtainNext = {|d, ctx|
 	var amp = ((m.rrateMassFiltered) * 2.0).lincurve(0, 1.0, -60, -28, -4);
 	Pdef(m.ptn).set(\amp, amp.dbamp); 
 	Pdef(m.ptn).set(\dur, 0.5);
