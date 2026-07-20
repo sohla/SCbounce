@@ -305,17 +305,31 @@ s.waitForBoot({
 
             ~routine.stop;
             ~playSynth.free;
-            // nil out after freeing: with ~conductorAudioEnabled=false no new
-            // stream is cued below, so a stale reference here would make the
-            // NEXT seek close an already-freed Buffer — the throw aborts the
-            // routine before ~scheduleFromIndex and the score walker never
-            // restarts (found live on the 2026-07-14 bench, second QLab fire).
-            if (~stream.notNil) { ~stream.close; ~stream.free; ~stream = nil; };
+            ~playSynth = nil;
 
+            // Hold onto ~stream across seeks — don't .free the buffer.
+            // The client-side bufferAllocator is shared with every
+            // personality's Buffer.read; if we free/realloc on every
+            // seek, personalities allocating (or reloading) in the
+            // window between free and realloc can grab our bufnum and
+            // end up with a buffer that DiskIn is streaming Beethoven
+            // audio into (harp/dulcimer playing the conductor track).
+            // Instead: close the file handle, re-cue into the SAME
+            // buffer at the new startFrame. bufnum stays stable → no
+            // allocator collision. First-run path allocates via
+            // cueSoundFile so ~stream isn't nil on subsequent seeks.
             if (~conductorAudioEnabled) {
-                ~stream = Buffer.cueSoundFile(s, ~musicPath.standardizePath,
-                    startFrame, ~fileChans, ~bufFrames);
-                s.sync;
+                if (~stream.notNil) {
+                    ~stream.close;
+                    s.sync;
+                    ~stream.read(~musicPath.standardizePath,
+                        startFrame, ~bufFrames, 0, true);
+                    s.sync;
+                } {
+                    ~stream = Buffer.cueSoundFile(s, ~musicPath.standardizePath,
+                        startFrame, ~fileChans, ~bufFrames);
+                    s.sync;
+                };
             };
 
             startT = SystemClock.seconds - seekT;
