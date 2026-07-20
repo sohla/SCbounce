@@ -135,15 +135,12 @@ SynthDef(\funBass, {
 //------------------------------------------------------------
 ~deinit = ~deinit <> {
 	Pdef(m.ptn).remove;
-	// hack a delay to ensure the Pdef is removed before the samples are freed
-	fork{
-		1.0.yield;
-		samplesLib.do({|sample|
-			postf("buffer dealloc [%] \n", sample.buffer);
-			sample.buffer.free;
-			s.sync;
-		});
-	};
+
+	samplesLib.do({|sample|
+		postf("buffer dealloc [%] \n", sample.buffer);
+		sample.buffer.free;
+		s.sync;
+	});
 	
 	
 };
@@ -209,7 +206,7 @@ SynthDef(\funBass, {
 
 ~tuningNext  = {|d| 
 	var amp = ((m.rrateMassFiltered) * 2.0).lincurve(0, 1.0, -60, -18, -4);
-	Pdef(m.ptn).set(\octave, [5].choose);
+	Pdef(m.ptn).set(\octave, 5);
 	Pdef(m.ptn).set(\root,0);
 	Pdef(m.ptn).set(\amp, amp.dbamp);
 	Pdef(m.ptn).set(\ptch, 0.8);

@@ -1,15 +1,22 @@
 (
 	[
 		"silence",
+		"cotf_simple1",
+		
+		"cotf_simple2",
+		"cotf_simple3",
+		"cotf_simple4",
 		"cotf_simple5",
+		"cotf_simple6",
+
+
+
+
+
 		"cotf_harp1",
 		"cotf_dulcimer1",
 		
 		
-		"cotf_simple4",
-		"cotf_simple3",
-		"cotf_simple2",
-		"cotf_simple1",
 		"cotf_drums1",
 		"cotf_drums2",
 		"cotf_drums3",
