@@ -12,10 +12,13 @@ var ob = ~outBus ? 0; // capture NOW — ~init bodies run under topEnvironment.u
 var lastTime = 0;
 var idleNotes = [0,2,4,5,7,5,4,2];
 var tuneTime = 0;
+var group;   // dedicated Group for this personality's synths — lets
+             // ~onResync fan gate=0 to all in-flight notes so nothing
+             // gets stuck at sustain after a seek.
 //------------------------------------------------------------
 
-m.accelMassFilteredAttack = 0.99;
-m.accelMassFilteredDecay = 0.3;
+m.accelMassFilteredAttack = 0.7;
+m.accelMassFilteredDecay = 0.2;
 m.rrateMassFilteredAttack = 0.999;
 m.rrateMassFilteredDecay = 0.6;
 m.gyroFilteredAttack = 0.7;
@@ -25,49 +28,65 @@ m.gyroFilteredDecay = 0.7;
 // Simple sine synth with ADSR + detune. Per-note lifetime (self-frees
 // via Done.freeSelf), driven by the Pdef in ~init. `\detune` is a freq
 // multiplier — analogous to `\ptch` on the harp's stereoSampler.
-SynthDef(\simple, {|out=0, amp=0.0, freq=440, detune=1,
-	attack=0.001, decay=0.03, sustain=0.8, release=0.59, gate=1|
+SynthDef(\simple, {|out=0, amp=0.0, freq=440, attack=0.001, decay=0.03, sustain=0.8, release=0.59, gate=1, ffreq = 1440|
 	var env = EnvGen.kr(Env.adsr(attack, decay, sustain, release), gate, doneAction: Done.freeSelf);
-	var sig = SinOsc.ar(freq * detune, 0, 1) ! 2;
-	Out.ar(out, sig * env * amp);
+	var sig = Saw.ar(freq, LFCub.ar(freq/2,0,pi),0.3) + SinOsc.ar(freq/2,0,1);
+	var filter = RLPF.ar(sig, ffreq, 0.3);
+    Out.ar(out, filter!2 * env * amp);
 }).add;
 
 //------------------------------------------------------------
 ~init = ~init <> {
 	topEnvironment.use{
+		group = Group.new;
+
 		Pdef(m.ptn,
 			Pbind(
 				\instrument, \simple,
 				\out, ob,
-				\octave, 5,
-				// \dur, 0.5,
-				// Freq computed from the current voice pool wrapped to a pitch
-				// class, then transposed into the current \octave register.
-				// Bypasses default event's midinote calc to keep the mapping
-				// obvious. Nil guards on both pool and octave — the first
-				// event can fire before any Pdef.set from a state hook has
-				// landed, and the event chain doesn't always inherit
-				// default.octave (=5.0) reliably.
-				\freq, Pfunc {
-					var pool  = ~scoreVoicePool ? [69];
-					var pitch = pool.choose.asInteger.wrap(0, 11);
-					var oct   = (~octave ? 5).asInteger;
-					(pitch + (12 * oct)).midicps
-				},
+				\group, group,   // route every event's synth into our group
 				\args, #[],
 
 			);
 		);
 
-		// Pdef(m.ptn).play(~beatClock, quant: ~scoreBeatsPerBar * ~scoreEventsPerBeat);
-		Pdef(m.ptn).set(\dur, 0.5);
-		Pdef(m.ptn).play;
+		Pdef(m.ptn).play(~beatClock, quant: ~scoreBeatsPerBar * ~scoreEventsPerBeat);
+		Pdef(m.ptn).set(\dur, 1);
+		Pdef(m.ptn).set(\freq, 60.midicps);
+
+		// On beat-clock re-anchor (fires from OSCdef(\beatSync) after seek
+		// or large phase error): stop the Pdef, kill every in-flight
+		// synth in the group, restart the Pdef.
+		//
+		// Critical: freeAll must be sent via s.bind so it inherits the
+		// same s.latency as Pbind's /s_new. Without s.bind, /g_freeAll
+		// arrives at the server IMMEDIATELY, but the last in-flight
+		// /s_new (bundled by Pbind with s.latency) lands ~200 ms later
+		// into an empty group — stuck at sustain, no /n_set gate=0
+		// scheduled because Pdef.stop cancelled the release schedule.
+		// With s.bind, both messages carry s.latency; wall-clock
+		// ordering (our freeAll sent AFTER the last event) is preserved
+		// on the server timeline.
+		~onResync = { |idx|
+			Pdef(m.ptn).stop;
+			s.bind { group.freeAll };
+			Pdef(m.ptn).play(~beatClock, quant: ~scoreBeatsPerBar * ~scoreEventsPerBeat);
+		};
 	};
 };
 
 //------------------------------------------------------------
 ~deinit = ~deinit <> {
 	Pdef(m.ptn).remove;
+	// Nuclear stop on unload. freeAll wrapped in s.bind so it lands
+	// after any in-flight /s_new bundle (Pbind sends at s.latency). The
+	// group.free itself doesn't need latency — it targets the group
+	// node which our freeAll didn't touch, so nothing races on it.
+	if (group.notNil) {
+		s.bind { group.freeAll };
+		group.free;
+		group = nil;
+	};
 };
 
 //------------------------------------------------------------
@@ -79,77 +98,104 @@ SynthDef(\simple, {|out=0, amp=0.0, freq=440, detune=1,
 // the synth during \piece. \silent handled one-shot here (no ~silentNext).
 ~onRoomState = {|ctx|
 	switch(ctx.state,
-		\idle,    { },
-		\tuning,  { tuneTime = TempoClock.beats },
-		\piece,   { },
-		\curtain, { },
-		\silent,  { Pdef(m.ptn).set(\amp, 0); }
+		\idle,    { 
+			Pdef(m.ptn).set(\attack, 0.03);
+			Pdef(m.ptn).set(\release, 1.4);
+		},
+		\tuning,  { 
+			tuneTime = TempoClock.beats;
+			Pdef(m.ptn).set(\attack, 0.07);
+			Pdef(m.ptn).set(\release, 0.4);
+		},
+		\piece,   { 
+		},
+		\curtain, { 
+			Pdef(m.ptn).set(\attack, 0.03);
+			Pdef(m.ptn).set(\release, 1.4);
+		},
+		\silent,  { 
+			Pdef(m.ptn).set(\amp, 0); 
+		}
 	);
 };
 
 //------------------------------------------------------------
 // State-gated ticks — same shape as cotf_harp1, minus the sample-only
 // bits. Each fires at ~30 Hz while its state is current.
-~idleNext = {|d|
-	var amp = ((m.rrateMassFiltered) * 2.0).lincurve(0, 1.0, -60, -18, -4);
-	Pdef(m.ptn).set(\octave, 3);
-	Pdef(m.ptn).set(\freq, 200);
+~idleNext = {|d, ctx|
+	var amp = ((m.rrateMassFiltered) * 2.0).lincurve(0, 1.0, -60, -25, -4);
+	var ffreq = ((d.sensors.gyroEvent.x / pi).fold(-0.5,0.5) * 2).lincurve(-1.0, 1.0, 4000, 8000, 3);
+	var dur = m.accelMassFiltered.lincurve(0, 2.5, 2, 1, -1);
+	var pchi = m.gyroZFiltered.fold(-0.5,0.5).lincurve(-0.5,0.5,0,idleNotes.size,-1).asInteger;
+
+	Pdef(m.ptn).set(\ffreq, ffreq);
 	Pdef(m.ptn).set(\amp, amp.dbamp);
-	Pdef(m.ptn).set(\dur, 0.125);
-	// "idle".postln;
-	// if (amp > -25, {
-	// 	if (TempoClock.beats > (lastTime + 1), {
-	// 		Pdef(m.ptn).set(\dur, 0.5);
-	// 		lastTime = TempoClock.beats;
-	// 	});
-	// }, {
-	// 	Pdef(m.ptn).set(\dur, 1);
-	// });
+	Pdef(m.ptn).set(\dur, dur);
+	Pdef(m.ptn).set(\freq, (81 +  idleNotes[pchi]).midicps);
 };
 
-~tuningNext = {|d|
-	var amp = ((m.rrateMassFiltered) * 2.0).lincurve(0, 1.0, -60, -18, -4);
-	Pdef(m.ptn).set(\octave, 5);
-	Pdef(m.ptn).set(\amp, amp.dbamp);
-	Pdef(m.ptn).set(\detune, 0.8);
+~tuningNext = {|d, ctx|
+	var amp = ((m.rrateMassFiltered) * 2.0).lincurve(0, 1.0, -60, -28, -4);
+	var tt = 15.0;
 
-	if ((TempoClock.beats - tuneTime) < 20, {
-		Pdef(m.ptn).set(\detune, 1.0 + ((TempoClock.beats - tuneTime) / 25.0));
+	Pdef(m.ptn).set(\amp, amp.dbamp);
+	Pdef(m.ptn).set(\dur, 1.0.rrand(1.7));
+
+	if( (TempoClock.beats-tuneTime) < tt, {
+		var val = (TempoClock.beats-tuneTime) / tt;
+		Pdef(m.ptn).set(\freq, (81 + (val.linexp(0, 1, 1, 0.0001) * 4)).midicps);
+	},{
+		Pdef(m.ptn).set(\freq, (81).midicps);
+
 	});
-
-	Pdef(m.ptn).set(\dur, 0.75);
 };
 
-~pieceNext = {|d|
-	var amp = (m.accelMassFiltered + m.rrateMassFiltered).half.lincurve(0, 1.5, -70, -18, -1);
-	var oct = (d.sensors.gyroEvent.y / pi.half).lincurve(-1, 1, 4, 9, 1).asInteger;
+~pieceNext = {|d, ctx|
+	var amp = (m.accelMassFiltered + m.rrateMassFiltered).half.lincurve(0, 1.5, -70, -24, -1);
+	var oct = (d.sensors.gyroEvent.y / pi.half).lincurve(-1, 1, 7, 10, 1).asInteger;
+	var pitch = ctx.voicePool.choose.asInteger.wrap(0, 11);
+	var durs = [2,1];
+	var dur = m.accelMassFiltered.lincurve(0, 2.0, 0, durs.size-1, 1).asInteger;
+	var ffreq = ((d.sensors.gyroEvent.x / pi).fold(-0.5,0.5) * 2).lincurve(-1.0, 1.0, 400, 8000, 3);
 
-	Pdef(m.ptn).set(\amp, amp.dbamp);
-	Pdef(m.ptn).set(\octave, oct);
+	Pdef(m.ptn).set(\ffreq, ffreq);
+	Pdef(m.ptn).set(\dur, durs[dur]);
+	Pdef(m.ptn).set(\freq, (pitch + (12 * oct)).midicps);	
+	Pdef(m.ptn).set(\amp, amp.dbamp * ctx.loudness.linlin(0, 1, 0.3, 1.3));
 	Pdef(m.ptn).set(\detune, 1);
+	Pdef(m.ptn).set(\attack, 0.01);
+	Pdef(m.ptn).set(\release, 0.8);
 
-	if (amp > -30, {
-		if (TempoClock.beats > (lastTime + 1), {
-			Pdef(m.ptn).set(\dur, 0.5);
-			lastTime = TempoClock.beats;
-		});
-	}, {
-		Pdef(m.ptn).set(\dur, 1.0);
-	});
 };
 
-~curtainNext = {|d|
-	Pdef(m.ptn).set(\amp, -60.dbamp);
+~curtainNext = {|d, ctx|
+	var amp = ((m.rrateMassFiltered) * 2.0).lincurve(0, 1.0, -60, -40, -4);
+	var ffreq = ((d.sensors.gyroEvent.x / pi).fold(-0.5,0.5) * 2).lincurve(-1.0, 1.0, 4000, 8000, 3);
+	var dur = m.accelMassFiltered.lincurve(0, 2.5, 1, 0.2, -1);
+	var pchi = m.gyroZFiltered.fold(-0.5,0.5).lincurve(-0.5,0.5,0,idleNotes.size,-1).asInteger;
+
+	Pdef(m.ptn).set(\ffreq, ffreq);
+	Pdef(m.ptn).set(\amp, amp.dbamp);
+	Pdef(m.ptn).set(\dur, 1);
 };
 
 //------------------------------------------------------------
 // Beat-aligned hooks. Empty stubs — fill in as ideas arise.
-~onTick    = {|ctx| /* every subdivision */ };
-~onHalf    = {|ctx| /* on half-bar change */ };
-~onBeat    = {|ctx| /* every true beat */ };
+~onTick    = {|ctx| 
+};
+
+~onHalf    = {|ctx|
+	// var pitch = ctx.voicePool.choose.asInteger.wrap(0, 11);
+	// Pdef(m.ptn).set(\freq, (pitch + (12 * 7)).midicps);	
+};
+
+~onBeat    = {|ctx| 
+ };
+
 ~onBar     = {|ctx|
 	// "simple6 onBar %  (sec % / phr %)".format(ctx.barIdx, ctx.sectionId, ctx.phraseId).postln;
 };
+
 ~onPhrase  = {|ctx| /* on phrase change */ };
 ~onSection = {|ctx| /* on section change */ };
 ~onChord   = {|ctx| /* on chord change */ };
@@ -160,5 +206,8 @@ SynthDef(\simple, {|out=0, amp=0.0, freq=440, detune=1,
 ~plotMin = -1;
 ~plotMax = 1;
 ~plot = { |d,p|
-	[(m.accelMassFiltered + m.rrateMassFiltered).half, m.accelMassFiltered];
+	// [(m.accelMassFiltered + m.rrateMassFiltered).half, m.accelMassFiltered];
+		// [(d.sensors.gyroEvent.z / pi)];//left right
+	[m.gyroZFiltered.fold(-0.5,0.5).lincurve(-0.5,0.5,0,1,-1)];
+
 };

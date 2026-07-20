@@ -94,7 +94,7 @@ SynthDef(\simple, {|out=0, amp=0.0, freq=440, attack=0.001, decay=0.03, sustain=
 ~idleNext = {|d, ctx|
 	var amp = m.accelMassFiltered.lincurve(0, 2.5, -90, -18, -1);
 	synth.set(\amp, amp.dbamp);
-	synth.set(\freq, 60.midicps);
+	synth.set(\freq, 69.midicps);
 };
 
 ~tuningNext = {|d, ctx|
@@ -104,9 +104,9 @@ SynthDef(\simple, {|out=0, amp=0.0, freq=440, attack=0.001, decay=0.03, sustain=
 
 	if( (TempoClock.beats-tuneTime) < tt, {
 		var val = TempoClock.beats-tuneTime / tt;
-		synth.set(\freq, val.linexp(0, 1, 60.midicps, 57.midicps));
+		synth.set(\freq, val.linexp(0, 1, 62.midicps, 69.midicps));
 	},{
-		synth.set(\freq, 57.midicps);
+		synth.set(\freq, 69.midicps);
 	});
 };
 
