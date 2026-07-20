@@ -79,43 +79,41 @@ SynthDef(\simple, {|out=0, amp=0.0, freq=440, attack=0.001, decay=0.03, sustain=
 // (once/sec) so we can see the routing without spamming the post window.
 ~idleNext = {|d|
 
-	var amp = (m.accelMass + m.rrateMass).lincurve(0, 1.0, -70, -2, 4);
-	var ffreq = ((d.sensors.gyroEvent.x / pi).fold(-0.5,0.5) * 2).lincurve(-1.0, 1.0, 500, 12000, 3);
+	var amp = (m.accelMass + m.rrateMass).lincurve(0, 1.0, -70, -12, 4);
+	var ffreq = ((d.sensors.gyroEvent.x / pi).fold(-0.5,0.5) * 2).lincurve(-1.0, 1.0, 200, 600, 3);
 
 	synth.set(\amp, amp.dbamp);
 	synth.set(\lagAttack, 0.4);
 	synth.set(\lagRelease, 1.1);
 	synth.set(\ffreq, ffreq);
 	
-	if(amp < -69, {
-		if(TempoClock.beats > (lastTime + 0.3),{
-			ideleNotes = ideleNotes.rotate(-1);
-			{synth.set(\freq, (ideleNotes[0]).midicps)}.defer(0.4);
-			lastTime = TempoClock.beats;
-		});
+	if(TempoClock.beats > (lastTime + 0.4),{
+		ideleNotes = ideleNotes.rotate(-1);
+		{synth.set(\freq, (ideleNotes[0]).midicps)}.defer(0.4);
+		lastTime = TempoClock.beats;
 	});
 	
 };
 
 ~tuningNext = {|d|
 
-	var amp = (m.accelMass + m.rrateMass).lincurve(0, 1.0, -70, -2, 4);
-	var ffreq = ((d.sensors.gyroEvent.x / pi).fold(-0.5,0.5) * 2).lincurve(-1.0, 1.0, 500, 12000, 3);
-	var fmod = ((d.sensors.gyroEvent.y / pi.half).lincurve(-1.0,1.0,0.95,1.03,3));
-	var famp = 0.0;
-	if( (TempoClock.beats-tuneTime) < 20, {
-		// ((TempoClock.beats-tuneTime) / 20.0).postln;
-		famp = ((TempoClock.beats-tuneTime) / 25.0) * 0.2;
+	var amp = (m.accelMass + m.rrateMass).lincurve(0, 1.0, -70, -12, 4);
+	var ffreq = ((d.sensors.gyroEvent.x / pi).fold(-0.5,0.5) * 2).lincurve(-1.0, 1.0, 200, 800, 3);
+	var fmod = ((d.sensors.gyroEvent.y / pi.half).lincurve(-1.0,1.0,-3.0,3.0,1));
+	var tt = 15.0;
+
+	if( (TempoClock.beats-tuneTime) < tt, {
+		var val = (TempoClock.beats-tuneTime) / tt;
+		synth.set(\freq, (45 + (val.linexp(0, 1, 1, 0.0001) * fmod)).midicps);
+	},{
+		synth.set(\freq, 45.midicps);
+
 	});
-
-	fmod = ((d.sensors.gyroEvent.y / pi.half).lincurve(-1.0,1.0,1-famp,1.0+famp,-1));
-
 
 	synth.set(\amp, amp.dbamp);
 	synth.set(\lagAttack, 0.4);
 	synth.set(\lagRelease, 2.1);
 	synth.set(\ffreq, ffreq);
-	synth.set(\freq, (ideleNotes[1]).midicps * fmod);
 	
 	if(amp < -69, {
 		if(TempoClock.beats > (lastTime + 1),{
@@ -153,14 +151,17 @@ SynthDef(\simple, {|out=0, amp=0.0, freq=440, attack=0.001, decay=0.03, sustain=
 // ctx carries everything the hook needs. s.bind so the /n_set lands on
 // the same s.latency timeline as the audio.
 ~onTick = {|ctx|
+};
+~onHalf    = {|ctx|
 	s.bind {
 		synth.set(\freq,
 			((ctx.voicePool.first.asInteger % 12) + baseMidi - 12).midicps);
 	};
 };
-~onHalf    = {|ctx| /* on half-bar change */ };
-~onBeat    = {|ctx| /* every true beat */ };
-~onBar     = {|ctx| /* every downbeat */ };
+~onBeat    = {|ctx| 
+};
+~onBar     = {|ctx| 
+};
 ~onPhrase  = {|ctx| /* on phrase change */ };
 ~onSection = {|ctx| /* on section change */ };
 ~onChord   = {|ctx| /* on chord change */ };
