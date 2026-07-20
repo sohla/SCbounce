@@ -92,6 +92,97 @@ s.waitForBoot({
             ]));
     };
 
+    // [COTF] last voiceMute-set gain per seat (1 = unmuted, default). Read by
+    // resetSeat's un-duck restore so a reset never un-mutes a seat that a
+    // staff voiceMute muted before the reset fired — written additively by
+    // \cotfVoiceMute below, never by anything else.
+    ~cotfSeatGain = Dictionary.new;
+
+    // --- COTF per-seat output meter (day-1 fixes, 2026-07-19) ---------------
+    // Taps ~cotfSeatBus (pre gain/trim/master) so a masterLevel dip can't fake
+    // five dead seats. Peak-hold between /airkit/getLevels polls so sparse
+    // plucks register at ~1 Hz polling. Cost: 5 synths, SendReply at 10 Hz.
+    SynthDef(\cotfMeter, { |in = 0, seat = 1|
+        var sig = In.ar(in, 2);
+        var amp = Amplitude.kr(Mix(sig) * 0.5, attackTime: 0.001, releaseTime: 0.1);
+        SendReply.kr(Impulse.kr(10), '/cotf/meter', amp, replyID: seat);
+    }).add;
+    s.sync;
+
+    ~cotfPeaks = Array.fill(5, 0.0);
+    ~cotfMeters = Dictionary();
+    (1..5).do { |seat|
+        ~cotfMeters.put(seat,
+            Synth.tail(s, \cotfMeter, [\in, ~cotfSeatBus.at(seat).index, \seat, seat]));
+    };
+
+    OSCdef(\cotfMeterAccum, { |msg|
+        var seat = msg[2].asInteger, amp = msg[3];
+        if ((seat >= 1) and: { seat <= 5 }) {
+            ~cotfPeaks[seat - 1] = max(~cotfPeaks[seat - 1], amp);
+        };
+    }, '/cotf/meter', s.addr);
+
+    OSCdef(\cotfGetLevels, { |msg, time, addr|
+        var peaks = ~cotfPeaks.copy;
+        ~cotfPeaks = Array.fill(5, 0.0);
+        addr.sendMsg("/airkit/levels/reply", ~cotfRoom, *(peaks.collect(_.asFloat)));
+    }, '/airkit/getLevels');
+
+    // --- COTF seat-scoped reset (day-1 fixes) -------------------------------
+    // Teardown + silence ONLY. The M0 server re-pushes the saved personality
+    // (~300ms later) through the ordinary /airkit/loadPersonality path, so a
+    // reloaded seat rejoins exactly like any mid-piece personality load — the
+    // conductor, ~beatClock and score position are NEVER touched here.
+    ~cotfResetSeat = { |seat|
+        var d = ~devices.detect { |dev| dev.index == seat };
+        var mon = ~cotfMonitors.at(seat);
+        if (d.isNil) {
+            "[COTF] resetSeat %: no live device — no-op".format(seat).postln;
+        } {
+            // duck: silence wins over elegance. Fast, fixed lagT — never
+            // inherit a sticky \lagT left over from a prior voiceMute call.
+            mon !? { mon.set(\lagT, 0.02, \gain, 0) };
+            if (d.env.notNil) {
+                d.env.use { ~model !? { Pdef(~model.ptn).stop } };
+            };
+            // Full teardown via the shared unload path (procRout free + ~deinit):
+            NetAddr.localAddr.sendMsg("/airkit/unLoadPersonality", d.port);
+            // [COTF] d.name is left stale by unLoadPersonality (it only frees
+            // procRout + runs ~deinit, it never resets the personality label).
+            // Mark it explicitly so M0's getSeats reconcile backstop and the
+            // Patches admin page don't keep reporting the torn-down
+            // personality as still loaded if the explicit reload is lost.
+            // Task 6 (M0-driven reload) should treat "none" the same as any
+            // other drifted/silent seat.
+            d.name = "none";
+            // Restore the duck after the dust settles; the reload (server-driven)
+            // arrives with gain audible. Restore to the last voiceMute-set gain
+            // (default 1) rather than a literal 1, so a reset never un-mutes a
+            // seat that a staff voiceMute muted before the reset fired.
+            {
+                mon !? { mon.set(\lagT, 0.2, \gain, ~cotfSeatGain.at(seat) ? 1) };
+            }.defer(0.6);
+            "[COTF] resetSeat %: torn down (port %)".format(seat, d.port).postln;
+        };
+    };
+
+    OSCdef(\cotfResetSeat, { |msg|
+        if (msg.size > 1) {
+            var seat = msg[1].asInteger;
+            if ((seat >= 1) and: { seat <= 5 }) { ~cotfResetSeat.(seat) } {
+                "[COTF] resetSeat: bad seat %".format(seat).postln;
+            };
+        } {
+            "[COTF] resetSeat: bad seat (no arg)".postln;
+        };
+    }, '/airkit/resetSeat');
+
+    OSCdef(\cotfPanic, {
+        "[COTF] panic: resetting all seats".postln;
+        (1..5).do { |seat| ~cotfResetSeat.(seat) };
+    }, '/airkit/panic');
+
     // [COTF] latency bench tap: evaluate in the IDE to hear seat 1 on the
     // Genelec (MOTU out 1) AND the headset simultaneously — one phone
     // recording then measures the headset leg (scripts/onset-gap.py, COTF repo):
@@ -105,7 +196,9 @@ s.waitForBoot({
         var fade = (msg[3] ? 1).asFloat.max(0.01);
         d !? {
             ~cotfMonitors.at(d.index) !? { |syn|
-                syn.set(\lagT, fade, \gain, 1 - muted);
+                var g = 1 - muted;
+                ~cotfSeatGain.put(d.index, g);   // [COTF] resetSeat's un-duck reads this
+                syn.set(\lagT, fade, \gain, g);
                 "voiceMute: device % (seat %) -> %".format(d.port, d.index, muted).postln;
             };
         };

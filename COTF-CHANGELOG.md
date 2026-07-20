@@ -4,6 +4,36 @@ One entry per push batch from the Concerts of the Future side, newest first: wha
 why, and what (if anything) behaves differently on your machine. The intent is that nothing
 here ever changes how AirKit behaves for you — if it does, that's a bug, tell us.
 
+## 2026-07-19 — Day-1 fixes: per-seat meters, seat reset, and panic (cotf)
+
+Three new additive OSC commands on `\cotfMonitor` in `main_cotf.scd` (your `main.sc` untouched),
+all born from real-world issues discovered 2026-07-18. **Nothing changes for your workflow** —
+these are staff-side operational tools.
+
+- **`/airkit/getLevels`** — replies `/airkit/levels/reply <room> <p1..p5>` with per-seat linear
+  peak amplitude since the last poll, tapped on the seat bus **before** any gain/trim/master
+  multiplier. Your patches are untouched. Why: Room 3 is loud; staff had no way to see whether a
+  patch was genuinely silent, broken, or just playing quietly. Now the staff iPad shows a live
+  meter per seat (updates ~1 Hz, lightweight), so a dead patch is visible immediately.
+- **`/airkit/resetSeat <seat 1-5>`** — tears down one seat only (ducks the monitor gain
+  mute-aware via a new `~cotfSeatGain` dict, stops the Pdef, calls unload via the shared path,
+  sets `d.name = "none"`). **No reload in SC.** When the M0 server sees a seat reset, it
+  re-pushes the saved personality ~300 ms later — the seat re-enters like any mid-piece load, the
+  conductor and beat clock stay locked, and the other four seats keep playing without interruption.
+  Why: two 2026-07-18 experiences had a seat go completely silent mid-show (groups 27–29), and
+  the only safe recovery is per-seat reload, not a full-room engine restart.
+- **`/airkit/panic`** — fires `/airkit/resetSeat` for all five seats in sequence (no delay
+  between). Our server fires this on every room transition and at close-down, so hanging voices
+  die cleanly without requiring an engine stop. Why: a harp lingered in Room 2 long after its
+  performer had moved to Room 3 — likely an un-released voice or held OSC value. This might be
+  the same family as the stuck note at end-of-day, which we'll track alongside.
+- **New `COTF-ISSUES.md`** — shared issue tracking for you and us. The first entries show what we found
+  on 2026-07-18 (stuck note, hanging voices, a dead seat, and your compositional balance notes);
+  feel free to add and comment. Checkbox on each when it's closed.
+
+All three commands ship in commits `08096fe` + `7aa1cac` + fix `7fcd505`, both in `code3.0/cotf/`
+only. `API.md` updated to match.
+
 ## 2026-07-18 (overnight) — Master level + speaker-test tone + state single-writer (cotf)
 
 Two small additive OSC controls on `\cotfMonitor` (both rooms, `main_cotf.scd` only — your

@@ -90,6 +90,9 @@ saved seats.
 | `/airkit/outputMode` | `"physical"\|"webrtc" [fadeSec=0.5]` | COTF Room 3 only: crossfade all five seat monitors between the MOTU chair-speaker outs (12–16, mono) and the BlackHole webrtc buses. Inactive side is hard 0. Room 2 ignores it. Boot default: env `COTF_OUTPUT_MODE` (absent = webrtc). |
 | `/airkit/masterLevel` | `linearGain(0–4.0) [fadeSec=0.5]` | per-room overall output level, applied to all five seat monitors independently of voiceMute (0/1) and the boot-fixed room trim. M0 owns persistence (settings) and re-asserts on both Room 2 and Room 3 dead→alive. |
 | `/airkit/testTone` | `seat(1–5) [durSec=1.0]` | speaker-test burst (440 Hz × seat.midiratio) routed through the seat's monitor chain, proving masterGain + outputMode + the physical/webrtc leg end to end. |
+| `/airkit/getLevels` | — | [COTF] replies `/airkit/levels/reply <room> <p1..p5>` to sender: per-seat linear peak (0–1) since the previous getLevels, tapped pre-gain/trim/master on `~cotfSeatBus`; peaks reset on reply |
+| `/airkit/resetSeat` | `seat(1-5)` | [COTF] teardown+silence one seat: duck monitor gain, stop Pdef, unload personality via the shared unload path. No reload (M0 re-pushes saved personality), no conductor/clock/state side-effects, other seats untouched |
+| `/airkit/panic` | — | [COTF] resetSeat for seats 1–5; used by M0 on room transition/clear/close-down to kill hanging voices without an engine restart |
 
 ## Personality environment contract (informational)
 
