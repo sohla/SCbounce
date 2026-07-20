@@ -84,7 +84,7 @@ saved seats.
 ### [COTF] Room state & voice mute
 | Address | Args | Notes |
 |---|---|---|
-| `/airkit/state` | `idle\|tuning\|piece\|curtain` | room-wide. `idle`: transport stopped, free play. `tuning`: transport stopped, `~scoreVoicePool` pinned to `[69]` (A4). `piece`: conductor owns pool/hooks; transport still started by go/seek. `curtain`: piece is over; transport untouched, personalities decide tail behaviour. Can be sent externally, but is **also triggered internally** by the conductor when the score walker exhausts (natural end — not on manual `~stop`). Dispatches `~onRoomState.(ctx)` to personalities, where `ctx = (state:, prevState:, stateChanged:)`. |
+| `/airkit/state` | `idle\|tuning\|piece\|curtain\|silent` | room-wide. `idle`: transport stopped, free play. `tuning`: transport stopped, `~scoreVoicePool` pinned to `[69]` (A4). `piece`: conductor owns pool/hooks; transport still started by go/seek. `curtain`: piece is over; transport untouched, personalities decide tail behaviour (musical fade / resolve). Can be sent externally, but is **also triggered internally** by the conductor when the score walker exhausts (natural end — not on manual `~stop`). `silent`: hard mute; transport & routine keep running so pitch/pattern state stays fresh — leaving `silent` back into `piece` resumes mid-phrase in perfect beat sync. Unlike the other four states, `silent` has **no per-tick hook** (`~silentNext` doesn't exist) — personalities handle it one-shot in their `~onRoomState \silent` branch by setting amp/gain to 0. Dispatches `~onRoomState.(ctx)` to personalities, where `ctx = (state:, prevState:, stateChanged:)`. |
 | `/airkit/getState` | — | replies `/airkit/state/reply <name>` to sender |
 | `/airkit/voiceMute` | `devicePort muted(0|1) [fadeSec=1]` | real audio mute on the device's monitor gain; pattern keeps playing so unmute is instant and beat-synced |
 | `/airkit/outputMode` | `"physical"\|"webrtc" [fadeSec=0.5]` | COTF Room 3 only: crossfade all five seat monitors between the MOTU chair-speaker outs (12–16, mono) and the BlackHole webrtc buses. Inactive side is hard 0. Room 2 ignores it. Boot default: env `COTF_OUTPUT_MODE` (absent = webrtc). |
@@ -102,7 +102,9 @@ Personalities may override:
 - IMU-rate tick: `~next` (always fires when device is enabled, ~30 Hz).
 - **[COTF]** state-gated ticks (fire alongside `~next` only while the
   matching `~roomState` is current, same signature `|d|`, same rate):
-  `~idleNext`, `~tuningNext`, `~pieceNext`, `~curtainNext`.
+  `~idleNext`, `~tuningNext`, `~pieceNext`, `~curtainNext`. Note: the
+  `\silent` state has no per-tick hook — it's a one-shot hard mute
+  handled in `~onRoomState` (set amp to 0 in the `\silent` branch).
 - Beat-aligned hooks dispatched from the conductor's score Routine
   (single ctx Event arg): `~onTick`, `~onHalf`, `~onBeat`, `~onBar`,
   `~onPhrase`, `~onSection`, `~onChord`, `~onKey`, `~onScale`. ctx

@@ -203,6 +203,9 @@ var interpretPersonality = {|d|
         ~tuningNext  = { |d| };  // only when ~roomState == \tuning
         ~pieceNext   = { |d| };  // only when ~roomState == \piece
         ~curtainNext = { |d| };  // only when ~roomState == \curtain
+        // note: \silent has no per-tick hook — it's a one-shot hard mute.
+        // Personalities handle it in ~onRoomState by setting amp/gain to 0
+        // on the \silent case (and restoring on state exit as needed).
 
         //------------------------------------------------------------
         interpret(str);
@@ -245,6 +248,9 @@ var createProcRout = {|d, index|
                     // defined. ~roomState lives in topEnvironment (set by
                     // conductorController), so we read it explicitly since
                     // we're inside d.env.use.
+                    // No case for \silent — mute is handled one-shot in the
+                    // personality's ~onRoomState \silent branch. Continuous
+                    // amp updates would just re-set 0 every 30 ms.
                     switch(topEnvironment[\roomState],
                         \idle,    { ~idleNext.(d) },
                         \tuning,  { ~tuningNext.(d) },

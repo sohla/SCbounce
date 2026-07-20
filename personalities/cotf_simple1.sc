@@ -73,11 +73,17 @@ SynthDef(\simple, {|out=0, amp=0.0, freq=440, attack=0.001, decay=0.03, sustain=
 			synth.set(\ffreq, 5000);
 
 		},
-		\curtain, { 
+		\curtain, {
 			synth.set(\lagAttack, 0.1);
 			synth.set(\lagRelease, 1.9);
 			synth.set(\ffreq, 500);
 
+		},
+		\silent, {
+			// One-shot hard mute — no ~silentNext hook, this fires once
+			// on state entry. Synth stays alive; ~pieceNext/etc. resume
+			// setting amp on the next state change back to piece.
+			synth.set(\amp, 0);
 		}
 	);
 };

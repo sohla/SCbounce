@@ -369,7 +369,7 @@ s.waitForBoot({
     OSCdef(\conductorState, { |msg|
         var new = msg[1].asString.asSymbol;
         var old = ~roomState;
-        if ([\idle, \tuning, \piece, \curtain].includes(new).not) {
+        if ([\idle, \tuning, \piece, \curtain, \silent].includes(new).not) {
             "unknown /airkit/state: %".format(msg[1]).postln;
         } {
             ~roomState = new;
@@ -377,7 +377,8 @@ s.waitForBoot({
                 \idle,    { ~stop.value },
                 \tuning,  { ~stop.value; ~scoreVoicePool = [69]; ~scoreVoiceAmp = 0.15; },
                 \piece,   { },
-                \curtain, { }  // internal trigger when score exhausts; personality decides tail behaviour
+                \curtain, { },  // internal trigger when score exhausts; personality decides tail behaviour
+                \silent,  { }   // hard mute; transport & routine keep running so unmute is beat-locked
             );
             block {
                 var stateCtx = (state: new, prevState: old, stateChanged: true);
