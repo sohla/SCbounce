@@ -110,8 +110,10 @@ Personalities may override:
   `~onPhrase`, `~onSection`, `~onChord`, `~onKey`, `~onScale`. ctx
   fields: `idx, beatInBar, isDown, isTrueBeat, barIdx, half, sectionId,
   phraseId, chord, key, scale` (each with matching `prev*` +
-  `*Changed` where applicable), `voicePool`, `voiceAmp`, `state`
-  (current `~roomState`), `p` (score bar entry), `m` (meta bar entry).
+  `*Changed` where applicable), `voicePool`, raw score features as
+  floats (`loudness, tension, brightness, density, register`), `state`
+  (current `~roomState`), `p` (score bar entry — everything else the
+  score has), `m` (meta bar entry).
 - Clock re-anchor: `~onResync.(idx)`.
 - **[COTF]** Room state change: `~onRoomState.(ctx)` with `ctx = (state:,
   prevState:, stateChanged:)`.

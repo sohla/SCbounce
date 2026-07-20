@@ -51,7 +51,6 @@ thisProcess.interpreter.executeFile(libDir +/+ "metafile.scd");
 
 // --- score-context state read by downstream personalities -----------------
 ~scoreVoicePool = ~scoreVoicePool ? [69];   // current half's MIDI pitches (Int)
-~scoreVoiceAmp  = ~scoreVoiceAmp  ? 0.15;
 // ~scoreGroup is created inside s.waitForBoot (below), once the server is
 // live. Building it here would leave the env var pointing at a node ID that
 // the live server doesn't actually own — synths targeting it would log
@@ -151,8 +150,7 @@ s.waitForBoot({
     ~routine   = nil;
 
     // The score-aware step. On every beats.txt event:
-    //   1. Update ~scoreVoicePool / ~scoreVoiceAmp state read by
-    //      downstream personalities.
+    //   1. Update ~scoreVoicePool state read by downstream personalities.
     //   2. Dispatch personality hooks (~onTick / ~onBeat / ~onBar /
     //      ~onSection) to every enabled device's env, driven by this
     //      Routine's SystemClock sleep against ~beats[i] — precise
@@ -175,7 +173,8 @@ s.waitForBoot({
         ~routine.stop;
         ~routine = Routine({
             (startIdx .. ~beats.size - 1).do { |i|
-                var isDown, isTrueBeat, p, m, half, halves, voiceAmp, bassAmp, chordAmp, chordCutoff;
+                var isDown, isTrueBeat, p, m, half, halves;
+                var loudness, tension, brightness, density, register;
                 var sectionId, sectionChanged;
                 var phraseId, phraseChanged, halfChanged;
                 var chord, chordChanged, key, keyChanged, scale, scaleChanged;
@@ -191,10 +190,14 @@ s.waitForBoot({
                 halves = p["fitted_notes"];
                 half   = (beatInBar * halves.size / eventsPerBar).floor.clip(0, halves.size - 1);
 
-                voiceAmp    = 0.04 + (0.18 * p["loudness"].asFloat);
-                bassAmp     = 0.05 + (0.25 * p["loudness"].asFloat);
-                chordAmp    = 0.08 + (0.20 * p["loudness"].asFloat);
-                chordCutoff = 600 + (3000 * p["tension"].asFloat);
+                // Raw score features exposed on ctx as floats. Each
+                // personality decides how to map these to amp / cutoff /
+                // whatever — no pre-scaling here.
+                loudness   = p["loudness"].asFloat;
+                tension    = p["tension"].asFloat;
+                brightness = p["brightness"].asFloat;
+                density    = p["density"].asFloat;
+                register   = p["register"].asFloat;
 
                 // Bridge for malformed score entries: if halves[half] is nil
                 // or empty (fitted_notes[half] = []), fall back to A4 [69] so
@@ -203,7 +206,6 @@ s.waitForBoot({
                 // safety net.
                 ~scoreVoicePool = (halves[half] ?? { [] }).collect(_.asInteger);
                 if (~scoreVoicePool.isEmpty) { ~scoreVoicePool = [69] };
-                ~scoreVoiceAmp  = voiceAmp;
 
                 // Change-detection: build a comparable string/int for each
                 // tracked field so identical-content values compare equal
@@ -246,7 +248,11 @@ s.waitForBoot({
                     prevScale:      lastScale,
                     scaleChanged:   scaleChanged,
                     voicePool:      ~scoreVoicePool,
-                    voiceAmp:       voiceAmp,
+                    loudness:       loudness,
+                    tension:        tension,
+                    brightness:     brightness,
+                    density:        density,
+                    register:       register,
                     state:          ~roomState,
                     p:              p,
                     m:              m
@@ -273,16 +279,6 @@ s.waitForBoot({
                 lastChord     = chord;
                 lastKey       = key;
                 lastScale     = scale;
-
-                s.bind {
-                    if (isTrueBeat) {
-                        // ~playScoreChord.(p, 0, chordAmp, chordCutoff);
-                    };
-                    if (isDown) {
-                        // ~playScoreBass.(p, half, bassAmp);
-                        // ~playBeatClick.(true, -1);
-                    };
-                };
 
                 ~addr.sendMsg("/beat", i);
             };
@@ -375,7 +371,7 @@ s.waitForBoot({
             ~roomState = new;
             switch(new,
                 \idle,    { ~stop.value },
-                \tuning,  { ~stop.value; ~scoreVoicePool = [69]; ~scoreVoiceAmp = 0.15; },
+                \tuning,  { ~stop.value; ~scoreVoicePool = [69]; },
                 \piece,   { },
                 \curtain, { },  // internal trigger when score exhausts; personality decides tail behaviour
                 \silent,  { }   // hard mute; transport & routine keep running so unmute is beat-locked
