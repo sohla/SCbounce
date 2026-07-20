@@ -226,33 +226,37 @@ SynthDef(\funBass, {
 	Pdef(m.ptn).set(\root,0);
 	Pdef(m.ptn).set(\amp, amp.dbamp);
 
-	if(amp > -25, {
+	if(amp > -35, {
 		if(TempoClock.beats > (lastTime + 1),{
-			Pdef(m.ptn).set(\dur, 0.5);
+			Pdef(m.ptn).set(\dur, 1);
 			lastTime = TempoClock.beats;
 		},{
 		});
 	},{
-		Pdef(m.ptn).set(\dur, 1);
+		Pdef(m.ptn).set(\dur, 2);
 	});
 
 };
 
 ~tuningNext  = {|d, ctx|
-	var amp = ((m.rrateMassFiltered) * 2.0).lincurve(0, 1.0, -60, -18, -4);
+	var amp = ((m.rrateMassFiltered) * 2.0).lincurve(0, 1.0, -60, -24, -4);
+	var tt = 15.0;
+
 	Pdef(m.ptn).set(\octave, 5);
 	Pdef(m.ptn).set(\root,0);
 	Pdef(m.ptn).set(\amp, amp.dbamp);
-	Pdef(m.ptn).set(\ptch, 0.8);
+	Pdef(m.ptn).set(\ptch, 1);
+	Pdef(m.ptn).set(\dur, 3.0.rrand(5.0));
 
-	if( (TempoClock.beats-tuneTime) < 20, {
-		Pdef(m.ptn).set(\ptch, 1.0 + ((TempoClock.beats-tuneTime) / 25.0));
+	if( (TempoClock.beats-tuneTime) < tt, {
+		var val = (TempoClock.beats-tuneTime) / tt;
+
+		Pdef(m.ptn).set(\ptch, (val.linexp(0, 1, 1.08, 1.0)));
+	},{
+		Pdef(m.ptn).set(\ptch, 1.0);
 	});
 
 
-	Pdef(m.ptn).set(\dur, 0.75);
-	
-	
 };
 
 ~pieceNext   = {|d, ctx|
@@ -276,9 +280,9 @@ SynthDef(\funBass, {
 };
 
 ~curtainNext = {|d, ctx|
-	var amp = ((m.rrateMassFiltered) * 2.0).lincurve(0, 1.0, -60, -28, -4);
+	var amp = ((m.rrateMassFiltered) * 2.0).lincurve(0, 1.0, -80, -35, -4);
 	Pdef(m.ptn).set(\amp, amp.dbamp); 
-	Pdef(m.ptn).set(\dur, 0.5);
+	Pdef(m.ptn).set(\dur, 3);
 };
 
 

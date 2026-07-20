@@ -130,7 +130,7 @@ SynthDef(\simple, {|out=0, amp=0.0, freq=440, attack=0.001, decay=0.03, sustain=
 
 	Pdef(m.ptn).set(\ffreq, ffreq);
 	Pdef(m.ptn).set(\amp, amp.dbamp);
-	Pdef(m.ptn).set(\dur, dur);
+	Pdef(m.ptn).set(\dur, dur );
 	Pdef(m.ptn).set(\freq, (81 +  idleNotes[pchi]).midicps);
 };
 

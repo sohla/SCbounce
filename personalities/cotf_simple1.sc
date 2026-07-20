@@ -99,7 +99,7 @@ SynthDef(\simple, {|out=0, amp=0.0, freq=440, attack=0.001, decay=0.03, sustain=
 
 ~tuningNext = {|d, ctx|
 	var amp = m.accelMassFiltered.lincurve(0, 2.5, -90, -18, -1);
-	var tt = 5.0;
+	var tt = 15.0;
 	synth.set(\amp, amp.dbamp);
 
 	if( (TempoClock.beats-tuneTime) < tt, {
