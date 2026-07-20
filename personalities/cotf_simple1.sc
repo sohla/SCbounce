@@ -1,7 +1,10 @@
 /*
 gestures: [beat, shake]
-sound:    warm sine + saw drone; state-driven filter (dark idle, bright piece); pitch tracks score voice pool per subdivision
-pairs:    [Aetherharp, Cellaris]
+description: simple sin + saw synth; pitch and amp mapped directly from gestures; simple states implemented 
+sound:	warm sine + saw drone with warm to buzzing timbre
+pitch: first note in score voice pool
+rhythm: none
+instruments:    [Template]
 */
 
 var m = ~model;
@@ -49,9 +52,6 @@ SynthDef(\simple, {|out=0, amp=0.0, freq=440, attack=0.001, decay=0.03, sustain=
 };
 
 //------------------------------------------------------------
-// ~next = {|d| };  // state-gated ticks handle everything
-
-//------------------------------------------------------------
 // Room-state routing — capture tuneTime on tuning entry so ~tuningNext
 // can use it as an origin for any time-based envelope. Other branches
 // are hook sites for one-shot state-entry logic.
@@ -80,9 +80,6 @@ SynthDef(\simple, {|out=0, amp=0.0, freq=440, attack=0.001, decay=0.03, sustain=
 
 		},
 		\silent, {
-			// One-shot hard mute — no ~silentNext hook, this fires once
-			// on state entry. Synth stays alive; ~pieceNext/etc. resume
-			// setting amp on the next state change back to piece.
 			synth.set(\amp, 0);
 		}
 	);
@@ -91,6 +88,9 @@ SynthDef(\simple, {|out=0, amp=0.0, freq=440, attack=0.001, decay=0.03, sustain=
 //------------------------------------------------------------
 // State-gated ticks. Each fires at ~30 Hz while its state is current
 // and .sets params on the long-lived synth.
+
+// ~next = {|d| };  // state-gated ticks handle everything, always gets called regardless of roomState
+
 ~idleNext = {|d|
 	var amp = m.accelMassFiltered.lincurve(0, 2.5, -90, -18, -1);
 	synth.set(\amp, amp.dbamp);
