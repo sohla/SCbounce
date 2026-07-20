@@ -92,6 +92,13 @@ OSCdef(\beatSync, { |msg|
     var interval, observedTempo, phaseError, kPdyn, newTempo;
     if(~lastBeatT.isNil) {
         ~beatClock.beats = idx;
+        // Reset tempo to baseline on anchor. PLL smoothing branch will
+        // converge to observedTempo (typically 8 for _mul4) within a
+        // couple of /beat events. Without this, a tempo that drifted
+        // to the clip (50) from a previous burst stays clipped and the
+        // clock races ahead of idx, triggering the re-anchor loop.
+        ~beatClock.tempo = 2;
+        ~obsTempo = 2;
         ~lastBeatT = now;
         ~onResync.value(idx);
         "beat sync: anchored at idx %".format(idx).postln;
@@ -99,6 +106,8 @@ OSCdef(\beatSync, { |msg|
         phaseError = idx - ~beatClock.beats;
         if(phaseError.abs > ~anchorThreshold) {
             ~beatClock.beats = idx;
+            ~beatClock.tempo = 2;   // reset tempo — see comment above
+            ~obsTempo = 2;
             ~lastBeatT = now;
             ~onResync.value(idx);
             "beat sync: re-anchored at idx % (err was %)".format(idx, phaseError.round(0.001)).postln;
