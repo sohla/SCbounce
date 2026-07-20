@@ -138,9 +138,12 @@ SynthDef(\simple, {|out=0, amp=0.0, freq=440, attack=0.001, decay=0.03, sustain=
 
 ~curtainNext = {|d|
 
-	var amp = (m.accelMass + m.rrateMass).lincurve(0, 1.0, -70, -20, 4);
+	var amp = (m.accelMass + m.rrateMass).lincurve(0, 1.0, -70, -30, 4);
+	var ffreq = ((d.sensors.gyroEvent.x / pi).fold(-0.5,0.5) * 2).lincurve(-1.0, 1.0, 300, 500, 3);
+	synth.set(\freq, 57.midicps);
+	synth.set(\ffreq, ffreq);
 	synth.set(\amp, amp.dbamp);
-	synth.set(\lagAttack, 0.4);
+	synth.set(\lagAttack, 0.6);
 	synth.set(\lagRelease, 2.0);
 };
 

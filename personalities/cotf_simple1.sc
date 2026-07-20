@@ -27,7 +27,7 @@ m.gyroFilteredDecay = 0.7;
 SynthDef(\simple, {|out=0, amp=0.0, freq=440, attack=0.001, decay=0.03, sustain=0.8, release=0.59, gate=1, lagAttack=0.002, lagRelease=0.3, ffreq = 440|
 	var env = EnvGen.kr(Env.adsr(attack, decay, sustain, release), gate, doneAction: Done.freeSelf);
 	var sig = Saw.ar(freq ,0.2,0.3) + SinOsc.ar(freq/2,0,1);
-	var filter = RLPF.ar(sig, ffreq, 0.2);
+	var filter = RLPF.ar(sig, ffreq.lag(0.1), 0.2);
     Out.ar(out, filter!2 * env * amp.lagud(lagAttack, lagRelease));
 }).add;
 
