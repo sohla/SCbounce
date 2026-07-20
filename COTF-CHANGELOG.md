@@ -4,6 +4,17 @@ One entry per push batch from the Concerts of the Future side, newest first: wha
 why, and what (if anything) behaves differently on your machine. The intent is that nothing
 here ever changes how AirKit behaves for you — if it does, that's a bug, tell us.
 
+## 2026-07-20 — Research data collection note (cotf, docs only)
+
+**Nothing in AirKit changes.** We've started collecting anonymised movement data from the show
+for a CHI/NIME-oriented paper on DMI evaluation — a flag-gated tap in the COTF server's router
+on M0, upstream of your input, feeding a brand-new separate process (`cotf-research`) with its
+own database. No new OSC address, no code on M1, no change to what reaches your devices. Added
+`docs/cotf-research-plan.md` (one page: study framing, the 8-feature movement battery, survey
+items, the anonymisation model, and co-authorship) in case you want the detail or want to be a
+co-author. If the research collector is ever off or crashed, nothing about AirKit's behaviour
+changes — it's designed to be invisible from your side.
+
 ## 2026-07-19 — Day-1 fixes: per-seat meters, seat reset, and panic (cotf)
 
 Three new additive OSC commands on `\cotfMonitor` in `main_cotf.scd` (your `main.sc` untouched),
