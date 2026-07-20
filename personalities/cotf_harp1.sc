@@ -219,7 +219,7 @@ SynthDef(\funBass, {
 	});
 
 
-	Pdef(m.ptn).set(\dur, 1);
+	Pdef(m.ptn).set(\dur, 0.75);
 	
 	
 };

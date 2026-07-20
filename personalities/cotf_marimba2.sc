@@ -265,7 +265,7 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, start=0, pan=0, freq=
 	// personalities so the summed level stays in the same neighbourhood.
 	// (3 voices summing at max amp X is roughly +9.5 dB vs one voice at X.)
 	var amp = m.accelMassFiltered.lincurve(0, 1, -40, -4, -1);
-	var oct = (d.sensors.gyroEvent.y / pi.half).lincurve(-1, 1, 4, 6, 1).asInteger;
+	var oct = (d.sensors.gyroEvent.y / pi.half).lincurve(-1, 1, 5, 7, 1).asInteger;
 	
 	if(m.accelMass < 0.01,{
 		amp = -10;
