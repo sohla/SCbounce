@@ -1,7 +1,18 @@
+/*
+gestures:    [beat, shake, tilt]
+description: Pdef pattern firing per-note marimba chord strikes on ~beatClock; 2-bar rhythmic pattern of triads (with inversions and rests) voiced from score fitted_notes; gesture drives amp + octave; tuning uses \ptch for smooth pitch bend
+sound:       marimba mallet triads; 15-strike 2-bar pattern with syncopated rests; chord voicing follows the score's actual harmony (fitted_notes union, not roman-numeral fabrication); tuning bends smoothly into pitch via \ptch
+pitch:       chord ARRAY from ~scoreVoicePool via chordVoicedOffsets (up to 3 tones, octave-folded to [baseMidi±12]); patternInv drives inversion per slot; \octave state-driven; \ptch = sample rate multiplier for continuous bend (tuning ramps 0.7 → 1.0 over 20 s, applied to all three voices simultaneously)
+rhythm:      fixed 2-bar pattern (patternInv + patternDur, 15 events across 32 clock beats); phase offset = 4 for pickup alignment; \dur is Pfunc-locked to patternDur (not state-modulatable)
+instruments: [Gravitone]
+*/
 
 var m = ~model;
 var ob = ~outBus ? 0; // capture NOW — ~init bodies run under topEnvironment.use
 var phase = 4;
+var tuneTime = 0;
+var group;   // dedicated Group for this personality's synths — see
+             // concert_p_files.md §5 (Pdef personalities need this)
 
 //------------------------------------------------------------
 // shared: note-name → MIDI parser.
@@ -158,9 +169,10 @@ m.gyroFilteredAttack = 0.7;
 m.gyroFilteredDecay = 0.7;
 
 //------------------------------------------------------------
-SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, start=0, pan=0, freq=440,
+SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, ptch=1, start=0, pan=0, freq=440,
     attack=0.01, decay=0.1, sustain=0.3, release=1.2, gate=1, cutoff=20000, rq=1|
-	var lr = rate * BufRateScale.kr(bufnum);
+	// ptch multiplies the sample playback rate — continuous pitch bend.
+	var lr = rate * BufRateScale.kr(bufnum) * ptch;
 	var env = EnvGen.kr(Env.new([0, 1, 1, 0], [attack, sustain, release]), doneAction: 2);
 	var sig = PlayBuf.ar(2, bufnum, rate: [lr, lr * 1.0017], startPos: start * BufFrames.kr(bufnum), loop: 0);
 	sig = Balance2.ar(sig[0], sig[1], pan, amp * env);
@@ -206,10 +218,13 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, start=0, pan=0, freq=
 	});
 
 	topEnvironment.use{
+		group = Group.new;
+
 		Pdef(m.ptn,
 			Pbind(
 				\instrument, \stereoSampler,
 				\out, ob,
+				\group, group,   // route every event's synth into our group
 				\type, \customEvent,
 
 				// dur — clock-derived, follows patternDur.
@@ -224,7 +239,7 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, start=0, pan=0, freq=
 				// so the chord is exactly what the score plays. no chord_root/
 				// roman parsing, no fabricated triads. offsets are relative to
 				// MIDI 60; customEvent's `+ 12*~octave` transposes the whole
-				// voicing up/down as ~next modulates octave.
+				// voicing up/down as ~pieceNext modulates octave.
 				// nil slot returns Rest() (silent event, still advances by dur).
 				\note, Pfunc{ |e|
 					var voicing = chordVoicedOffsets.(60);
@@ -236,40 +251,115 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, start=0, pan=0, freq=
 
 				// root fixed at 0 — voicing already carries the correct absolute
 				// pitch classes (offsets from MIDI 60 into the target register).
-				// ~octave from ~next still transposes via customEvent's math.
+				// ~octave from ~pieceNext still transposes via customEvent's math.
 				\root, 0,
 			);
 		);
 
 		Pdef(m.ptn).play(~beatClock, quant: [~scoreBeatsPerBar * ~scoreEventsPerBeat, phase]);
+
+		// On beat-clock re-anchor (seek): stop the Pdef so TempoClock
+		// doesn't dump backlog, kill in-flight synths in the group so
+		// nothing is stuck at sustain, then restart with the same
+		// [barLen, phase] quant. freeAll wrapped in s.bind so it lands
+		// after any /s_new bundle still in flight — see concert_p_files.md §6.
+		~onResync = { |idx|
+			Pdef(m.ptn).stop;
+			s.bind { group.freeAll };
+			Pdef(m.ptn).play(~beatClock, quant: [~scoreBeatsPerBar * ~scoreEventsPerBeat, phase]);
+		};
 	};
 };
 
 //------------------------------------------------------------
 ~deinit = ~deinit <> {
 	Pdef(m.ptn).remove;
-	samplesLib.do({|sample|
-		postf("buffer dealloc [%] \n", sample.buffer);
-		sample.buffer.free;
-		s.sync;
-	});
+
+	// Kill synths first (latency-safe /g_freeAll), then free sample
+	// buffers — order matters so no PlayBuf is still reading from a
+	// buffer we're about to /b_free. fork so s.sync actually waits.
+	fork {
+		if (group.notNil) {
+			s.bind { group.freeAll };
+			s.sync;
+			group.free;
+			group = nil;
+		};
+		samplesLib.do({|sample|
+			postf("buffer dealloc [%] \n", sample.buffer);
+			sample.buffer.free;
+			s.sync;
+		});
+	};
 };
 
 //------------------------------------------------------------
-~next = {|d|
-	// three simultaneous synths per hit — pull amp lower than the single-note
-	// personalities so the summed level stays in the same neighbourhood.
-	// (3 voices summing at max amp X is roughly +9.5 dB vs one voice at X.)
+// ~next = {|d| };  // state-gated ticks handle everything
+
+//------------------------------------------------------------
+~onRoomState = {|ctx|
+	switch(ctx.state,
+		\idle,    { },
+		\tuning,  { tuneTime = TempoClock.beats },
+		\piece,   { },
+		\curtain, { },
+		\silent,  { Pdef(m.ptn).set(\amp, 0); }
+	);
+};
+
+//------------------------------------------------------------
+~idleNext = {|d, ctx|
+	var amp = m.rrateMassFiltered.lincurve(0, 1.0, -70, -25, -4);
+	Pdef(m.ptn).set(\amp, amp.dbamp);
+	Pdef(m.ptn).set(\octave, [4, 5, 6].choose);
+	Pdef(m.ptn).set(\ptch, 1);
+};
+
+~tuningNext = {|d, ctx|
+	var amp = m.rrateMassFiltered.lincurve(0, 1.0, -70, -25, -4);
+	var tt = 20.0;
+	var elapsed = TempoClock.beats - tuneTime;
+
+	Pdef(m.ptn).set(\amp, amp.dbamp);
+	Pdef(m.ptn).set(\octave, 5);
+
+	if (elapsed < tt, {
+		Pdef(m.ptn).set(\ptch, (elapsed / tt).linlin(0, 1, 0.7, 1.0));
+	}, {
+		Pdef(m.ptn).set(\ptch, 1);
+	});
+};
+
+~pieceNext = {|d, ctx|
 	var amp = m.accelMassFiltered.lincurve(0, 1, -40, -4, -1);
 	var oct = (d.sensors.gyroEvent.y / pi.half).lincurve(-1, 1, 5, 7, 1).asInteger;
-	
-	if(m.accelMass < 0.01,{
+
+	if (m.accelMass < 0.01, {
 		amp = -10;
 	});
-	
+
 	Pdef(m.ptn).set(\amp, amp.dbamp);
 	Pdef(m.ptn).set(\octave, oct);
+	Pdef(m.ptn).set(\ptch, 1);
 };
+
+~curtainNext = {|d, ctx|
+	var amp = m.rrateMassFiltered.lincurve(0, 1.0, -70, -32, -4);
+	Pdef(m.ptn).set(\amp, amp.dbamp);
+	Pdef(m.ptn).set(\octave, [3, 4].choose);
+	Pdef(m.ptn).set(\ptch, 1);
+};
+
+//------------------------------------------------------------
+~onTick    = {|ctx| };
+~onHalf    = {|ctx| };
+~onBeat    = {|ctx| };
+~onBar     = {|ctx| };
+~onPhrase  = {|ctx| };
+~onSection = {|ctx| };
+~onChord   = {|ctx| };
+~onKey     = {|ctx| };
+~onScale   = {|ctx| };
 
 //------------------------------------------------------------
 ~plotMin = -1;

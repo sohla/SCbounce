@@ -1,6 +1,18 @@
+/*
+gestures:    [beat, shake, tilt]
+description: Pdef pattern firing per-note celesta sample synths on ~beatClock; single-note melody from score voice pool; gesture drives amp + octave; tuning uses \ptch for smooth pitch bend; odd-MIDI notes resample from nearest even-MIDI sample
+sound:       high-register bell timbre; crisp attack, long ringing tail; spacious 8th-note grid so tails bloom; tuning bends smoothly into pitch via \ptch
+pitch:       score voice pool wrapped to pitch class (root); \octave state-driven (idle random high, tuning 6, piece 5–7 from tilt, curtain low pair); \ptch = sample rate multiplier for continuous bend (tuning ramps 0.7 → 1.0 over 20 s); even-MIDI sample set + midiratio resample for odd notes
+rhythm:      per-note; \dur state-driven (piece 2 = 8th grid, idle 3, tuning 2, curtain 4)
+instruments: [Lumivox]
+*/
 
 var m = ~model;
 var ob = ~outBus ? 0; // capture NOW — ~init bodies run under topEnvironment.use
+var lastTime = 0;
+var tuneTime = 0;
+var group;   // dedicated Group for this personality's synths — see
+             // concert_p_files.md §5 (Pdef personalities need this)
 
 //------------------------------------------------------------
 // note-name → MIDI parser. handles the "INSTR_ES_mf_<NOTE>.wav" naming
@@ -40,9 +52,10 @@ m.gyroFilteredAttack = 0.7;
 m.gyroFilteredDecay = 0.7;
 
 //------------------------------------------------------------
-SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, start=0, pan=0, freq=440,
+SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, ptch=1, start=0, pan=0, freq=440,
     attack=0.01, decay=0.1, sustain=0.3, release=1.2, gate=1,cutoff=20000, rq=1|
-	var lr = rate * BufRateScale.kr(bufnum);
+	// ptch multiplies the sample playback rate — continuous pitch bend.
+	var lr = rate * BufRateScale.kr(bufnum) * ptch;
     var env = EnvGen.kr(Env.new([0, 1, 1, 0], [attack, sustain, release]), doneAction: 2);
 	var sig = PlayBuf.ar(2, bufnum, rate: [lr, lr * 1.0017], startPos: start * BufFrames.kr(bufnum), loop: 0);
     sig = Balance2.ar(sig[0], sig[1], pan, amp * env);
@@ -83,8 +96,10 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, start=0, pan=0, freq=
 	// odd-MIDI requests get resampled up a semitone from the nearest lower
 	// even-MIDI sample (rate = 1.midiratio). works here because celesta,
 	// like harp, is provided as a mostly-even-MIDI sample set.
+	// asInteger because SC's default ~octave is 5.0 (Float); the addition
+	// promotes ~note to Float and .odd is not defined on Float.
 	Event.addEventType(\customEvent, {|e|
-		~note = ~note + ~root + (12 * ~octave);
+		~note = (~note + ~root + (12 * ~octave)).asInteger;
 		if(~note.odd,{
 			~bufnum = findSampleBuffer.(~note-1);
 				~rate = 1.midiratio;
@@ -97,54 +112,192 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, start=0, pan=0, freq=
 	});
 
 	topEnvironment.use{
+		group = Group.new;
+
 		Pdef(m.ptn,
 			Pbind(
 				\instrument, \stereoSampler,
 				\out, ob,
+				\group, group,   // route every event's synth into our group
 				\type, \customEvent,
-				// half time vs. cotf_harp1 (which uses \dur, 1). one note per
-				// 8th note instead of per 16th — feels more spacious, gives the
-				// celesta's bell tail room to bloom before the next strike.
-				\dur, 2,
 				\note, 0,
 				\root, Pfunc { ~scoreVoicePool.choose.wrap(0,11).asInteger},
 			);
 		);
 
 		Pdef(m.ptn).play(~beatClock, quant: ~scoreBeatsPerBar * ~scoreEventsPerBeat);
+		// Default dur = 2 (8th-note grid, half rate of harp/marimba) — gives
+		// the celesta's bell tail room to bloom. State hooks override.
+		Pdef(m.ptn).set(\dur, 2);
 
+		// Reload guard: ~onRoomState only fires on state *change*, so on
+		// a reload during \tuning nothing would pause the freshly-started
+		// Pdef and you'd get the pattern layered on top of ~tuningNext
+		// single hits. Mirror ~onRoomState's \tuning branch here — pause
+		// immediately (quant means no events fire in between) and capture
+		// tuneTime so the \ptch ramp resumes from now.
+		if (~roomState == \tuning) {
+			Pdef(m.ptn).pause;
+			tuneTime = TempoClock.beats;
+		};
+
+		// On beat-clock re-anchor (seek): stop the Pdef so TempoClock
+		// doesn't dump backlog, kill in-flight synths in the group so
+		// nothing is stuck at sustain, then restart — unless we're in
+		// \tuning, where the pattern should stay paused (single hits
+		// via ~tuningNext instead). freeAll wrapped in s.bind so it
+		// lands after any /s_new bundle still in flight — see
+		// concert_p_files.md §6.
+		~onResync = { |idx|
+			Pdef(m.ptn).stop;
+			s.bind { group.freeAll };
+			if (~roomState != \tuning) {
+				Pdef(m.ptn).play(~beatClock, quant: ~scoreBeatsPerBar * ~scoreEventsPerBeat);
+			};
+		};
 	};
 };
 
 //------------------------------------------------------------
 ~deinit = ~deinit <> {
 	Pdef(m.ptn).remove;
-	// hack a delay to ensure the Pdef is removed before the samples are freed
-	fork{
-		1.0.yield;
-		samplesLib.do({|sample|
-			postf("buffer dealloc [%] \n", sample.buffer);
-			sample.buffer.free;
+
+	// Kill synths first (latency-safe /g_freeAll), then free sample
+	// buffers — order matters so no PlayBuf is still reading from a
+	// buffer we're about to /b_free. fork so s.sync actually waits.
+	// Both cleanups are notNil-guarded so ~deinit stays idempotent —
+	// titleView off+on calls unLoadPersonality then loadPersonality,
+	// each of which fires ~deinit on the same env, so without the
+	// samplesLib guard we'd .free every buffer twice ("Cannot call
+	// free on a Buffer that has been freed"). Match the group guard.
+	fork {
+		if (group.notNil) {
+			s.bind { group.freeAll };
 			s.sync;
-		});
+			group.free;
+			group = nil;
+		};
+		if (samplesLib.notNil) {
+			samplesLib.do({|sample|
+				postf("buffer dealloc [%] \n", sample.buffer);
+				sample.buffer.free;
+				s.sync;
+			});
+			samplesLib = nil;
+		};
 	};
-
-
 };
-
 
 //------------------------------------------------------------
-~next = {|d|
+// ~next = {|d| };  // state-gated ticks handle everything
 
-	// octave range 5–7 — celesta is characteristically high-register, and
-	// its sample set fully covers octaves 3–7 (octave 8 is missing sharps
-	// so avoid the top). cap at 7 so findSampleBuffer never returns nil.
-	var amp = m.accelMassFiltered.lincurve(0,1.4,-50,-12,-1);
-	var oct = (d.sensors.gyroEvent.y / pi.half).lincurve(-1,1,5,7,1).asInteger;
+//------------------------------------------------------------
+// Room-state routing — Pdef stays playing across all states; per-state
+// amp is set by the state-gated ticks so we only hear the celesta during
+// \piece. \silent handled one-shot here (no ~silentNext). Capture
+// tuneTime on \tuning entry for any time-based envelope.
+~onRoomState = {|ctx|
+	// Dispatched under d.env.use in conductorController, so ~beatClock /
+	// ~scoreBeatsPerBar / ~scoreEventsPerBeat resolve to nil here — wrap
+	// the whole switch in topEnvironment.use so score vars resolve.
+	// m / group / tuneTime are lexical vars, unaffected by env swap.
+	topEnvironment.use {
+		switch(ctx.state,
+			\idle,    {
+				Pdef(m.ptn).resume(~beatClock, quant: ~scoreBeatsPerBar * ~scoreEventsPerBeat);
+			},
+			\tuning,  {
+				tuneTime = TempoClock.beats;
+				Pdef(m.ptn).pause;
+				s.bind { group.freeAll };
+				m.accelMassFilteredAttack = 0.99;
+				m.accelMassFilteredDecay = 0.99;
+			},
+			\piece,   {
+				m.accelMassFilteredAttack = 0.99;
+				m.accelMassFilteredDecay = 0.5;
+				Pdef(m.ptn).resume(~beatClock, quant: ~scoreBeatsPerBar * ~scoreEventsPerBeat);
+			},
+			\curtain, {
+				Pdef(m.ptn).resume(~beatClock, quant: ~scoreBeatsPerBar * ~scoreEventsPerBeat);
+			},
+			\silent,  {
+				Pdef(m.ptn).set(\amp, 0);
+			}
+		);
+	};
+};
+
+//------------------------------------------------------------
+~idleNext = {|d, ctx|
+	var amp = m.accelMassFiltered.lincurve(0, 2.0, -70, -15, -4);
+	Pdef(m.ptn).set(\amp, amp.dbamp);
+	Pdef(m.ptn).set(\octave, [5, 6, 7].choose);
+	Pdef(m.ptn).set(\dur, 3);
+	Pdef(m.ptn).set(\ptch, 1);
+};
+
+~tuningNext = {|d, ctx|
+	// Pdef is paused for tuning (see ~onRoomState). Instead, fire a
+	// single celesta hit when accelMassFiltered crosses the threshold —
+	// throttled to once every 2 s via lastTime (harp1 ~idleNext idiom).
+	// \ptch rides the 0.7 → 1.0 ramp over 20 s so each triggered hit
+	// sounds progressively closer to true pitch.
+	var amp = m.accelMassFiltered.lincurve(0, 2.0, -70, -15, -4);
+	var tt = 20.0;
+	var elapsed = TempoClock.beats - tuneTime;
+	var ptch = if (elapsed < tt) {
+		(elapsed / tt).linlin(0, 1, 0.7, 1.0)
+	} { 1.0 };
+
+	if (m.accelMassFiltered > 0.5, {
+		if (TempoClock.beats > (lastTime + 0.2), {
+			// Fire via Event.play with \customEvent so the even/odd
+			// sample lookup + midiratio resample logic in ~init's
+			// handler runs unchanged. Target = A5 (root 9 + octave 6).
+			(
+				instrument: \stereoSampler,
+				type:       \customEvent,
+				out:        ob,
+				group:      group,
+				note:       0,
+				root:       9,
+				octave:     6,
+				amp:        amp.dbamp,
+				ptch:       ptch,
+			).play;
+			lastTime = TempoClock.beats;
+		});
+	});
+};
+
+~pieceNext = {|d, ctx|
+	var amp = m.accelMassFiltered.lincurve(0, 2.0, -70, -15, -1);
+	var oct = (d.sensors.gyroEvent.y / pi.half).lincurve(-1, 1, 6, 8, 1).asInteger;
 	Pdef(m.ptn).set(\amp, amp.dbamp);
 	Pdef(m.ptn).set(\octave, oct);
-
+	Pdef(m.ptn).set(\dur, 2);
+	Pdef(m.ptn).set(\ptch, 1);
 };
+
+~curtainNext = {|d, ctx|
+	var amp = m.rrateMassFiltered.lincurve(0, 1.0, -70, -30, -4);
+	Pdef(m.ptn).set(\amp, amp.dbamp);
+	Pdef(m.ptn).set(\octave, [7, 8].choose);
+	Pdef(m.ptn).set(\dur, 4);
+	Pdef(m.ptn).set(\ptch, 1);
+};
+
+//------------------------------------------------------------
+~onTick    = {|ctx| };
+~onHalf    = {|ctx| };
+~onBeat    = {|ctx| };
+~onBar     = {|ctx| };
+~onPhrase  = {|ctx| };
+~onSection = {|ctx| };
+~onChord   = {|ctx| };
+~onKey     = {|ctx| };
+~onScale   = {|ctx| };
 
 //------------------------------------------------------------
 ~plotMin = -1;

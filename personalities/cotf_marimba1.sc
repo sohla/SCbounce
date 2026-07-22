@@ -1,6 +1,18 @@
+/*
+gestures:    [beat, shake, tilt]
+description: Pdef pattern firing per-note marimba sample synths on ~beatClock; single-note melody from score voice pool; gesture drives amp + octave; tuning uses \ptch for smooth pitch bend; nearest-sample lookup for pitch class
+sound:       bright African marimba mallet strikes; mid-to-upper register (F2..B6); crisp transient, natural tail; tuning bends smoothly into pitch via \ptch
+pitch:       score voice pool wrapped to pitch class (root); \octave state-driven (idle random, tuning 5, piece 6–8 from tilt, curtain low pair); \ptch = sample rate multiplier for continuous bend (tuning ramps 0.7 → 1.0 over 20 s)
+rhythm:      per-note; \dur state-driven (piece 1 = 16th grid, idle 2, tuning 2, curtain 3)
+instruments: [Gravitone]
+*/
 
 var m = ~model;
 var ob = ~outBus ? 0; // capture NOW — ~init bodies run under topEnvironment.use
+var lastTime = 0;
+var tuneTime = 0;
+var group;   // dedicated Group for this personality's synths — see
+             // concert_p_files.md §5 (Pdef personalities need this)
 
 //------------------------------------------------------------
 // note-name → MIDI parser. same as cotf_harp1 / cotf_celesta1 — takes
@@ -60,9 +72,10 @@ m.gyroFilteredAttack = 0.7;
 m.gyroFilteredDecay = 0.7;
 
 //------------------------------------------------------------
-SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, start=0, pan=0, freq=440,
+SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, ptch=1, start=0, pan=0, freq=440,
     attack=0.01, decay=0.1, sustain=0.3, release=1.2, gate=1, cutoff=20000, rq=1|
-	var lr = rate * BufRateScale.kr(bufnum);
+	// ptch multiplies the sample playback rate — continuous pitch bend.
+	var lr = rate * BufRateScale.kr(bufnum) * ptch;
 	var env = EnvGen.kr(Env.new([0, 1, 1, 0], [attack, sustain, release]), doneAction: 2);
 	var sig = PlayBuf.ar(2, bufnum, rate: [lr, lr * 1.0017], startPos: start * BufFrames.kr(bufnum), loop: 0);
 	sig = Balance2.ar(sig[0], sig[1], pan, amp * env);
@@ -114,27 +127,49 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, start=0, pan=0, freq=
 	});
 
 	topEnvironment.use{
+		group = Group.new;
+
 		Pdef(m.ptn,
 			Pbind(
 				\instrument, \stereoSampler,
 				\out, ob,
+				\group, group,   // route every event's synth into our group
 				\type, \customEvent,
-				\dur, 1,
 				\note, 0,
 				\root, Pfunc { ~scoreVoicePool.choose.wrap(0,11).asInteger },
 			);
 		);
 
 		Pdef(m.ptn).play(~beatClock, quant: ~scoreBeatsPerBar * ~scoreEventsPerBeat);
+		Pdef(m.ptn).set(\dur, 1);   // default 16th grid; state hooks override
+
+		// On beat-clock re-anchor (seek): stop the Pdef so TempoClock
+		// doesn't dump backlog, kill in-flight synths in the group so
+		// nothing is stuck at sustain, then restart. freeAll wrapped in
+		// s.bind so it lands after any /s_new bundle still in flight —
+		// see concert_p_files.md §6.
+		~onResync = { |idx|
+			Pdef(m.ptn).stop;
+			s.bind { group.freeAll };
+			Pdef(m.ptn).play(~beatClock, quant: ~scoreBeatsPerBar * ~scoreEventsPerBeat);
+		};
 	};
 };
 
 //------------------------------------------------------------
 ~deinit = ~deinit <> {
 	Pdef(m.ptn).remove;
-	// hack a delay to ensure the Pdef is removed before the samples are freed
-	fork{
-		1.0.yield;
+
+	// Kill synths first (latency-safe /g_freeAll), then free sample
+	// buffers — order matters so no PlayBuf is still reading from a
+	// buffer we're about to /b_free. fork so s.sync actually waits.
+	fork {
+		if (group.notNil) {
+			s.bind { group.freeAll };
+			s.sync;
+			group.free;
+			group = nil;
+		};
 		samplesLib.do({|sample|
 			postf("buffer dealloc [%] \n", sample.buffer);
 			sample.buffer.free;
@@ -144,16 +179,75 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, start=0, pan=0, freq=
 };
 
 //------------------------------------------------------------
-~next = {|d|
-	// marimba playable range is F2..B6 (given the mf l1x filter). center
-	// modulation around octave 4–6 — marimba sings best in the mid-to-
-	// upper register, and octave 5 is roughly where the samples cluster
-	// most densely.
+// ~next = {|d| };  // state-gated ticks handle everything
+
+//------------------------------------------------------------
+// Room-state routing — Pdef stays playing across all states; per-state
+// amp is set by the state-gated ticks so we only hear the marimba during
+// \piece. \silent handled one-shot here (no ~silentNext). Capture
+// tuneTime on \tuning entry for any time-based envelope.
+~onRoomState = {|ctx|
+	switch(ctx.state,
+		\idle,    { },
+		\tuning,  { tuneTime = TempoClock.beats },
+		\piece,   { },
+		\curtain, { },
+		\silent,  { Pdef(m.ptn).set(\amp, 0); }
+	);
+};
+
+//------------------------------------------------------------
+~idleNext = {|d, ctx|
+	var amp = m.rrateMassFiltered.lincurve(0, 1.0, -60, -20, -4);
+	Pdef(m.ptn).set(\amp, amp.dbamp);
+	Pdef(m.ptn).set(\octave, [5, 6, 7].choose);
+	Pdef(m.ptn).set(\dur, 2);
+	Pdef(m.ptn).set(\ptch, 1);
+};
+
+~tuningNext = {|d, ctx|
+	var amp = m.rrateMassFiltered.lincurve(0, 1.0, -70, -22, -4);
+	var tt = 20.0;
+	var elapsed = TempoClock.beats - tuneTime;
+
+	Pdef(m.ptn).set(\amp, amp.dbamp);
+	Pdef(m.ptn).set(\octave, 5);
+	Pdef(m.ptn).set(\dur, 2);
+
+	if (elapsed < tt, {
+		Pdef(m.ptn).set(\ptch, (elapsed / tt).linlin(0, 1, 0.7, 1.0));
+	}, {
+		Pdef(m.ptn).set(\ptch, 1);
+	});
+};
+
+~pieceNext = {|d, ctx|
 	var amp = m.accelMassFiltered.lincurve(0, 1.4, -50, -5, -1);
 	var oct = (d.sensors.gyroEvent.y / pi.half).lincurve(-1, 1, 6, 8, 1).asInteger;
 	Pdef(m.ptn).set(\amp, amp.dbamp);
 	Pdef(m.ptn).set(\octave, oct);
+	Pdef(m.ptn).set(\dur, 1);
+	Pdef(m.ptn).set(\ptch, 1);
 };
+
+~curtainNext = {|d, ctx|
+	var amp = m.rrateMassFiltered.lincurve(0, 1.0, -70, -28, -4);
+	Pdef(m.ptn).set(\amp, amp.dbamp);
+	Pdef(m.ptn).set(\octave, [4, 5].choose);
+	Pdef(m.ptn).set(\dur, 3);
+	Pdef(m.ptn).set(\ptch, 1);
+};
+
+//------------------------------------------------------------
+~onTick    = {|ctx| };
+~onHalf    = {|ctx| };
+~onBeat    = {|ctx| };
+~onBar     = {|ctx| };
+~onPhrase  = {|ctx| };
+~onSection = {|ctx| };
+~onChord   = {|ctx| };
+~onKey     = {|ctx| };
+~onScale   = {|ctx| };
 
 //------------------------------------------------------------
 ~plotMin = -1;
