@@ -361,6 +361,20 @@ var reLoadPersonality = { |port, index|
     // d.name = devicePersonalityList[index];
     // "loading personality: %".format(d.name).postln;
 
+    // Tear down the old env BEFORE replacing d.env — otherwise the
+    // p-file's ~deinit never runs, so its Pdef(m.ptn), Group, and
+    // sample buffers leak. ~model.ptn is regenerated per env, so the
+    // fresh Pdef gets a new name and the old one keeps playing.
+    // d.env.use captures the current env into the Routine's scope,
+    // so replacing d.env below doesn't affect the pending deinit.
+    if(d.env != nil,{ d.env.use{
+        Routine{
+            s.sync;
+            ~deinit.();
+            s.sync;
+        }.play;
+    }});
+
     // NetAddr.new("127.0.0.1", NetAddr.langPort).sendMsg("/airkit/personalityName", d.port, d.name);
     d.env = interpretPersonality.(d);
     // ["TODO",d.enabled].postln;
