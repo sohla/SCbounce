@@ -3,14 +3,14 @@ NetAddr.localAddr
 
 // configure to send
 b = NetAddr.new("192.168.50.105", 8888);
-b = NetAddr.new("10.1.1.7", 8888);
+b = NetAddr.new("10.1.1.3", 8888);
 
 
 // set LED
-b.sendMsg("/Config/SetLED",1,1,0,255);
+b.sendMsg("/Config/SetLED",1,0,1,255);
 
 // set ID / OSC path
-b.sendMsg("/Config/SetID","4");
+b.sendMsg("/Config/SetID","5");
 
 // set diestination IP and Port
 b.sendMsg("/Config/RequestStream",10,1,1,2,57120);
@@ -22,10 +22,10 @@ OSCFunc.trace(false)
 
 
 // check we are sedning
-b.sendMsg("/Config/GetConfig");
+b.sendMsg("/Config/GetConfig", 57120);
 b.free
 n = NetAddr.new("192.168.50.177", 57120);
-o = OSCFunc({ arg msg, time, addr, recvPort; [msg, time, addr, recvPort].postln; }, '/2/Config');
+o = OSCFunc({ arg msg, time, addr, recvPort; [msg, time, addr, recvPort].postln; }, '/5/Config');
 o.free;
 
 
