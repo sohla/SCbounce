@@ -243,7 +243,7 @@ var createProcRout = {|d, index|
                 if(~fileTime != File.mtime(~filePath),{
                     ~fileTime = File.mtime(~filePath);
                     "[file saved]".postln;
-                    NetAddr.new("127.0.0.1", 57120).sendMsg("/airkit/loadPersonality", d.port, index);
+                    NetAddr.new("127.0.0.1", NetAddr.langPort).sendMsg("/airkit/loadPersonality", d.port, index);
                 }); 
                 if(d.enabled == true,{
                     // pre-process data -> personality model

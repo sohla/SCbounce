@@ -135,6 +135,28 @@ var group;   // top-level file scope
 `group.freeAll` frees only that group's children — safe, doesn't
 affect other personalities' groups.
 
+**`~deinit` idempotency.** `titleView` off-then-on fires
+`unLoadPersonality` then `loadPersonality`, which calls `~deinit`
+twice on the same env. Guard both `group` and `samplesLib`:
+
+```supercollider
+fork {
+    if (group.notNil) {
+        s.bind { group.freeAll }; s.sync;
+        group.free; group = nil;
+    };
+    if (samplesLib.notNil) {
+        samplesLib.do({|sample|
+            sample.buffer.free; s.sync;
+        });
+        samplesLib = nil;
+    };
+};
+```
+
+Without the guards the second call double-frees buffers → "Cannot
+call free on a Buffer that has been freed". Reference: `cotf_celesta1.sc`.
+
 ---
 
 ## 6. `~onResync` for Pdef personalities
@@ -170,6 +192,22 @@ then our `/g_freeAll`) is preserved server-side.
 Long-lived-synth personalities don't need this: they don't create
 multiple in-flight synths.
 
+**State-aware restart.** If a state pauses the Pdef (see §15), the
+resync's restart must not blindly re-`play`:
+
+```supercollider
+~onResync = { |idx|
+    Pdef(m.ptn).stop;
+    s.bind { group.freeAll };
+    if (~roomState != \tuning) {
+        Pdef(m.ptn).play(~beatClock, quant: ~scoreBeatsPerBar * ~scoreEventsPerBeat);
+    };
+};
+```
+
+Otherwise a seek during `\tuning` un-pauses the pattern and defeats
+the paused-Pdef design. Reference: `cotf_celesta1.sc`.
+
 ---
 
 ## 7. Environment scoping
@@ -196,6 +234,13 @@ Practical rules:
 
 `Pdef(m.ptn).set(\x, y)` is a class message and works anywhere;
 doesn't need `topEnvironment`.
+
+**`~onRoomState` runs under `d.env.use` too.** If any switch branch
+calls `Pdef.resume(~beatClock, quant: ~scoreBeatsPerBar * …)` or
+otherwise needs `~beatClock` / `~scoreBeatsPerBar` / `~scoreEventsPerBeat`,
+wrap the whole `switch` in `topEnvironment.use { … }`. Personality-local
+vars (m, group, tuneTime) are lexical so they stay in scope through
+the swap. Reference: `cotf_celesta1.sc` `~onRoomState`.
 
 ---
 
@@ -302,6 +347,16 @@ values, not pre-scaled amps.
   `s.latency`; plain `sendMsg` is immediate. If you mix them,
   ordering can flip on the server. Match the latency of surrounding
   messages when timing matters (§6).
+- **`1 ! N` vs `[1] ! N`** — `1 ! N` returns an Array of N Integer
+  1s (what you usually want). `[1] ! N` returns N copies of the
+  Array `[1]`, and `.sum` on that broadcasts array-wise → returns
+  `[N]` (a length-1 array), which then flows into things like
+  `indexOfGreaterThan` and blows up. Watch for accidental array
+  wrapping in pattern-length calcs. Reference: `cotf_dulcimer1.sc`
+  `patternDur`.
+- **Reload while already in target state** — `~onRoomState` fires
+  only on state *change*, so reloading during `\tuning` won't run
+  the `\tuning` branch. See §15 for the reload-guard idiom.
 
 ---
 
@@ -328,3 +383,156 @@ Every new personality:
 - If it's a new hook signature or ctx field, update `API.md` too.
 - If it's just an experimental sound-design idea, keep it in the
   personality's front matter and leave this doc alone.
+
+---
+
+## 15. Accel-triggered one-shots in a paused-Pdef state
+
+Reusable idiom for `\idle` / `\tuning` when you want gesture-triggered
+isolated hits instead of the running Pdef. Reference:
+`personalities/cotf_celesta1.sc` (`~tuningNext` + `~onRoomState \tuning`).
+
+Three moving parts must line up:
+
+**1. Pause + freeAll on state entry** (in `~onRoomState`, not the
+tick — tick runs at ~30 Hz):
+
+```supercollider
+\tuning, {
+    tuneTime = TempoClock.beats;
+    Pdef(m.ptn).pause;
+    s.bind { group.freeAll };   // kill in-flight tails
+},
+```
+
+**2. Reload guard** — `~onRoomState` fires only on state *change*, so
+a reload while already in the target state won't run that branch.
+Mirror the entry setup at the tail of `~init` (inside `topEnvironment.use`):
+
+```supercollider
+if (~roomState == \tuning) {
+    Pdef(m.ptn).pause;
+    tuneTime = TempoClock.beats;
+};
+```
+
+**3. State-aware `~onResync`** (see §6) — after `group.freeAll`,
+only restart the Pdef when NOT in the paused state.
+
+Then in the tick handler, threshold + throttle + inline event:
+
+```supercollider
+~tuningNext = {|d, ctx|
+    var amp = m.accelMassFiltered.lincurve(0, 2.0, -70, -15, -4);
+    if (m.accelMassFiltered > 0.5, {
+        if (TempoClock.beats > (lastTime + 0.2), {
+            (
+                instrument: \stereoSampler,
+                type:       \customEvent,
+                out:        ob,
+                group:      group,
+                note:       0,
+                root:       9,       // A
+                octave:     6,
+                amp:        amp.dbamp,
+                ptch:       ptch,    // bend value (see §16)
+            ).play;
+            lastTime = TempoClock.beats;
+        });
+    });
+};
+```
+
+Why an inline `(...).play` event rather than `Synth.new`:
+- Runs through the personality's `\customEvent` handler unchanged —
+  buffer lookup, odd/even resample, `~note+~root+12*~octave` calc
+  all reused.
+- `group: group` lands the synth in the personality's Group so
+  `~deinit` / `~onResync` cleanup still catches it.
+- Throttle idiom `TempoClock.beats > (lastTime + gap)` is the same
+  one `harp1 ~idleNext` uses to rate-limit octave shuffles.
+
+Works identically for `\idle` — swap `~roomState == \tuning` for
+`\idle` in the reload guard and `\onResync` state check.
+
+---
+
+## 16. Pitch & sample handling recipes
+
+Patterns from the sampler personalities (harp1, celesta1, dulcimer1,
+marimba1/2).
+
+### `\ptch` — continuous playback-rate bend
+Sampler SynthDef takes a `ptch` k-rate control that multiplies the
+playback rate on top of the note-to-sample `rate`:
+
+```supercollider
+var lr = rate * BufRateScale.kr(bufnum) * ptch;
+```
+
+Standard tuning-ramp idiom (in `~tuningNext`):
+
+```supercollider
+var elapsed = TempoClock.beats - tuneTime;
+var ptch = if (elapsed < 20.0) {
+    (elapsed / 20.0).linlin(0, 1, 0.7, 1.0)   // flat → true
+} { 1.0 };
+Pdef(m.ptn).set(\ptch, ptch);
+```
+
+Reset `\ptch` to 1 in other states' tick handlers so residual bend
+from a preceding `\tuning` state is cleared.
+
+### `findClosestSample` — for sparse / non-even sample sets
+When the library has gaps wider than the harp1-style odd/even split
+handles (dulcimer's diatonic G-major coverage, marimba sets, etc.),
+scan for nearest MIDI and compute rate from the semitone diff:
+
+```supercollider
+var findClosestSample = { |targetMidi|
+    var closest = samplesLib.minItem({|s| (s.midiNote - targetMidi).abs });
+    var semitoneDiff = targetMidi - closest.midiNote;
+    (buffer: closest.buffer, rate: semitoneDiff.midiratio)
+};
+```
+
+Returns nearest-either-direction; for a diatonic set the rate shift
+is always ≤ 1 semitone. Reference: `cotf_dulcimer1.sc`.
+
+### Octave-folding voice-pool pitch into instrument register
+When drawing from `~scoreVoicePool` and the instrument has a
+comfortable range the pool overshoots (dulcimer wants `[C3, C5]`,
+pool can go to E6), *fold* into range rather than pitch-shift down:
+
+```supercollider
+var picked = pool.wrapAt(idx).asInteger;
+while({ picked > 72 }, { picked = picked - 12 });
+while({ picked < 48 }, { picked = picked + 12 });
+```
+
+Preserves pitch class, avoids chipmunk playback-rate transposition.
+`~octave` from the state tick still transposes the folded result
+±12. Reference: `cotf_dulcimer1.sc` `melodyMidiForOffset`.
+
+### Array-aware `\customEvent` (chord voicings)
+If `~note + ~root + 12*~octave` can be an Array (chord tones),
+branch on `.isArray` and `.collect` bufnum/rate arrays — Pbind's
+built-in multichannel expansion fires the whole chord as one event:
+
+```supercollider
+Event.addEventType(\customEvent, {|e|
+    var target = ~note + ~root + (12 * ~octave);
+    if(target.isArray) {
+        ~bufnum = target.collect({|n| findClosestSample.(n).buffer });
+        ~rate   = target.collect({|n| findClosestSample.(n).rate });
+    } {
+        var found = findClosestSample.(target);
+        ~bufnum = found.buffer;
+        ~rate = found.rate;
+    };
+    ~type = \note;
+    currentEnvironment.play;
+});
+```
+
+Reference: `cotf_dulcimer1.sc`, `cotf_marimba2.sc`.
