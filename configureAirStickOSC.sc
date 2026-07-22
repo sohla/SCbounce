@@ -3,14 +3,14 @@ NetAddr.localAddr
 
 // configure to send
 b = NetAddr.new("192.168.50.105", 8888);
-b = NetAddr.new("10.1.1.4", 8888);
+b = NetAddr.new("10.1.1.7", 8888);
 
 
 // set LED
-b.sendMsg("/Config/SetLED",1,0,1,255);
+b.sendMsg("/Config/SetLED",1,1,0,255);
 
 // set ID / OSC path
-b.sendMsg("/Config/SetID","2");
+b.sendMsg("/Config/SetID","4");
 
 // set diestination IP and Port
 b.sendMsg("/Config/RequestStream",10,1,1,2,57120);
