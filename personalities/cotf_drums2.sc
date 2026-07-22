@@ -1,19 +1,27 @@
+/*
+gestures:    [strike, tilt]
+description: Piece: basic 8th-note rock beat (K H S H K H S H) on ~beatClock, phase-aligned to music downbeat via clock-derived slot lookup. Idle/tuning/curtain: single drum hit on strike, buffer chosen from drumSet by y-tilt.
+sound:       Compressed drum-kit samples with FreeVerb tail; RLPF applied.
+pitch:       None — sample kit. Rate driven by y-tilt during piece; no pitch change in tuning.
+rhythm:      Piece: uniform 8th grid (dur=2), phase-locked to bar; other states: gestural single triggers throttled ~150 ms.
+instruments: [Gravitone]
+*/
+
 var m = ~model;
-var ob = ~outBus ? 0; // capture NOW — ~init bodies run under topEnvironment.use
+var ob = ~outBus ? 0;
+var lastTime = 0;
 var bi = -1;
 var dur = 2;
-// where the music's downbeat sits inside a bar, in ~beatClock.beats units.
-// this is the general replacement for `drums.rotate(N)`: it shifts alignment
-// in TIME rather than in array positions, so it survives complex/variable-dur
-// rhythms. rotate(2) with dur=2 was equivalent to phase=4 clock beats.
-// tune by ear until drums[0] falls on the music's downbeat.
+// music-downbeat alignment in clock beats; tune by ear so drums[0] lands on the downbeat.
 var phase = 4;
+var group;
 
-// drum sound buffer index list : kick1, kick2, hihat close, hihat close soft, hit hat open, snare, snare soft, tom hi, tom hi soft, tom mid, tom mid soft, tom low, tom low soft, floor, floor soft
-// basic rock beat at 8th-note grid over one bar (sum(dur) == scoreBeatsPerBar * scoreEventsPerBeat == 8):
-//   pos:  1   1+   2   2+   3   3+   4   4+
-//   hit:  K   H    S   H    K   H    S   H
+// piece-time cycle: K H S H K H S H
 var drums = [0, 2, 5, 2, 0, 2, 5, 2];
+
+// buffer indices for stateless single-hit triggers (y-tilt picks one):
+// kick, closed-hat, snare, open-hat, tom-mid, tom-low, floor
+var drumSet = [0, 2, 5, 4, 9, 11, 13];
 
 ~buffers;
 m.accelMassFilteredAttack = 0.99;
@@ -36,99 +44,145 @@ SynthDef(\drumkitt2, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 	sig = FreeVerb.ar(sig, 0.1, 1.1, 0.4);
 	Out.ar(out, sig * amp);
 }).add;
-//--------------------------------------
+
+//------------------------------------------------------------
 ~init = ~init <> {
 	var folder = PathName("~/Music/cotf_samples/drums");
 
 	topEnvironment.use{
-
-	postf("loading samples : % \n", folder);
-
-	~buffers = folder.entries.collect({ |path,i|
-		Buffer.read(s, path.fullPath, action:{|buf|
-			postf("buffer alloc [%] \n", buf);
-			if(folder.entries.size - 1 == i,{
-				"samples loaded".postln;
+		group = Group.new;
+		postf("loading samples : % \n", folder);
+		~buffers = folder.entries.collect({|path,i|
+			Buffer.read(s, path.fullPath, action:{|buf|
+				postf("buffer alloc [%] \n", buf);
+				if(folder.entries.size - 1 == i, { "samples loaded".postln });
 			});
 		});
-	});
 
-	Pdef(m.ptn,
-		Pbind(
-			\instrument, \drumkitt2,
-			\out, ob,
-			// derive index from ~beatClock so every bar restarts at drums[0]:
-			//   barLen (in clock beats) = ~scoreBeatsPerBar * ~scoreEventsPerBeat
-			//   position-in-bar         = (~beatClock.beats - phase) mod barLen
-			//   event index             = round(position-in-bar / dur)
-			// phase shifts alignment in clock beats, so it survives any dur
-			// pattern (unlike drums.rotate, which only works for uniform dur).
-			\bufnum, Pfunc{|e|
-				var barLen = ~scoreBeatsPerBar * ~scoreEventsPerBeat;
-				var pos = (~beatClock.beats - phase).mod(barLen);
-				var idx = (pos / dur).round.asInteger;
-				bi = idx.mod(drums.size);
-				~buffers[drums[bi]]
-			},
-			\octave, Pseq([5].stutter(24), inf),
-			\start, 0,
-			\note, Pseq([40], inf),
-			\dur, dur,
-			\pan, Pwhite(-0.05, 0.05),
-			\attack, 0.02,
-			\decay, 1,
-			\args, #[],
-		)
-	);
+		Pdef(m.ptn,
+			Pbind(
+				\instrument, \drumkitt2,
+				\out, ob,
+				\group, group,
+				// derive slot from ~beatClock so every bar restarts at drums[0]
+				\bufnum, Pfunc{|e|
+					var barLen = ~scoreBeatsPerBar * ~scoreEventsPerBeat;
+					var pos = (~beatClock.beats - phase).mod(barLen);
+					var idx = (pos / dur).round.asInteger;
+					bi = idx.mod(drums.size);
+					~buffers[drums[bi]]
+				},
+				\octave, Pseq([5].stutter(24), inf),
+				\start, 0,
+				\note, Pseq([40], inf),
+				\dur, dur,
+				\pan, Pwhite(-0.05, 0.05),
+				\attack, 0.02,
+				\decay, 1,
+				\args, #[],
+			)
+		);
 
-	// quant: [barLen, phase] fires the first event on the music's downbeat,
-	// so the Pdef's schedule is phase-aligned from event 0 onwards. this is
-	// what matters for complex/variable-dur patterns — the Pfunc's beatClock
-	// derivation only re-aligns for uniform dur.
-	Pdef(m.ptn).play(~beatClock, quant: [~scoreBeatsPerBar * ~scoreEventsPerBeat, phase]);
-	Pdef(m.ptn).set(\bufnum, ~buffers[0]);
+		Pdef(m.ptn).play(~beatClock, quant: [~scoreBeatsPerBar * ~scoreEventsPerBeat, phase]);
+		Pdef(m.ptn).set(\bufnum, ~buffers[0]);
+		Pdef(m.ptn).pause;
+
+		~onResync = { |idx|
+			Pdef(m.ptn).stop;
+			s.bind { group.freeAll };
+			if (~roomState == \piece) {
+				Pdef(m.ptn).play(~beatClock, quant: [~scoreBeatsPerBar * ~scoreEventsPerBeat, phase]);
+			};
+		};
 	};
 };
-
-~deinit = ~deinit <> {
-	Pdef(m.ptn).remove;
-
-	~buffers.do({|buf|
-		buf.free;
-		s.sync;
-		postf("buffer dealloc [%] \n", buf);
-	});
-};
-
 
 //------------------------------------------------------------
-~next = {|d|
+~deinit = ~deinit <> {
+	Pdef(m.ptn).remove;
+	fork {
+		if (group.notNil) {
+			s.bind { group.freeAll };
+			s.sync;
+			group.free;
+			group = nil;
+		};
+		if (~buffers.notNil) {
+			~buffers.do({|buf|
+				buf.free;
+				s.sync;
+				postf("buffer dealloc [%] \n", buf);
+			});
+			~buffers = nil;
+		};
+	};
+};
 
-	var rate = (d.sensors.gyroEvent.y / pi.half).lincurve(-1,1,0.5,4,1);
-	var amp = m.accelMassFiltered.lincurve(0,2.5,0.2,1,1);
+//------------------------------------------------------------
+~onRoomState = {|ctx|
+	topEnvironment.use {
+		switch(ctx.state,
+			\idle,    { Pdef(m.ptn).pause; s.bind { group.freeAll } },
+			\tuning,  { Pdef(m.ptn).pause; s.bind { group.freeAll } },
+			\piece,   { Pdef(m.ptn).resume(~beatClock, quant: [~scoreBeatsPerBar * ~scoreEventsPerBeat, phase]) },
+			\curtain, { Pdef(m.ptn).pause; s.bind { group.freeAll } },
+			\silent,  { Pdef(m.ptn).set(\amp, 0) }
+		);
+	};
+};
+
+//------------------------------------------------------------
+~idleNext = {|d, ctx|
+	if (m.accelMassFiltered > 0.5, {
+		if (TempoClock.beats > (lastTime + 0.15), {
+			var idx = m.gyroYFiltered.clip(-1, 1).linlin(-1, 1, 0, drumSet.size - 0.001).asInteger;
+			var buf = topEnvironment[\buffers][drumSet[idx]];
+			var amp = m.accelMassFiltered.lincurve(0, 2.5, 0.4, 1, 1);
+			(
+				instrument: \drumkitt2,
+				out: ob,
+				group: group,
+				bufnum: buf,
+				amp: amp,
+			).play;
+			lastTime = TempoClock.beats;
+		});
+	});
+};
+
+~tuningNext  = ~idleNext;
+~curtainNext = ~idleNext;
+
+~pieceNext = {|d, ctx|
+	var rate = (d.sensors.gyroEvent.y / pi.half).lincurve(-1, 1, 0.5, 4, 1);
+	var amp = m.accelMassFiltered.lincurve(0, 2.5, 0.2, 1, 1);
 	Pdef(m.ptn).set(\amp, amp);
 	Pdef(m.ptn).set(\rate, rate);
-	topEnvironment.use{
-		if(m.accelMassFiltered > 0.02,{
-			if( Pdef(m.ptn).isPlaying.not,{
+	topEnvironment.use {
+		if (m.accelMassFiltered > 0.02, {
+			if (Pdef(m.ptn).isPlaying.not, {
 				Pdef(m.ptn).resume(~beatClock, quant: [~scoreBeatsPerBar * ~scoreEventsPerBeat, phase]);
-				~onResync = { |idx|
-					Pdef(m.ptn).stop;
-					Pdef(m.ptn).play(~beatClock,
-						quant: [~scoreBeatsPerBar * ~scoreEventsPerBeat, phase]);
-				};
 			});
-		},{
-			if( Pdef(m.ptn).isPlaying,{
-				Pdef(m.ptn).pause();
+		}, {
+			if (Pdef(m.ptn).isPlaying, {
+				Pdef(m.ptn).pause;
 			});
 		});
 	};
 };
+
+//------------------------------------------------------------
+~onTick    = {|ctx| };
+~onHalf    = {|ctx| };
+~onBeat    = {|ctx| };
+~onBar     = {|ctx| };
+~onPhrase  = {|ctx| };
+~onSection = {|ctx| };
+~onChord   = {|ctx| };
+~onKey     = {|ctx| };
+~onScale   = {|ctx| };
 
 //------------------------------------------------------------
 ~plotMin = -1;
 ~plotMax = 1;
-~plot = { |d,p|
-	[m.accelMass, m.accelMassFiltered];
-};
+~plot = {|d,p| [m.accelMass, m.accelMassFiltered] };
