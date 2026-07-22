@@ -149,8 +149,8 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, start=0, pan=0, freq=
 	// modulation around octave 4–6 — marimba sings best in the mid-to-
 	// upper register, and octave 5 is roughly where the samples cluster
 	// most densely.
-	var amp = m.accelMassFiltered.lincurve(0, 1.4, -50, -4, -1);
-	var oct = (d.sensors.gyroEvent.y / pi.half).lincurve(-1, 1, 5, 8, 1).asInteger;
+	var amp = m.accelMassFiltered.lincurve(0, 1.4, -50, -5, -1);
+	var oct = (d.sensors.gyroEvent.y / pi.half).lincurve(-1, 1, 6, 8, 1).asInteger;
 	Pdef(m.ptn).set(\amp, amp.dbamp);
 	Pdef(m.ptn).set(\octave, oct);
 };
