@@ -277,6 +277,28 @@ var createProcRout = {|d, index|
 // s
 //------------------------------------------------------------
 
+// [COTF] Per-device ~onResync capture. Personalities install their
+// state-aware ~onResync into topEnvironment (concert_p_files.md §6) so
+// OSCdef(\beatSync) can find it — which is exactly right for one device,
+// but with 5 seats each load clobbers the previous seat's hook. When the
+// COTF production profile is active (main_cotf.scd defines
+// ~cotfResyncDispatcher), move the freshly-installed hook into the device
+// env (keyed by construction, replaced cleanly on reload) and restore the
+// dispatcher, which fans resyncs out to every device's own hook.
+// In the composer GUI profile there is no dispatcher, so this is a no-op
+// and ~onResync behaves exactly as documented in §6.
+// Must run in the SAME Routine as ~init.(d), immediately after it, so no
+// other device's load can interleave between install and capture.
+var captureResyncHook = { |d|
+    var disp = topEnvironment[\cotfResyncDispatcher];
+    if(disp.notNil
+        and: { topEnvironment[\onResync].notNil }
+        and: { topEnvironment[\onResync] !== disp },{
+        d.env[\onResyncHook] = topEnvironment[\onResync];
+        topEnvironment[\onResync] = disp;
+    });
+};
+
 var loadPersonality = { |port, index|
 
     var d = ~devices.at(port);
@@ -309,6 +331,7 @@ var loadPersonality = { |port, index|
         Routine{
             s.sync;
             ~init.(d);
+            captureResyncHook.(d); // [COTF] no yield between install & capture
             s.sync;
         }.play;
     };
@@ -322,7 +345,7 @@ var loadPersonality = { |port, index|
 
 };
 //------------------------------------------------------------
-// 
+//
 //------------------------------------------------------------
 
 var unLoadPersonality = { |port, index|
@@ -344,6 +367,9 @@ var unLoadPersonality = { |port, index|
             // s.sync;
         }.play;
     }});
+    // [COTF] Drop the captured resync hook with the personality — a hook
+    // surviving unload would freeAll a group ~deinit already nil'd.
+    if(d.env != nil,{ d.env[\onResyncHook] = nil });
     d
 };
 
@@ -382,6 +408,7 @@ var reLoadPersonality = { |port, index|
         Routine{
             s.sync;
             ~init.(d);
+            captureResyncHook.(d); // [COTF] no yield between install & capture
             s.sync;
         }.play;
     };
