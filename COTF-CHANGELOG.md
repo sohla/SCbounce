@@ -221,3 +221,14 @@ needs the Beethoven WAV at 48 kHz (yours can stay 44.1k).
   matches what the machine is actually running before your next push lands.
   If this collides with your current work, your version wins — shout and we
   will reconcile.
+
+## 2026-07-24 — bind-check now verifies the Aggregate's channel count
+- cotf/bind-check.scd: after the device-NAME check passes, we now ask CoreAudio
+  (system_profiler) how many output channels the Aggregate actually has and
+  refuse to run below 144. Why: this morning the venue power-cycled with the
+  MOTU accidentally unplugged — the Aggregate still existed under its usual
+  name, scsynth bound it at 16 channels (BlackHole alone), the old check
+  printed "BOUND — OK", and no room audio was possible. Under PM2 the failure
+  now exits after 8s so PM2 retries until the MOTU is back (a climbing restart
+  counter is visible; a green lie is not); in the IDE it only refuses, never
+  kills your session. COTF profile only, no OSC change, no API.md change.
