@@ -536,3 +536,190 @@ Event.addEventType(\customEvent, {|e|
 ```
 
 Reference: `cotf_dulcimer1.sc`, `cotf_marimba2.sc`.
+
+---
+
+## 17. Amp-curve palette
+
+Named `.lincurve` presets so the authoring workflow (see
+`personality_authoring.md`) can resolve prose amp descriptors
+without hand-tuning dB endpoints per personality.
+
+Input side is `m.accelMassFiltered` (or `m.rrateMassFiltered` for
+rotation-dominant gestures). All curves are on `.dbamp`-converted dB.
+
+| Name | Curve | Peak | Use for |
+|---|---|---|---|
+| `whisper` | `.lincurve(0, 2.0, -90, -35, -4)` | -35 dB | ambient bed under a loud line |
+| `low` | `.lincurve(0, 2.0, -70, -25, -4)` | -25 dB | quiet idle / curtain |
+| `mid` | `.lincurve(0, 2.0, -70, -15, -2)` | -15 dB | idle / tuning normal |
+| `expressive` | `.lincurve(0, 1.5, -70, -8, -1)` | -8 dB | piece full-dynamic |
+| `faded` | `.lincurve(0, 2.0, -80, -30, -4)` | -30 dB | curtain / outro |
+
+Rationale for curvature values: `-4` (soft-knee, quiet-stays-quiet)
+suits idle/tuning/curtain where accidental brushes shouldn't
+audibly trigger; `-1` (near-linear) suits piece where every gesture
+should register; `-2` in between.
+
+Prose phrasebook (personality_authoring.md §Phrasebook):
+- "quiet" / "low volume" → `low`
+- "very quiet" / "almost silent" → `whisper`
+- "expressive" / "full dynamic" → `expressive`
+- "faded" / "receding" → `faded`
+- unspecified → `mid`
+
+Palette is a starting point — override the peak or the input range
+when the personality has an unusual sensor response. Reference
+personalities: harp1 uses ~mid in idle (line 224), marimba2 uses
+~expressive in piece.
+
+---
+
+## 18. Pitch wander around a target (with settle)
+
+Variant of the `\ptch` tuning ramp (§16) where pitch oscillates
+±N semitones around a target for a duration, envelope-decaying so
+it settles at the target. Use where "pitch wanders around A5 and
+finally rests" is the intent.
+
+Compute at state-tick rate (~30 Hz), set via `\ptch` on the sampler
+or via `\rate` at trigger time for accel-one-shot personalities.
+
+```supercollider
+~tuningNext = {|d, ctx|
+    var wanderDur    = 20.0;    // seconds to settle
+    var wanderRangeSt = 2.0;    // ± semitones peak
+    var wanderRateHz = 0.3;     // oscillations/sec
+    var elapsed = TempoClock.beats - tuneTime;
+    var envelope = if (elapsed < wanderDur) {
+        1.0 - (elapsed / wanderDur)   // 1 → 0 linear taper
+    } { 0 };
+    var offsetSt = envelope * wanderRangeSt * sin(elapsed * 2 * pi * wanderRateHz);
+    var ptch = offsetSt.midiratio;
+
+    // Apply to running Pdef:
+    Pdef(m.ptn).set(\ptch, ptch);
+
+    // Or for accel-one-shot inline event (see §15):
+    // (…, root: 9, octave: 6, ptch: ptch, …).play;
+};
+```
+
+Tuning knobs:
+- **wanderDur** — how long until it rests. Shorter = more decisive.
+- **wanderRangeSt** — how far it wanders in semitones. 1–3 typical.
+- **wanderRateHz** — how fast it oscillates. 0.1–0.5 = musical
+  slow drift; > 1 = warble.
+- **envelope shape** — swap the `1.0 - (elapsed/wanderDur)` linear
+  taper for `.linexp(0, 1, 1, 0.01)` (exponential, front-loaded)
+  or a squared curve for slower initial decay.
+
+Target pitch itself is set by the note+root+octave in the event
+(A5 = `note: 0, root: 9, octave: 6` under the standard baseMidi=60
+convention). Wander rides `\ptch` on top.
+
+For personalities that combine wander with accel one-shots
+(paused-Pdef style, §15), compute `ptch` in the state tick and
+pass into the inline event literal as the `ptch:` key.
+
+---
+
+## 19. Rotation-magnitude-driven subdivision
+
+Pattern `\dur` shrinks as `m.rrateMassFiltered` grows — "greater
+rotation, smaller subdivision." Modulates rhythm (not amp / not
+pitch). Applies only when a running Pdef is in the state.
+
+```supercollider
+~pieceNext = {|d, ctx|
+    // hi = slow subdivision (idle rotation), lo = fast (max rotation)
+    var dur = m.rrateMassFiltered.linexp(0.01, 1.0, 2.0, 0.25);
+    Pdef(m.ptn).set(\dur, dur);
+    // …other params (amp, octave, etc.) alongside
+};
+```
+
+`.linexp` (exponential) rather than `.linlin` — subdivisions feel
+proportional in ratio, not linear. `0.25..2.0` covers 16th to
+half-note at bar-based grid; adjust to taste (e.g. `4.0..0.125` for
+extreme range).
+
+For quantised subdivision (e.g. only 4/8/16), snap after the linexp:
+
+```supercollider
+var raw = m.rrateMassFiltered.linexp(0.01, 1.0, 4, 0.25);
+var snap = [0.25, 0.5, 1.0, 2.0, 4.0];
+var dur = snap[snap.indexOfGreaterThan(raw).max(1) - 1];
+```
+
+Prose phrasebook:
+- "greater rotation → smaller subdivision" → this recipe
+- "rotation controls speed" → this recipe (repurpose dur→amp too)
+- "pattern gets busier with motion" → this recipe
+
+Combines cleanly with §15 (accel one-shots) and §20 (layered
+running-Pdef + gestural one-shots).
+
+---
+
+## 20. Layered running-Pdef + gestural one-shots in the same state
+
+State keeps a running Pdef going as rhythmic backbone AND fires
+accel-threshold one-shots on top as gestural highlights. Both
+share the personality's Group so cleanup is unchanged.
+
+Structural requirements:
+- Pdef **is running** in this state (no pause in `~onRoomState`
+  for this state, unlike the paused-Pdef pattern of §15).
+- `~onResync` restarts the Pdef unconditionally (again, unlike §15).
+- The state tick modulates the Pdef (dur / amp / octave) *and*
+  fires threshold-throttled one-shots. Both call sites are inside
+  the same `~pieceNext` (or wherever).
+
+```supercollider
+~pieceNext = {|d, ctx|
+    // --- running-Pdef modulation ---
+    var amp = m.accelMassFiltered.lincurve(0, 1.5, -70, -8, -1);
+    var dur = m.rrateMassFiltered.linexp(0.01, 1.0, 2.0, 0.25);   // §19
+    Pdef(m.ptn).set(\amp, amp.dbamp, \dur, dur);
+
+    // --- gestural one-shot on top (same group) ---
+    if (m.accelMassFiltered > 0.6, {
+        if (TempoClock.beats > (lastTime + 0.2), {
+            (
+                instrument: \stereoSampler,
+                type:       \customEvent,
+                out:        ob,
+                group:      group,
+                note:       0,
+                root:       ~scoreVoicePool.choose.wrap(0, 11).asInteger,
+                octave:     6,
+                amp:        (amp + 3).dbamp,   // one-shot slightly louder
+                ptch:       1.0,
+            ).play;
+            lastTime = TempoClock.beats;
+        });
+    });
+};
+```
+
+Two audible layers with independent character: the Pdef is
+rotation-density modulated (running rhythm), the one-shots are
+accel-triggered highlights that punch through. Because both write
+to the same output bus via the same personality group, `\silent`
+mute (`Pdef.set(\amp, 0)` alone) still lets one-shots through —
+add an explicit one-shot suppress if that matters:
+
+```supercollider
+\silent, {
+    Pdef(m.ptn).set(\amp, 0);
+    lastTime = TempoClock.beats + 1e6;   // block one-shots
+},
+```
+
+Or gate the threshold check on `~roomState != \silent`.
+
+**Where this differs from §15:** §15 pauses the Pdef entirely and
+fires only one-shots; §20 keeps the Pdef live and adds one-shots as
+a second voice. Choose §15 for "tuning is a series of hits"; choose
+§20 for "the piece is a running pattern with gestural accents."

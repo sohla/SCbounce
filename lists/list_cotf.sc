@@ -17,6 +17,7 @@
 		"cotf_celesta1",
 		"cotf_marimba1",
 		"cotf_marimba2",
+		"cotf_test1",
 		"silence",
     
 	]
