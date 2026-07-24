@@ -232,3 +232,10 @@ needs the Beethoven WAV at 48 kHz (yours can stay 44.1k).
   now exits after 8s so PM2 retries until the MOTU is back (a climbing restart
   counter is visible; a green lie is not); in the IDE it only refuses, never
   kills your session. COTF profile only, no OSC change, no API.md change.
+
+## 2026-07-24 (evening) — captured your live M1 tuning from the test run
+- personalities/cotf_{drums4,harp1,harpsichord2,simple2}.sc: your ssh edits on M1
+  during our "5 fingered test" run tonight (amp lincurves, octave shifts, hit-window
+  0.15→0.1), committed from M1 under your name so the branch matches what the
+  machine is running. If any of these were experiments you didn't want kept,
+  shout and we'll reconcile — nothing else was touched.
