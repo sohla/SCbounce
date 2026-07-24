@@ -24,24 +24,42 @@ thisProcess.interpreter.executeFile(codeRoot +/+ "conductorController.scd");
 // device's pattern against the new clock time; the bar quant re-enters in
 // musical phase within one bar. COTF-profile only; composer's main.sc is
 // untouched (their ~onResync stays the default no-op).
-~onResync = { |idx|
+// (2026-07-24) Personalities now ship their own state-aware ~onResync
+// (concert_p_files.md §6/§15: skip the restart during \tuning where the Pdef
+// is deliberately paused, and s.bind { group.freeAll } to kill in-flight
+// synths — only the personality can reach its file-scope `group`).
+// They install it into topEnvironment; personalityController's
+// captureResyncHook moves each install into d.env[\onResyncHook] (per-device,
+// so 5 seats can't clobber each other) and restores this dispatcher.
+// Personalities without a hook (e.g. cotf_simple*) get the generic restart.
+~cotfResyncDispatcher = { |idx|
     // Capture conductor-env values BEFORE entering each device env — inside
     // d.env.use these ~vars resolve against the personality's environment
     // (nil there; first version crashed on nil * nil).
     var clock = ~beatClock;
     var quant = ~scoreBeatsPerBar * ~scoreEventsPerBeat;
     ~devices.do { |d|
-        if (d.env.notNil and: { d.enabled == true }) {
-            d.env.use {
-                if (~model.notNil and: { Pdef(~model.ptn).isPlaying }) {
-                    Pdef(~model.ptn).stop;
-                    Pdef(~model.ptn).play(clock, quant: quant);
+        if (d.env.notNil) {
+            if (d.env[\onResyncHook].notNil) {
+                // Run under topEnvironment: the hook's ~roomState/~beatClock/
+                // ~score* live there; its m/group/tuneTime are lexical
+                // captures so they survive the environment swap.
+                topEnvironment.use { d.env[\onResyncHook].value(idx) };
+            } {
+                if (d.enabled == true) {
+                    d.env.use {
+                        if (~model.notNil and: { Pdef(~model.ptn).isPlaying }) {
+                            Pdef(~model.ptn).stop;
+                            Pdef(~model.ptn).play(clock, quant: quant);
+                        };
+                    };
                 };
             };
         };
     };
-    "[COTF] resync at idx %: live device patterns re-anchored".format(idx).postln;
+    "[COTF] resync at idx %: device patterns re-anchored".format(idx).postln;
 };
+~onResync = ~cotfResyncDispatcher;
 
 s.waitForBoot({
     // Device bind check (pattern: COTF audio/supercollider/lib/bind-check.scd).

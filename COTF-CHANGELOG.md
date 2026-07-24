@@ -4,6 +4,33 @@ One entry per push batch from the Concerts of the Future side, newest first: wha
 why, and what (if anything) behaves differently on your machine. The intent is that nothing
 here ever changes how AirKit behaves for you — if it does, that's a bug, tell us.
 
+## 2026-07-24 — Multi-device ~onResync capture (cotf)
+
+**Nothing changes for your solo/GUI workflow.** Your new state-aware `~onResync` hooks
+(celesta, drums, marimba, dulcimer, harp) are exactly right — this makes them work when
+*five* devices are loaded at once. As written, each personality's install into
+`topEnvironment` overwrites the previous device's hook, so in the show only the
+last-loaded seat would get the clean stop → `group.freeAll` → conditional restart on a
+seek; the other four would dump their TempoClock backlog (node bursts / stuck notes).
+
+- `personalityController.scd`: after `~init` runs, a small `captureResyncHook` moves the
+  hook the personality just installed into that device's env and restores our dispatcher.
+  **Guarded on the COTF profile being active** — in your GUI (`main.sc`) there is no
+  dispatcher, the guard fails, and behaviour is byte-for-byte what `concert_p_files.md`
+  §6 documents. Also: unloading a personality now drops its captured hook (a survivor
+  would `freeAll` a group `~deinit` already nil'd).
+- `cotf/main_cotf.scd` (ours): the old generic fan-out is now a dispatcher that prefers
+  each device's own hook (run under `topEnvironment` so `~roomState`/`~beatClock`
+  resolve) and falls back to the generic stop/replay for personalities without one
+  (e.g. `cotf_simple*`).
+- `concert_p_files.md` §6: short note added — keep installing into `topEnvironment`
+  exactly as you do now; no p-file changes needed, ever.
+
+Also confirmed on our side while pulling your batch: the new `/Config/GetConfig` probe in
+`addDevice` lands on the COTF router's fixed source port (9001) — it's ignored gracefully
+there, and since `/airkit/addDevice` only feeds GUI views (which the headless profile
+never loads), the gated emission is harmless in production.
+
 ## 2026-07-20 — Research data collection note (cotf, docs only)
 
 **Nothing in AirKit changes.** We've started collecting anonymised movement data from the show

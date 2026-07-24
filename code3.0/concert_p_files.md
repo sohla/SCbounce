@@ -208,6 +208,17 @@ resync's restart must not blindly re-`play`:
 Otherwise a seek during `\tuning` un-pauses the pattern and defeats
 the paused-Pdef design. Reference: `cotf_celesta1.sc`.
 
+**Multi-device (COTF production).** Keep installing into
+`topEnvironment` exactly as above — nothing changes in the p-file.
+With several devices loaded, each install would clobber the previous
+device's hook, so in the COTF profile (`cotf/main_cotf.scd`)
+`personalityController` captures the install into the device env
+right after `~init` and restores a dispatcher that calls every
+device's own hook on resync (under `topEnvironment`, so `~roomState`
+/ `~beatClock` / `~score*` resolve; `m`/`group` are lexical
+captures). In the solo GUI profile the capture is a no-op and the
+hook runs exactly as documented here.
+
 ---
 
 ## 7. Environment scoping
