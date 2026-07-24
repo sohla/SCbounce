@@ -237,7 +237,7 @@ SynthDef(\funBass, {
 // override amp per state so silence is enforced regardless of gesture.
 ~idleNext    = {|d, ctx|
 	var amp = ((m.rrateMassFiltered) * 2.0).lincurve(0, 1.0, -60, -18, -4);
-	Pdef(m.ptn).set(\octave, [3,4,5,6].choose);
+	Pdef(m.ptn).set(\octave, [3,4,5,6].choose + 0.6);
 	Pdef(m.ptn).set(\root,0);
 	Pdef(m.ptn).set(\amp, amp.dbamp);
 
@@ -276,8 +276,8 @@ SynthDef(\funBass, {
 
 ~pieceNext   = {|d, ctx|
 
-	var amp = (m.accelMassFiltered + m.rrateMassFiltered).half.lincurve(0,1.5,-70,-8,-1);
-	var oct = (d.sensors.gyroEvent.y / pi.half).lincurve(-1,1,4,8,1).asInteger;
+	var amp = (m.accelMassFiltered + m.rrateMassFiltered).half.lincurve(0,1.5,-70,-10,-1);
+	var oct = (d.sensors.gyroEvent.y / pi.half).lincurve(-1,1,5,9,1).asInteger;
 
 	Pdef(m.ptn).set(\amp, amp.dbamp * ctx.loudness.linlin(0, 1, 0.1, 1.0));
 	Pdef(m.ptn).set(\octave, oct);

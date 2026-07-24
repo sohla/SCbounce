@@ -186,7 +186,7 @@ SynthDef(\stereoSamplerH, {|bufnum=0, out=0, amp=1, rate=1, ptch=1, start=0, pan
 
 //------------------------------------------------------------
 ~idleNext = {|d, ctx|
-	var amp = m.rrateMassFiltered.lincurve(0, 1.0, -70, -22, -4);
+	var amp = m.accelMassFiltered.lincurve(0, 2.2, -70, -4, -2);
 	var dur = m.accelMassFiltered.lincurve(0, 2.5, 4, 1, -2).asInteger;
 
 	Pdef(m.ptn).set(\amp, amp.dbamp);
@@ -217,7 +217,7 @@ SynthDef(\stereoSamplerH, {|bufnum=0, out=0, amp=1, rate=1, ptch=1, start=0, pan
 // Same shape as harp2's ~next: still device = 1 note; harder motion
 // opens the slide up to maxRange (8) pool notes cycled per group.
 ~pieceNext = {|d, ctx|
-	var amp = m.accelMassFiltered.lincurve(0, 2.0, -45, -14, -1);
+	var amp = m.accelMassFiltered.lincurve(0, 2.0, -45, -8, -1);
 	var oct = (d.sensors.gyroEvent.y / pi.half).lincurve(-1, 1, 5, 9, 1).asInteger;
 	var range = m.accelMassFiltered.lincurve(0, 2.5, 1, maxRange, -1).floor;
 	var dur = m.accelMassFiltered.lincurve(0, 2.5, 2, 1, -2).asInteger;
