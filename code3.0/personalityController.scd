@@ -195,6 +195,7 @@ var interpretPersonality = {|d|
         ~onKey     = { |ctx| };  // when key + mode changes
         ~onScale   = { |ctx| };  // when p["active_scale"] changes
         ~onRoomState = { |ctx| };  // when /airkit/state changes; ctx = (state:, prevState:, stateChanged:)
+        ~onResync    = { |idx| };  // beat clock (re-)anchor — restart Pdefs / free stranded synths. Dispatched per-device from conductorController's beatSync OSCdef.
 
         //------------------------------------------------------------
         // State-gated ~next variants. Called from procRout in addition to

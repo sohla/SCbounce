@@ -126,7 +126,7 @@ SynthDef(\simple, {|out=0, amp=0.0, freq=440, attack=0.001, decay=0.03, sustain=
 
 ~pieceNext = {|d, ctx|
 
-	var amp = (m.accelMass + m.rrateMass).lincurve(0, 2.0, -90, -10, -1);
+	var amp = (m.accelMass + m.rrateMass).lincurve(0, 2.0, -90, -12, -1);
 	var ffreq = ((d.sensors.gyroEvent.x / pi).fold(-0.5,0.5) * 2).lincurve(-1.0, 1.0, 500, 12000, 3);
 
 	synth.set(\amp, amp.dbamp);

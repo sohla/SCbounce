@@ -62,6 +62,9 @@ var sampleFilter = "Marimba ln mf l1x";
 var folder = PathName("~/Music/cotf_samples/African Marimba");
 var samplesLib;
 
+// Unique per-env event type — see cotf_harp1.sc for rationale.
+var eventTypeName = (\customEvent_ ++ m.ptn).asSymbol;
+
 //------------------------------------------------------------
 
 m.accelMassFilteredAttack = 0.99;
@@ -116,7 +119,7 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, ptch=1, start=0, pan=
 	// ~rate assignment goes through findClosestSample instead of the
 	// odd/even branch. otherwise identical: compute the target MIDI note,
 	// set the buffer and rate, switch \type back to \note and re-dispatch.
-	Event.addEventType(\customEvent, {|e|
+	Event.addEventType(eventTypeName, {|e|
 		var found;
 		~note = ~note + ~root + (12 * ~octave);
 		found = findClosestSample.(~note);
@@ -134,21 +137,21 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, ptch=1, start=0, pan=
 				\instrument, \stereoSampler,
 				\out, ob,
 				\group, group,   // route every event's synth into our group
-				\type, \customEvent,
+				\type, eventTypeName,
 				\note, 0,
-				\root, Pfunc { ~scoreVoicePool.choose.wrap(0,11).asInteger },
+				\root, Pfunc { ~scoreVoicePool.choose.wrap(0,11).asInteger - 24 },
 			);
 		);
 
 		Pdef(m.ptn).play(~beatClock, quant: ~scoreBeatsPerBar * ~scoreEventsPerBeat);
 		Pdef(m.ptn).set(\dur, 1);   // default 16th grid; state hooks override
 
-		// On beat-clock re-anchor (seek): stop the Pdef so TempoClock
-		// doesn't dump backlog, kill in-flight synths in the group so
-		// nothing is stuck at sustain, then restart. freeAll wrapped in
-		// s.bind so it lands after any /s_new bundle still in flight —
-		// see concert_p_files.md §6.
-		~onResync = { |idx|
+	};
+
+	// ~onResync in d.env (per-device dispatch — no cross-device clobber).
+	// Body in topEnvironment.use so ~beatClock etc. resolve.
+	~onResync = { |idx|
+		topEnvironment.use {
 			Pdef(m.ptn).stop;
 			s.bind { group.freeAll };
 			Pdef(m.ptn).play(~beatClock, quant: ~scoreBeatsPerBar * ~scoreEventsPerBeat);
@@ -159,10 +162,12 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, ptch=1, start=0, pan=
 //------------------------------------------------------------
 ~deinit = ~deinit <> {
 	Pdef(m.ptn).remove;
+	Event.eventTypes.removeAt(eventTypeName);
 
 	// Kill synths first (latency-safe /g_freeAll), then free sample
 	// buffers — order matters so no PlayBuf is still reading from a
 	// buffer we're about to /b_free. fork so s.sync actually waits.
+	// Idempotent: notNil guards let ~deinit fire twice safely.
 	fork {
 		if (group.notNil) {
 			s.bind { group.freeAll };
@@ -170,11 +175,14 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, ptch=1, start=0, pan=
 			group.free;
 			group = nil;
 		};
-		samplesLib.do({|sample|
-			postf("buffer dealloc [%] \n", sample.buffer);
-			sample.buffer.free;
-			s.sync;
-		});
+		if (samplesLib.notNil) {
+			samplesLib.do({|sample|
+				postf("buffer dealloc [%] \n", sample.buffer);
+				sample.buffer.free;
+				s.sync;
+			});
+			samplesLib = nil;
+		};
 	};
 };
 

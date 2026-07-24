@@ -83,9 +83,13 @@ SynthDef(\drumkitt, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 		Pdef(m.ptn).set(\bufnum, ~buffers[0]);
 		Pdef(m.ptn).pause;
 
-		// seek: stop + freeAll; restart only if we're in \piece.
-		// freeAll wrapped in s.bind so it lands after any /s_new still in flight.
-		~onResync = { |idx|
+	};
+
+	// ~onResync in d.env (per-device dispatch — no cross-device clobber).
+	// Body in topEnvironment.use so ~beatClock / ~roomState resolve.
+	// Seek: stop + freeAll; restart only if we're in \piece.
+	~onResync = { |idx|
+		topEnvironment.use {
 			Pdef(m.ptn).stop;
 			s.bind { group.freeAll };
 			if (~roomState == \piece) {

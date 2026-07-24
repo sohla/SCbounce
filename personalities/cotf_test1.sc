@@ -40,6 +40,9 @@ var noteToMidi = { |noteName|
 var folder = PathName("~/Music/cotf_samples/harp");
 var samplesLib;
 
+// Unique per-env event type — see cotf_harp1.sc for rationale.
+var eventTypeName = (\customEvent_ ++ m.ptn).asSymbol;
+
 //------------------------------------------------------------
 // Filter tuning — copied from harp1 (same sensor use-shape).
 m.accelMassFilteredAttack = 0.99;
@@ -84,7 +87,7 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, ptch=1, start=0, pan=
 	// Standard customEvent — odd/even fallback resample. Used both by
 	// the running Pdef (piece/curtain) and by the inline one-shot
 	// events in ~idleNext / ~tuningNext / ~pieceNext (§15 idiom).
-	Event.addEventType(\customEvent, {|e|
+	Event.addEventType(eventTypeName, {|e|
 		~note = (~note + ~root + (12 * ~octave)).asInteger;
 		if(~note.odd, {
 			~bufnum = findSampleBuffer.(~note - 1);
@@ -108,7 +111,7 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, ptch=1, start=0, pan=
 				\instrument, \stereoSampler,
 				\out, ob,
 				\group, group,   // route into personality group — §5
-				\type, \customEvent,
+				\type, eventTypeName,
 				\note, 0,
 				\root, Pfunc { ~scoreVoicePool.choose.wrap(0, 11).asInteger },
 			);
@@ -126,9 +129,14 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, ptch=1, start=0, pan=
 			if (~roomState == \tuning, { tuneTime = TempoClock.beats });
 		});
 
-		// State-aware ~onResync (§6) — after freeAll, only restart the
-		// Pdef when we're in a state that uses the running pattern.
-		~onResync = { |idx|
+	};
+
+	// ~onResync in d.env (per-device dispatch — no cross-device clobber).
+	// Body in topEnvironment.use so ~beatClock / ~roomState resolve.
+	// State-aware: after freeAll, only restart the Pdef when we're in a
+	// state that uses the running pattern (§6).
+	~onResync = { |idx|
+		topEnvironment.use {
 			Pdef(m.ptn).stop;
 			s.bind { group.freeAll };
 			if ((~roomState != \idle) and: { ~roomState != \tuning }, {
@@ -142,6 +150,7 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, ptch=1, start=0, pan=
 // Idempotent cleanup — notNil guards for double-~deinit safety (§5).
 ~deinit = ~deinit <> {
 	Pdef(m.ptn).remove;
+	Event.eventTypes.removeAt(eventTypeName);
 
 	fork {
 		if (group.notNil) {
@@ -202,7 +211,7 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, ptch=1, start=0, pan=
 		if (TempoClock.beats > (lastTime + 0.4), {
 			(
 				instrument: \stereoSampler,
-				type:       \customEvent,
+				type:       eventTypeName,
 				out:        ob,
 				group:      group,
 				note:       0,
@@ -233,7 +242,7 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, ptch=1, start=0, pan=
 		if (TempoClock.beats > (lastTime + 0.4), {
 			(
 				instrument: \stereoSampler,
-				type:       \customEvent,
+				type:       eventTypeName,
 				out:        ob,
 				group:      group,
 				note:       0,
@@ -268,7 +277,7 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, ptch=1, start=0, pan=
 		if (TempoClock.beats > (lastTime + 0.3), {
 			(
 				instrument: \stereoSampler,
-				type:       \customEvent,
+				type:       eventTypeName,
 				out:        ob,
 				group:      group,
 				note:       0,

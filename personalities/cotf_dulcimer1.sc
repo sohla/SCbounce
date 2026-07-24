@@ -64,6 +64,9 @@ var sampleFilter = "Dlcmr-hrd";
 var folder = PathName("~/Music/cotf_samples/Celtic Hammered Dulcimer");
 var samplesLib;
 
+// Unique per-env event type — see cotf_harp1.sc for rationale.
+var eventTypeName = (\customEvent_ ++ m.ptn).asSymbol;
+
 //------------------------------------------------------------
 // dulcimer plays repeated melody notes drawn from ~scoreVoicePool. the
 // pattern below is offsets FROM THE TOP of the pool: offset 0 picks the
@@ -162,7 +165,7 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, ptch=1, start=0, pan=
 
 	// customEvent handler — array-aware form (same as marimba2 for
 	// consistency, though dulcimer only fires single notes here).
-	Event.addEventType(\customEvent, {|e|
+	Event.addEventType(eventTypeName, {|e|
 		var target = ~note + ~root + (12 * ~octave);
 		if(target.isArray) {
 			~bufnum = target.collect({|n| findClosestSample.(n).buffer });
@@ -184,7 +187,7 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, ptch=1, start=0, pan=
 				\instrument, \stereoSampler,
 				\out, ob,
 				\group, group,   // route every event's synth into our group
-				\type, \customEvent,
+				\type, eventTypeName,
 
 				// note — clock-derived slot → pool offset → MIDI note, then
 				// converted to an offset from baseMidi=60 so ~octave still
@@ -212,12 +215,12 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, ptch=1, start=0, pan=
 		// melody continues to cycle regardless of dur.
 		Pdef(m.ptn).set(\dur, 1);
 
-		// On beat-clock re-anchor (seek): stop the Pdef so TempoClock
-		// doesn't dump backlog, kill in-flight synths in the group so
-		// nothing is stuck at sustain, then restart. freeAll wrapped in
-		// s.bind so it lands after any /s_new bundle still in flight —
-		// see concert_p_files.md §6.
-		~onResync = { |idx|
+	};
+
+	// ~onResync in d.env (per-device dispatch — no cross-device clobber).
+	// Body in topEnvironment.use so ~beatClock etc. resolve.
+	~onResync = { |idx|
+		topEnvironment.use {
 			Pdef(m.ptn).stop;
 			s.bind { group.freeAll };
 			Pdef(m.ptn).play(~beatClock, quant: [~scoreBeatsPerBar * ~scoreEventsPerBeat, phase]);
@@ -228,11 +231,12 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, ptch=1, start=0, pan=
 //------------------------------------------------------------
 ~deinit = ~deinit <> {
 	Pdef(m.ptn).remove;
+	Event.eventTypes.removeAt(eventTypeName);
 
 	// Kill synths first (latency-safe /g_freeAll), then free sample
 	// buffers — order matters so no PlayBuf is still reading from a
-	// buffer we're about to /b_free. fork so s.sync actually waits
-	// for the server (s.sync only meaningful inside a Routine).
+	// buffer we're about to /b_free. fork so s.sync actually waits.
+	// Idempotent: notNil guards let ~deinit fire twice safely.
 	fork {
 		if (group.notNil) {
 			s.bind { group.freeAll };
@@ -240,11 +244,14 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, ptch=1, start=0, pan=
 			group.free;
 			group = nil;
 		};
-		samplesLib.do({|sample|
-			postf("buffer dealloc [%] \n", sample.buffer);
-			sample.buffer.free;
-			s.sync;
-		});
+		if (samplesLib.notNil) {
+			samplesLib.do({|sample|
+				postf("buffer dealloc [%] \n", sample.buffer);
+				sample.buffer.free;
+				s.sync;
+			});
+			samplesLib = nil;
+		};
 	};
 };
 
@@ -321,7 +328,7 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, ptch=1, start=0, pan=
 // from a preceding \tuning state is cleared. dur = 1 (uniform 16th grid
 // matching the original patternDur design).
 ~pieceNext = {|d, ctx|
-	var amp = m.accelMassFiltered.lincurve(0, 1.4, -60, -15, -1);
+	var amp = m.accelMassFiltered.lincurve(0, 1.4, -60, -9, -1);
 	var oct = (d.sensors.gyroEvent.y / pi.half).lincurve(-1, 1, 3, 6, 1).asInteger;
 	Pdef(m.ptn).set(\amp, amp.dbamp * ctx.loudness.linlin(0, 1, 0.3, 1.4));
 	Pdef(m.ptn).set(\octave, oct);

@@ -54,20 +54,14 @@ SynthDef(\simple, {|out=0, amp=0.0, freq=440, attack=0.001, decay=0.03, sustain=
 		Pdef(m.ptn).set(\dur, 1);
 		Pdef(m.ptn).set(\freq, 60.midicps);
 
-		// On beat-clock re-anchor (fires from OSCdef(\beatSync) after seek
-		// or large phase error): stop the Pdef, kill every in-flight
-		// synth in the group, restart the Pdef.
-		//
-		// Critical: freeAll must be sent via s.bind so it inherits the
-		// same s.latency as Pbind's /s_new. Without s.bind, /g_freeAll
-		// arrives at the server IMMEDIATELY, but the last in-flight
-		// /s_new (bundled by Pbind with s.latency) lands ~200 ms later
-		// into an empty group — stuck at sustain, no /n_set gate=0
-		// scheduled because Pdef.stop cancelled the release schedule.
-		// With s.bind, both messages carry s.latency; wall-clock
-		// ordering (our freeAll sent AFTER the last event) is preserved
-		// on the server timeline.
-		~onResync = { |idx|
+	};
+
+	// ~onResync in d.env (per-device dispatch — no cross-device clobber).
+	// Body in topEnvironment.use so ~beatClock etc. resolve.
+	// freeAll wrapped in s.bind so it inherits s.latency and lands after
+	// any /s_new bundle still in flight (see §6 for the timing analysis).
+	~onResync = { |idx|
+		topEnvironment.use {
 			Pdef(m.ptn).stop;
 			s.bind { group.freeAll };
 			Pdef(m.ptn).play(~beatClock, quant: ~scoreBeatsPerBar * ~scoreEventsPerBeat);
@@ -123,7 +117,7 @@ SynthDef(\simple, {|out=0, amp=0.0, freq=440, attack=0.001, decay=0.03, sustain=
 // State-gated ticks — same shape as cotf_harp1, minus the sample-only
 // bits. Each fires at ~30 Hz while its state is current.
 ~idleNext = {|d, ctx|
-	var amp = ((m.rrateMassFiltered) * 2.0).lincurve(0, 1.0, -60, -25, -4);
+	var amp = ((m.rrateMassFiltered) * 2.0).lincurve(0, 1.0, -60, -20, -4);
 	var ffreq = ((d.sensors.gyroEvent.x / pi).fold(-0.5,0.5) * 2).lincurve(-1.0, 1.0, 4000, 8000, 3);
 	var dur = m.accelMassFiltered.lincurve(0, 2.5, 2, 1, -1);
 	var pchi = m.gyroZFiltered.fold(-0.5,0.5).lincurve(-0.5,0.5,0,idleNotes.size,-1).asInteger;
@@ -151,7 +145,7 @@ SynthDef(\simple, {|out=0, amp=0.0, freq=440, attack=0.001, decay=0.03, sustain=
 };
 
 ~pieceNext = {|d, ctx|
-	var amp = (m.accelMassFiltered + m.rrateMassFiltered).half.lincurve(0, 1.5, -70, -24, -1);
+	var amp = (m.accelMassFiltered + m.rrateMassFiltered).half.lincurve(0, 1.5, -70, -20, -1);
 	var oct = (d.sensors.gyroEvent.y / pi.half).lincurve(-1, 1, 7, 10, 1).asInteger;
 	var pitch = ctx.voicePool.choose.asInteger.wrap(0, 11);
 	var durs = [2,1];

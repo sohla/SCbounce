@@ -100,8 +100,9 @@ thisProcess.interpreter.executeFile(libDir +/+ "metafile.scd");
 ~anchorThreshold = 2.0;
 ~obsTempo        = ~beatClockAvgTempo;
 ~lastBeatT       = nil;
-// `?` preserves any hook a downstream block has already registered.
-~onResync        = ~onResync ? { |idx| };
+// ~onResync is now dispatched per-device (see below). No global slot —
+// each personality's env owns its own ~onResync so multi-device loads
+// don't clobber each other.
 
 OSCdef(\beatSync, { |msg|
     var now = SystemClock.seconds;
@@ -117,7 +118,11 @@ OSCdef(\beatSync, { |msg|
         ~beatClock.tempo = ~beatClockAvgTempo;
         ~obsTempo = ~beatClockAvgTempo;
         ~lastBeatT = now;
-        ~onResync.value(idx);
+        ~devices.keysValuesDo { |port, d|
+            if (d.env.notNil and: { d.enabled == true }) {
+                d.env.use { ~onResync.(idx) };
+            };
+        };
         "beat sync: anchored at idx %".format(idx).postln;
     } {
         phaseError = idx - ~beatClock.beats;
@@ -126,7 +131,11 @@ OSCdef(\beatSync, { |msg|
             ~beatClock.tempo = ~beatClockAvgTempo;   // reset tempo — see comment above
             ~obsTempo = ~beatClockAvgTempo;
             ~lastBeatT = now;
-            ~onResync.value(idx);
+            ~devices.keysValuesDo { |port, d|
+                if (d.env.notNil and: { d.enabled == true }) {
+                    d.env.use { ~onResync.(idx) };
+                };
+            };
             "beat sync: re-anchored at idx % (err was %)".format(idx, phaseError.round(0.001)).postln;
         } {
             interval      = now - ~lastBeatT;

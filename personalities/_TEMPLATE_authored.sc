@@ -60,6 +60,20 @@ var folder = PathName("~/Music/cotf_samples/harp");
 var samplesLib;
 
 //------------------------------------------------------------
+// GOTCHA: Event.addEventType(\name, ...) registers the handler on a
+// class-level dict (Event.eventTypes). If every sampler personality
+// registers under the SAME name (e.g. \customEvent), whichever loads
+// LAST clobbers the others' handlers — including any already running
+// on other devices. The closure captures THIS env's samplesLib, so
+// device 1 (loaded earlier) will play device 2's samples the moment
+// device 2 loads a sampler. Symptom: "my harp is playing dulcimer
+// samples". Fix: make the event type name unique per env. m.ptn is
+// a fresh 16-char random string per interpretPersonality call, so
+// this is unique per device AND per reload. Remove on ~deinit so
+// reloads don't leak entries.
+var eventTypeName = (\customEvent_ ++ m.ptn).asSymbol;
+
+//------------------------------------------------------------
 // Filter tuning — smooth the raw sensor signals before use.
 // Higher attack = slower rise. Higher decay = slower release. See §9.
 // TODO(filter-tuning): tweak if the personality's response feels off.
@@ -111,7 +125,10 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, ptch=1, start=0, pan=
 	// Custom event handler — resolves note → bufnum + rate. Standard
 	// even/odd fallback. Swap for findClosestSample variant on sparse
 	// libraries, or the array-aware form for chord voicings (§16).
-	Event.addEventType(\customEvent, {|e|
+	// Registered under eventTypeName (per-env unique) — see comment
+	// on the var declaration above for why the name is not just
+	// \customEvent.
+	Event.addEventType(eventTypeName, {|e|
 		~note = (~note + ~root + (12 * ~octave)).asInteger;
 		if(~note.odd, {
 			~bufnum = findSampleBuffer.(~note - 1);
@@ -136,7 +153,7 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, ptch=1, start=0, pan=
 				\instrument, \stereoSampler,
 				\out, ob,
 				\group, group,   // route into personality's Group (§5)
-				\type, \customEvent,
+				\type, eventTypeName,
 				\note, 0,
 				\root, Pfunc { ~scoreVoicePool.choose.wrap(0, 11).asInteger },
 			);
@@ -154,9 +171,19 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, ptch=1, start=0, pan=
 		//     tuneTime = TempoClock.beats;
 		// };
 
-		// TODO(onResync): state-aware if any state pauses the Pdef —
-		// only restart if we're NOT in a paused-Pdef state (§6).
-		~onResync = { |idx|
+	};
+
+	// ~onResync MUST live in d.env (this personality env), NOT
+	// topEnvironment. Conductor's beatSync OSCdef iterates ~devices and
+	// dispatches per-env, so a global slot would let the last-loaded
+	// personality clobber every other device's handler → their Pdefs
+	// stay stranded on re-anchor (silent instrument after play/seek).
+	// Body wraps in topEnvironment.use so ~beatClock / ~roomState /
+	// ~scoreBeatsPerBar resolve.
+	// TODO(onResync): state-aware if any state pauses the Pdef — only
+	// restart if we're NOT in a paused-Pdef state (§6).
+	~onResync = { |idx|
+		topEnvironment.use {
 			Pdef(m.ptn).stop;
 			s.bind { group.freeAll };
 			Pdef(m.ptn).play(~beatClock, quant: ~scoreBeatsPerBar * ~scoreEventsPerBeat);
@@ -169,6 +196,9 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, ptch=1, start=0, pan=
 // firing ~deinit twice on the same env (§5).
 ~deinit = ~deinit <> {
 	Pdef(m.ptn).remove;
+	// Remove our per-env event type so reloads don't accumulate stale
+	// entries in Event.eventTypes. See eventTypeName declaration.
+	Event.eventTypes.removeAt(eventTypeName);
 
 	fork {
 		if (group.notNil) {

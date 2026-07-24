@@ -33,6 +33,12 @@ var noteToMidi = { |noteName|
 var folder = PathName("~/Music/cotf_samples/harp");
 var samplesLib;
 
+// Unique per-env event type. Event.addEventType registers on a class-level
+// dict, so multiple personalities sharing \customEvent clobber each other's
+// handlers (last loader wins → cross-device sample bleed). m.ptn is a fresh
+// 16-char random string per env, so this stays unique per device AND reload.
+var eventTypeName = (\customEvent_ ++ m.ptn).asSymbol;
+
 // scope issue!?!
 // var samplesLib = folder.entries.collect({ |path|
 // 	var note = path.fileNameWithoutExtension.split($_).last;
@@ -109,7 +115,7 @@ SynthDef(\funBass, {
 		(name: path.fileNameWithoutExtension, buffer: buffer, midiNote: noteToMidi.(note))
 	});
 
-	Event.addEventType(\customEvent, {|e|
+	Event.addEventType(eventTypeName, {|e|
 		// asInteger because SC's default ~octave is 5.0 (Float); the
 		// addition promotes ~note to Float and .odd is not defined on Float.
 		~note = (~note + ~root + (12 * ~octave)).asInteger;
@@ -132,7 +138,7 @@ SynthDef(\funBass, {
 				\instrument, \stereoSampler,
 				\out, ob,
 				\group, group,    // route every event's synth into our group
-				\type, \customEvent,
+				\type, eventTypeName,
 				\note, 0,
 				\root, Pfunc { ~scoreVoicePool.choose.wrap(0,11).asInteger},
 				// \octave, 6,
@@ -141,13 +147,17 @@ SynthDef(\funBass, {
 		);
 
 		Pdef(m.ptn).play(~beatClock, quant: ~scoreBeatsPerBar * ~scoreEventsPerBeat);
+	};
 
-		// On beat-clock re-anchor (seek): stop the Pdef so TempoClock
-		// doesn't dump backlog, kill in-flight synths in the group so
-		// nothing is stuck at sustain, then restart. freeAll wrapped in
-		// s.bind so it lands after any /s_new bundle still in flight —
-		// see concert_p_files.md §6.
-		~onResync = { |idx|
+	// ~onResync lives in this personality env (d.env) — dispatched per-device
+	// from conductorController's beatSync OSCdef, so no cross-device clobber.
+	// Body wraps in topEnvironment.use so ~beatClock etc. resolve.
+	// On beat-clock re-anchor (seek): stop the Pdef so TempoClock doesn't
+	// dump backlog, kill in-flight synths in the group so nothing is stuck
+	// at sustain, then restart. freeAll wrapped in s.bind so it lands after
+	// any /s_new bundle still in flight — see concert_p_files.md §6.
+	~onResync = { |idx|
+		topEnvironment.use {
 			Pdef(m.ptn).stop;
 			s.bind { group.freeAll };
 			Pdef(m.ptn).play(~beatClock, quant: ~scoreBeatsPerBar * ~scoreEventsPerBeat);
@@ -158,11 +168,13 @@ SynthDef(\funBass, {
 //------------------------------------------------------------
 ~deinit = ~deinit <> {
 	Pdef(m.ptn).remove;
+	Event.eventTypes.removeAt(eventTypeName);
 
 	// Kill synths first (with latency-safe /g_freeAll), then free
 	// sample buffers — order matters so no PlayBuf is still reading
 	// from a buffer we're about to /b_free. fork so s.sync actually
 	// waits for the server (s.sync is only meaningful inside a Routine).
+	// Idempotent: notNil guards let ~deinit fire twice safely (unload+load).
 	fork {
 		if (group.notNil) {
 			s.bind { group.freeAll };
@@ -170,11 +182,14 @@ SynthDef(\funBass, {
 			group.free;
 			group = nil;
 		};
-		samplesLib.do({|sample|
-			postf("buffer dealloc [%] \n", sample.buffer);
-			sample.buffer.free;
-			s.sync;
-		});
+		if (samplesLib.notNil) {
+			samplesLib.do({|sample|
+				postf("buffer dealloc [%] \n", sample.buffer);
+				sample.buffer.free;
+				s.sync;
+			});
+			samplesLib = nil;
+		};
 	};
 };
 
@@ -261,7 +276,7 @@ SynthDef(\funBass, {
 
 ~pieceNext   = {|d, ctx|
 
-	var amp = (m.accelMassFiltered + m.rrateMassFiltered).half.lincurve(0,1.5,-70,-14,-1);
+	var amp = (m.accelMassFiltered + m.rrateMassFiltered).half.lincurve(0,1.5,-70,-8,-1);
 	var oct = (d.sensors.gyroEvent.y / pi.half).lincurve(-1,1,4,8,1).asInteger;
 
 	Pdef(m.ptn).set(\amp, amp.dbamp * ctx.loudness.linlin(0, 1, 0.1, 1.0));

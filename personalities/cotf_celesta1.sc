@@ -42,6 +42,10 @@ var noteToMidi = { |noteName|
 var folder = PathName("~/Music/cotf_samples/Celesta_ES_mf");
 var samplesLib;
 
+// Unique per-env event type — see cotf_harp1.sc for rationale.
+// Shared \customEvent registrations clobber each other across devices.
+var eventTypeName = (\customEvent_ ++ m.ptn).asSymbol;
+
 //------------------------------------------------------------
 
 m.accelMassFilteredAttack = 0.99;
@@ -98,7 +102,7 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, ptch=1, start=0, pan=
 	// like harp, is provided as a mostly-even-MIDI sample set.
 	// asInteger because SC's default ~octave is 5.0 (Float); the addition
 	// promotes ~note to Float and .odd is not defined on Float.
-	Event.addEventType(\customEvent, {|e|
+	Event.addEventType(eventTypeName, {|e|
 		~note = (~note + ~root + (12 * ~octave)).asInteger;
 		if(~note.odd,{
 			~bufnum = findSampleBuffer.(~note-1);
@@ -119,7 +123,7 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, ptch=1, start=0, pan=
 				\instrument, \stereoSampler,
 				\out, ob,
 				\group, group,   // route every event's synth into our group
-				\type, \customEvent,
+				\type, eventTypeName,
 				\note, 0,
 				\root, Pfunc { ~scoreVoicePool.choose.wrap(0,11).asInteger},
 			);
@@ -141,14 +145,15 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, ptch=1, start=0, pan=
 			tuneTime = TempoClock.beats;
 		};
 
-		// On beat-clock re-anchor (seek): stop the Pdef so TempoClock
-		// doesn't dump backlog, kill in-flight synths in the group so
-		// nothing is stuck at sustain, then restart — unless we're in
-		// \tuning, where the pattern should stay paused (single hits
-		// via ~tuningNext instead). freeAll wrapped in s.bind so it
-		// lands after any /s_new bundle still in flight — see
-		// concert_p_files.md §6.
-		~onResync = { |idx|
+	};
+
+	// ~onResync lives in d.env (per-device dispatch from conductor's
+	// beatSync OSCdef — no cross-device clobber). Body wraps in
+	// topEnvironment.use so ~beatClock / ~roomState / ~scoreBeatsPerBar
+	// resolve. On re-anchor: stop Pdef + freeAll; restart only outside
+	// \tuning (tuning uses single-hit ~tuningNext instead).
+	~onResync = { |idx|
+		topEnvironment.use {
 			Pdef(m.ptn).stop;
 			s.bind { group.freeAll };
 			if (~roomState != \tuning) {
@@ -161,6 +166,9 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, ptch=1, start=0, pan=
 //------------------------------------------------------------
 ~deinit = ~deinit <> {
 	Pdef(m.ptn).remove;
+	// Remove our per-env event type from Event.eventTypes so reloads don't
+	// accumulate stale entries.
+	Event.eventTypes.removeAt(eventTypeName);
 
 	// Kill synths first (latency-safe /g_freeAll), then free sample
 	// buffers — order matters so no PlayBuf is still reading from a
@@ -252,12 +260,12 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, ptch=1, start=0, pan=
 
 	if (m.accelMassFiltered > 0.5, {
 		if (TempoClock.beats > (lastTime + 0.2), {
-			// Fire via Event.play with \customEvent so the even/odd
-			// sample lookup + midiratio resample logic in ~init's
+			// Fire via Event.play with our per-env event type so the
+			// even/odd sample lookup + midiratio resample logic in ~init's
 			// handler runs unchanged. Target = A5 (root 9 + octave 6).
 			(
 				instrument: \stereoSampler,
-				type:       \customEvent,
+				type:       eventTypeName,
 				out:        ob,
 				group:      group,
 				note:       0,
@@ -272,7 +280,7 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, ptch=1, start=0, pan=
 };
 
 ~pieceNext = {|d, ctx|
-	var amp = m.accelMassFiltered.lincurve(0, 2.0, -70, -15, -1);
+	var amp = m.accelMassFiltered.lincurve(0, 2.0, -70, -5, -1);
 	var oct = (d.sensors.gyroEvent.y / pi.half).lincurve(-1, 1, 6, 8, 1).asInteger;
 	Pdef(m.ptn).set(\amp, amp.dbamp);
 	Pdef(m.ptn).set(\octave, oct);
