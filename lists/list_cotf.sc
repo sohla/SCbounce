@@ -6,6 +6,8 @@
 		"cotf_simple3",
 		"cotf_harp1",
 		"cotf_dulcimer1",
+		"cotf_harpsichord1",
+		"cotf_harpsichord2",
 
 
 

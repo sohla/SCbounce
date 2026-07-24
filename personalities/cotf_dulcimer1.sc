@@ -308,7 +308,7 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, ptch=1, start=0, pan=
 // pitch bend (starts flat, settles in tune). tuneTime captured on
 // \tuning entry in ~onRoomState. After 20 s, sits at ptch = 1.
 ~tuningNext = {|d, ctx|
-	var amp = m.rrateMassFiltered.lincurve(0, 1.0, -70, -24, -4);
+	var amp = m.rrateMassFiltered.lincurve(0, 1.0, -70, -12, -4);
 	var tt = 20.0;
 	var elapsed = TempoClock.beats - tuneTime;
 

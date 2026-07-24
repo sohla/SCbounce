@@ -87,7 +87,7 @@ position) keeps running so re-entry to `\piece` is beat-locked.
 | `~onBar` | `{|ctx|}` | every downbeat | |
 | `~onPhrase` `~onSection` `~onChord` `~onKey` `~onScale` | `{|ctx|}` | when named field changes | change-triggered; fires once per change |
 | `~onRoomState` | `{|ctx|}` | state change | ctx has `state`, `prevState`, `stateChanged` |
-| `~onResync` | `{|idx|}` | beat-clock re-anchor (seek etc.) | **install inside `topEnvironment.use{}` in `~init`** |
+| `~onResync` | `{|idx|}` | beat-clock re-anchor (seek etc.) | **install in the personality env (d.env), NOT topEnvironment**. Body wraps in `topEnvironment.use{}` internally. Conductor's beatSync dispatches per-device. See §6. |
 
 **Second arg to state ticks is `ctx`** — a snapshot of score state
 (state, voicePool, loudness/tension/brightness/density/register,
@@ -170,14 +170,33 @@ re-anchors. Without `~onResync`:
   scheduled release from the cancelled Pdef → **stuck notes**.
 - PLL never converges, log fills with re-anchor lines.
 
-Install inside `~init`'s `topEnvironment.use{}` so it lives in
-`topEnvironment` where `OSCdef(\beatSync)` looks for it:
+Install in the **personality env (d.env)**, NOT `topEnvironment`.
+`OSCdef(\beatSync)` iterates `~devices` and dispatches per-env
+(`d.env.use { ~onResync.(idx) }`), so a global slot would let the
+last-loaded personality clobber every other device's handler → their
+Pdefs would stay stranded on re-anchor (silent instrument after
+play/seek). Place `~onResync = { … }` at the tail of `~init`, AFTER
+the `topEnvironment.use{}` block that plays the Pdef. Wrap the body
+in `topEnvironment.use{}` internally so `~beatClock` / `~roomState` /
+`~scoreBeatsPerBar` resolve:
 
 ```supercollider
-~onResync = { |idx|
-    Pdef(m.ptn).stop;
-    s.bind { group.freeAll };   // MUST be s.bind — see below
-    Pdef(m.ptn).play(~beatClock, quant: ~scoreBeatsPerBar * ~scoreEventsPerBeat);
+~init = ~init <> {
+    // … load samples etc …
+    topEnvironment.use {
+        group = Group.new;
+        Pdef(m.ptn, Pbind(...));
+        Pdef(m.ptn).play(~beatClock, quant: ...);
+    };
+
+    // OUTSIDE topEnvironment.use — this assignment sets d.env's ~onResync.
+    ~onResync = { |idx|
+        topEnvironment.use {
+            Pdef(m.ptn).stop;
+            s.bind { group.freeAll };   // MUST be s.bind — see below
+            Pdef(m.ptn).play(~beatClock, quant: ~scoreBeatsPerBar * ~scoreEventsPerBeat);
+        };
+    };
 };
 ```
 
@@ -197,10 +216,12 @@ resync's restart must not blindly re-`play`:
 
 ```supercollider
 ~onResync = { |idx|
-    Pdef(m.ptn).stop;
-    s.bind { group.freeAll };
-    if (~roomState != \tuning) {
-        Pdef(m.ptn).play(~beatClock, quant: ~scoreBeatsPerBar * ~scoreEventsPerBeat);
+    topEnvironment.use {
+        Pdef(m.ptn).stop;
+        s.bind { group.freeAll };
+        if (~roomState != \tuning) {
+            Pdef(m.ptn).play(~beatClock, quant: ~scoreBeatsPerBar * ~scoreEventsPerBeat);
+        };
     };
 };
 ```
@@ -208,16 +229,16 @@ resync's restart must not blindly re-`play`:
 Otherwise a seek during `\tuning` un-pauses the pattern and defeats
 the paused-Pdef design. Reference: `cotf_celesta1.sc`.
 
-**Multi-device (COTF production).** Keep installing into
-`topEnvironment` exactly as above — nothing changes in the p-file.
-With several devices loaded, each install would clobber the previous
-device's hook, so in the COTF profile (`cotf/main_cotf.scd`)
-`personalityController` captures the install into the device env
-right after `~init` and restores a dispatcher that calls every
-device's own hook on resync (under `topEnvironment`, so `~roomState`
-/ `~beatClock` / `~score*` resolve; `m`/`group` are lexical
-captures). In the solo GUI profile the capture is a no-op and the
-hook runs exactly as documented here.
+**Multi-device dispatch.** `~onResync` lives in each personality's
+own d.env. `conductorController.scd`'s `OSCdef(\beatSync)` iterates
+`~devices` and calls each device's hook under `d.env.use` — same
+idiom as `~onRoomState` dispatch. Loading harp on device 1 and
+dulcimer on device 2 no longer strands one when Beethoven plays;
+both devices' patterns restart on re-anchor. (Historical: before
+2026-07-24, `~onResync` was a topEnvironment slot — last-loaded
+personality clobbered the previous one and only THAT device's Pdef
+survived seek. Watch for older personality files that still install
+into topEnvironment; port them.)
 
 ---
 
@@ -236,8 +257,10 @@ Practical rules:
 
 - Personality-local vars go at file top as `var` declarations
   (`var m, ob, synth, group, lastTime, tuneTime;`).
-- Hook installation (`~onResync = { … }`) goes inside `~init`'s
-  `topEnvironment.use{}` so the controller can find it.
+- Hook installation (`~onResync = { … }`) goes OUTSIDE
+  `topEnvironment.use{}` so the assignment lands in d.env. Wrap the
+  BODY in `topEnvironment.use{}` for `~beatClock` etc. The controller
+  dispatches per-device via `d.env.use`.
 - Inside hook bodies, prefer `ctx` fields over `topEnvironment`
   lookups — ctx is passed by value and always accessible.
 - Wrap `Pdef.play(~beatClock, …)` etc. in `topEnvironment.use{}` —
@@ -346,8 +369,23 @@ values, not pre-scaled amps.
   to `[69]`, but if you're touching the score exporter, don't emit
   empty halves at source.
 - **`Pdef.stop` alone leaves stuck notes** — see §5, §6.
-- **Setting `~onResync` outside `topEnvironment.use{}`** — goes to
-  `d.env`, controller can't find it, seek → stuck notes.
+- **Setting `~onResync` INSIDE `topEnvironment.use{}`** — goes to
+  `topEnvironment` (a single global slot), so the next personality
+  load on ANY device clobbers it. That device's Pdef then gets
+  stranded on seek → silent instrument on play/re-anchor. Install
+  OUTSIDE `topEnvironment.use{}` so it lands in d.env; wrap the body
+  in `topEnvironment.use{}` for `~beatClock` etc. Controller iterates
+  `~devices` and dispatches per-env. See §6.
+- **`Event.addEventType(\name, {…})` with a shared name across
+  personalities** — the registration lives on a class-level dict
+  (`Event.eventTypes`). Same shared-slot pattern as the old
+  `~onResync` bug: last loader wins, everyone else's handler is
+  gone → cross-device sample bleed ("my harp is playing dulcimer
+  samples"). Derive the name from `m.ptn` (unique per env):
+  `var eventTypeName = (\customEvent_ ++ m.ptn).asSymbol;` and
+  remove on `~deinit` (`Event.eventTypes.removeAt(eventTypeName)`)
+  so reloads don't leak entries. Reference: any `cotf_*` sampler
+  personality (harp/celesta/dulcimer/marimba/test/template).
 - **Long release + fast dur** — `\release, 1.4` with `\dur, 0.2` at
   `_mul4` tempo = 7 overlapping synths per event line at 40 events/sec
   = 280 concurrent → server node pressure.
@@ -439,7 +477,7 @@ Then in the tick handler, threshold + throttle + inline event:
         if (TempoClock.beats > (lastTime + 0.2), {
             (
                 instrument: \stereoSampler,
-                type:       \customEvent,
+                type:       eventTypeName,   // per-env, see §16
                 out:        ob,
                 group:      group,
                 note:       0,
@@ -455,9 +493,9 @@ Then in the tick handler, threshold + throttle + inline event:
 ```
 
 Why an inline `(...).play` event rather than `Synth.new`:
-- Runs through the personality's `\customEvent` handler unchanged —
-  buffer lookup, odd/even resample, `~note+~root+12*~octave` calc
-  all reused.
+- Runs through the personality's per-env event-type handler unchanged
+  (see §16 on `eventTypeName`) — buffer lookup, odd/even resample,
+  `~note+~root+12*~octave` calc all reused.
 - `group: group` lands the synth in the personality's Group so
   `~deinit` / `~onResync` cleanup still catches it.
 - Throttle idiom `TempoClock.beats > (lastTime + gap)` is the same
@@ -472,6 +510,44 @@ Works identically for `\idle` — swap `~roomState == \tuning` for
 
 Patterns from the sampler personalities (harp1, celesta1, dulcimer1,
 marimba1/2).
+
+### Per-env `Event.addEventType` name (avoid cross-device sample bleed)
+
+`Event.addEventType(\name, {…})` registers on a class-level dict
+(`Event.eventTypes`). If every sampler registers under the SAME name
+(e.g. `\customEvent`), the last loader wins — every other device's
+handler closure (which captures THAT env's `samplesLib`) is gone.
+Symptom: "my harp is playing dulcimer samples" the moment a second
+sampler loads on another device.
+
+Fix — derive the name from `m.ptn` (fresh 16-char random per env, so
+unique per device AND per reload). Add to top-of-file vars:
+
+```supercollider
+var eventTypeName = (\customEvent_ ++ m.ptn).asSymbol;
+```
+
+Register under this name in `~init`, reference it in the Pbind's
+`\type`, and any inline `(...).play` events:
+
+```supercollider
+Event.addEventType(eventTypeName, {|e| … });
+// …
+Pbind(
+    …
+    \type, eventTypeName,
+    …
+);
+```
+
+Remove on `~deinit` so reloads don't leak entries in the class-level
+dict:
+
+```supercollider
+Event.eventTypes.removeAt(eventTypeName);
+```
+
+Reference: any `cotf_*` sampler personality.
 
 ### `\ptch` — continuous playback-rate bend
 Sampler SynthDef takes a `ptch` k-rate control that multiplies the
