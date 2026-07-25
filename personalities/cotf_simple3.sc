@@ -51,6 +51,11 @@ SynthDef(\simple, {|out=0, amp=0.0, freq=440, attack=0.001, decay=0.03, sustain=
 		);
 
 		Pdef(m.ptn).play(~beatClock, quant: ~scoreBeatsPerBar * ~scoreEventsPerBeat);
+		// cotf: seed envir so a stickless seat is silent — SC's Event default
+		// amp is 0.1, and the ~*Next tick hooks (the only writers of \amp) run
+		// only while the seat's device is enabled. Envir .set, not a Pbind key:
+		// Pbind keys override the envir and would defeat the hooks' .set.
+		Pdef(m.ptn).set(\amp, 0);
 		Pdef(m.ptn).set(\dur, 1);
 		Pdef(m.ptn).set(\freq, 60.midicps);
 

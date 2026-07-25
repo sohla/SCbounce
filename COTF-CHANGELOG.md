@@ -239,3 +239,46 @@ needs the Beethoven WAV at 48 kHz (yours can stay 44.1k).
   0.15→0.1), committed from M1 under your name so the branch matches what the
   machine is running. If any of these were experiments you didn't want kept,
   shout and we'll reconcile — nothing else was touched.
+
+## 2026-07-25 — the "ghost harp in an empty room" (amp seed on every cotf personality)
+- **Symptom** (heard at the 2026-07-24 bench): a room with nobody in it was
+  *louder* than a room with a motionless performer. `cotf_harp1` on a seat whose
+  stick was switched off / never connected kept plinking away on its own — one
+  note per beat, forever, with the sticks all boxed.
+- **Cause — an Event-default inversion.** The Pdef's Pbind declares no `\amp`
+  and no `\dur`; both are supplied *only* by the state tick hooks
+  (`~idleNext`/`~pieceNext`/…) via `Pdef(m.ptn).set(...)`. Those hooks run only
+  while the seat's device is enabled. With no stick there is no device, so no
+  hook ever runs, and the pattern falls through to SuperCollider's Event
+  defaults: `amp = 0.1`, `dur = 1`. A motionless *performer* floors at −60 dB
+  (`~idleNext`'s lincurve). So the empty seat sat ~50 dB above the occupied one.
+- **Fix — seed the Pdef envir immediately after `.play` in `~init`:**
+  `Pdef(m.ptn).set(\amp, 0);` (plus `\dur, 2` for `cotf_harp1`, which had no
+  `\dur` anywhere either). Deliberately an envir `.set` and **not** a Pbind key:
+  a Pbind key overrides the envir, which would permanently defeat the hooks'
+  own `.set` and mute the personality for real. `cotf_simple1`/`cotf_simple2`
+  already did exactly this with `\amp, 0` on their `Synth(\simple, …)` — this
+  brings the Pdef personalities up to that standard.
+- **`~onResync` needs no second seed.** `Pdef.set` writes the proxy's `envir`,
+  which is untouched by `.stop`/`.play` of the same key — only redefinition or
+  `.clear`/`.remove` would drop it, and neither happens on a seek. The seed
+  therefore survives every beat-clock re-anchor.
+- **Fixed (13 files):** `cotf_harp1` (amp + dur — the one actually heard),
+  `cotf_celesta1`, `cotf_dulcimer1`, `cotf_harpsichord1`, `cotf_harpsichord2`,
+  `cotf_marimba1`, `cotf_marimba2`, `cotf_simple3`, `cotf_test1` (amp only —
+  each already seeded or declared its own `\dur`), and `cotf_drums1..4` (amp
+  only). The drums pause themselves in `~init` so they were not the empty-room
+  noise, but their Pbinds omit `\amp` too, and `~onRoomState \piece` resumes
+  them — an unoccupied seat during the piece would have played at 0.1. Seeded
+  for the same reason.
+- **Audited clean (2 files):** `cotf_simple1`, `cotf_simple2` — long-lived
+  `Synth`, already created with `\amp, 0`.
+- Nothing restructured, no OSC change, no `API.md` change; non-cotf
+  personalities untouched. Every enabled seat behaves exactly as before — the
+  first tick overwrites the seed within ~33 ms.
+- **Related, on the COTF server side (landed today):** the room state `silent`
+  is now actually reachable — the server sends `/airkit/state silent` on group
+  clear/finish, so `~onRoomState \silent` (which already set `\amp, 0` in these
+  files) fires for real instead of only ever being a code path. Belt and
+  braces: the seed covers the never-had-a-stick case, `silent` covers the
+  had-a-stick-and-the-group-left case.

@@ -147,6 +147,15 @@ SynthDef(\funBass, {
 		);
 
 		Pdef(m.ptn).play(~beatClock, quant: ~scoreBeatsPerBar * ~scoreEventsPerBeat);
+		// cotf: seed envir so a stickless seat is silent (SC Event default
+		// amp=0.1 otherwise); first enabled tick overrides. The tick hooks
+		// (~idleNext etc.) only run while the seat's device is enabled, so a
+		// seat with this personality loaded and no stick connected would
+		// otherwise run on Event defaults — louder (amp 0.1, one note per
+		// beat) than a motionless performer, whose ~idleNext floors at -60 dB.
+		// Must be a Pdef envir .set, NOT a Pbind key: Pbind keys override the
+		// envir and would permanently defeat the hooks' .set.
+		Pdef(m.ptn).set(\amp, 0, \dur, 2);
 	};
 
 	// ~onResync lives in this personality env (d.env) — dispatched per-device
