@@ -4,6 +4,21 @@ One entry per push batch from the Concerts of the Future side, newest first: wha
 why, and what (if anything) behaves differently on your machine. The intent is that nothing
 here ever changes how AirKit behaves for you — if it does, that's a bug, tell us.
 
+## 2026-07-25 — prints.json inventory export + optional `prints:` header key (cotf)
+
+**Nothing changes for your workflow unless you opt in.** Two additions, both data/docs:
+
+- `personalities/prints.json` — a machine-generated snapshot of our physical 3D-print
+  inventory (the instrument bodies performers carry). Regenerated on M0 by
+  `npm run export:prints`; **don't hand-edit it**. It's marked `"status": "TEST_DATA"`
+  right now — the entries are placeholders until the real catalog (14+ prints) lands
+  late July and flips it to `"LIVE"`.
+- `concert_p_files.md` §21 — documents a new **optional** header key you can add to any
+  personality: `prints: [whiteViolin, copperViolin]` (ids from prints.json), recommending
+  which physical bodies suit that patch's sound. Our instrument crafter treats it as a
+  soft preference when assigning a performer their print; omit it to express no
+  preference. No SC code reads it — it's parsed on our side only.
+
 ## 2026-07-24 — Multi-device ~onResync capture (cotf)
 
 **Nothing changes for your solo/GUI workflow.** Your new state-aware `~onResync` hooks
