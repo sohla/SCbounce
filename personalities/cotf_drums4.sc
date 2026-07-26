@@ -84,7 +84,7 @@ SynthDef(\drumkitt4, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 					var pos = (~beatClock.beats - phase).mod(patternLen);
 					var slot = (eventStarts.indexOfGreaterThan(pos) ? samples.size) - 1;
 					bi = slot.max(0);
-					durs.wrapAt(bi)
+					durs.wrapAt(bi) * 1
 				},
 				\bufnum, Pfunc{|e|
 					var pos = (~beatClock.beats - phase).mod(patternLen);
@@ -102,6 +102,11 @@ SynthDef(\drumkitt4, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 		);
 
 		Pdef(m.ptn).play(~beatClock, quant: [~scoreBeatsPerBar * ~scoreEventsPerBeat, phase]);
+		// cotf: seed envir so a stickless seat is silent — SC's Event default
+		// amp is 0.1, and the ~*Next tick hooks (the only writers of \amp) run
+		// only while the seat's device is enabled. Envir .set, not a Pbind key:
+		// Pbind keys override the envir and would defeat the hooks' .set.
+		Pdef(m.ptn).set(\amp, 0);
 		Pdef(m.ptn).set(\bufnum, ~buffers[0]);
 		Pdef(m.ptn).pause;
 
@@ -156,10 +161,10 @@ SynthDef(\drumkitt4, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 //------------------------------------------------------------
 ~idleNext = {|d, ctx|
 	if (m.accelMassFiltered > 0.5, {
-		if (TempoClock.beats > (lastTime + 0.15), {
+		if (TempoClock.beats > (lastTime + 0.1), {
 			var idx = m.gyroYFiltered.clip(-1, 1).linlin(-1, 1, 0, drumSet.size - 0.001).asInteger;
 			var buf = topEnvironment[\buffers][drumSet[idx]];
-			var amp = m.accelMassFiltered.lincurve(0, 2.5, 0.4, 1, 1);
+			var amp = m.accelMassFiltered.lincurve(0, 2.5, 0.4, 0.3, 1);
 			(
 				instrument: \drumkitt4,
 				out: ob,

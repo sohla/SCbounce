@@ -810,3 +810,22 @@ Or gate the threshold check on `~roomState != \silent`.
 fires only one-shots; §20 keeps the Pdef live and adds one-shots as
 a second voice. Choose §15 for "tuning is a series of hits"; choose
 §20 for "the piece is a running pattern with gestural accents."
+
+---
+
+## 21. Physical prints — `personalities/prints.json` + the `prints:` header key
+
+`personalities/prints.json` is a machine-generated snapshot of the COTF
+physical print inventory (the 3D-printed instrument bodies performers carry),
+regenerated on M0 by `npm run export:prints` — **do not hand-edit it**. While
+`"status": "TEST_DATA"` the entries are placeholders; the real catalog (14+
+prints) lands late July and flips it to `"LIVE"`.
+
+Each personality header may add one optional key recommending which prints
+suit its sound, using ids from that file:
+
+    prints:      [whiteViolin, copperViolin]
+
+The COTF instrument crafter treats this as a soft preference when assigning a
+performer their print — recommended prints win ties, but a performer's own
+character match can override. Omit the key to express no preference.

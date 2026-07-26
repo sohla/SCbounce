@@ -79,7 +79,7 @@ SynthDef(\simple, {|out=0, amp=0.0, freq=440, attack=0.001, decay=0.03, sustain=
 // (once/sec) so we can see the routing without spamming the post window.
 ~idleNext = {|d, ctx|
 
-	var amp = (m.accelMass + m.rrateMass).lincurve(0, 1.0, -70, -12, 4);
+	var amp = (m.accelMass + m.rrateMass).lincurve(0, 1.0, -70, -8, 4);
 	var ffreq = ((d.sensors.gyroEvent.x / pi).fold(-0.5,0.5) * 2).lincurve(-1.0, 1.0, 200, 600, 3);
 
 	synth.set(\amp, amp.dbamp);
@@ -126,7 +126,7 @@ SynthDef(\simple, {|out=0, amp=0.0, freq=440, attack=0.001, decay=0.03, sustain=
 
 ~pieceNext = {|d, ctx|
 
-	var amp = (m.accelMass + m.rrateMass).lincurve(0, 2.0, -90, -12, -1);
+	var amp = (m.accelMass + m.rrateMass).lincurve(0, 2.0, -90, -2, -1);
 	var ffreq = ((d.sensors.gyroEvent.x / pi).fold(-0.5,0.5) * 2).lincurve(-1.0, 1.0, 500, 12000, 3);
 
 	synth.set(\amp, amp.dbamp);
