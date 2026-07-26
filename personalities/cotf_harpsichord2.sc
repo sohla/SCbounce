@@ -186,7 +186,7 @@ SynthDef(\stereoSamplerH, {|bufnum=0, out=0, amp=1, rate=1, ptch=1, start=0, pan
 
 //------------------------------------------------------------
 ~idleNext = {|d, ctx|
-	var amp = m.rrateMassFiltered.lincurve(0, 1.0, -70, -22, -4);
+	var amp = m.rrateMassFiltered.lincurve(0, 1.0, -70, -15, -4);
 	var dur = m.accelMassFiltered.lincurve(0, 2.5, 4, 1, -2).asInteger;
 
 	Pdef(m.ptn).set(\amp, amp.dbamp);
