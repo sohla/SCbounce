@@ -363,12 +363,12 @@ var addDevice = { |ip,port,index|
 
     var configPattern = "/%/Config".format(index);
     var configListener = OSCFunc({ |msg2, time2, addr2, recvPort2|
-        d.color = Color.fromArray(msg2.at([15,16,17])++[1.0]);
+        d.color = Color.fromArray(msg2.at([16,17,18])++[1.0]);
         "CONFIG % %".format(index,d.color).postln;
-        // {
-        //     var n = NetAddr.new("127.0.0.1", 57120);
-        //     n.sendMsg("/airkit/addDevice", port);
-        // }.defer;
+        {
+            var n = NetAddr.new("127.0.0.1", 57120);
+            n.sendMsg("/airkit/addDevice", port);
+        }.defer;
     }, configPattern).oneShot;
 
     var d = Event.new(proto:deviceProto);
@@ -384,7 +384,7 @@ var addDevice = { |ip,port,index|
     d.params.sensitivity =  0.5;
     d.sensors.digiInEvent = Array.fill(4,0); // must allocate for each instance
 
-    d.color = [Color.red,Color.yellow,Color.green,Color.blue].choose;
+    // d.color = [Color.red,Color.yellow,Color.green,Color.blue].choose;
     
     // global storage : port is the key
     ~devices.put(port,d);
@@ -397,7 +397,7 @@ var addDevice = { |ip,port,index|
     // hack : try and get color from config
     NetAddr.new(ip,port-index+1).sendMsg("/Config/GetConfig", 57120);
     // ...wait then make then add devices
-	{ NetAddr.new("127.0.0.1", 57120).sendMsg("/airkit/addDevice", port) }.defer(0.2);
+	// { NetAddr.new("127.0.0.1", 57120).sendMsg("/airkit/addDevice", port) }.defer(0.2);
 
     // Use from AirStick 
     // NetAddr.new(ip,port-index+1).sendMsg("/Config/GetConfig", 57120);
