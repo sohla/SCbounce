@@ -41,8 +41,8 @@ SynthDef(\sheet3, {
 ~next = {|d|
 
 	// var a = (d.sensors.accelEvent.y+d.sensors.accelEvent.z).abs;//m.accelMass.lincurve(0,2.5,0,1,-6);
-	var a = m.accelMassFiltered.lincurve(0,2.5,0,3,-2);
-	var b = m.accelMassFiltered.linexp(0,3,0.1,1);
+	var a = m.accelMassFiltered.lincurve(0,1.5,0,3,-2);
+	var b = m.accelMassFiltered.linexp(0,1,0.1,1);
 	var r = m.rrateMassFiltered.linlin(0,1.5,0.8,1.0);
 	var e = (d.sensors.gyroEvent.y / 2pi) + 0.5;
 	var pan = d.sensors.gyroEvent.z.linlin(-1,1,-1,1);

@@ -31,13 +31,13 @@ SynthDef(\growl, {|out=0, amp=0.0, freq=66, attack=0.001, decay=0.03, sustain=0.
 
 //------------------------------------------------------------
 ~next = {|d|
-  var amp = m.rrateMassFiltered.lincurve(0.0,0.1,-70,-9,-8);
+  var amp = m.rrateMassFiltered.lincurve(0.0,0.1,-70,-2,-8);
   var pos = (d.sensors.gyroEvent.z / pi).fold(-0.5,0.5) * 2;
   var gr = pos.lincurve(-1.0,1.0,0.0,2.0,-3);
-  synth.set(\amp, amp.dbamp);
+var amp2 = m.rrateMassFiltered.lincurve(0.0,0.02, -50,-2, -9);
+  synth.set(\amp, amp2.dbamp);
   synth.set(\gr, gr);
-  synth.set(\freq, ( m.com.root + 24).midicps)
-
+  synth.set(\freq, ( m.com.root + 24).midicps);
 };
 //------------------------------------------------------------
 ~plotMin = -1;

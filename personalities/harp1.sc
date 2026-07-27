@@ -198,7 +198,7 @@ SynthDef(\funBass, {
 ~next = {|d|
 
 	var move = m.accelMassFiltered.lincurve(0,1.5,1,notes.size,1);
-	var amp = m.accelMassFiltered.lincurve(0,1.4,-50,-6,-1);
+	var amp = m.accelMassFiltered.lincurve(0,1.0,-50,-5,-1);
 	var ff = m.rrateMassFiltered.lincurve(0.0,2.0,200,2000,-3); 
 	var wd = m.rrateMassFiltered.lincurve(0.0,2.0,10,0.1,-3); 
 	var step = m.gyroXFiltered.linlin(-0.8,0.8,0,3).floor; //up down
@@ -216,7 +216,7 @@ SynthDef(\funBass, {
 				sizeEnv: Env([0,1], [1], [-3]),
 				startColor: Color.hsv(n/14.0,1,1).alpha_(amp.dbamp), //Color.red.alpha_(0.7),
 				endColor: Color.yellow.alpha_(amp.dbamp),
-				startWidth: 1,
+				startWidth: 40,
 				endWidth: 0.1,
 				sx: 0,
 				sy: 0,
@@ -242,7 +242,7 @@ SynthDef(\funBass, {
 	Pdef(m.ptn).set(\viewID, d.port);
 	// Pdef(m.ptn).set(\startColor, Color.hsv((frame/40.0).mod(1.0),0.5,1.0,1.0));
 	// Pdef(m.ptn).set(\endColor, Color.hsv((frame/40.0).mod(1.0),0.5,1.0,0.0));
-	Pdef(m.ptn).set(\startWidth, amp.dbamp * 10);
+	Pdef(m.ptn).set(\startWidth, 100);
 	Pdef(m.ptn).set(\startColor, Color.yellow.alpha_(amp.dbamp + 0.1));
 	Pdef(m.ptn).set(\endColor, Color.red.alpha_(0));
 	// Pdef(m.ptn).set(\modulation, (
@@ -258,7 +258,7 @@ SynthDef(\funBass, {
 		bassSynth.set(\filtFreq, ff);
 	});
 
-	if(m.accelMassFiltered > 0.07,{
+	if(m.accelMassFiltered > 0.05,{
 		if( Pdef(m.ptn).isPlaying.not,{
 			Pdef(m.ptn).resume(quant:dur);
 		});
@@ -268,7 +268,7 @@ SynthDef(\funBass, {
 		});
 	});
 
-	if(m.accelMassFiltered > 3.2, {
+	if(m.accelMassFiltered > 1.2, {
 		if(TempoClock.beats > (lastTime + (dur*4)),{
 			lastTime = TempoClock.beats;
 			~playNote.(n-12,0, 3,amp.dbamp * 0.04);
