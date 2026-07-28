@@ -297,3 +297,15 @@ needs the Beethoven WAV at 48 kHz (yours can stay 44.1k).
   files) fires for real instead of only ever being a code path. Belt and
   braces: the seed covers the never-had-a-stick case, `silent` covers the
   had-a-stick-and-the-group-left case.
+
+## 2026-07-28 — real print inventory: 11 confirmed prints (LIVE)
+
+`personalities/prints.json` is regenerated with the first CONFIRMED physical
+print list — status flipped TEST_DATA → LIVE. The 20 placeholder ids
+(whiteViolin/blackHonker/copperViolin + variants) are gone; the real pool is:
+whiteWing, blackGlonker, blackShaker, brownShaker, boneRod, brownBall,
+compactViolin, gymBro, oliveBird, shinyStick, thinViolin (11 total, more may
+be confirmed later). Any `prints:` recommendation key in a personality header
+that references a retired placeholder id will simply stop matching — worth a
+sweep of your headers when convenient. Appearance/characteristics tags come
+from Ciaran's descriptions of the actual printed objects.
