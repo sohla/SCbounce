@@ -38,10 +38,12 @@ thisProcess.interpreter.executeFile(libDir +/+ "scorefile.scd");
 thisProcess.interpreter.executeFile(libDir +/+ "score_synth.scd");
 thisProcess.interpreter.executeFile(libDir +/+ "metafile.scd");
 
-~beatsPath = (root +/+ "out" +/+ "Beethoven4_4_MSO_beats_2_mul4.txt");
 ~musicPath = (root +/+ "data" +/+ "audio" +/+ "Beethoven4_4_MSO.wav");
+
+~beatsPath = (root +/+ "out" +/+ "Beethoven4_4_MSO_beats_2_mul4.txt");
 ~scorePath = (root +/+ "data" +/+ "score" +/+ "tick_index_2.json");
 ~metaPath  = (root +/+ "out"  +/+ "Beethoven4_4_MSO_beats_2_mul4_meta.json");
+
 ~bufFrames = 65536;
 ~addr      = NetAddr("127.0.0.1", NetAddr.langPort);
 
