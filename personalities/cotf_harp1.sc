@@ -52,7 +52,7 @@ var eventTypeName = (\customEvent_ ++ m.ptn).asSymbol;
 //------------------------------------------------------------
 
 m.accelMassFilteredAttack = 0.99;
-m.accelMassFilteredDecay = 0.3;
+m.accelMassFilteredDecay = 0.1;
 m.rrateMassFilteredAttack = 0.999;
 m.rrateMassFilteredDecay = 0.6;
 m.gyroFilteredAttack = 0.7;
@@ -61,35 +61,15 @@ m.gyroFilteredDecay = 0.7;
 //------------------------------------------------------------
 SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, start=0, pan=0, freq=440, ptch=1,
     attack=0.01, decay=0.1, sustain=0.3, release=1.2, gate=1,cutoff=20000, rq=1|
-	var lr = rate * BufRateScale.kr(bufnum) * ptch;// * (freq/440.0);
-	var tone = SinOsc.ar(120 + (freq/440) * [1,1.03], 0, 0.03);
+	
+	var lr = rate * BufRateScale.kr(bufnum) * ptch;
     var env = EnvGen.kr(Env.new([0, 1, 1, 0], [attack, sustain, release]), doneAction: 2);
 	var sig = PlayBuf.ar(2, bufnum, rate: [lr, lr * 1.0017], startPos: start * BufFrames.kr(bufnum), loop: 0);
-	// sig = sig * tone;
-	// sig = RLPF.ar(sig, cutoff, rq);
-    // sig = Balance2.ar(sig[0], sig[1], pan, amp * env * 2);
-
-    Out.ar(out, sig * amp * env);
+	var sparkle = FreqShift.ar(sig, freq * 0.52 * ptch, 0,0.2);
+    Out.ar(out, (sig + sparkle) * amp * env);
 }).add;
 
 
-SynthDef(\funBass, {
-    |out=0, freq = 440, gate = 1, amp = 0.8, filtFreq = 200, filtRes = 0.2, envAtk = 0.31, envDec = 0.1, envSus = 0.7, envRel = 3.2, rm = 0.5|
-    var osc1, osc2, osc3, env, filter, output;
-		var osc4, osc5, osc6;
-    // env = EnvGen.ar(Env.adsr(envAtk, envDec, envSus, envRel), gate, doneAction: Done.freeSelf);
-    env = EnvGen.ar(Env.perc(envAtk,envRel), gate, doneAction: Done.freeSelf);
-    osc1 = Saw.ar(freq, 1);
-    osc2 = Pulse.ar(freq * 0.99, 0.3, 1);
-    osc3 = SinOsc.ar(freq * 1.01, 0,1);
-    osc4 = Saw.ar(freq, 2.002);
-    osc5 = Pulse.ar(freq * 2.004, 0.3, 1);
-    osc6 = SinOsc.ar(freq * 2.97, 0, 1);
-    output = [Mix([osc1, osc2, osc3]), Mix([osc4, osc5, osc6])] * env * amp;
-    filter = RLPF.ar(output, filtFreq, filtRes);
-		// filter = [filter.distort, filter.tanh];
-    Out.ar(out, LeakDC.ar(filter.softclip));
-}).add;
 
 //------------------------------------------------------------
 ~init = ~init <> {
@@ -119,6 +99,14 @@ SynthDef(\funBass, {
 		// asInteger because SC's default ~octave is 5.0 (Float); the
 		// addition promotes ~note to Float and .odd is not defined on Float.
 		~note = (~note + ~root + (12 * ~octave)).asInteger;
+		// Explicitly hand the actual played frequency to the SynthDef —
+		// otherwise the default \note event recomputes ~freq from ~note +
+		// ~root + 12*~octave, which double-counts because we've already
+		// folded those in above. Now the SynthDef's \freq arg is the true
+		// playing pitch (odd/even resample still lands on the intended
+		// pitch: even → rate 1 at correct sample; odd → rate 1.midiratio
+		// off the note-1 sample, which raises it back to the intended freq).
+		~freq = ~note.midicps;
 		if(~note.odd,{
 			~bufnum = findSampleBuffer.(~note-1);
 				~rate = 1.midiratio;
@@ -245,25 +233,31 @@ SynthDef(\funBass, {
 // State-gated ticks — ~next always runs (gesture → amp/octave), these
 // override amp per state so silence is enforced regardless of gesture.
 ~idleNext    = {|d, ctx|
-	var amp = ((m.rrateMassFiltered) * 2.0).lincurve(0, 1.0, -60, -18, -4);
-	Pdef(m.ptn).set(\octave, [3,4,5,6].choose + 0.6);
-	Pdef(m.ptn).set(\root,0);
+	var amp = (m.accelMassFiltered).lincurve(0, 3.0, -80, -18, -1);
+	var notes = [0,7,12,17];
+	var n = m.gyroYFiltered.lincurve(-1.0,1.0,0,notes.size,-1).asInteger;
+	// Pdef(m.ptn).set(\octave, [4,5].choose );
+	Pdef(m.ptn).set(\ptch, notes[n].midiratio);
 	Pdef(m.ptn).set(\amp, amp.dbamp);
+	
 
-	if(amp > -35, {
-		if(TempoClock.beats > (lastTime + 1),{
-			Pdef(m.ptn).set(\dur, 1);
-			lastTime = TempoClock.beats;
-		},{
-		});
-	},{
-		Pdef(m.ptn).set(\dur, 2);
-	});
+	case(
+		{ amp > -18.1 }, {
+			if(TempoClock.beats > (lastTime + 0.25),{
+				Pdef(m.ptn).set(\dur, 0.5);
+				lastTime = TempoClock.beats;
+			})},
+		{ amp > -25 }, {
+			if(TempoClock.beats > (lastTime + 0.5),{
+				Pdef(m.ptn).set(\dur, 1.0);
+				lastTime = TempoClock.beats;
+			})},
+		{Pdef(m.ptn).set(\dur, 2) });
 
 };
 
 ~tuningNext  = {|d, ctx|
-	var amp = ((m.rrateMassFiltered) * 2.0).lincurve(0, 1.0, -60, -24, -4);
+	var amp = ((m.rrateMassFiltered) * 2.0).lincurve(0, 1.0, -80, -24, -4);
 	var tt = 15.0;
 
 	Pdef(m.ptn).set(\octave, 5);
@@ -285,21 +279,25 @@ SynthDef(\funBass, {
 
 ~pieceNext   = {|d, ctx|
 
-	var amp = (m.accelMassFiltered + m.rrateMassFiltered).half.lincurve(0,1.5,-70,-10,-1);
+	var amp = (m.accelMassFiltered).lincurve(0,2.6,-70,-10,-1);
 	var oct = (d.sensors.gyroEvent.y / pi.half).lincurve(-1,1,5,9,1).asInteger;
 
 	Pdef(m.ptn).set(\amp, amp.dbamp * ctx.loudness.linlin(0, 1, 0.1, 1.0));
 	Pdef(m.ptn).set(\octave, oct);
+	Pdef(m.ptn).set(\ptch, 1);
 
-	if(amp > -20, {
-		if(TempoClock.beats > (lastTime + 0.5),{
-			Pdef(m.ptn).set(\dur, 0.5);
-			lastTime = TempoClock.beats;
-		},{
-		});
-	},{
-		Pdef(m.ptn).set(\dur, 1.0);
-	});
+	case(
+		{ amp > -11.0 }, {
+			if(TempoClock.beats > (lastTime + 0.25),{
+				Pdef(m.ptn).set(\dur, 0.6666);
+				lastTime = TempoClock.beats;
+			})},
+		{ amp > -20 }, {
+			if(TempoClock.beats > (lastTime + 0.5),{
+				Pdef(m.ptn).set(\dur, 1.0);
+				lastTime = TempoClock.beats;
+			})},
+		{Pdef(m.ptn).set(\dur, 2) });
 
 };
 
