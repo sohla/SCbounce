@@ -54,7 +54,9 @@ m.gyroFilteredDecay       = 0.7;
 
 //------------------------------------------------------------
 // Sampler SynthDef — shared shape across harp1/celesta1/dulcimer1.
-SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, ptch=1, start=0, pan=0,
+// \freq is passed through (customEvent computes it — see §22) so the
+// SynthDef can drive freq-tracked oscillators / filters / subs.
+SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, freq=440, ptch=1, start=0, pan=0,
     attack=0.01, decay=0.1, sustain=0.3, release=1.2, gate=1|
 	var lr = rate * BufRateScale.kr(bufnum) * ptch;
 	var env = EnvGen.kr(Env.new([0, 1, 1, 0], [attack, sustain, release]), doneAction: 2);
@@ -89,6 +91,8 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, ptch=1, start=0, pan=
 	// events in ~idleNext / ~tuningNext / ~pieceNext (§15 idiom).
 	Event.addEventType(eventTypeName, {|e|
 		~note = (~note + ~root + (12 * ~octave)).asInteger;
+		// Send the true playing pitch to the SynthDef (§22).
+		~freq = ~note.midicps;
 		if(~note.odd, {
 			~bufnum = findSampleBuffer.(~note - 1);
 			~rate = 1.midiratio;
@@ -103,9 +107,9 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, ptch=1, start=0, pan=
 	topEnvironment.use{
 		group = Group.new;
 
-		// Running-Pdef backbone for \piece and \curtain. \root is
-		// voice-pool wrap-to-pc; \dur / \amp / \octave / \ptch are set
-		// by the state ticks.
+		// Running-Pdef backbone for \piece and \curtain. Pbind holds ONLY
+		// static routing — every param (including \root from ctx.voicePool)
+		// is set inline from state ticks. See §22.
 		Pdef(m.ptn,
 			Pbind(
 				\instrument, \stereoSampler,
@@ -113,7 +117,6 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, ptch=1, start=0, pan=
 				\group, group,   // route into personality group — §5
 				\type, eventTypeName,
 				\note, 0,
-				\root, Pfunc { ~scoreVoicePool.choose.wrap(0, 11).asInteger },
 			);
 		);
 
@@ -211,7 +214,6 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, ptch=1, start=0, pan=
 // Idle: accel-threshold one-shots, low volume, voice-pool pitch.
 // Pdef is paused; only inline events fire here. Throttle at 0.4 s.
 ~idleNext = {|d, ctx|
-	var amp = m.accelMassFiltered.lincurve(0, 2.0, -70, -25, -4);   // §17 low
 	if (m.accelMassFiltered > 0.5, {
 		if (TempoClock.beats > (lastTime + 0.4), {
 			(
@@ -220,9 +222,9 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, ptch=1, start=0, pan=
 				out:        ob,
 				group:      group,
 				note:       0,
-				root:       (~scoreVoicePool ? [69]).choose.wrap(0, 11).asInteger,
+				root:       (ctx.voicePool ? [69]).choose.wrap(0, 11).asInteger,
 				octave:     5,
-				amp:        amp.dbamp,
+				amp:        m.accelMassFiltered.lincurve(0, 2.0, -70, -25, -4).dbamp,
 				ptch:       1.0,
 			).play;
 			lastTime = TempoClock.beats;
@@ -233,16 +235,9 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, ptch=1, start=0, pan=
 //------------------------------------------------------------
 // Tuning: accel-threshold one-shots at A5, pitch wanders ±2 semitones
 // around A5 for 20 s then settles at true. §15 one-shot + §18 wander.
+// wander-envelope math is inline in the event constructor — chained
+// to keep the state tick's mapping visible in one place.
 ~tuningNext = {|d, ctx|
-	var amp = m.accelMassFiltered.lincurve(0, 2.0, -70, -25, -4);   // §17 low
-	var wanderDur    = 20.0;
-	var wanderRangeSt = 2.0;
-	var wanderRateHz = 0.3;
-	var elapsed = TempoClock.beats - tuneTime;
-	var envelope = if (elapsed < wanderDur, { 1.0 - (elapsed / wanderDur) }, { 0 });
-	var offsetSt = envelope * wanderRangeSt * sin(elapsed * 2 * pi * wanderRateHz);
-	var ptch = offsetSt.midiratio;
-
 	if (m.accelMassFiltered > 0.5, {
 		if (TempoClock.beats > (lastTime + 0.4), {
 			(
@@ -253,8 +248,9 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, ptch=1, start=0, pan=
 				note:       0,
 				root:       9,       // A
 				octave:     6,       // A5
-				amp:        amp.dbamp,
-				ptch:       ptch,    // wander offset ride
+				amp:        m.accelMassFiltered.lincurve(0, 2.0, -70, -25, -4).dbamp,
+				// ±2 st wander envelope, damping to 0 over 20 s, 0.3 Hz sine
+				ptch:       ((TempoClock.beats - tuneTime).lincurve(0, 20, 1, 0, 1) * 2.0 * sin((TempoClock.beats - tuneTime) * 2 * pi * 0.3)).midiratio,
 			).play;
 			lastTime = TempoClock.beats;
 		});
@@ -266,15 +262,17 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, ptch=1, start=0, pan=
 // (§19), tilt-driven octave, expressive amp curve. Accel-threshold
 // one-shots layered on top with a slightly higher threshold + louder
 // so they punch through the running pattern.
+// Two reused values (pdefAmp, oct) captured as local vars because
+// the one-shot block below relies on them — this is the reuse case
+// where a var is defensible; single-use mappings stay inline.
 ~pieceNext = {|d, ctx|
-	// Running-Pdef modulation
-	var dur     = m.rrateMassFiltered.linexp(0.01, 1.0, 2.0, 0.25);   // §19
 	var pdefAmp = m.accelMassFiltered.lincurve(0, 1.5, -70, -8, -1);   // §17 expressive
 	var oct     = (d.sensors.gyroEvent.y / pi.half).lincurve(-1, 1, 4, 7, 1).asInteger;
-	Pdef(m.ptn).set(\dur, dur);
-	Pdef(m.ptn).set(\amp, pdefAmp.dbamp * ctx.loudness.linlin(0, 1, 0.3, 1.0));
+	Pdef(m.ptn).set(\dur,    m.rrateMassFiltered.lincurve(0.01, 1.0, 2.0, 0.25, -4));   // §19
+	Pdef(m.ptn).set(\amp,    pdefAmp.dbamp * ctx.loudness.lincurve(0, 1, 0.3, 1.0, 1));
 	Pdef(m.ptn).set(\octave, oct);
-	Pdef(m.ptn).set(\ptch, 1);
+	Pdef(m.ptn).set(\ptch,   1);
+	Pdef(m.ptn).set(\root,   (ctx.voicePool ? [69]).choose.wrap(0, 11).asInteger);
 
 	// Gestural one-shot on top — higher threshold to reserve for
 	// stronger hits, slightly louder to sit above the pattern.
@@ -286,7 +284,7 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, ptch=1, start=0, pan=
 				out:        ob,
 				group:      group,
 				note:       0,
-				root:       (~scoreVoicePool ? [69]).choose.wrap(0, 11).asInteger,
+				root:       (ctx.voicePool ? [69]).choose.wrap(0, 11).asInteger,
 				octave:     oct + 1,
 				amp:        (pdefAmp + 3).dbamp,
 				ptch:       1.0,
@@ -299,11 +297,11 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, ptch=1, start=0, pan=
 //------------------------------------------------------------
 // Curtain: quiet running Pdef in low register, faded curve.
 ~curtainNext = {|d, ctx|
-	var amp = m.rrateMassFiltered.lincurve(0, 1.0, -80, -30, -4);   // §17 faded
-	Pdef(m.ptn).set(\amp, amp.dbamp);
-	Pdef(m.ptn).set(\dur, 3);
+	Pdef(m.ptn).set(\amp,    m.accelMassFiltered.lincurve(0, 1.0, -80, -30, -4).dbamp);   // §17 faded
+	Pdef(m.ptn).set(\dur,    3);
 	Pdef(m.ptn).set(\octave, [3, 4].choose);
-	Pdef(m.ptn).set(\ptch, 1);
+	Pdef(m.ptn).set(\ptch,   1);
+	Pdef(m.ptn).set(\root,   (ctx.voicePool ? [69]).choose.wrap(0, 11).asInteger);
 };
 
 //------------------------------------------------------------

@@ -48,7 +48,7 @@ if(~harpMono.isNil, {
 // ---------------------------------------------------------------- SYNTHDEF
 (
 SynthDef(\harpGrainTGrains, {
-	|out=0, bufnum=0, amp=0.3, rate=1, gate=1, trans=1,
+	|out=0, bufnum=0, amp=0.3, rate=1, gate=1, trans=1, freq=440,
 	 pos=0.5, density=20, grainDur=0.15,
 	 panSpread=0.6, rateSpread=0.01,
 	 atk=0.02, dec=0.05, sus=0.7, rel=0.4|
@@ -59,7 +59,8 @@ SynthDef(\harpGrainTGrains, {
 	var gpan      = TRand.kr(panSpread.neg, panSpread, trig);
 	var sig       = TGrains.ar(2, trig, bufnum, grate, centerPos,
 	                           grainDur, gpan, 1, 2);
-	Out.ar(out, sig * env * amp);
+	var sub = FreqShift.ar(sig, freq * 0.5, 0, 0.4);
+	Out.ar(out, (sig + sub) * env * amp);
 }).add;
 )
 
@@ -100,6 +101,7 @@ Event.addEventType(\harpTGrainsEvent, { |e|
 	if(buf.notNil, {
 		~bufnum     = buf;
 		~rate       = offset.midiratio;
+		~freq       = midi.midicps;
 		~instrument = \harpGrainTGrains;
 		~type       = \note;
 		currentEnvironment.play;
@@ -120,12 +122,12 @@ Pdef(\harpTG,
 		\trans,      1,       // post-selection playback-rate multiplier
 		\dur,        0.2,
 		\amp,        0.8,
-		\density,    200,//Pwhite(15, 400),
-		\grainDur,   0.2,//Pwhite(0.1,0.3),
+		\density,    100,//Pwhite(15, 400),
+		\grainDur,   0.07,//Pwhite(0.1,0.3),
 		\pos,        Pwhite(0.01, 0.07),
 		\panSpread,  1,
 		\rateSpread, 0.02,
-		\atk, 0.05, \dec, 0.05, \sus, 0.7, \rel, 0.4
+		\atk, 0.004, \dec, 0.2, \sus, 0.3, \rel, 0.4
 	);
 ).play(quant: 0);
 )
