@@ -320,6 +320,47 @@ Common mappings:
 Amp values are dB; convert with `.dbamp` before passing to a synth
 param.
 
+### `under` — rotation isolated from acceleration
+
+Distinguish smooth rotational gestures from acceleration-driven ones
+(shakes / strikes) in a single expression, without adding state. Use
+when you want two independent handles on the same instrument — e.g.
+accel drives one voice, `under` drives another.
+
+```supercollider
+var under = m.accelMassFiltered.lincurve(0, 1.0, m.rrateMassFiltered.neg, 0, -1).neg.lincurve(0, 0.4, 0, 1, -1);
+```
+
+What it does, unpacked:
+
+1. `accelMassFiltered.lincurve(0, 1.0, -rrate, 0, -1)` — as accel rises
+   from 0 to 1, the output rises from `-rrate` to 0 along a concave
+   curve. When accel is low, output ≈ `-rrate`; when accel is high,
+   output ≈ 0.
+2. `.neg` — flips sign. Output is now: high `rrate` when accel is
+   low, near 0 when accel is high. In words: *rotation intensity,
+   masked by accel*.
+3. `.lincurve(0, 0.4, 0, 1, -1)` — amplifies the small positive
+   values (0..0.4) up to 0..1 with a concave curve, so light
+   rotation-only movement still opens the mapping.
+
+**Musical logic.** A strike or shake spikes accel high → `under` → 0
+regardless of coincidental rotation. A smooth wrist rotation with
+minimal accel → `under` opens fully. Two orthogonal gestures from the
+same sensors:
+
+- **accel** → the impact voice (drone amp, strike triggers)
+- **`under`** → the flow voice (pattern amp, granular density)
+
+**Per-state redeclaration.** Same rule as every other mapping — each
+state re-declares `var under = …` inline. Don't factor into a helper
+(§22). The `0, 0.4` window in step 3 is a per-state knob: wider window
+(`0, 0.6`) = more responsive; narrower (`0, 0.2`) = only strong
+rotation opens the mapping.
+
+Reference: `cotf_test2.sc`, `cotf_test3.sc` — used across all four
+state ticks.
+
 ---
 
 ## 10. Pitch conventions
@@ -1072,3 +1113,399 @@ breaking another state.
   makes cross-personality behaviour predictable for performers.
 - **Guard `ctx.voicePool` inline with `? [69]`.** Simple, cheap, gets
   the mapping past the first-beat window without a separate check.
+
+---
+
+## 23. Energy accumulator + tier switching (\low / \med / \high)
+
+Personality-local depth primitive. An `energy` running integral of
+recent motion is compared to two thresholds → three named tiers
+(`\low`, `\med`, `\high`). Every state tick branches on the tier —
+same state, three distinct behaviours, soft boundaries that the
+player crosses by pushing harder or backing off.
+
+**Basic form** (put in `~pieceNext` or `~next` — anywhere that fires
+every tick):
+
+```supercollider
+// File-scope var
+var energy = 0;
+var tier = \low;
+
+~pieceNext = { |d, ctx|
+    energy = (energy * 0.98) + m.accelMassFiltered;   // integrate + decay
+    tier = case
+        { energy < 0.5 } { \low }
+        { energy < 2.0 } { \med }
+        { true }         { \high };
+
+    // Branch behaviour on tier
+    switch(tier,
+        \low,  { /* subtle */ },
+        \med,  { /* full */ },
+        \high, { /* climax */ },
+    );
+};
+```
+
+Decay coefficient `0.98` at ~30 Hz tick rate ≈ 1.5 s time constant —
+`energy` halves every ~1.5 s of stillness. Adjust upward
+(`0.99` = ~5 s) for slower-glowing characters, downward (`0.94` =
+~0.4 s) for snappier ones.
+
+**Hysteresis** (prevent chatter at boundaries):
+
+```supercollider
+tier = case
+    { tier == \high and: { energy < 1.5 } } { \med }
+    { tier == \med  and: { energy < 0.3 } } { \low }
+    { tier == \low  and: { energy > 0.5 } } { \med }
+    { tier == \med  and: { energy > 2.0 } } { \high }
+    { true }                                 { tier };
+```
+
+Rising thresholds > falling thresholds — you have to push harder to
+step up than you have to relax to step down.
+
+**Tier-entry effects** (fire a one-shot when tier changes):
+
+```supercollider
+if (tier != lastTier, {
+    switch(tier,
+        \high, { /* fire a crash / open filter / reveal */ },
+        // ...
+    );
+    lastTier = tier;
+});
+```
+
+**Time-in-tier** (for reveal after sustained high energy):
+
+```supercollider
+if (tier == \high, {
+    highTimer = highTimer + tickDt;
+    if (highTimer > 10, { /* unlock hidden layer */ });
+}, {
+    highTimer = 0;
+});
+```
+
+Reference personalities: cotf_whisperer1, cotf_percussionist1,
+cotf_cascade1.
+
+---
+
+## 24. Derived gesture primitives
+
+Named event-detectors built on top of raw sensor streams. Not a
+shared library — each personality inlines the ones it needs.
+Repetition across files is intentional: per-personality tuning of
+thresholds and windows is easier when the code lives locally.
+
+Convention: put file-scope state vars at the top, run the detector
+inside `~next` (or a state tick), and treat the derived signal as a
+boolean / value the rest of the personality reads.
+
+### `strike` — accel crosses threshold with refractory period
+```supercollider
+var strikeThresh = 0.8;
+var refractory = 0.15;   // seconds
+
+~next = { |d|
+    if (m.accelMassFiltered > strikeThresh
+        and: { TempoClock.beats > (lastStrike + refractory) },
+    {
+        lastStrike = TempoClock.beats;
+        // fire strike-response here
+    });
+};
+```
+
+### `stillness` — seconds since last significant motion
+```supercollider
+var stillnessThresh = 0.05;   // motion below this = "still"
+
+~next = { |d|
+    if (m.accelMassFiltered > stillnessThresh, {
+        lastMotion = TempoClock.beats;
+    });
+    stillness = TempoClock.beats - lastMotion;
+};
+```
+
+Read `stillness` from anywhere (state ticks, beat hooks) to test
+`if (stillness > 10, { … })` for stillness-triggered reveals.
+
+### `direction` — sign of change on a continuous signal
+```supercollider
+var prevY = 0;
+var dirThresh = 0.02;
+
+~next = { |d|
+    var dy = m.gyroYFiltered - prevY;
+    prevY = m.gyroYFiltered;
+    dir = case
+        { dy >  dirThresh } { \up }
+        { dy < dirThresh.neg } { \down }
+        { true }               { \still };
+};
+```
+
+Fires per tick — combine with `dir != lastDir` to detect *transitions*
+(edge detection):
+
+```supercollider
+if (dir != lastDir and: { dir != \still }, {
+    // dir just changed to \up or \down
+    lastDir = dir;
+});
+```
+
+### `hold` — orientation stays within N degrees for T seconds
+```supercollider
+var holdThresh = 0.1;      // radians tolerance
+var holdDuration = 2.0;    // seconds
+
+~next = { |d|
+    if ((m.gyroYFiltered - holdAnchor).abs < holdThresh, {
+        holdTime = holdTime + tickDt;
+        if (holdTime > holdDuration and: { holdFired.not }, {
+            holdFired = true;
+            // fire hold-triggered event here
+        });
+    }, {
+        holdAnchor = m.gyroYFiltered;
+        holdTime = 0;
+        holdFired = false;
+    });
+};
+```
+
+### `reversal` — direction flips within a short window
+```supercollider
+var reversalWindow = 0.5;   // seconds
+var lastDirTime = 0;
+
+// (uses `dir` and `lastDir` from the `direction` recipe above)
+if (dir != lastDir
+    and: { dir != \still }
+    and: { lastDir != \still }
+    and: { (TempoClock.beats - lastDirTime) < reversalWindow },
+{
+    // rapid reversal — fire "shake in place" response
+    lastDirTime = TempoClock.beats;
+});
+```
+
+Cited in cotf_cascade1 (reversal → chord instead of arpeggio).
+
+### `tickDt` — time between ticks
+Most detectors need to know the tick interval to accumulate time
+correctly. Compute once per tick:
+
+```supercollider
+var lastTickBeats = 0;
+
+~next = { |d|
+    tickDt = (TempoClock.beats - lastTickBeats).max(0.001);
+    lastTickBeats = TempoClock.beats;
+    // …other detectors read tickDt…
+};
+```
+
+---
+
+## 25. Multi-synthdef layering (voice A + voice B)
+
+Personalities carrying more than one voice engine. Each SynthDef is
+declared at file top; each held instance stored as a file-scope
+`var synth1, synth2;`; all live in the same personality Group so
+cleanup remains one `group.freeAll`.
+
+### Two long-lived voices with per-voice amp
+```supercollider
+var synth1, synth2;
+var group;
+
+SynthDef(\voiceA, { |out=0, freq=220, amp=0, gate=1, atk=0.5, rel=1|
+    var env = EnvGen.kr(Env.asr(atk, 1, rel), gate);
+    Out.ar(out, SinOsc.ar(freq) * env * amp.lag(0.05));
+}).add;
+
+SynthDef(\voiceB, { |out=0, freq=220, amp=0, gate=1, atk=0.5, rel=1|
+    var env = EnvGen.kr(Env.asr(atk, 1, rel), gate);
+    Out.ar(out, Saw.ar(freq) * env * amp.lag(0.05));
+}).add;
+
+~init = ~init <> {
+    topEnvironment.use {
+        group = Group.new;
+        synth1 = Synth(\voiceA, [\out, ob, \amp, 0], group);
+        synth2 = Synth(\voiceB, [\out, ob, \amp, 0], group);
+    };
+};
+
+~pieceNext = { |d, ctx|
+    var e = m.accelMassFiltered;
+    synth1.set(\amp, e.lincurve(0, 2, 0, 0.3, -2));   // voice A
+    synth2.set(\amp, e.lincurve(0, 2, 0, 0.15, -2));  // voice B, quieter
+};
+
+~deinit = ~deinit <> {
+    fork {
+        if (group.notNil, {
+            synth1.set(\gate, 0);
+            synth2.set(\gate, 0);
+            0.5.wait;
+            s.bind { group.freeAll };
+            s.sync;
+            group.free;
+            group = nil;
+        });
+    };
+};
+```
+
+### Three voices for a triad
+Same pattern with three synths, root/fifth/octave frequencies:
+
+```supercollider
+var voices;   // Array of 3 Synths
+
+~init = ~init <> {
+    topEnvironment.use {
+        group = Group.new;
+        voices = 3.collect({ Synth(\voiceA, [\out, ob, \amp, 0], group) });
+    };
+};
+
+~pieceNext = { |d, ctx|
+    var root = (ctx.voicePool ? [69]).first.midicps;
+    var freqs = [root, root * 1.5, root * 2];    // root, fifth, octave
+    var e = m.accelMassFiltered;
+    voices.do({ |syn, i|
+        var voiceAmp = switch(tier,
+            \low,  { if (i == 0, { 0.2 }, { 0 }) },
+            \med,  { if (i < 2,  { 0.2 }, { 0 }) },
+            \high, { 0.25 },
+        );
+        syn.set(\freq, freqs[i], \amp, voiceAmp * e.lincurve(0, 2, 0, 1, -2));
+    });
+};
+```
+
+Cited in cotf_whisperer1 (three voices = triad, per-voice amp
+driven by tier).
+
+### Sampler + granular halo
+Same shape — one SynthDef for the main sample voice, another for the
+granular halo, both routed into `group`, amps balanced by tier.
+Beware of TGrains's mono-buffer requirement — see §16.
+
+---
+
+## 26. Hidden-layer / reveal patterns
+
+Menu of common depth mechanics. Each is a small state-tick pattern
+that stays silent unless a specific interaction shape unlocks it.
+Combine 1–2 per personality — enough to reward exploration without
+becoming a puzzle.
+
+### Stillness trigger
+After activity, stopping for T seconds fires a reveal (echo, ghost,
+memory).
+
+```supercollider
+if (stillness > 10 and: { stillnessFired.not } and: { lastTier != \low }, {
+    stillnessFired = true;
+    // one-shot Event.play — ghost of the last chord, fading
+    (
+        instrument: \whisperVoice,
+        freq: lastRoot.midicps,
+        amp: 0.15,
+        rel: 6.0,
+        group: group,
+        type: \note,
+    ).play;
+});
+if (stillness < 1, { stillnessFired = false });   // rearm on any motion
+```
+
+Reference: cotf_whisperer1.
+
+### Sustained-hold capture
+Hold at a specific orientation for T seconds → capture the current
+score pitch as a new anchor for this personality.
+
+```supercollider
+// (uses `hold` recipe from §24)
+if (holdFired, {
+    capturedRoot = (ctx.voicePool ? [69]).first.wrap(0, 11);
+    // switch personality's base pitch to the captured value
+});
+```
+
+### Gesture-sequence reveal
+Three strikes in ½ second, or shake-in-place, or a specific rhythm
+of gestures — unlocks a special sound.
+
+```supercollider
+// (uses `reversal` recipe from §24)
+if (reversalDetected, {
+    // spawn a chord instead of the usual arpeggio
+});
+```
+
+Reference: cotf_cascade1 (reversal → chord).
+
+### Section-swap-under-the-hood
+`~onSection` silently reassigns sample voicings / patterns without
+any announcement. Only noticed by comparing sections back to back.
+
+```supercollider
+~onSection = { |ctx|
+    switch(ctx.sectionId,
+        "intro",  { layers = softLayers },
+        "dev",    { layers = tomLayers },
+        "recap",  { layers = fullLayers },
+    );
+};
+```
+
+Reference: cotf_percussionist1.
+
+### Threshold-unlock
+Sustained `\high` tier for T seconds unlocks an additional voice or
+mode that persists until stillness returns.
+
+```supercollider
+if (tier == \high, {
+    highTimer = highTimer + tickDt;
+    if (highTimer > 8 and: { queenVoice.isNil }, {
+        queenVoice = Synth(\queen, [...], group);
+    });
+}, {
+    highTimer = 0;
+    if (queenVoice.notNil, { queenVoice.set(\gate, 0); queenVoice = nil });
+});
+```
+
+Adds one persistent extra voice while the player sustains high
+energy; retracts when they relax.
+
+### Tempo-derived reveals
+Watch tempo / bar count and reveal on specific downbeats:
+
+```supercollider
+~onBar = { |ctx|
+    barCounter = barCounter + 1;
+    if (barCounter.mod(16) == 0, {
+        // every 16 bars, do the reveal thing
+    });
+};
+```
+
+### Design tip
+Don't over-signpost the reveals. If every gesture unlocks something,
+nothing feels earned. Rule of thumb: at most **two** reveals per
+personality, each requiring a distinct interaction shape.

@@ -242,6 +242,10 @@ Full recipes live in `concert_p_files.md`. Summary map:
 - **§18** Pitch wander around target
 - **§19** Rotation-magnitude-driven subdivision
 - **§20** Layered running-Pdef + gestural one-shots
+- **§23** Energy accumulator + tier switching (\low / \med / \high)
+- **§24** Derived gesture primitives (strike / stillness / direction / hold / reversal)
+- **§25** Multi-synthdef layering (voice A + voice B)
+- **§26** Hidden-layer / reveal patterns
 
 Foundational patterns (also in `concert_p_files.md`):
 
@@ -317,3 +321,78 @@ For the amp palette (§17), the constants are shared — changing
 `low`. Change the palette when the *default character* of "quiet"
 should shift; override in-file when a specific personality wants a
 one-off.
+
+---
+
+## 8. Character reference implementations
+
+Three worked-example personalities demonstrating the depth vocabulary
+(energy tiers + hidden layers) end-to-end. Each is a compact reference
+for a specific architectural + mechanic combination — when authoring
+a new character in a similar register, open the closest reference and
+copy its skeleton.
+
+### `personalities/cotf_whisperer1.sc` — long-lived multi-synthdef
+**Architecture:** engine A + multi-synthdef (§25) — three long-lived
+`\whisperVoice` synths (root / fifth / octave) held from `~init`, all
+in the personality Group. No Pdef.
+
+**Depth mechanic:** energy accumulator + tier switching (§23) drives
+per-voice amp. `\low` = root only (single sine drone). `\med` = root
++ fifth. `\high` = full triad + slow LPF opening.
+
+**Hidden reveal:** stillness > 10 s after non-`\low` activity fires a
+one-shot ghost echo of the last chord, fading over 6 s (§26).
+
+**Copy this when:** the personality is drone-like, needs multiple
+tuned voices held simultaneously, and rewards sustained gesture with
+harmonic reveal.
+
+### `personalities/cotf_percussionist1.sc` — Pdef + tier pattern swap
+**Architecture:** engine B (Pdef + per-event sampler) + multi-hit
+custom event type (§20 pattern). Uses the orchkit sample library.
+
+**Depth mechanic:** energy tier (§23) selects the running pattern —
+`\low` = pulse only, `\med` = full groove, `\high` = double-time with
+snare fills inserted every 4 bars via `~onBar` counter.
+
+**Hidden reveal:** `~onSection` silently rotates the kit voicing
+(§26 section-swap) — intro / A / dev / B / recap / coda each carry a
+different set of orchkit samples voicing the six roles. Not
+announced; only obvious across back-to-back section comparison.
+
+**Copy this when:** the personality is rhythmic, has a static grid
+that grows in complexity with energy, and could benefit from
+section-driven timbral rotation.
+
+### `personalities/cotf_cascade1.sc` — event one-shots + direction detection
+**Architecture:** no Pdef at all — every note fires from
+`SystemClock.sched`ed `Event.play` calls triggered by direction
+events in `~next` (§15 event-idiom taken further).
+
+**Depth mechanic:** direction-of-motion derived gesture (§24). Each
+transition of gyroY's derivative to a non-still direction fires an
+arpeggio in that direction. Energy tier (§23) sets arpeggio length
+(1 / 3 / 5 notes) and note tail length.
+
+**Hidden reveal:** rapid reversal within 500 ms — a "shake in place"
+gesture — cancels the second arpeggio and instead fires a chord (all
+tier's notes simultaneously) at higher amp (§26 gesture-sequence
+reveal).
+
+**Copy this when:** the personality is gestural / expressive, notes
+are one-shot rather than pattern-driven, and gesture direction /
+motion character should shape musical output.
+
+### What each reference contributes to the vocabulary
+
+- **whisperer** — three-voice unison held long-lived; per-voice amp
+  from tier; stillness reveal idiom.
+- **percussionist** — tier-driven pattern-key swap; section-driven
+  layer-key swap; bar-counter fill insertion.
+- **cascade** — direction edge-detection; SystemClock-scheduled
+  arpeggio spawning; reversal-detection for chord reveal.
+
+Between them the three files touch every recipe in `concert_p_files.md`
+§5–§26 at least once. Future personalities should be able to pick a
+reference file whose architecture matches and adapt from there.

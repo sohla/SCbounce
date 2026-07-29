@@ -140,37 +140,43 @@ SynthDef(\simple, {|out=0, amp=0.0, freq=440, gate=1,
 	Pdef(m.ptn).set(\ffreq, 200);
 };
 
-// tuning — both engines sparse and dim.
+// tuning — sparse; drone muted. Pattern driven by `under` (rrate
+// isolated from accel) — only smooth-rotation gestures wake the pattern.
 ~tuningNext = { |d, ctx|
-	synth.set(\amp,        0);//m.accelMassFiltered.lincurve(0, 1.0, -70, -25, -4).dbamp);
+	var under = m.accelMassFiltered.lincurve(0, 1.0, m.rrateMassFiltered.neg, 0, -1).neg.lincurve(0, 0.4, 0, 1, -1);
+	synth.set(\amp,        0);
 	synth.set(\ffreq,      400);
 	synth.set(\lagAttack,  0.4);
 	synth.set(\lagRelease, 1.0);
-	Pdef(m.ptn).set(\amp,   m.rrateMassFiltered.lincurve(0, 1.0, -70, -25, -4).dbamp);
-	Pdef(m.ptn).set(\dur,   2);
+	Pdef(m.ptn).set(\amp,   under.lincurve(0, 1.0, -70, -18, -4).dbamp);
+	Pdef(m.ptn).set(\dur,   under.lincurve(0, 1.0, 3, 1, -1));
 	Pdef(m.ptn).set(\ffreq, 800);
 };
 
-// piece — full mapping: accel opens drone (amp + x-tilt filter),
-// rotation opens pattern (amp + dur), y-tilt drives pattern filter.
+// piece — full mapping. Drone (accel) opens with impact-driven amp +
+// x-tilt filter. Pattern driven by `under` — smooth rotation opens
+// amp + tightens dur, while strikes go straight to the drone instead.
 ~pieceNext = { |d, ctx|
+	var under = m.accelMassFiltered.lincurve(0, 1.0, m.rrateMassFiltered.neg, 0, -1).neg.lincurve(0, 0.4, 0, 1, -1);
 	synth.set(\amp,        m.accelMassFiltered.lincurve(0, 2.0, -60, -3, -1).dbamp);
 	synth.set(\ffreq,      (d.sensors.gyroEvent.x / pi).fold(-0.5, 0.5).lincurve(-0.5, 0.5, 500, 8000, 3));
 	synth.set(\lagAttack,  0.02);
 	synth.set(\lagRelease, 0.6);
-	Pdef(m.ptn).set(\amp,   m.rrateMassFiltered.lincurve(0, 1.5, -60, -6, -1).dbamp);
-	Pdef(m.ptn).set(\dur,   m.rrateMassFiltered.lincurve(0, 1.5, 2, 0.25, -2));
+	Pdef(m.ptn).set(\amp,   under.lincurve(0, 1.0, -60, -3, -4).dbamp);
+	Pdef(m.ptn).set(\dur,   under.lincurve(0, 1.0, 2, 0.25, -2));
 	Pdef(m.ptn).set(\ffreq, (d.sensors.gyroEvent.y / pi.half).lincurve(-1, 1, 800, 6000, 3));
 };
 
-// curtain — both engines fading, low filter.
+// curtain — both engines fading. Pattern driven by `under` (weakest
+// mapping range), drone by accel (very quiet fade).
 ~curtainNext = { |d, ctx|
+	var under = m.accelMassFiltered.lincurve(0, 1.0, m.rrateMassFiltered.neg, 0, -1).neg.lincurve(0, 0.4, 0, 1, -1);
 	synth.set(\amp,        m.accelMassFiltered.lincurve(0, 1.0, -80, -30, -4).dbamp);
 	synth.set(\ffreq,      400);
 	synth.set(\lagAttack,  0.5);
 	synth.set(\lagRelease, 1.4);
-	Pdef(m.ptn).set(\amp,   m.rrateMassFiltered.lincurve(0, 1.0, -80, -35, -4).dbamp);
-	Pdef(m.ptn).set(\dur,   3);
+	Pdef(m.ptn).set(\amp,   under.lincurve(0, 1.0, -80, -22, -4).dbamp);
+	Pdef(m.ptn).set(\dur,   under.lincurve(0, 1.0, 4, 1.5, -1));
 	Pdef(m.ptn).set(\ffreq, 600);
 };
 
