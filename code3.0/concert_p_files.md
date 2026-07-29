@@ -549,6 +549,36 @@ Event.eventTypes.removeAt(eventTypeName);
 
 Reference: any `cotf_*` sampler personality.
 
+### `\freq` passthrough — send the true playing pitch to the SynthDef
+
+`\rate` tells `PlayBuf` how fast to read the sample. It doesn't tell
+the SynthDef what pitch is actually sounding. If you want a
+freq-tracked filter, a sub-oscillator, a formant, a Klank body — the
+SynthDef needs the effective playing frequency in Hz.
+
+Add `\freq` as a passthrough SynthDef arg and let the customEvent
+handler set it once the final MIDI note is known:
+
+```supercollider
+SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, freq=440, ptch=1, …|
+    // freq is available inside — e.g. SinOsc.ar(freq * 0.25) for a sub
+    …
+}).add;
+
+Event.addEventType(eventTypeName, {|e|
+    ~note = (~note + ~root + (12 * ~octave)).asInteger;
+    ~freq = ~note.midicps;      // <-- passthrough
+    if(~note.odd, { … }, { … }); // buffer + rate as before
+    ~type = \note;
+    currentEnvironment.play;
+});
+```
+
+The default `\note` event type would recompute `~freq` from
+`~note + ~root + 12*~octave`, but we've already folded those into
+`~note` here — so we set `~freq` explicitly to avoid double-counting.
+References: `cotf_harp1.sc`, `cotf_test1.sc`, `cotf_voice1.sc`.
+
 ### `\ptch` — continuous playback-rate bend
 Sampler SynthDef takes a `ptch` k-rate control that multiplies the
 playback rate on top of the note-to-sample `rate`:
@@ -623,6 +653,44 @@ Event.addEventType(\customEvent, {|e|
 ```
 
 Reference: `cotf_dulcimer1.sc`, `cotf_marimba2.sc`.
+
+### Per-state grain envelope — expose `\grainAtk` / `\grainDec` separately
+
+For grain-scale personalities (voice1, any short-sample scatter), the
+grain envelope is *the character*. Don't hide it behind a single
+`\grainDur` with a fixed `Env.sine` — expose attack and decay as
+separate SynthDef args so state ticks can shape them:
+
+```supercollider
+SynthDef(\voiceGrain, {|out=0, bufnum=0, amp=0.5, rate=1, freq=440, start=0,
+    grainAtk=0.02, grainDec=0.28, grainCurve = -4, pan=0|
+    var env = EnvGen.kr(Env.perc(grainAtk, grainDec, 1, grainCurve), doneAction: 2);
+    // …
+}).add;
+```
+
+Then each state controls the grain character inline:
+
+```supercollider
+~idleNext = {|d, ctx|
+    Pdef(m.ptn).set(\grainAtk, 0.005);   // sharp click
+    Pdef(m.ptn).set(\grainDec, 0.055);
+    …
+};
+
+~pieceNext = {|d, ctx|
+    // motion shapes the grain: still = soft/long, moving = sharp/short
+    Pdef(m.ptn).set(\grainAtk, m.accelMassFiltered.lincurve(0, 2.0, 0.08, 0.005, 1));
+    Pdef(m.ptn).set(\grainDec, m.accelMassFiltered.lincurve(0, 2.0, 0.5, 0.08, 1));
+    …
+};
+```
+
+`\grainCurve` is the perc envelope's curvature (negative = exponential
+decay; -4 is a nice sharp default). Total grain length = `grainAtk +
+grainDec` — no separate duration control needed.
+
+Reference: `cotf_voice1.sc`.
 
 ---
 
@@ -829,3 +897,178 @@ suit its sound, using ids from that file:
 The COTF instrument crafter treats this as a soft preference when assigning a
 performer their print — recommended prints win ties, but a performer's own
 character match can override. Omit the key to express no preference.
+
+---
+
+## 22. State ticks own the mappings — keep Pbind minimal
+
+**Principle.** Every parameter that could vary per room state — including
+score-driven ones like `\rate`, `\start`, `\note`, `\root` — is set from
+state ticks via `Pdef.set`. Pbind holds ONLY static routing keys and, at
+most, Pfuncs that do pure LOOKUPS against state-tick-set vars (never
+direct gesture or score reads).
+
+**Why.** State ticks are the single, obvious place to read a personality
+and understand what it does in each state. If gesture-driven or
+score-driven mappings sit inside a Pbind Pfunc, they are:
+
+- Invisible to a reader scanning the state ticks.
+- Not per-state — every state gets the same mapping unless it's guarded
+  by an `if (~roomState == …)` inside the Pfunc, which is worse than
+  redundant `Pdef.set` calls.
+- Silent about intent — the Pfunc is a piece of infrastructure; the
+  state tick expresses musical decisions.
+
+Repetition across states is fine (idle and curtain might both hold
+`\rate = 1`) — reading the state tick tells you exactly what that state
+does, without cross-referencing a Pbind.
+
+**What goes where.**
+
+| Pbind (in `~init`) | State tick (~idleNext etc.) |
+|---|---|
+| `\instrument`, `\out`, `\group`, `\args` | `\amp`, `\dur`, `\octave`, `\ptch`, `\rate`, `\start`, `\grainDur`, `\bufnum`, `\note`, `\root`, … |
+| `\pan` if it's a `Pwhite`/random pattern | anything driven by gesture (m.\*, d.sensors.\*) |
+| Truly static routing | anything driven by score (ctx.voicePool, ctx.chord, ctx.p) |
+| Pfuncs that read a state-tick-set VAR and do a pure lookup (e.g. `\bufnum` reads `currentLayer` + a clock-derived slot to index `~buffers`) | The state tick that SETS that var |
+
+**Example — voice1's ~rate lives in state ticks, INLINE:**
+
+```supercollider
+// GOOD — piece-time \rate mapping lives in ~pieceNext. ONE line per
+// Pdef.set, no intermediate vars, no helper function. Reads left-to-right.
+~pieceNext = { |d, ctx|
+    Pdef(m.ptn).set(\amp,  m.accelMassFiltered.lincurve(0, 2.0, -30, -3, 1).dbamp);
+    Pdef(m.ptn).set(\dur,  subDivs[m.gyroXFiltered.clip(-1, 1).lincurve(-1, 1, 0, subDivs.size - 0.001, 1).asInteger]);
+    Pdef(m.ptn).set(\rate, ((ctx.voicePool ? [69]).choose.asInteger.mod(12) - samplePitchMidi.mod(12)).wrap(-6, 5).midiratio);
+};
+
+// BAD — \rate mapping baked into the Pbind, same across all states,
+// invisible to anyone reading the state ticks.
+Pdef(m.ptn,
+    Pbind(
+        …
+        \rate, Pfunc {
+            var pool = (~scoreVoicePool ? [69]).asArray;
+            var target = pool.choose.asInteger;
+            (target.mod(12) - samplePitchMidi.mod(12)).wrap(-6, 5).midiratio
+        },
+        …
+    );
+);
+```
+
+**Avoid file-scope mutable state ("global-ish" vars). Prefer inputs
+that are pure functions of live signals.** A `var playhead = 0` at the
+top of the file, mutated by every state tick, is a hidden state
+machine — action-at-a-distance between hooks. It works but it defeats
+the point of "each state owns its behaviour explicitly".
+
+For anything that feels like it needs memory across ticks, prefer:
+
+- **Direct gesture mapping** — the performer IS the memory. Instead of
+  drifting a `playhead` accumulator, map `m.gyroYFiltered` to `\start`
+  directly and let the wrist BE the playhead. Reference:
+  `cotf_voice1.sc` `~pieceNext` — `\start = m.gyroYFiltered.lincurve(-1, 1, 0, 0.98, 1)`.
+- **Clock-derived** — `(TempoClock.beats * rate).mod(1)` is a
+  deterministic scan without an accumulator var. Rate can come from
+  gesture inline.
+- **Per-event random** — `1.0.rand` for a slot value, `rrand(a, b)`
+  for a range. No memory, no state, chaotic character.
+
+A file-scope var is defensible ONLY when the value is truly
+personality-wide state (a preallocated buffer, a Group reference) that
+`~init` writes ONCE and everyone reads. When state ticks would need to
+WRITE it, look for a gesture or clock source instead.
+
+`cotf_orchDrums1.sc`'s `currentLayer` is a borderline case — it's a
+state-tick-written file-scope var read by a Pbind Pfunc. The lookup is
+per-event and clock-derived (which slot am I on), so the var acts as a
+buffer between the 30 Hz gesture rate and the ~4 Hz event rate. Kept
+because rewriting `\bufnum` inline in the state tick would drop
+clock-slot precision. Not a template to copy — a compromise.
+
+**Practical impact on state-tick length.** Each state tick becomes
+longer — you're setting 5–10 parameters instead of 2–3. That's the
+trade. When you edit a personality later, everything a state does is
+visible in one function; no hunting through Pbind Pfuncs. Worth it.
+
+**Exception — static references belong in `~init`, not state ticks.**
+The principle is about MAPPINGS (gesture → param, score → param), not
+about constants. If a value never changes over the personality's life
+(a Buffer's `bufnum`, a fixed `\out` bus, a hard-coded envelope shape),
+set it ONCE in `~init` via `Pdef.set` after the resource exists. Don't
+repeat it in state ticks:
+
+```supercollider
+// GOOD — sampleBuffer.bufnum is constant across the personality's life.
+~init = ~init <> {
+    sampleBuffer = Buffer.read(s, path, action: {…});
+    Pdef(m.ptn).set(\bufnum, sampleBuffer.bufnum);   // once
+    …
+};
+
+// BAD — this races with ~deinit (which nils sampleBuffer). AppClock
+// procRout can fire a state tick between ~deinit's nil and full
+// procRout shutdown, hitting nil.bufnum:
+~pieceNext = { |d, ctx|
+    Pdef(m.ptn).set(\bufnum, sampleBuffer.bufnum);   // NO — race → nil.bufnum
+    …
+};
+```
+
+If a param has both a static component AND a dynamic component (e.g.
+`~buffers[dynamicIdx]` — the array is static, the index varies), put
+the lookup in a Pbind Pfunc that reads a state-tick-set var for the
+dynamic input; the array reference stays lexical.
+
+Rule of thumb: if a state tick would set the SAME value on every call,
+that value belongs in `~init`.
+
+**No helper functions. No abstraction. Inline every mapping.**
+
+The instrument loses life when logic gets factored out. Even if two
+states share the exact same rate calculation, DO NOT extract it into a
+top-of-file `poolRate = { |pool| … }` and call it from both. Write the
+full one-line expression in each state.
+
+```supercollider
+// GOOD — the mapping is right there in the state, ready to tweak
+// without hunting for a helper elsewhere.
+~pieceNext = { |d, ctx|
+    Pdef(m.ptn).set(\rate, ((ctx.voicePool ? [69]).choose.asInteger.mod(12) - samplePitchMidi.mod(12)).wrap(-6, 5).midiratio);
+};
+
+// BAD — you have to read the helper to understand what \rate does,
+// and every state calls it with the same signature so per-state
+// variation gets awkward (need arg lists, if branches, etc.).
+var poolRate = { |pool|
+    ((pool ? [69]).choose.asInteger.mod(12) - samplePitchMidi.mod(12)).wrap(-6, 5).midiratio
+};
+~pieceNext = { |d, ctx|
+    Pdef(m.ptn).set(\rate, poolRate.(ctx.voicePool));
+};
+```
+
+The apparent repetition IS the point. When you're tuning `~pieceNext`
+mid-performance and want it to react differently from `~idleNext`, you
+just change the numbers in that one function. No refactor. No fear of
+breaking another state.
+
+**Mapping idioms — conventions across all p-files:**
+
+- **`lincurve` over `linlin`.** Add the 5th arg (curve) even if you
+  start at `1` — the curve knob is one of the most expressive levers
+  when tuning gesture response. `linlin` sacrifices that for no
+  savings.
+- **Single-line mappings.** Chain `.clip → .lincurve → .asInteger`
+  and any array lookup in ONE `Pdef.set(\key, …)` line. Intermediate
+  `var x = …; var idx = …;` scaffolding fragments the mapping and
+  costs more to read than it saves.
+- **`m.accelMassFiltered` is the default amp gesture.** Every state's
+  `\amp` mapping should start `m.accelMassFiltered.lincurve(…).dbamp`
+  unless there's a specific reason (an idle state that responds only
+  to rotation, a sample scrubber tied to gyro, etc.). Consistency
+  makes cross-personality behaviour predictable for performers.
+- **Guard `ctx.voicePool` inline with `? [69]`.** Simple, cheap, gets
+  the mapping past the first-beat window without a separate check.

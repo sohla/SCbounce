@@ -398,7 +398,7 @@ var addDevice = { |ip,port,index|
     // hack : try and get color from config
     NetAddr.new(ip,port-index+1).sendMsg("/Config/GetConfig", NetAddr.langPort);
     // ...wait then make then add devices
-	// { NetAddr.new("127.0.0.1", 57120).sendMsg("/airkit/addDevice", port) }.defer(0.2);
+	{ NetAddr.new("127.0.0.1", 57120).sendMsg("/airkit/addDevice", port) }.defer(0.2);
 
 
     // Use from AirStick 

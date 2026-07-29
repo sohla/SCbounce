@@ -64,7 +64,7 @@ var initGUI = {
 
 	QtGUI.palette = QPalette.dark;
 	w = Window("AirKit")
-		.bounds_(Rect(100,100,1000,1200))
+		.bounds_(Rect(1200,400,600,800))
 		.layout_(mainView)
 		.front
 		// .fullScreen
