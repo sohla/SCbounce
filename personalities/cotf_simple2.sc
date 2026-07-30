@@ -15,7 +15,8 @@ var baseMidi = 60; // C4
 var lastTime = 0;
 var tuneTime = 0;
 
-var ideleNotes = [45,49,52,57,52,49,45,46,50,53,58,53,50,46,47,51,54,59,54,51,47,46,50,53,58,53,50,46];
+// var ideleNotes = [45,49,52,57,52,49,45,46,50,53,58,53,50,46,47,51,54,59,54,51,47,46,50,53,58,53,50,46];
+var ideleNotes = [45,49,52,57,52,4];
 
 m.accelMassFilteredAttack = 0.98;
 m.accelMassFilteredDecay = 0.2;

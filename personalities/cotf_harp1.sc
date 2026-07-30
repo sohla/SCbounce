@@ -234,7 +234,7 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, start=0, pan=0, freq=
 // override amp per state so silence is enforced regardless of gesture.
 ~idleNext    = {|d, ctx|
 	var amp = (m.accelMassFiltered).lincurve(0, 3.0, -80, -18, -1);
-	var notes = [0,7,12,17];
+	var notes = [0,7,12,16];
 	var n = m.gyroYFiltered.lincurve(-1.0,1.0,0,notes.size,-1).asInteger;
 	// Pdef(m.ptn).set(\octave, [4,5].choose );
 	Pdef(m.ptn).set(\ptch, notes[n].midiratio);
@@ -279,7 +279,7 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, start=0, pan=0, freq=
 
 ~pieceNext   = {|d, ctx|
 
-	var amp = (m.accelMassFiltered).lincurve(0,3.0,-70,-10,-2);
+	var amp = (m.accelMassFiltered).lincurve(0,3.0,-70,-9,-2);
 	var oct = (d.sensors.gyroEvent.y / pi.half).lincurve(-1,1,5,9,1).asInteger;
 
 	Pdef(m.ptn).set(\amp, amp.dbamp * ctx.loudness.linlin(0, 1, 0.1, 1.0));

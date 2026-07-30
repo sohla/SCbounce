@@ -97,7 +97,7 @@ voiceCutoff = { |base = 1200|
 
 // ------------------------------------------------------------
 m.accelMassFilteredAttack = 0.99;
-m.accelMassFilteredDecay = 0.3;
+m.accelMassFilteredDecay = 0.8;
 m.gyroFilteredAttack = 0.7;
 m.gyroFilteredDecay = 0.7;
 
@@ -272,7 +272,7 @@ applyTier = { |tier, maxAmp = 0.8|
 	if (voices.notNil, {
 		var cutoff = voiceCutoff.(tierCutoff);
 		voices.do({ |syn, i|
-			syn.set(\freq, refTriad[i].midicps * ptch, \amp, amp, \cutoff, cutoff);
+			syn.set(\freq, refTriad[i].midicps * ptch, \amp, amp * 	m.accelMassFiltered.lincurve(0, 2.0, 0.0, 1.0, 1), \cutoff, cutoff);
 		});
 		// Same staggered response as the other states.
 		voices[0].set(\lagAttack, 0.02, \lagRelease, 0.02);
@@ -305,7 +305,7 @@ applyTier = { |tier, maxAmp = 0.8|
 		stillnessFired = false;
 	});
 
-	applyTier.(tier, m.accelMassFiltered.lincurve(0, 2.0, 0.0, 1.0, 1));
+	applyTier.(tier, m.accelMassFiltered.lincurve(0, 2.0, 0.0, 2.0, 1));
 
 	if (voices.notNil, {
 		var cutoff = voiceCutoff.(2000);

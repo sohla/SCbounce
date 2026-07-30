@@ -89,7 +89,6 @@ var rawPatterns = (
 		kick: "K . . . . . . . . . . . . . . .",
 	),
 	med: (
-		kick:  "K . . . . . . . K . . . . . . .",
 		snare: ". . . . S . . . . . . . S . . .",
 		hat:   ". . h . . . h . . . h . . . h .",
 	),
@@ -229,21 +228,23 @@ SynthDef(\percHit, {
 ~idleNext = { |d, ctx|
 	// Idle: silent output (baseAmp=0), but arc still accumulates from
 	// any device motion during idle exploration.
-	var activity = m.accelMassFiltered;
-	engagement = engagement + (activity * tickDt);
-	Pdef(m.ptn).set(\baseAmp, 0);
+	// var activity = m.accelMassFiltered;
+	// engagement = engagement + (activity * tickDt);
+	// Pdef(m.ptn).set(\baseAmp, 0);
+	~pieceNext.(d, ctx);  // reuse pieceNext for engagement accumulation
 };
 
 ~tuningNext = { |d, ctx|
 	// Tuning ≠ engagement — don't accumulate.
-	Pdef(m.ptn).set(\baseAmp, 0);
+	// Pdef(m.ptn).set(\baseAmp, 0);
+	~pieceNext.(d, ctx);  // reuse pieceNext for engagement accumulation
 };
 
 ~pieceNext = { |d, ctx|
 	var activity = m.accelMassFiltered;
 	var deadZone = 0.15;
 	var amp = if (activity > deadZone,
-		{ activity.lincurve(deadZone, 2.0, 0.0, 1.0, -1) },   // §17 expressive
+		{ activity.lincurve(deadZone, 2.0, 0.0, 0.45, 1) },   // §17 expressive
 		{ 0 }
 	);
 	var tier = case

@@ -186,10 +186,10 @@ SynthDef(\samplerVoice, { |out=0, bufnum=0, amp=0.5, freq=440, srcFreq=440,
 	padSynth.set(\grainDensity, 15);
 	padSynth.set(\lagAttack,    0.07);
 	padSynth.set(\lagRelease,   0.7);
-	padSynth.set(\freq,         (samplePitchMidi - 12).midicps);
+	padSynth.set(\freq,         (samplePitchMidi - 11).midicps);
 	Pdef(m.ptn).set(\amp,   amp * 3);
 	Pdef(m.ptn).set(\dur,   dur);
-	Pdef(m.ptn).set(\freq, [68,75,60].choose.midicps);
+	Pdef(m.ptn).set(\freq, [samplePitchMidi + 1].choose.midicps);
 };
 
 ~tuningNext = { |d, ctx|
@@ -199,7 +199,7 @@ SynthDef(\samplerVoice, { |out=0, bufnum=0, amp=0.5, freq=440, srcFreq=440,
 	var ptch    = if (elapsed < tt) {
 		(elapsed / tt).linlin(0, 1, 0.7, 1.0)   // flat → true
 	} { 1.0 };
-	var tuneMidi = 68;                          
+	var tuneMidi = 69;
 	var under = m.accelMassFiltered.lincurve(0, 1, m.rrateMassFiltered.neg, 0, -1).neg.lincurve(0, 0.4, 0, 1, -1	);
 	var amp = m.rrateMassFiltered.lincurve(0, 0.4, -60, 1, -1).dbamp;
 	var dur = m.rrateMassFiltered.lincurve(0, 1.5, 2.5, 0.5, -3);
@@ -222,12 +222,12 @@ SynthDef(\samplerVoice, { |out=0, bufnum=0, amp=0.5, freq=440, srcFreq=440,
 	var amp = m.rrateMassFiltered.lincurve(0, 0.4, -60, 1, -1).dbamp;
 	var dur = m.rrateMassFiltered.lincurve(0, 1.8, 2.5, 0.8, -3);
 
-	padSynth.set(\amp,          m.accelMassFiltered.lincurve(0, 2.0, -60, -4, -1).dbamp);
+	padSynth.set(\amp,          m.accelMassFiltered.lincurve(0, 2.0, -60, 1, -1).dbamp);
 	padSynth.set(\ffreq,        (d.sensors.gyroEvent.x / pi).fold(-0.5, 0.5).lincurve(-0.5, 0.5, 100, 3000, -2));
 	// padSynth.set(\grainDur,     m.accelMassFiltered.lincurve(0, 2.0, 0.3, 0.05, 1));
 	// padSynth.set(\grainDensity, m.accelMassFiltered.lincurve(0, 2.0, 15, 50, 1));
 	padSynth.set(\grainPos,    rrand(0.1,0.1));// (d.sensors.gyroEvent.y / pi.half).lincurve(-1, 1, 0.1, 0.9, 1));
-	Pdef(m.ptn).set(\amp, amp * 8);
+	Pdef(m.ptn).set(\amp, amp * 30);
 	Pdef(m.ptn).set(\dur, dur);//m.rrateMassFiltered.lincurve(0, 1.0, 2, 0.25, -1));
 };
 
