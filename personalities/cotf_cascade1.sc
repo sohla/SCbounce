@@ -40,7 +40,8 @@ var lastDirChangeTime = 0;
 var reversalWindow = 0.5;     // seconds
 var noteInterval = 0.08;      // seconds between arpeggio notes
 var tickDt = 0.033;
-var arpIntervals = [0, 4, 7, 12, 16, 19, 24];   // root, 3rd, 5th, 8ve, +3rd, +5th, +8ve
+// var arpIntervals = [0, 4, 7, 12, 16, 19, 24];   // root, 3rd, 5th, 8ve, +3rd, +5th, +8ve
+var arpIntervals = [0, 12, 24];   // root, 3rd, 5th, 8ve, +3rd, +5th, +8ve
 
 var fireArpeggio, fireChord, runCascadeStep;
 
@@ -258,7 +259,7 @@ runCascadeStep = { |ampScale = 1.0, rootOverride = nil, countEngagement = true|
 
 ~pieceNext = { |d, ctx|
 	// Piece: full amp, voice-pool pitch, engagement counts.
-	runCascadeStep.(1.0, nil, true);
+	runCascadeStep.(0.4, nil, true);
 };
 
 ~curtainNext = { |d, ctx|

@@ -18,7 +18,7 @@ var addTitleView = { |d|
 
 	OSCFunc({ |msg, time, addr, recvPort|
 		if(msg[1].asInteger == d.port, {
-			var fs = 70 - (msg[2].asString.size * 3.5);
+			var fs = 70 - (msg[2].asString.size * 3.0);
 			{
 				button.font = Font(size:fs, bold:true);
 				button.states = [

@@ -301,11 +301,12 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, ptch=1, start=0, pan=
 // meditative. \ptch reset to 1 (in case we're arriving from \tuning
 // mid-bend).
 ~idleNext = {|d, ctx|
-	var amp = m.rrateMassFiltered.lincurve(0, 1.0, -60, -22, -4);
+	var amp = m.rrateMassFiltered.lincurve(0, 1.0, -60, -10, -4);
+	var dur = m.accelMassFiltered.lincurve(0, 4.0, 2.0, 1.0, 7).asInteger;
 	Pdef(m.ptn).set(\amp, amp.dbamp);
 	Pdef(m.ptn).set(\octave, [3, 4, 5].choose);
-	Pdef(m.ptn).set(\ptch, 1);
-	Pdef(m.ptn).set(\dur, 2);
+	Pdef(m.ptn).set(\ptch, [1,1.5].choose);  
+	Pdef(m.ptn).set(\dur, dur);
 };
 
 // Tuning: "warming up" — hold quiet at octave 5, and over the first
@@ -313,16 +314,17 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, ptch=1, start=0, pan=
 // pitch bend (starts flat, settles in tune). tuneTime captured on
 // \tuning entry in ~onRoomState. After 20 s, sits at ptch = 1.
 ~tuningNext = {|d, ctx|
-	var amp = m.rrateMassFiltered.lincurve(0, 1.0, -70, -12, -4);
-	var tt = 20.0;
+	var amp = m.rrateMassFiltered.lincurve(0, 1.0, -60, -10, -4);
+	var tt = 15.0;
 	var elapsed = TempoClock.beats - tuneTime;
+	var dur = m.accelMassFiltered.lincurve(0, 4.0, 2.0, 1.0, 7).asInteger;
 
 	Pdef(m.ptn).set(\amp, amp.dbamp);
-	Pdef(m.ptn).set(\octave, 3);
-	Pdef(m.ptn).set(\dur, 5.0.rrand(7.0));
+	Pdef(m.ptn).set(\octave, [3, 4, 5].choose);
+	Pdef(m.ptn).set(\dur, dur);
 
 	if (elapsed < tt, {
-		Pdef(m.ptn).set(\ptch, (elapsed / tt).linlin(0, 1, 0.7, 1.0));
+		Pdef(m.ptn).set(\ptch, (elapsed / tt).linlin(0, 1, 0.85, 1.0));
 	}, {
 		Pdef(m.ptn).set(\ptch, 1);
 	});

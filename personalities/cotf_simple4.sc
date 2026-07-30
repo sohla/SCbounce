@@ -15,7 +15,7 @@ var lastTime = 0;
 var tuneTime = 0;
 var excThreshold = 0.3;   // accelMassFiltered must exceed this for the beat's exciter to fire
 
-var ideleNotes = [45,52,57,52,50,45,40];
+var ideleNotes = [45,52,45,52,55];
 
 // Unique per-env event type — see cotf_harp1.sc for the scope-leak rationale.
 var eventTypeName = (\exciterTick_ ++ m.ptn).asSymbol;
@@ -121,9 +121,9 @@ Event.addEventType(eventTypeName, {|e|
 	synth.set(\ffreq, ffreq);
 	synth.set(\excAmp, 0.9);   // quieter exciter in idle
 
-	if(TempoClock.beats > (lastTime + 0.4),{
+	if(TempoClock.beats > (lastTime + 0.6),{
 		ideleNotes = ideleNotes.rotate(-1);
-		{synth.set(\freq, (ideleNotes[0] + 12).midicps)}.defer(0.4);
+		{synth.set(\freq, (ideleNotes[0]).midicps)}.defer(0.4);
 		lastTime = TempoClock.beats;
 	});
 };
@@ -136,9 +136,9 @@ Event.addEventType(eventTypeName, {|e|
 
 	if( (TempoClock.beats-tuneTime) < tt, {
 		var val = (TempoClock.beats-tuneTime) / tt;
-		synth.set(\freq, (57 + (val.lincurve(0, 1, 1, 0.0001,-2) * 7)).midicps);
+		synth.set(\freq, (52 + (val.lincurve(0, 1, 1, 0.0001,-2) * 7)).midicps);
 	},{
-		synth.set(\freq, 57.midicps);
+		synth.set(\freq, 52.midicps);
 	});
 
 	synth.set(\amp, amp.dbamp);
@@ -179,7 +179,7 @@ Event.addEventType(eventTypeName, {|e|
 ~onBeat    = {|ctx| 
 	s.bind {
 		synth.set(\freq,
-			((ctx.voicePool.choose.asInteger % 12) + baseMidi).midicps);
+			((ctx.voicePool.choose.asInteger % 12) + baseMidi - 12).midicps);
 	};
 };
 ~onBar     = {|ctx| 

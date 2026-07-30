@@ -65,7 +65,7 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, start=0, pan=0, freq=
 	var lr = rate * BufRateScale.kr(bufnum) * ptch;
     var env = EnvGen.kr(Env.new([0, 1, 1, 0], [attack, sustain, release]), doneAction: 2);
 	var sig = PlayBuf.ar(2, bufnum, rate: [lr, lr * 1.0017], startPos: start * BufFrames.kr(bufnum), loop: 0);
-	var sparkle = FreqShift.ar(sig, freq * 0.52 * ptch, 0,0.2);
+	var sparkle = FreqShift.ar(sig, freq * 0.52 * ptch, 0,0.4);
     Out.ar(out, (sig + sparkle) * amp * env);
 }).add;
 
@@ -279,7 +279,7 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, start=0, pan=0, freq=
 
 ~pieceNext   = {|d, ctx|
 
-	var amp = (m.accelMassFiltered).lincurve(0,2.6,-70,-10,-1);
+	var amp = (m.accelMassFiltered).lincurve(0,3.0,-70,-10,-2);
 	var oct = (d.sensors.gyroEvent.y / pi.half).lincurve(-1,1,5,9,1).asInteger;
 
 	Pdef(m.ptn).set(\amp, amp.dbamp * ctx.loudness.linlin(0, 1, 0.1, 1.0));
@@ -287,9 +287,9 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, start=0, pan=0, freq=
 	Pdef(m.ptn).set(\ptch, 1);
 
 	case(
-		{ amp > -11.0 }, {
-			if(TempoClock.beats > (lastTime + 0.25),{
-				Pdef(m.ptn).set(\dur, 0.6666);
+		{ amp > -10.001 }, {
+			if(TempoClock.beats > (lastTime + 0.5),{
+				Pdef(m.ptn).set(\dur, 0.5);
 				lastTime = TempoClock.beats;
 			})},
 		{ amp > -20 }, {

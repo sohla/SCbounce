@@ -114,7 +114,7 @@ SynthDef(\percHit, {
 	 attack=0.01, decay=0.01, sustain=0.3, release=1.2, gate=1, cutoff=14000, rq=1|
 	var lr = rate * BufRateScale.kr(bufnum);
 	var env = EnvGen.kr(Env.adsr(attack, decay, sustain, release), gate, doneAction: 2);
-	var sig = PlayBuf.ar(1, bufnum, rate: [lr, lr * 1.0], startPos: 0, loop: 0) * env;
+	var sig = PlayBuf.ar(2, bufnum, rate: [lr, lr * 1.0], startPos: 0, loop: 0) * env;
 	sig = RLPF.ar(sig, cutoff, rq);
 	Out.ar(out, sig * amp);
 }).add;
@@ -248,7 +248,7 @@ SynthDef(\percHit, {
 	);
 	var tier = case
 		{ activity < 0.05 } { \low }
-		{ activity < 0.5 }  { \med }
+		{ activity < 0.8 }  { \med }
 		{ true }            { \high };
 	// Engagement modulates fill frequency: early piece = fills every
 	// 8 bars, well into the arc = fills every 2 bars. Only affects
@@ -302,7 +302,7 @@ SynthDef(\percHit, {
 		currentLayerKey = key;
 	});
 	barCounter = 0;
-	// ("[perc] section % engagement %".format(ctx.sectionId, engagement.round(0.1))).postln;
+	("[perc] section % engagement %".format(ctx.sectionId, engagement.round(0.1))).postln;
 };
 
 ~onChord   = { |ctx| };

@@ -13,6 +13,7 @@ var group;              // holds padSynth AND per-note pattern synths
 var padSynth;
 var sampleBuffer;
 var baseMidi = 60;
+var tuneTime = 0;       // TempoClock.beats captured on \tuning entry (§16 ramp)
 
 // One sample — loaded MONO (readChannel [0]) because GrainBuf requires
 // a mono buffer. samplerVoice reads mono too and pans in the SynthDef.
@@ -21,8 +22,8 @@ var samplePitchMidi = 68;   // intrinsic pitch of the file (G#4)
 
 m.accelMassFilteredAttack = 0.98;
 m.accelMassFilteredDecay  = 0.2;
-m.rrateMassFilteredAttack = 0.99;
-m.rrateMassFilteredDecay  = 0.1;
+m.rrateMassFilteredAttack = 0.9999;
+m.rrateMassFilteredDecay  = 0.2;
 m.gyroFilteredAttack      = 0.7;
 m.gyroFilteredDecay       = 0.7;
 
@@ -32,13 +33,14 @@ m.gyroFilteredDecay       = 0.7;
 // No external BufRateScale here.
 SynthDef(\grainPad, { |out=0, bufnum=0, amp=0, freq=440, srcFreq=440, gate=1,
     grainDur=0.15, grainDensity=20, grainPos=0.5, grainPosSpread=0.1,
-    attack=0.5, release=1.5, ffreq=2000, lagAttack=0.05, lagRelease=0.8|
+    attack=0.5, release=0.5, ffreq=2000, lagAttack=0.05, lagRelease=0.8|
 	var env  = EnvGen.kr(Env.asr(attack, 1, release), gate, doneAction: 2);
-	var rate = freq / srcFreq;
+	var rate = freq / srcFreq * 0.99;
 	var trig = Impulse.kr(grainDensity);
 	var pos  = grainPos + WhiteNoise.kr(grainPosSpread);
 	var sig  = GrainBuf.ar(2, trig, grainDur, bufnum, rate, pos, 2, 0);
-	var filt = RLPF.ar(sig, ffreq, 0.4);
+	var sub = LFTri.ar(freq, 0, 0.1);
+	var filt = RLPF.ar(sig, ffreq.lag(0.1), 0.4) + sub;
 	Out.ar(out, filt * env * amp.lagud(lagAttack, lagRelease));
 }).add;
 
@@ -47,9 +49,9 @@ SynthDef(\grainPad, { |out=0, bufnum=0, amp=0, freq=440, srcFreq=440, gate=1,
 // PlayBuf's `rate` is samples-per-output-sample — needs explicit
 // BufRateScale for pitch correctness across SR mismatch (canonical idiom).
 SynthDef(\samplerVoice, { |out=0, bufnum=0, amp=0.5, freq=440, srcFreq=440,
-    gate=1, pan=0, attack=0.01, decay=0.1, release=0.4|
-	var env = EnvGen.kr(Env.adsr(attack, decay, 0.3, release), gate, doneAction: Done.freeSelf);
-	var lr  = (freq / srcFreq) * BufRateScale.kr(bufnum);
+    gate=1, pan=0, attack=0.01, decay=0.1, release=0.1|
+	var env = EnvGen.kr(Env.adsr(attack, decay, 0.07, release), gate, doneAction: Done.freeSelf);
+	var lr  = (freq / srcFreq) * BufRateScale.kr(bufnum) * 0.99;
 	var sig = PlayBuf.ar(1, bufnum, rate: lr, loop: 0);
 	Out.ar(out, Pan2.ar(sig, pan, amp * env));
 }).add;
@@ -103,6 +105,12 @@ SynthDef(\samplerVoice, { |out=0, bufnum=0, amp=0.5, freq=440, srcFreq=440,
 					Pdef(m.ptn).set(\amp,     0);
 					Pdef(m.ptn).set(\dur,     1);
 					Pdef(m.ptn).play(~beatClock, quant: ~scoreBeatsPerBar * ~scoreEventsPerBeat);
+
+					// §15 reload guard — ~onRoomState fires only on state
+					// CHANGE, so a reload while already in \tuning never runs
+					// its branch and tuneTime would stay 0 (ramp dead, ptch
+					// pinned at 1.0). Capture it here as well.
+					if (~roomState == \tuning, { tuneTime = TempoClock.beats });
 				};
 			};
 		});
@@ -149,7 +157,10 @@ SynthDef(\samplerVoice, { |out=0, bufnum=0, amp=0.5, freq=440, srcFreq=440,
 ~onRoomState = { |ctx|
 	switch(ctx.state,
 		\idle,    { },
-		\tuning,  { },
+		\tuning,  {
+			// Start of the §16 tuning ramp — ~tuningNext measures from here.
+			tuneTime = TempoClock.beats;
+		},
 		\piece,   { },
 		\curtain, { },
 		\silent,  {
@@ -166,34 +177,58 @@ SynthDef(\samplerVoice, { |out=0, bufnum=0, amp=0.5, freq=440, srcFreq=440,
 
 ~idleNext = { |d, ctx|
 
-	var under = m.accelMassFiltered.lincurve(0, 1.0, m.rrateMassFiltered.neg, 0, -1).neg.lincurve(0, 0.4, 0, 1, -1	);
-
-	padSynth.set(\amp,          m.accelMassFiltered.lincurve(0, 2.0, -80, -2, -1).dbamp);
+	var under = m.accelMassFiltered.lincurve(0, 1, m.rrateMassFiltered.neg, 0, -1).neg.lincurve(0, 0.4, 0, 1, -1	);
+	var amp = m.rrateMassFiltered.lincurve(0, 0.4, -60, 1, -1).dbamp;
+	var dur = m.rrateMassFiltered.lincurve(0, 1.5, 2.5, 0.5, -3);
+	padSynth.set(\amp,          m.accelMassFiltered.lincurve(0, 2.0, -80, -15, -3).dbamp);
 	padSynth.set(\ffreq,        1800);
 	padSynth.set(\grainDur,     0.2);
 	padSynth.set(\grainDensity, 15);
-	padSynth.set(\lagAttack,    0.1);
-	padSynth.set(\lagRelease,   2.1);
-	padSynth.set(\freq,         (samplePitchMidi - 24).midicps);
-	// Pdef(m.ptn).set(\amp, m.rrateMassFiltered.lincurve(0, 1.0, -70, -2, -1).dbamp);
-	// Pdef(m.ptn).set(\dur, m.rrateMassFiltered.lincurve(0, 1.0, 2, 0.5, -1));
-	Pdef(m.ptn).set(\amp,   under.lincurve(0, 1.0, -70, -2, -4).dbamp);
-	Pdef(m.ptn).set(\dur,   under.lincurve(0, 1.0, 4, 0.5, -1));
+	padSynth.set(\lagAttack,    0.07);
+	padSynth.set(\lagRelease,   0.7);
+	padSynth.set(\freq,         (samplePitchMidi - 12).midicps);
+	Pdef(m.ptn).set(\amp,   amp * 3);
+	Pdef(m.ptn).set(\dur,   dur);
+	Pdef(m.ptn).set(\freq, [68,75,60].choose.midicps);
 };
 
 ~tuningNext = { |d, ctx|
-	padSynth.set(\amp, 0);
-	Pdef(m.ptn).set(\amp, 0);
+
+	var tt      = 5.0;
+	var elapsed = TempoClock.beats - tuneTime;
+	var ptch    = if (elapsed < tt) {
+		(elapsed / tt).linlin(0, 1, 0.7, 1.0)   // flat → true
+	} { 1.0 };
+	var tuneMidi = 68;                          
+	var under = m.accelMassFiltered.lincurve(0, 1, m.rrateMassFiltered.neg, 0, -1).neg.lincurve(0, 0.4, 0, 1, -1	);
+	var amp = m.rrateMassFiltered.lincurve(0, 0.4, -60, 1, -1).dbamp;
+	var dur = m.rrateMassFiltered.lincurve(0, 1.5, 2.5, 0.5, -3);
+
+	padSynth.set(\amp,          m.accelMassFiltered.lincurve(0, 2.0, -80, -20, -3).dbamp);
+	padSynth.set(\ffreq,        1200);
+	padSynth.set(\grainDur,     0.3);
+	padSynth.set(\grainDensity, 12);
+	padSynth.set(\lagAttack,    0.1);
+	padSynth.set(\lagRelease,   2.1);
+	padSynth.set(\freq,         (tuneMidi - 12).midicps * ptch);
+	Pdef(m.ptn).set(\amp,  amp * 3);
+	Pdef(m.ptn).set(\dur,  dur);
+	Pdef(m.ptn).set(\freq, tuneMidi.midicps * ptch);
 };
 
 ~pieceNext = { |d, ctx|
-	padSynth.set(\amp,          m.accelMassFiltered.lincurve(0, 2.0, -60, -3, -1).dbamp);
-	padSynth.set(\ffreq,        (d.sensors.gyroEvent.x / pi).fold(-0.5, 0.5).lincurve(-0.5, 0.5, 500, 8000, 3));
-	padSynth.set(\grainDur,     m.accelMassFiltered.lincurve(0, 2.0, 0.3, 0.05, 1));
-	padSynth.set(\grainDensity, m.accelMassFiltered.lincurve(0, 2.0, 15, 50, 1));
-	padSynth.set(\grainPos,     (d.sensors.gyroEvent.y / pi.half).lincurve(-1, 1, 0.1, 0.9, 1));
-	Pdef(m.ptn).set(\amp, m.rrateMassFiltered.lincurve(0, 1.0, -60, -8, -1).dbamp);
-	Pdef(m.ptn).set(\dur, m.rrateMassFiltered.lincurve(0, 1.0, 2, 0.25, -1));
+
+	var under = m.accelMassFiltered.lincurve(0, 1, m.rrateMassFiltered.neg, 0, -1).neg.lincurve(0, 0.4, 0, 1, -1	);
+	var amp = m.rrateMassFiltered.lincurve(0, 0.4, -60, 1, -1).dbamp;
+	var dur = m.rrateMassFiltered.lincurve(0, 1.8, 2.5, 0.8, -3);
+
+	padSynth.set(\amp,          m.accelMassFiltered.lincurve(0, 2.0, -60, -4, -1).dbamp);
+	padSynth.set(\ffreq,        (d.sensors.gyroEvent.x / pi).fold(-0.5, 0.5).lincurve(-0.5, 0.5, 100, 3000, -2));
+	// padSynth.set(\grainDur,     m.accelMassFiltered.lincurve(0, 2.0, 0.3, 0.05, 1));
+	// padSynth.set(\grainDensity, m.accelMassFiltered.lincurve(0, 2.0, 15, 50, 1));
+	padSynth.set(\grainPos,    rrand(0.1,0.1));// (d.sensors.gyroEvent.y / pi.half).lincurve(-1, 1, 0.1, 0.9, 1));
+	Pdef(m.ptn).set(\amp, amp * 8);
+	Pdef(m.ptn).set(\dur, dur);//m.rrateMassFiltered.lincurve(0, 1.0, 2, 0.25, -1));
 };
 
 ~curtainNext = { |d, ctx|
@@ -206,14 +241,17 @@ SynthDef(\samplerVoice, { |out=0, bufnum=0, amp=0.5, freq=440, srcFreq=440,
 //------------------------------------------------------------
 // Both engines' freq tracks score voicePool.first per half-bar.
 ~onHalf = { |ctx|
-	var pitch = ((ctx.voicePool.first.asInteger % 12) + baseMidi).midicps;
+	var pitcha = ((ctx.voicePool.first.asInteger % 12) + baseMidi).midicps;
+	var pitchb = ((ctx.voicePool.choose.asInteger % 12) + baseMidi).midicps;
 	s.bind {
-		padSynth.set(\freq, pitch);
-		Pdef(m.ptn).set(\freq, pitch);
+		padSynth.set(\freq, pitcha );
+		Pdef(m.ptn).set(\freq, pitchb );
 	};
 };
 
-~onTick    = { |ctx| };
+~onTick    = { |ctx| 
+
+};
 ~onBeat    = { |ctx| };
 ~onBar     = { |ctx| };
 ~onPhrase  = { |ctx| };
@@ -225,4 +263,4 @@ SynthDef(\samplerVoice, { |out=0, bufnum=0, amp=0.5, freq=440, srcFreq=440,
 //------------------------------------------------------------
 ~plotMin = -1;
 ~plotMax = 1;
-~plot = { |d, p| [m.accelMassFiltered, m.rrateMassFiltered] };
+~plot = { |d, p| [m.rrateMassFiltered] };

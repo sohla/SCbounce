@@ -268,16 +268,16 @@ SynthDef(\stereoSamplerH, {|bufnum=0, out=0, amp=1, rate=1, ptch=1, start=0, pan
 //------------------------------------------------------------
 // State ticks — harp1 pattern (amp/octave/dur/ptch per state).
 ~idleNext = {|d, ctx|
-	var amp = m.rrateMassFiltered.lincurve(0, 1.0, -70, -22, -4);
+	var amp = m.accelMassFiltered.lincurve(0, 2.0, -70, -20, -4);
 	Pdef(m.ptn).set(\amp, amp.dbamp);
 	Pdef(m.ptn).set(\octave, [4, 5, 6].choose);
 	Pdef(m.ptn).set(\dur, 2);
-	Pdef(m.ptn).set(\ptch, 1);
+	Pdef(m.ptn).set(\ptch, 1.5);
 };
 
 ~tuningNext = {|d, ctx|
-	var amp = m.rrateMassFiltered.lincurve(0, 1.0, -70, -22, -4);
-	var tt = 20.0;
+	var amp = m.accelMassFiltered.lincurve(0, 2.0, -70, -19, -4);
+	var tt = 15.0;
 	var elapsed = TempoClock.beats - tuneTime;
 
 	Pdef(m.ptn).set(\amp, amp.dbamp);
@@ -293,7 +293,7 @@ SynthDef(\stereoSamplerH, {|bufnum=0, out=0, amp=1, rate=1, ptch=1, start=0, pan
 
 ~pieceNext = {|d, ctx|
 	var amp = m.accelMassFiltered.lincurve(0, 2.0, -75, -12, -1);
-	var oct = (d.sensors.gyroEvent.y / pi.half).lincurve(-1, 1, 6, 9, 1).asInteger;
+	var oct = (d.sensors.gyroEvent.y / pi.half).lincurve(-1, 1, 7, 9, 1).asInteger;
 	var dur = m.accelMassFiltered.lincurve(0, 2.0, 2, 1, -2).asInteger;
 	Pdef(m.ptn).set(\amp, amp.dbamp);
 	Pdef(m.ptn).set(\octave, oct);
@@ -304,7 +304,7 @@ SynthDef(\stereoSamplerH, {|bufnum=0, out=0, amp=1, rate=1, ptch=1, start=0, pan
 ~curtainNext = {|d, ctx|
 	var amp = m.rrateMassFiltered.lincurve(0, 1.0, -70, -30, -4);
 	Pdef(m.ptn).set(\amp, amp.dbamp);
-	Pdef(m.ptn).set(\octave, [3, 4].choose);
+	Pdef(m.ptn).set(\octave, [4,5].choose);
 	Pdef(m.ptn).set(\dur, 4);
 	Pdef(m.ptn).set(\ptch, 1);
 };

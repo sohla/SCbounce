@@ -243,7 +243,7 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, ptch=1, start=0, pan=
 
 //------------------------------------------------------------
 ~idleNext = {|d, ctx|
-	var amp = m.accelMassFiltered.lincurve(0, 2.0, -70, -15, -4);
+	var amp = m.accelMassFiltered.lincurve(0, 2.0, -70, -20, -4);
 	Pdef(m.ptn).set(\amp, amp.dbamp);
 	Pdef(m.ptn).set(\octave, [5, 6, 7].choose);
 	Pdef(m.ptn).set(\dur, 3);
@@ -256,11 +256,11 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, ptch=1, start=0, pan=
 	// throttled to once every 2 s via lastTime (harp1 ~idleNext idiom).
 	// \ptch rides the 0.7 → 1.0 ramp over 20 s so each triggered hit
 	// sounds progressively closer to true pitch.
-	var amp = m.accelMassFiltered.lincurve(0, 2.0, -70, -15, -4);
-	var tt = 20.0;
+	var amp = m.accelMassFiltered.lincurve(0, 2.0, -70, -20, -4);
+	var tt = 15.0;
 	var elapsed = TempoClock.beats - tuneTime;
 	var ptch = if (elapsed < tt) {
-		(elapsed / tt).linlin(0, 1, 0.7, 1.0)
+		(elapsed / tt).linlin(0, 1, 1.2, 1.0)
 	} { 1.0 };
 
 	if (m.accelMassFiltered > 0.5, {
@@ -285,7 +285,7 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, ptch=1, start=0, pan=
 };
 
 ~pieceNext = {|d, ctx|
-	var amp = m.accelMassFiltered.lincurve(0, 2.0, -70, -5, -1);
+	var amp = m.accelMassFiltered.lincurve(0, 2.0, -70, -10, -1);
 	var oct = (d.sensors.gyroEvent.y / pi.half).lincurve(-1, 1, 6, 8, 1).asInteger;
 	Pdef(m.ptn).set(\amp, amp.dbamp);
 	Pdef(m.ptn).set(\octave, oct);
