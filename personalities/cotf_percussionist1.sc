@@ -7,6 +7,16 @@ rhythm:      16-slot bar. Pattern picked by tier; layer picked by section. Fill 
 instruments: [brownShaker]
 */
 
+/*
+- super basic atm
+- volume of indivdual samples
+- latency issue ?
+- we need a synth?
+- lots of differenc patterns we need to text from  code
+
+
+*/
+
 // Uses recipes from concert_p_files.md:
 //   §5  dedicated Group + idempotent ~deinit
 //   §6  state-aware ~onResync

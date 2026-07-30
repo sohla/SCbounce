@@ -7,6 +7,11 @@ rhythm:      note per \dur ~beatClock tick; state sets dur (idle 0.5–1 by amp 
 instruments: [greenHolder]
 */
 
+/*
+
+needs synth
+*/
+
 var m = ~model;
 var ob = ~outBus ? 0; // capture NOW — ~init bodies run under topEnvironment.use
 var lastTime = 0;
@@ -62,10 +67,10 @@ m.gyroFilteredDecay = 0.7;
 SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, start=0, pan=0, freq=440, ptch=1,
     attack=0.01, decay=0.1, sustain=0.3, release=1.2, gate=1,cutoff=20000, rq=1|
 	
-	var lr = rate * BufRateScale.kr(bufnum) * ptch;
+	var lr = rate * BufRateScale.kr(bufnum) * ptch * 0.5;
     var env = EnvGen.kr(Env.new([0, 1, 1, 0], [attack, sustain, release]), doneAction: 2);
 	var sig = PlayBuf.ar(2, bufnum, rate: [lr, lr * 1.0017], startPos: start * BufFrames.kr(bufnum), loop: 0);
-	var sparkle = FreqShift.ar(sig, freq * 0.52 * ptch, 0,0.4);
+	var sparkle = FreqShift.ar(sig, freq * 0.51 * ptch, 0,0.3);
     Out.ar(out, (sig + sparkle) * amp * env);
 }).add;
 
@@ -135,24 +140,9 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, start=0, pan=0, freq=
 		);
 
 		Pdef(m.ptn).play(~beatClock, quant: ~scoreBeatsPerBar * ~scoreEventsPerBeat);
-		// cotf: seed envir so a stickless seat is silent (SC Event default
-		// amp=0.1 otherwise); first enabled tick overrides. The tick hooks
-		// (~idleNext etc.) only run while the seat's device is enabled, so a
-		// seat with this personality loaded and no stick connected would
-		// otherwise run on Event defaults — louder (amp 0.1, one note per
-		// beat) than a motionless performer, whose ~idleNext floors at -60 dB.
-		// Must be a Pdef envir .set, NOT a Pbind key: Pbind keys override the
-		// envir and would permanently defeat the hooks' .set.
 		Pdef(m.ptn).set(\amp, 0, \dur, 2);
 	};
 
-	// ~onResync lives in this personality env (d.env) — dispatched per-device
-	// from conductorController's beatSync OSCdef, so no cross-device clobber.
-	// Body wraps in topEnvironment.use so ~beatClock etc. resolve.
-	// On beat-clock re-anchor (seek): stop the Pdef so TempoClock doesn't
-	// dump backlog, kill in-flight synths in the group so nothing is stuck
-	// at sustain, then restart. freeAll wrapped in s.bind so it lands after
-	// any /s_new bundle still in flight — see concert_p_files.md §6.
 	~onResync = { |idx|
 		topEnvironment.use {
 			Pdef(m.ptn).stop;
@@ -167,11 +157,6 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, start=0, pan=0, freq=
 	Pdef(m.ptn).remove;
 	Event.eventTypes.removeAt(eventTypeName);
 
-	// Kill synths first (with latency-safe /g_freeAll), then free
-	// sample buffers — order matters so no PlayBuf is still reading
-	// from a buffer we're about to /b_free. fork so s.sync actually
-	// waits for the server (s.sync is only meaningful inside a Routine).
-	// Idempotent: notNil guards let ~deinit fire twice safely (unload+load).
 	fork {
 		if (group.notNil) {
 			s.bind { group.freeAll };
@@ -233,16 +218,15 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, start=0, pan=0, freq=
 // State-gated ticks — ~next always runs (gesture → amp/octave), these
 // override amp per state so silence is enforced regardless of gesture.
 ~idleNext    = {|d, ctx|
-	var amp = (m.accelMassFiltered).lincurve(0, 3.0, -80, -18, -1);
-	var notes = [0,7,12,16];
+	var amp = (m.accelMassFiltered).lincurve(0, 2.5, -80, -18, -1);
+	var notes = [0,2,5,7,10,12,14,16];
 	var n = m.gyroYFiltered.lincurve(-1.0,1.0,0,notes.size,-1).asInteger;
-	// Pdef(m.ptn).set(\octave, [4,5].choose );
+	// Pdef(m.ptn).set(\octave, [4,5,6].choose );
 	Pdef(m.ptn).set(\ptch, notes[n].midiratio);
 	Pdef(m.ptn).set(\amp, amp.dbamp);
 	
-
 	case(
-		{ amp > -18.1 }, {
+		{ amp > -10.1 }, {
 			if(TempoClock.beats > (lastTime + 0.25),{
 				Pdef(m.ptn).set(\dur, 0.5);
 				lastTime = TempoClock.beats;
@@ -279,10 +263,10 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, start=0, pan=0, freq=
 
 ~pieceNext   = {|d, ctx|
 
-	var amp = (m.accelMassFiltered).lincurve(0,3.0,-70,-5,-2);
+	var amp = (m.accelMassFiltered).lincurve(0,3.0,-80,-10,-2);
 	var oct = (d.sensors.gyroEvent.y / pi.half).lincurve(-1,1,5,8,1).asInteger;
 
-	Pdef(m.ptn).set(\amp, amp.dbamp * ctx.loudness.linlin(0, 1, 0.1, 1.0));
+	Pdef(m.ptn).set(\amp, amp.dbamp);
 	Pdef(m.ptn).set(\octave, oct);
 	Pdef(m.ptn).set(\ptch, 1);
 

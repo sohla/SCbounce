@@ -7,6 +7,13 @@ rhythm:      lifetime tone is continuous; exciter fires 1× per beat only when a
 instruments: [Template]
 */
 
+/*
+- make this more like simle2
+- less dynamic gestures
+- this has both so use this
+
+*/
+
 var m = ~model;
 var ob = ~outBus ? 0; // capture NOW — ~init bodies run under topEnvironment.use
 var synth;

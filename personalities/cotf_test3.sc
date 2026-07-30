@@ -45,7 +45,7 @@ SynthDef(\grainPad, { |out=0, bufnum=0, amp=0, freq=440, srcFreq=440, gate=1,
 //------------------------------------------------------------
 // PlayBuf `rate` is samples-per-sample — BufRateScale required.
 SynthDef(\samplerVoice, { |out=0, bufnum=0, amp=0.5, freq=440, srcFreq=440,
-    gate=1, pan=0, attack=0.01, decay=0.1, release=0.1|
+    gate=1, pan=0, attack=0.01, decay=0.1, release=0.3|
 	var env = EnvGen.kr(Env.adsr(attack, decay, 0.07, release), gate, doneAction: Done.freeSelf);
 	var lr  = (freq / srcFreq) * BufRateScale.kr(bufnum) * 0.99;
 	var sig = PlayBuf.ar(1, bufnum, rate: lr, loop: 0);
@@ -152,20 +152,25 @@ SynthDef(\samplerVoice, { |out=0, bufnum=0, amp=0.5, freq=440, srcFreq=440,
 //------------------------------------------------------------
 // Accel drives pad, rrate drives pattern.
 // padSynth is nil until the read lands — Nil:set is a no-op, no guard.
+~curveAbove = { |in, thresh = 0.2, inMax = 1.0, outMin = 0.3, outMax = 1.0, curve = -4|
+    if (in < thresh) { 0 } {
+        in.lincurve(thresh, inMax, outMin, outMax, curve)
+    }
+};
 
 ~idleNext = { |d, ctx|
 
-	var under = m.accelMassFiltered.lincurve(0, 1, m.rrateMassFiltered.neg, 0, -1).neg.lincurve(0, 0.4, 0, 1, -1	);
 	var amp = m.rrateMassFiltered.lincurve(0, 0.4, -60, 1, -1).dbamp;
 	var dur = m.rrateMassFiltered.lincurve(0, 1.5, 2.5, 0.5, -3);
-	padSynth.set(\amp,          m.accelMassFiltered.lincurve(0, 2.0, -80, -15, -3).dbamp);
+	var samp = ~curveAbove.(m.accelMassFiltered, 0.2, 2.0, 0.3, 1.0, -4) ;
+	padSynth.set(\amp,          samp);
 	padSynth.set(\ffreq,        1800);
 	padSynth.set(\grainDur,     0.2);
 	padSynth.set(\grainDensity, 15);
 	padSynth.set(\lagAttack,    0.07);
 	padSynth.set(\lagRelease,   0.7);
 	padSynth.set(\freq,         (samplePitchMidi - 11).midicps);
-	Pdef(m.ptn).set(\amp,   amp * 3);
+	Pdef(m.ptn).set(\amp,   amp * 5);
 	Pdef(m.ptn).set(\dur,   dur);
 	Pdef(m.ptn).set(\freq, [samplePitchMidi + 1].choose.midicps);
 };
@@ -178,8 +183,8 @@ SynthDef(\samplerVoice, { |out=0, bufnum=0, amp=0.5, freq=440, srcFreq=440,
 		(elapsed / tt).linlin(0, 1, 0.7, 1.0)   // flat → true
 	} { 1.0 };
 	var tuneMidi = 69;
-	var under = m.accelMassFiltered.lincurve(0, 1, m.rrateMassFiltered.neg, 0, -1).neg.lincurve(0, 0.4, 0, 1, -1	);
-	var amp = m.rrateMassFiltered.lincurve(0, 0.4, -60, 1, -1).dbamp;
+	// var under = m.accelMassFiltered.lincurve(0, 1, m.rrateMassFiltered.neg, 0, -1).neg.lincurve(0, 0.4, 0, 1, -1	);
+	var amp = m.rrateMassFiltered.lincurve(0, 0.4, -70, 1, -1).dbamp;
 	var dur = m.rrateMassFiltered.lincurve(0, 1.5, 2.5, 0.5, -3);
 
 	padSynth.set(\amp,          m.accelMassFiltered.lincurve(0, 2.0, -80, -20, -3).dbamp);
@@ -196,18 +201,19 @@ SynthDef(\samplerVoice, { |out=0, bufnum=0, amp=0.5, freq=440, srcFreq=440,
 
 ~pieceNext = { |d, ctx|
 
-	var under = m.accelMassFiltered.lincurve(0, 1, m.rrateMassFiltered.neg, 0, -1).neg.lincurve(0, 0.4, 0, 1, -1	);
-	var amp = m.rrateMassFiltered.lincurve(0, 0.4, -60, 0, -1).dbamp;
+	// var under = m.accelMassFiltered.lincurve(0, 1, m.rrateMassFiltered.neg, 0, -1).neg.lincurve(0, 0.4, 0, 1, -1	);
+	var amp = m.rrateMassFiltered.lincurve(0.2, 0.4, -60, 0, -1).dbamp;
 	var dur = m.rrateMassFiltered.lincurve(0, 1.8, 2.5, 0.8, -3);
 
-	padSynth.set(\amp,          m.accelMassFiltered.lincurve(0, 2.0, -60, -10, -1).dbamp);
+	padSynth.set(\amp,          amp * 1);
 	padSynth.set(\ffreq,        (d.sensors.gyroEvent.x / pi).fold(-0.5, 0.5).lincurve(-0.5, 0.5, 100, 3000, -2));
 	// padSynth.set(\grainDur,     m.accelMassFiltered.lincurve(0, 2.0, 0.3, 0.05, 1));
 	// padSynth.set(\grainDensity, m.accelMassFiltered.lincurve(0, 2.0, 15, 50, 1));
 	padSynth.set(\grainPos,    rrand(0.1,0.1));// (d.sensors.gyroEvent.y / pi.half).lincurve(-1, 1, 0.1, 0.9, 1));
-	Pdef(m.ptn).set(\amp, amp * 10);
+	Pdef(m.ptn).set(\amp, amp * 20);
 	Pdef(m.ptn).set(\dur, dur);//m.rrateMassFiltered.lincurve(0, 1.0, 2, 0.25, -1));
 };
+
 
 ~curtainNext = { |d, ctx|
 	padSynth.set(\amp,   m.accelMassFiltered.lincurve(0, 1.0, -80, -30, -4).dbamp);
@@ -219,8 +225,8 @@ SynthDef(\samplerVoice, { |out=0, bufnum=0, amp=0.5, freq=440, srcFreq=440,
 //------------------------------------------------------------
 // Both engines' freq tracks score voicePool.first per half-bar.
 ~onHalf = { |ctx|
-	var pitcha = ((ctx.voicePool.first.asInteger % 12) + baseMidi).midicps;
-	var pitchb = ((ctx.voicePool.choose.asInteger % 12) + baseMidi).midicps;
+	var pitcha = ((ctx.voicePool.last.asInteger % 12) + baseMidi).midicps;
+	var pitchb = ((ctx.voicePool.last.asInteger % 12) + baseMidi).midicps;
 	s.bind {
 		padSynth.set(\freq, pitcha );
 		Pdef(m.ptn).set(\freq, pitchb );

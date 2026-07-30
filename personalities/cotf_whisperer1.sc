@@ -7,6 +7,14 @@ rhythm:      None — three continuous drones. Ghost echo is the only discrete e
 instruments: [boneRod]
 */
 
+
+/*
+- needs more pitch content
+- needs a pattern 
+- does the ghost code even work / remoe it
+
+*/
+
 // Recipes: §5 group + ~deinit, §6 ~onResync, §17 amp palette,
 // §23 tier from activity, §25 multi-voice layering, §26 stillness reveal.
 
@@ -27,7 +35,7 @@ var applyTier;
 
 //------------------------------------------------------------
 m.accelMassFilteredAttack = 0.99;
-m.accelMassFilteredDecay = 0.8;
+m.accelMassFilteredDecay = 0.6;
 m.gyroFilteredAttack = 0.7;
 m.gyroFilteredDecay = 0.7;
 
@@ -115,6 +123,11 @@ applyTier = { |tier, maxAmp = 0.8|
 
 //------------------------------------------------------------
 // Tuning does NOT accumulate engagement. Silent has no tick.
+~curveAbove = { |in, thresh = 0.2, inMax = 1.0, outMin = 0.3, outMax = 1.0, curve = -4|
+    if (in < thresh) { 0 } {
+        in.lincurve(thresh, inMax, outMin, outMax, curve)
+    }
+};
 
 ~idleNext = { |d, ctx|
 	var now = SystemClock.seconds;
@@ -125,33 +138,35 @@ applyTier = { |tier, maxAmp = 0.8|
 		{ activity > 0.1 }  { \low }
 		{ true }            { \high };
 
+	var samp = ~curveAbove.(m.accelMassFiltered, 0.2, 2.0, 0.3, 1.0, -4);
+
 	engagement = engagement + (activity * tickDt);
 	if (activity > 0.05, {
 		lastMotion = now;
 		stillnessFired = false;
 	});
 
-	applyTier.(tier, m.accelMassFiltered.lincurve(0, 2.0, 0.0, 1.0, 1));
+	applyTier.(tier, samp);
 
 	if (voices.notNil, {
 		var cutoff = (m.gyroXFiltered.fold(-0.5, 0.5) * 2).lincurve(-1.0, 1.0, 360, 5400, 3);
-		voices[0].set(\freq, (69-12).midicps, \lagAttack, 0.2, \lagRelease, 0.2, \cutoff, cutoff);
+		voices[0].set(\freq, (69-12).midicps, \lagAttack, 0.2, \lagRelease, 0.5, \cutoff, cutoff);
 		voices[1].set(\freq, (71-7).midicps, \lagAttack, 0.1,  \lagRelease, 2, \cutoff, cutoff);
 		voices[2].set(\freq, (73).midicps, \lagAttack, 0.09,  \lagRelease, 4, \cutoff, cutoff);
 	});
 
-	// ghost echo (§26)
-	if ((now - lastMotion) > 10
-	    and: { stillnessFired.not }
-	    and: { engagement > 20 }, {
-		stillnessFired = true;
-		(
-			instrument: \whisperVoice,
-			freq: lastRoot.midicps,
-			amp: 0.2, atk: 0.8, rel: 6.0, cutoff: 200,
-			out: ob, group: group, type: \note,
-		).play;
-	});
+	// // ghost echo (§26)
+	// if ((now - lastMotion) > 10
+	//     and: { stillnessFired.not }
+	//     and: { engagement > 20 }, {
+	// 	stillnessFired = true;
+	// 	(
+	// 		instrument: \whisperVoice,
+	// 		freq: (lastRoot + 4).midicps,
+	// 		amp: 0.2, atk: 0.8, rel: 6.0, cutoff: 200,
+	// 		out: ob, group: group, type: \note,
+	// 	).play;
+	// });
 };
 
 //------------------------------------------------------------

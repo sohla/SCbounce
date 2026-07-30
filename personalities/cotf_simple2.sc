@@ -7,6 +7,13 @@ rhythm:      continuous drone; idle melody rotates every ~0.3 s when gesture is 
 instruments: [gymBro]
 */
 
+
+/*
+- make this more like simle4 ? OR make simple4 more like simple2?
+- less dynamic gestures
+
+*/
+
 var m = ~model;
 var ob = ~outBus ? 0; // capture NOW — ~init bodies run under topEnvironment.use
 var synth;

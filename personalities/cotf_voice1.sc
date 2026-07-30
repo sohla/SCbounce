@@ -6,7 +6,11 @@ pitch:       Per-state \rate — idle at source pitch (rate=1); tuning rides the
 rhythm:      \dur set per state — all four states currently set a fixed \dur (piece = 1). The `subDivs` table is declared but unused.
 instruments: [Lumivox]
 */
+/*
 
+- too sensitive to motion
+- warmer sound
+*/
 var m = ~model;
 var ob = ~outBus ? 0;
 var group;
