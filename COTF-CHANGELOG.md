@@ -309,3 +309,11 @@ be confirmed later). Any `prints:` recommendation key in a personality header
 that references a retired placeholder id will simply stop matching — worth a
 sweep of your headers when convenient. Appearance/characteristics tags come
 from Ciaran's descriptions of the actual printed objects.
+
+## 2026-07-30 — two new prints confirmed: bopIt + greenHolder (13 total)
+
+`personalities/prints.json` regenerated (still LIVE). Two new physical prints
+join the pool: **bopIt** (toy-like, rattle, holdable, small, twisty — fun,
+light, easy, playful) and **greenHolder** (mysterious, green, lumpy,
+medium-size — dark, funky, weird, interesting). Both are valid targets for a
+personality header's `prints:` recommendation key.
