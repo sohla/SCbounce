@@ -2,7 +2,7 @@
 gestures:    [beat, shake, tilt]
 description: Pdef pattern firing per-note marimba chord strikes on ~beatClock; 2-bar rhythmic pattern of triads (with inversions and rests) voiced from score fitted_notes; gesture drives amp + octave; tuning uses \ptch for smooth pitch bend
 sound:       marimba mallet triads; 15-strike 2-bar pattern with syncopated rests; chord voicing follows the score's actual harmony (fitted_notes union, not roman-numeral fabrication); tuning bends smoothly into pitch via \ptch
-pitch:       chord ARRAY from ~scoreVoicePool via chordVoicedOffsets (up to 3 tones, octave-folded to [baseMidi±12]); patternInv drives inversion per slot; \octave state-driven; \ptch = sample rate multiplier for continuous bend (tuning ramps 0.7 → 1.0 over 20 s, applied to all three voices simultaneously)
+pitch:       chord ARRAY from ~scoreVoicePool via chordVoicedOffsets (up to 3 tones, octave-folded to [baseMidi±12]); patternInv drives inversion per slot; \octave state-driven; \ptch = sample rate multiplier for continuous bend (tuning ramps 0.7 → 1.0 over 15 s, applied to all three voices simultaneously)
 rhythm:      fixed 2-bar pattern (patternInv + patternDur, 15 events across 32 clock beats); phase offset = 4 for pickup alignment; \dur is Pfunc-locked to patternDur (not state-modulatable)
 instruments: [Gravitone]
 */
@@ -330,7 +330,7 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, ptch=1, start=0, pan=
 
 ~tuningNext = {|d, ctx|
 	var amp = m.rrateMassFiltered.lincurve(0, 1.0, -70, -25, -4);
-	var tt = 20.0;
+	var tt = 15.0;
 	var elapsed = TempoClock.beats - tuneTime;
 
 	Pdef(m.ptn).set(\amp, amp.dbamp);

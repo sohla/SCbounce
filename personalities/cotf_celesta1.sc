@@ -2,7 +2,7 @@
 gestures:    [beat, shake, tilt]
 description: Pdef pattern firing per-note celesta sample synths on ~beatClock; single-note melody from score voice pool; gesture drives amp + octave; tuning uses \ptch for smooth pitch bend; odd-MIDI notes resample from nearest even-MIDI sample
 sound:       high-register bell timbre; crisp attack, long ringing tail; spacious 8th-note grid so tails bloom; tuning bends smoothly into pitch via \ptch
-pitch:       score voice pool wrapped to pitch class (root); \octave state-driven (idle random high, tuning 6, piece 5–7 from tilt, curtain low pair); \ptch = sample rate multiplier for continuous bend (tuning ramps 0.7 → 1.0 over 20 s); even-MIDI sample set + midiratio resample for odd notes
+pitch:       score voice pool wrapped to pitch class (root); \octave state-driven (idle random high, tuning 6, piece 5–7 from tilt, curtain low pair); \ptch = sample rate multiplier for continuous bend (tuning ramps 0.7 → 1.0 over 15 s); even-MIDI sample set + midiratio resample for odd notes
 rhythm:      per-note; \dur state-driven (piece 2 = 8th grid, idle 3, tuning 2, curtain 4)
 instruments: [Lumivox]
 */
@@ -254,7 +254,7 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, ptch=1, start=0, pan=
 	// Pdef is paused for tuning (see ~onRoomState). Instead, fire a
 	// single celesta hit when accelMassFiltered crosses the threshold —
 	// throttled to once every 2 s via lastTime (harp1 ~idleNext idiom).
-	// \ptch rides the 0.7 → 1.0 ramp over 20 s so each triggered hit
+	// \ptch rides the 0.7 → 1.0 ramp over 15 s so each triggered hit
 	// sounds progressively closer to true pitch.
 	var amp = m.accelMassFiltered.lincurve(0, 2.0, -70, -20, -4);
 	var tt = 15.0;

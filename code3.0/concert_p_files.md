@@ -306,6 +306,22 @@ m.gyroFilteredAttack       = 0.7           # generally ok
 m.gyroFilteredDecay        = 0.7
 ```
 
+Read-only signals the controller publishes each tick:
+
+```
+m.accelMass / m.accelMassFiltered      # accelEvent.sumabs * 0.33
+m.rrateMass / m.rrateMassFiltered      # rrateEvent.sumabs
+m.rrateXMass / m.rrateXMassFiltered    # |rrateEvent.x| — one axis, not sumabs
+m.rrateYMass / m.rrateYMassFiltered
+m.rrateZMass / m.rrateZMassFiltered
+m.gyroXFiltered / gyroYFiltered / gyroZFiltered   # angle, normalised [-1, 1]
+```
+
+Per-axis rrate masses share the `rrateMassFiltered*` coefficients. Use them
+for single-axis RATE of rotation (twist speed); use `m.gyro*Filtered` for the
+ANGLE the stick is held at. Derive nothing in a helper function — map inline
+in the state tick that needs it (§22).
+
 Common mappings:
 
 - `m.accelMassFiltered.lincurve(0, 2.5, -90, -10, -1)` — amp from
@@ -1509,3 +1525,4 @@ Watch tempo / bar count and reveal on specific downbeats:
 Don't over-signpost the reveals. If every gesture unlocks something,
 nothing feels earned. Rule of thumb: at most **two** reveals per
 personality, each requiring a distinct interaction shape.
+

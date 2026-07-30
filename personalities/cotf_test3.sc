@@ -1,8 +1,8 @@
 /*
 gestures:    [beat, shake, tilt]
 description: ONE mono sample serves two engines — a long-lived GrainBuf pad (amp from accel) + a Pdef PlayBuf pattern (amp + dur from rrate). Both read the same buffer, both track score via ~onHalf freq updates. Simplified rewrite: one buffer, canonical PlayBuf/GrainBuf rate idioms. Both engines are built inside the Buffer read's completion action — nothing touches the bufnum before the server has data behind it, which is what killed scsynth ("server exited with exit code 0") on load.
-sound:       Voice sample used two ways at once: granular ambient pad + rhythmic per-note chops of the same source, tracking score pitch.
-pitch:       ~onHalf sets \freq for both engines from ctx.voicePool.first wrapped to pitch class + baseMidi (60). Each SynthDef derives rate from freq/srcFreq.
+sound:       Voice sample used two ways at once: granular ambient pad + rhythmic per-note chops of the same source, tracking score pitch. An LFTri sub at \freq sits under the pad's grains.
+pitch:       ~onHalf sets \freq for both engines, wrapped to pitch class + baseMidi (60) — pad from ctx.voicePool.first, pattern from ctx.voicePool.choose (they diverge). Each SynthDef derives rate from freq/srcFreq, with a fixed 0.99 detune. \tuning rides the §16 ramp (0.7 → 1.0 over 15 s from entry) onto \freq rather than a \ptch control, converging on MIDI 70 — a semitone above the room's A reference.
 rhythm:      Pad continuous; pattern per-note on ~beatClock with \dur from rrate.
 instruments: [brownBall]
 */
@@ -28,9 +28,7 @@ m.gyroFilteredAttack      = 0.7;
 m.gyroFilteredDecay       = 0.7;
 
 //------------------------------------------------------------
-// (a) grainPad — long-lived granular pad.
-// GrainBuf's `rate` is a PITCH RATIO — internal BufRateScale handling.
-// No external BufRateScale here.
+// GrainBuf `rate` is a pitch ratio — no BufRateScale here.
 SynthDef(\grainPad, { |out=0, bufnum=0, amp=0, freq=440, srcFreq=440, gate=1,
     grainDur=0.15, grainDensity=20, grainPos=0.5, grainPosSpread=0.1,
     attack=0.5, release=0.5, ffreq=2000, lagAttack=0.05, lagRelease=0.8|
@@ -45,9 +43,7 @@ SynthDef(\grainPad, { |out=0, bufnum=0, amp=0, freq=440, srcFreq=440, gate=1,
 }).add;
 
 //------------------------------------------------------------
-// (b) samplerVoice — per-note PlayBuf, mono → Pan2.
-// PlayBuf's `rate` is samples-per-output-sample — needs explicit
-// BufRateScale for pitch correctness across SR mismatch (canonical idiom).
+// PlayBuf `rate` is samples-per-sample — BufRateScale required.
 SynthDef(\samplerVoice, { |out=0, bufnum=0, amp=0.5, freq=440, srcFreq=440,
     gate=1, pan=0, attack=0.01, decay=0.1, release=0.1|
 	var env = EnvGen.kr(Env.adsr(attack, decay, 0.07, release), gate, doneAction: Done.freeSelf);
@@ -61,27 +57,17 @@ SynthDef(\samplerVoice, { |out=0, bufnum=0, amp=0.5, freq=440, srcFreq=440,
 	topEnvironment.use {
 		group = Group.new;
 
-		// Buffer.readChannel is ASYNC — the bufnum exists client-side
-		// immediately, but the server has no data behind it until the read
-		// completes. Nothing may read that bufnum before then: a GrainBuf
-		// started on an empty buffer (data NULL, 0 frames, sr 0) kills
-		// scsynth outright ("Server exited with exit code 0" right after
-		// this personality's init line). So padSynth AND the Pdef are both
-		// built inside the completion action.
+		// Read is async — both engines are built in the completion action.
+		// A GrainBuf started on an empty bufnum kills scsynth outright.
 		sampleBuffer = Buffer.readChannel(s, samplePath.standardizePath, channels: [0], action: {|buf|
 			postf("sample loaded (mono ch0): % (% frames, sr %)\n",
 				samplePath, buf.numFrames, buf.sampleRate);
 
-			// The action fires on a later thread — ~deinit may already have
-			// run (fast personality switch). sampleBuffer is nil'd there;
-			// bail rather than spawn a synth nothing will ever clean up.
+			// ~deinit may have run already — it nils sampleBuffer.
 			if (sampleBuffer.notNil) {
 				topEnvironment.use {
-					// padSynth is OUTSIDE the group. group holds ONLY the
-					// Pdef's per-note synths, so ~onResync's group.freeAll
-					// doesn't kill padSynth (avoids the s.bind/immediate race
-					// that produces "Node not found" spam on seek). ~deinit
-					// kills both in the correct order below.
+					// padSynth stays OUT of group so ~onResync's freeAll
+					// hits only the Pdef's per-note synths.
 					padSynth = Synth(\grainPad, [
 						\out,     ob,
 						\bufnum,  buf.bufnum,
@@ -106,10 +92,7 @@ SynthDef(\samplerVoice, { |out=0, bufnum=0, amp=0.5, freq=440, srcFreq=440,
 					Pdef(m.ptn).set(\dur,     1);
 					Pdef(m.ptn).play(~beatClock, quant: ~scoreBeatsPerBar * ~scoreEventsPerBeat);
 
-					// §15 reload guard — ~onRoomState fires only on state
-					// CHANGE, so a reload while already in \tuning never runs
-					// its branch and tuneTime would stay 0 (ramp dead, ptch
-					// pinned at 1.0). Capture it here as well.
+					// §15 reload guard — ~onRoomState only fires on change
 					if (~roomState == \tuning, { tuneTime = TempoClock.beats });
 				};
 			};
@@ -117,12 +100,10 @@ SynthDef(\samplerVoice, { |out=0, bufnum=0, amp=0.5, freq=440, srcFreq=440,
 	};
 
 	~onResync = { |idx|
-		// nil-guard: if a resync fires post-~deinit (double-deinit pattern
-		// or stale timing), group is nil — skip cleanly instead of throwing.
 		if (group.notNil, {
 			topEnvironment.use {
 				Pdef(m.ptn).stop;
-				s.bind { group.freeAll };   // Pdef synths only — padSynth untouched
+				s.bind { group.freeAll };   // Pdef synths only
 				Pdef(m.ptn).play(~beatClock, quant: ~scoreBeatsPerBar * ~scoreEventsPerBeat);
 			};
 		});
@@ -130,9 +111,7 @@ SynthDef(\samplerVoice, { |out=0, bufnum=0, amp=0.5, freq=440, srcFreq=440,
 };
 
 //------------------------------------------------------------
-// harp1-style cleanup + simple1-style gate release for the long-lived
-// padSynth. Capture refs and null vars synchronously so a double-fire
-// ~deinit (titleView off+on) sees nil everywhere and no-ops.
+// Refs captured + vars nil'd synchronously so a double-fire no-ops.
 ~deinit = ~deinit <> {
 	var g = group;
 	var p = padSynth;
@@ -141,15 +120,15 @@ SynthDef(\samplerVoice, { |out=0, bufnum=0, amp=0.5, freq=440, srcFreq=440,
 	padSynth = nil;
 	sampleBuffer = nil;
 	Pdef(m.ptn).remove;
-	if (p.notNil) { p.set(\gate, 0) };   // padSynth releases over `release` (1.5s), auto-frees via doneAction:2
+	if (p.notNil) { p.set(\gate, 0) };
 	fork {
 		if (g.notNil) {
 			s.bind { g.freeAll };
 			s.sync;
 			g.free;
 		};
-		2.0.wait;                        // wait for padSynth's release + auto-free
-		if (b.notNil) { b.free };        // safe now — nothing reading it
+		2.0.wait;                  // outlast padSynth's release before the free
+		if (b.notNil) { b.free };
 	};
 };
 
@@ -171,9 +150,8 @@ SynthDef(\samplerVoice, { |out=0, bufnum=0, amp=0.5, freq=440, srcFreq=440,
 };
 
 //------------------------------------------------------------
-// State ticks — accel drives pad, rrate drives pattern. No cross-mixing.
-// padSynth is nil until the sample finishes loading (and again after
-// ~deinit); no guard needed — Nil:set is a no-op.
+// Accel drives pad, rrate drives pattern.
+// padSynth is nil until the read lands — Nil:set is a no-op, no guard.
 
 ~idleNext = { |d, ctx|
 
@@ -194,7 +172,7 @@ SynthDef(\samplerVoice, { |out=0, bufnum=0, amp=0.5, freq=440, srcFreq=440,
 
 ~tuningNext = { |d, ctx|
 
-	var tt      = 5.0;
+	var tt      = 15.0;
 	var elapsed = TempoClock.beats - tuneTime;
 	var ptch    = if (elapsed < tt) {
 		(elapsed / tt).linlin(0, 1, 0.7, 1.0)   // flat → true

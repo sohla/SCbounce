@@ -2,7 +2,7 @@
 gestures:    [beat, shake, tilt]
 description: Pdef pattern firing per-note harpsichord sample synths on ~beatClock; idle/tuning/curtain play a single melody note from ~scoreVoicePool (harp1 style); piece plays a 3-note chord voiced from fitted_notes (marimba2 pattern); tuning uses \ptch for smooth pitch bend
 sound:       Italian harpsichord; bright plectrum attack, gently decaying tail; idle single-note ostinato, piece 3-note chord strikes on beat
-pitch:       Idle/tuning/curtain: score voice pool wrapped to pitch class (root); piece: fitted_notes-driven chord voicing (offsets around baseMidi 60, capped at 3 tones); \octave state-driven (idle 4–6, tuning 5, piece 4–6 from tilt, curtain 3–4); \ptch = sample rate multiplier for continuous bend (tuning ramps 0.7 → 1.0 over 20 s); sparse sample set (A/A#/B/C#/E/G/G# across oct 2–6) covered by findClosestSample (≤3 semitone shift)
+pitch:       Idle/tuning/curtain: score voice pool wrapped to pitch class (root); piece: fitted_notes-driven chord voicing (offsets around baseMidi 60, capped at 3 tones); \octave state-driven (idle 4–6, tuning 5, piece 4–6 from tilt, curtain 3–4); \ptch = sample rate multiplier for continuous bend (tuning ramps 0.7 → 1.0 over 15 s); sparse sample set (A/A#/B/C#/E/G/G# across oct 2–6) covered by findClosestSample (≤3 semitone shift)
 rhythm:      per-note on ~beatClock; \dur state-driven (idle 2, tuning 2, piece 1, curtain 4)
 instruments: [Clavelium]
 */

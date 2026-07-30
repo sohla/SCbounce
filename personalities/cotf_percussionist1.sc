@@ -133,6 +133,9 @@ SynthDef(\percHit, {
 			var buf = Buffer.read(s, path.fullPath, action:{|b|
 				postf("buffer alloc [% : %] \n", i, path.fileNameWithoutExtension);
 			});
+
+			//• should we not check that all the buffers are loaded before we start build and play events?
+			
 			buf
 		});
 
@@ -197,9 +200,9 @@ SynthDef(\percHit, {
 	Event.eventTypes.removeAt(eventTypeName);
 	fork {
 		if (group.notNil) {
-			s.bind { group.freeAll };
-			s.sync;
+			// s.bind { group.freeAll };
 			group.free;
+			s.sync;
 			group = nil;
 		};
 		if (bufs.notNil) {

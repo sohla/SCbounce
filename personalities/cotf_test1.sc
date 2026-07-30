@@ -234,7 +234,7 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, freq=440, ptch=1, sta
 
 //------------------------------------------------------------
 // Tuning: accel-threshold one-shots at A5, pitch wanders ±2 semitones
-// around A5 for 20 s then settles at true. §15 one-shot + §18 wander.
+// around A5 for 15 s then settles at true. §15 one-shot + §18 wander.
 // wander-envelope math is inline in the event constructor — chained
 // to keep the state tick's mapping visible in one place.
 ~tuningNext = {|d, ctx|
@@ -249,8 +249,8 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, freq=440, ptch=1, sta
 				root:       9,       // A
 				octave:     6,       // A5
 				amp:        m.accelMassFiltered.lincurve(0, 2.0, -70, -25, -4).dbamp,
-				// ±2 st wander envelope, damping to 0 over 20 s, 0.3 Hz sine
-				ptch:       ((TempoClock.beats - tuneTime).lincurve(0, 20, 1, 0, 1) * 2.0 * sin((TempoClock.beats - tuneTime) * 2 * pi * 0.3)).midiratio,
+				// ±2 st wander envelope, damping to 0 over 15 s, 0.3 Hz sine
+				ptch:       ((TempoClock.beats - tuneTime).lincurve(0, 15, 1, 0, 1) * 2.0 * sin((TempoClock.beats - tuneTime) * 2 * pi * 0.3)).midiratio,
 			).play;
 			lastTime = TempoClock.beats;
 		});

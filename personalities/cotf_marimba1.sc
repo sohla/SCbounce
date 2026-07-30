@@ -2,7 +2,7 @@
 gestures:    [beat, shake, tilt]
 description: Pdef pattern firing per-note marimba sample synths on ~beatClock; single-note melody from score voice pool; gesture drives amp + octave; tuning uses \ptch for smooth pitch bend; nearest-sample lookup for pitch class
 sound:       bright African marimba mallet strikes; mid-to-upper register (F2..B6); crisp transient, natural tail; tuning bends smoothly into pitch via \ptch
-pitch:       score voice pool wrapped to pitch class (root); \octave state-driven (idle random, tuning 5, piece 6–8 from tilt, curtain low pair); \ptch = sample rate multiplier for continuous bend (tuning ramps 0.7 → 1.0 over 20 s)
+pitch:       score voice pool wrapped to pitch class (root); \octave state-driven (idle random, tuning 5, piece 6–8 from tilt, curtain low pair); \ptch = sample rate multiplier for continuous bend (tuning ramps 0.7 → 1.0 over 15 s)
 rhythm:      per-note; \dur state-driven (piece 1 = 16th grid, idle 2, tuning 2, curtain 3)
 instruments: [Gravitone]
 */
@@ -220,7 +220,7 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, ptch=1, start=0, pan=
 
 ~tuningNext = {|d, ctx|
 	var amp = m.rrateMassFiltered.lincurve(0, 1.0, -70, -22, -4);
-	var tt = 20.0;
+	var tt = 15.0;
 	var elapsed = TempoClock.beats - tuneTime;
 
 	Pdef(m.ptn).set(\amp, amp.dbamp);

@@ -2,8 +2,8 @@
 gestures:    [beat, tilt, shake]
 description: Grain-scale playback of a single vocal "aah" sample (G#4, MIDI 68). Pdef on ~beatClock always ticks; each event fires a short grain. EVERY Pdef param is set inline from the state ticks — Pbind holds ONLY static routing. No helper functions: each state re-declares its full mapping (amp, dur, grainDur, rate, start) in one place so behaviour is explicit and easy to change per state.
 sound:       Continuous vocal texture; grainy stream when subdivisions are fine, sparse tones when slow.
-pitch:       Per-state \rate — idle/tuning at source pitch (rate=1); piece from ctx.voicePool folded to ±6 semis (inline in ~pieceNext); curtain a slight bend down.
-rhythm:      \dur set per state — piece uses gyroXFiltered → subDivs (inline lincurve); other states use fixed durs.
+pitch:       Per-state \rate — idle at source pitch (rate=1); tuning rides the §16 ramp on \rate itself (0.7 → 1.0 over 15 s from \tuning entry, settling at source pitch); piece from ctx.voicePool folded to ±6 semis (inline in ~pieceNext); curtain a slight bend down.
+rhythm:      \dur set per state — all four states currently set a fixed \dur (piece = 1). The `subDivs` table is declared but unused.
 instruments: [Lumivox]
 */
 
@@ -76,9 +76,7 @@ SynthDef(\voiceGrain, {|out=0, bufnum=0, amp=0.5, rate=1, freq=440, start=0,
 
 		Pdef(m.ptn).play(~beatClock, quant: ~scoreBeatsPerBar * ~scoreEventsPerBeat);
 
-		// §15 reload guard — ~onRoomState fires only on state CHANGE, so a
-		// reload while already in \tuning never runs its branch, tuneTime
-		// stays 0, and the ramp is dead (pinned at 1.0). Capture it here too.
+		// §15 reload guard — ~onRoomState only fires on change
 		if (~roomState == \tuning, { tuneTime = TempoClock.beats });
 	};
 
@@ -136,17 +134,11 @@ SynthDef(\voiceGrain, {|out=0, bufnum=0, amp=0.5, rate=1, freq=440, start=0,
 	Pdef(m.ptn).set(\start,    rrand(0, 0.8));
 };
 
-// tuning — sparse, quiet, swelled attack + long tail, riding the §16
-// ramp: each grain starts flat and the texture settles to true pitch
-// over `tt` beats from \tuning entry.
-// The doc's idiom puts the ramp on a separate \ptch control multiplying
-// the sampler's rate. \voiceGrain has no \ptch — \rate IS its rate
-// multiplier (lr = rate * BufRateScale) and tuning's target rate is 1
-// (the sample's own pitch), so the ramp value goes straight onto \rate.
-// Nothing to reset elsewhere: every other state sets \rate explicitly,
-// so no residual bend survives leaving \tuning.
+//------------------------------------------------------------
+// tuning — sparse, swelled attack + long tail. §16 ramp rides \rate
+// itself (no \ptch control here); target rate is 1, the sample's pitch.
 ~tuningNext = {|d, ctx|
-	var tt      = 20.0;
+	var tt      = 15.0;
 	var elapsed = TempoClock.beats - tuneTime;
 	var ptch    = if (elapsed < tt) {
 		(elapsed / tt).linlin(0, 1, 0.7, 1.0)   // flat → true
@@ -156,9 +148,7 @@ SynthDef(\voiceGrain, {|out=0, bufnum=0, amp=0.5, rate=1, freq=440, start=0,
 	Pdef(m.ptn).set(\grainAtk, 0.1);
 	Pdef(m.ptn).set(\grainDec, 0.4);
 	Pdef(m.ptn).set(\rate,     ptch);
-	// \freq is inert in \voiceGrain today (the sub + FreqShift lines are
-	// commented out) — bent by the same ratio so it stays truthful if
-	// they come back.
+	// \freq inert while the sub + FreqShift lines are commented out
 	Pdef(m.ptn).set(\freq,     samplePitchMidi.midicps * ptch);
 	Pdef(m.ptn).set(\start,    0.5);
 };

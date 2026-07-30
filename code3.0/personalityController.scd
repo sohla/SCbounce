@@ -74,6 +74,14 @@ var interpretPersonality = {|d|
             \rrateMassFilteredAttack: 0.9,
             \rrateMassFilteredDecay: 0.7,
 
+            // per-axis rotation rate — same coefficients as rrateMass
+            \rrateXMass: 0,
+            \rrateYMass: 0,
+            \rrateZMass: 0,
+            \rrateXMassFiltered: 0,
+            \rrateYMassFiltered: 0,
+            \rrateZMassFiltered: 0,
+
             // \rrateMassThreshold: 0.21, //use for isMoving
             // \rrateMassThresholdSpec: ControlSpec(0.07, 0.4, \lin, 0.01, 0.21),
 
@@ -126,6 +134,28 @@ var interpretPersonality = {|d|
             ~model.rrateMassFiltered = ~smooth.(
                 ~model.rrateMass,
                 ~model.rrateMassFiltered,
+                ~model.rrateMassFilteredAttack,
+                ~model.rrateMassFilteredDecay
+            );
+            // per-axis rotation rate — magnitude of one axis, not sumabs
+            ~model.rrateXMass = d.sensors.rrateEvent.x.abs;
+            ~model.rrateYMass = d.sensors.rrateEvent.y.abs;
+            ~model.rrateZMass = d.sensors.rrateEvent.z.abs;
+            ~model.rrateXMassFiltered = ~smooth.(
+                ~model.rrateXMass,
+                ~model.rrateXMassFiltered,
+                ~model.rrateMassFilteredAttack,
+                ~model.rrateMassFilteredDecay
+            );
+            ~model.rrateYMassFiltered = ~smooth.(
+                ~model.rrateYMass,
+                ~model.rrateYMassFiltered,
+                ~model.rrateMassFilteredAttack,
+                ~model.rrateMassFilteredDecay
+            );
+            ~model.rrateZMassFiltered = ~smooth.(
+                ~model.rrateZMass,
+                ~model.rrateZMassFiltered,
                 ~model.rrateMassFilteredAttack,
                 ~model.rrateMassFilteredDecay
             );

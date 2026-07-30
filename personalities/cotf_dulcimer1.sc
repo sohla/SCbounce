@@ -2,7 +2,7 @@
 gestures:    [beat, shake, tilt]
 description: Pdef pattern firing per-note dulcimer sample synths on ~beatClock; fixed 2-bar melody pattern with pool-driven pitch; state controls amp/octave/ptch, gesture drives amp + octave (piece) or amp only (idle/curtain)
 sound:       hammered-dulcimer repeated-note phrase; melody hovers on top of ~scoreVoicePool with dips to lower voices; sample-based; tuning bends smoothly into pitch via \ptch
-pitch:       score voice pool, offset-from-top per pattern step (offsets [0,1,2,3]); octave-folded into [C3..C5]; \octave state-driven; \ptch = sample rate multiplier for continuous bend (tuning ramps 0.7 → 1.0 over 20 s)
+pitch:       score voice pool, offset-from-top per pattern step (offsets [0,1,2,3]); octave-folded into [C3..C5]; \octave state-driven; \ptch = sample rate multiplier for continuous bend (tuning ramps 0.7 → 1.0 over 15 s)
 rhythm:      fixed 2-bar 16th-note pattern from patternOffset array; phase offset = 4 for pickup alignment; runs on ~beatClock always, amp gated per state
 instruments: [Cellaris]
 */
@@ -310,9 +310,9 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, ptch=1, start=0, pan=
 };
 
 // Tuning: "warming up" — hold quiet at octave 5, and over the first
-// 20 s of the tuning state ramp \ptch from 0.7 up to 1.0 for a smooth
+// 15 s of the tuning state ramp \ptch from 0.7 up to 1.0 for a smooth
 // pitch bend (starts flat, settles in tune). tuneTime captured on
-// \tuning entry in ~onRoomState. After 20 s, sits at ptch = 1.
+// \tuning entry in ~onRoomState. After 15 s, sits at ptch = 1.
 ~tuningNext = {|d, ctx|
 	var amp = m.rrateMassFiltered.lincurve(0, 1.0, -60, -10, -4);
 	var tt = 15.0;
