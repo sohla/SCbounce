@@ -279,8 +279,8 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, start=0, pan=0, freq=
 
 ~pieceNext   = {|d, ctx|
 
-	var amp = (m.accelMassFiltered).lincurve(0,3.0,-70,-9,-2);
-	var oct = (d.sensors.gyroEvent.y / pi.half).lincurve(-1,1,5,9,1).asInteger;
+	var amp = (m.accelMassFiltered).lincurve(0,3.0,-70,-5,-2);
+	var oct = (d.sensors.gyroEvent.y / pi.half).lincurve(-1,1,5,8,1).asInteger;
 
 	Pdef(m.ptn).set(\amp, amp.dbamp * ctx.loudness.linlin(0, 1, 0.1, 1.0));
 	Pdef(m.ptn).set(\octave, oct);

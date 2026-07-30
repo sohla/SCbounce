@@ -219,15 +219,15 @@ SynthDef(\samplerVoice, { |out=0, bufnum=0, amp=0.5, freq=440, srcFreq=440,
 ~pieceNext = { |d, ctx|
 
 	var under = m.accelMassFiltered.lincurve(0, 1, m.rrateMassFiltered.neg, 0, -1).neg.lincurve(0, 0.4, 0, 1, -1	);
-	var amp = m.rrateMassFiltered.lincurve(0, 0.4, -60, 1, -1).dbamp;
+	var amp = m.rrateMassFiltered.lincurve(0, 0.4, -60, 0, -1).dbamp;
 	var dur = m.rrateMassFiltered.lincurve(0, 1.8, 2.5, 0.8, -3);
 
-	padSynth.set(\amp,          m.accelMassFiltered.lincurve(0, 2.0, -60, 1, -1).dbamp);
+	padSynth.set(\amp,          m.accelMassFiltered.lincurve(0, 2.0, -60, -10, -1).dbamp);
 	padSynth.set(\ffreq,        (d.sensors.gyroEvent.x / pi).fold(-0.5, 0.5).lincurve(-0.5, 0.5, 100, 3000, -2));
 	// padSynth.set(\grainDur,     m.accelMassFiltered.lincurve(0, 2.0, 0.3, 0.05, 1));
 	// padSynth.set(\grainDensity, m.accelMassFiltered.lincurve(0, 2.0, 15, 50, 1));
 	padSynth.set(\grainPos,    rrand(0.1,0.1));// (d.sensors.gyroEvent.y / pi.half).lincurve(-1, 1, 0.1, 0.9, 1));
-	Pdef(m.ptn).set(\amp, amp * 30);
+	Pdef(m.ptn).set(\amp, amp * 10);
 	Pdef(m.ptn).set(\dur, dur);//m.rrateMassFiltered.lincurve(0, 1.0, 2, 0.25, -1));
 };
 

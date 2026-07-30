@@ -28,7 +28,7 @@ m.gyroFilteredDecay = 0.7;
 //------------------------------------------------------------
 SynthDef(\simple, {|out=0, amp=0.0, freq=440, attack=0.001, decay=0.03, sustain=0.8, release=0.59, gate=1, lagAttack=0.02, lagRelease=1.9, ffreq = 440|
 	var env = EnvGen.kr(Env.adsr(attack, decay, sustain, release), gate, doneAction: Done.freeSelf);
-	var sig = Saw.ar(freq,0.2,0.1) + SinOsc.ar(freq/2,0,1);
+	var sig = Saw.ar(freq,0.2,0.1) + SinOsc.ar(freq/2,0,0.1);
 	var filter = RLPF.ar(sig, ffreq, 0.2) * 0.5;
     Out.ar(out, filter!2 * env * amp.lagud(lagAttack, lagRelease));
 }).add;
@@ -80,7 +80,7 @@ SynthDef(\simple, {|out=0, amp=0.0, freq=440, attack=0.001, decay=0.03, sustain=
 // (once/sec) so we can see the routing without spamming the post window.
 ~idleNext = {|d, ctx|
 
-	var amp = (m.accelMass + m.rrateMass).lincurve(0, 1.0, -70, -8, 4);
+	var amp = (m.accelMass + m.rrateMass).lincurve(0, 1.0, -70, -2, 4);
 	var ffreq = ((d.sensors.gyroEvent.x / pi).fold(-0.5,0.5) * 2).lincurve(-1.0, 1.0, 200, 600, 3);
 
 	synth.set(\amp, amp.dbamp);
@@ -98,7 +98,7 @@ SynthDef(\simple, {|out=0, amp=0.0, freq=440, attack=0.001, decay=0.03, sustain=
 
 ~tuningNext = {|d, ctx|
 
-	var amp = (m.accelMass + m.rrateMass).lincurve(0, 1.0, -70, -12, 4);
+	var amp = (m.accelMass + m.rrateMass).lincurve(0, 1.0, -70, -8, 4);
 	var ffreq = ((d.sensors.gyroEvent.x / pi).fold(-0.5,0.5) * 2).lincurve(-1.0, 1.0, 200, 800, 3);
 	var fmod = ((d.sensors.gyroEvent.y / pi.half).lincurve(-1.0,1.0,-3.0,3.0,1));
 	var tt = 15.0;
@@ -127,7 +127,7 @@ SynthDef(\simple, {|out=0, amp=0.0, freq=440, attack=0.001, decay=0.03, sustain=
 
 ~pieceNext = {|d, ctx|
 
-	var amp = (m.accelMass + m.rrateMass).lincurve(0, 2.0, -90, -2, -1);
+	var amp = (m.accelMass + m.rrateMass).lincurve(0, 2.0, -90, 4, -1);
 	var ffreq = ((d.sensors.gyroEvent.x / pi).fold(-0.5,0.5) * 2).lincurve(-1.0, 1.0, 500, 12000, 3);
 
 	synth.set(\amp, amp.dbamp);

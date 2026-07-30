@@ -49,7 +49,7 @@ var roles = [\kick, \snare, \hat, \tom, \cymbal, \perc];
 // LAYERS — per-section kit voicings (§26 hidden reveal)
 // ============================================================
 var layers = (
-	default: (kick: 6, snare: 5, hat: 9,  tom: 7, cymbal: 4, perc: 10),
+	default: (kick: 5, snare: 3, hat: 9,  tom: 7, cymbal: 4, perc: 10),
 	intro:   (kick: 2, snare: 9, hat: 11, tom: 6, cymbal: 3, perc: 13),  // soft
 	dev:     (kick: 2, snare: 8, hat: 7,  tom: 6, cymbal: 4, perc: 1),   // tom-heavy
 	recap:   (kick: 2, snare: 5, hat: 10, tom: 6, cymbal: 0, perc: 14),  // full concert
@@ -93,7 +93,7 @@ var rawPatterns = (
 		hat:   ". . h . . . h . . . h . . . h .",
 	),
 	high: (
-		kick:  "K . . . K . . . K . . . K . . .",
+		kick:  "K . . . k . . . k . . . K . . .",
 		snare: ". . . . S . . . . . . . S . . .",
 		hat:   "h h h h h h h h h h h h h h h h",
 	),
@@ -105,7 +105,7 @@ var rawPatterns = (
 
 // ============================================================
 m.accelMassFilteredAttack = 0.99;
-m.accelMassFilteredDecay = 0.98;
+m.accelMassFilteredDecay = 0.4;
 
 // ============================================================
 SynthDef(\percHit, {
@@ -244,7 +244,7 @@ SynthDef(\percHit, {
 	var activity = m.accelMassFiltered;
 	var deadZone = 0.15;
 	var amp = if (activity > deadZone,
-		{ activity.lincurve(deadZone, 2.0, 0.0, 0.45, 1) },   // §17 expressive
+		{ activity.lincurve(deadZone, 2.0, 0.0, 0.2, 1) },   // §17 expressive
 		{ 0 }
 	);
 	var tier = case
@@ -268,7 +268,7 @@ SynthDef(\percHit, {
 		}
 	);
 
-	Pdef(m.ptn).set(\baseAmp, amp);
+	Pdef(m.ptn).set(\baseAmp, amp * m.accelMassFiltered.lincurve(0.0,3.0,0.0,1.0,-1));
 };
 
 ~curtainNext = { |d, ctx|
