@@ -317,3 +317,23 @@ join the pool: **bopIt** (toy-like, rattle, holdable, small, twisty — fun,
 light, easy, playful) and **greenHolder** (mysterious, green, lumpy,
 medium-size — dark, funky, weird, interesting). Both are valid targets for a
 personality header's `prints:` recommendation key.
+
+## 2026-07-30 — Sensi-Test session notes (Steph live on M1, ~15:30–16:45)
+
+Live tuning committed as `cotf: Sensi-Test 2026-07-30 live tuning` (harp1 amp/octave curve,
+percussionist1 kit voicing + accelMassFilteredDecay 0.98→0.4 + baseAmp×activity curve,
+simple2 osc mix, test3). SC-relevant observations from the show logs:
+
+- **cotf_percussionist1 went silent twice needing a seat reset+reload** (Room 3 seat 4,
+  15:59 and 16:32) — sound returned after `/airkit/resetSeat` + personality re-push. Both
+  incidents are this personality only. Possible angles: the 15-buffer orchkit load racing the
+  first state tick / gestures; the amp deadZone (activity < 0.15 → amp 0) interacting with
+  the live-edited decay (0.98→0.4 makes activity fall to the dead zone much faster); Pdef
+  `\baseAmp` only being written inside the state-next hooks. Room 2 log also shows repeated
+  `FAILURE IN SERVER /g_freeAll Group N not found` around percussionist1 reload churn.
+- **After a `/airkit/panic`, seats report personality `none` until M0's monitor re-pushes
+  (~10 s)** — a stick played in that window is silent. Known shape, just noting the measured
+  gap during real groups.
+- A `/airkit/loadPersonality` sent while a seat's device doesn't exist yet errors
+  `'index' not understood, RECEIVER: nil` (seen earlier today) — a `d.notNil` guard in the
+  load handler would make pre-power-on loads harmless no-ops.
