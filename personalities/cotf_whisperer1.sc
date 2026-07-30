@@ -4,7 +4,7 @@ description: Sustained ambient triad — three long-lived \whisperVoice synths (
 sound:       Warm sine + saw through slow LPF. Silent at rest. Immediate motion → tier response (root fades in, then fifth, then octave). Sustained engagement across a session → cutoff blossoms independently, brighter for the "seasoned" player.
 pitch:       Root from ctx.voicePool.first wrapped to pitch class + baseMidi=60; fifth = root+7; octave = root+12. Refreshed on ~onBeat. \tuning locks to A4/E5/A5 with slow 20-s \ptch ramp.
 rhythm:      None — three continuous drones. Ghost echo is the only discrete event.
-instruments: [Aetherharp]
+instruments: [shinyStick]
 */
 
 // Uses recipes from concert_p_files.md:

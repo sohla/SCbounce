@@ -4,7 +4,7 @@ description: long-lived sin + saw synth with resonant LP filter; state changes s
 sound:       warm drone with tilt-swept resonant filter; rotating idle melody underneath
 pitch:       first note in score voice pool per subdivision (~onTick); idle drone cycles a fixed ideleNotes array
 rhythm:      continuous drone; idle melody rotates every ~0.3 s when gesture is quiet
-instruments: [Template]
+instruments: [gymBro]
 */
 
 var m = ~model;

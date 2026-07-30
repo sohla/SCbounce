@@ -4,7 +4,7 @@ description: ONE mono sample serves two engines — a long-lived GrainBuf pad (a
 sound:       Voice sample used two ways at once: granular ambient pad + rhythmic per-note chops of the same source, tracking score pitch.
 pitch:       ~onHalf sets \freq for both engines from ctx.voicePool.first wrapped to pitch class + baseMidi (60). Each SynthDef derives rate from freq/srcFreq.
 rhythm:      Pad continuous; pattern per-note on ~beatClock with \dur from rrate.
-instruments: [Aetherharp]
+instruments: [brownBall]
 */
 
 var m = ~model;

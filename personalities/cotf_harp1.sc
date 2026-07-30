@@ -4,7 +4,7 @@ description: Pdef pattern firing per-note sample-playback synths on ~beatClock; 
 sound:       harp sample library; soft rolling idle drone; tuning bends up over ~20 s; active arpeggios during piece
 pitch:       \root from score voice pool wrapped to pitch class; \octave state-driven (idle 3–6, tuning 5, piece 4–9 from tilt, curtain last-value)
 rhythm:      note per \dur ~beatClock tick; state sets dur (idle 0.5–1 by amp threshold, tuning 0.75, piece 0.5–1 by amp threshold, curtain 0.5)
-instruments: [Aetherharp]
+instruments: [greenHolder]
 */
 
 var m = ~model;

@@ -4,7 +4,7 @@ description: Rhythmic backbone. Activity (m.accelMassFiltered) → tier (\low = 
 sound:       Orchestral drum kit voiced 6 roles deep (kick / snare / hat / tom / cymbal / perc). Silent at rest. Immediate motion → pattern tier. Sustained engagement → fills come more often.
 pitch:       None — percussive samples from ~/Music/cotf_samples/orchkit.
 rhythm:      16-slot bar. Pattern picked by tier; layer picked by section. Fill frequency modulated by engagement (arc).
-instruments: [Gravitone]
+instruments: [brownShaker]
 */
 
 // Uses recipes from concert_p_files.md:
