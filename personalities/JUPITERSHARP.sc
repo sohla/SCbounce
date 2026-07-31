@@ -15,7 +15,7 @@ needs synth
 var m = ~model;
 var ob = ~outBus ? 0; // capture NOW — ~init bodies run under topEnvironment.use
 var lastTime = 0;
-var idleNotes = [0,2,4,5,7,5,4,2];
+var idleNotes = [0,2,4,5,8,5,4,2];
 var tuneTime = 0;
 var group;   // dedicated Group for this personality's synths — see
              // concert_p_files.md §5 (Pdef personalities need this)
@@ -218,8 +218,8 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, start=0, pan=0, freq=
 // State-gated ticks — ~next always runs (gesture → amp/octave), these
 // override amp per state so silence is enforced regardless of gesture.
 ~idleNext    = {|d, ctx|
-	var amp = (m.accelMassFiltered).lincurve(0, 1.5, -90, -18, -1);
-	var notes = [0,2,5,7,10,12,14,16];
+	var amp = (m.accelMassFiltered).lincurve(0, 1.5, -90, -24, -1);
+	var notes = [0,2,5,7,11,12,14,16];
 	var n = m.gyroYFiltered.lincurve(-1.0,1.0,0,notes.size,-1).asInteger;
 	var oct = (d.sensors.gyroEvent.y / pi.half).linlin(-1, 1, 5, 7).asInteger;
 
@@ -244,29 +244,27 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, start=0, pan=0, freq=
 };
 
 ~tuningNext  = {|d, ctx|
-	var amp = ((m.rrateMassFiltered) * 2.0).lincurve(0, 1.0, -80, -24, -4);
+	var amp = (m.accelMassFiltered).lincurve(0, 1.0, -80, -28, -4);
+	var dur = (m.accelMassFiltered).lincurve(0, 3.0, 4.0, 1.0, -4);
 	var tt = 15.0;
-
+	var elapsed = TempoClock.beats - tuneTime;
+	var ptch    = if (elapsed < tt) {
+		(elapsed / tt).linlin(0, 1, 0.7, 1.0)   // flat → true
+	} { 1.0 };	
+	
 	Pdef(m.ptn).set(\octave, 5);
 	Pdef(m.ptn).set(\root,0);
 	Pdef(m.ptn).set(\amp, amp.dbamp);
-	Pdef(m.ptn).set(\ptch, 1);
-	Pdef(m.ptn).set(\dur, 3.0.rrand(5.0));
+	Pdef(m.ptn).set(\ptch, ptch);
+	Pdef(m.ptn).set(\dur, dur);
 
-	if( (TempoClock.beats-tuneTime) < tt, {
-		var val = (TempoClock.beats-tuneTime) / tt;
-
-		Pdef(m.ptn).set(\ptch, (val.linexp(0, 1, 1.08, 1.0)));
-	},{
-		Pdef(m.ptn).set(\ptch, 1.0);
-	});
 
 
 };
 
 ~pieceNext   = {|d, ctx|
 
-	var amp = (m.accelMassFiltered).lincurve(0,1.5,-80,-18,-2);
+	var amp = (m.accelMassFiltered).lincurve(0,1.5,-80,-14,-2);
 	var oct = (d.sensors.gyroEvent.y / pi.half).lincurve(-1,1,5,8,1).asInteger;
 
 	Pdef(m.ptn).set(\amp, amp.dbamp);

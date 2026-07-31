@@ -137,7 +137,7 @@ Event.addEventType(eventTypeName, {|e|
 	Pdef(m.ptn).set(\stretch, m.accelMassFiltered.lincurve(0.3, 2.0, 5.0, 0.5, -2));
 
 	if(TempoClock.beats > (lastTime + 0.6),{
-		{synth.set(\freq, (ideleNotes[idx]).midicps)}.defer(0.4);
+		{synth.set(\freq, (ideleNotes[idx] + 24).midicps)}.defer(0.4);
 		lastTime = TempoClock.beats;
 	});
 };
@@ -151,9 +151,10 @@ Event.addEventType(eventTypeName, {|e|
 
 	if( (TempoClock.beats-tuneTime) < tt, {
 		var val = (TempoClock.beats-tuneTime) / tt;
-		synth.set(\freq, (52 + (val.lincurve(0, 1, 1, 0.0001,-2) * 7)).midicps);
+		tuneTime = TempoClock.beats;
+		synth.set(\freq, (64 + (val.lincurve(0, 1, 1, 0.0001,-2) * 7)).midicps);
 	},{
-		synth.set(\freq, 52.midicps);
+		synth.set(\freq, 64.midicps);
 	});
 
 	synth.set(\amp, amp.dbamp);
@@ -169,7 +170,7 @@ Event.addEventType(eventTypeName, {|e|
 	var ffreq = ((d.sensors.gyroEvent.x / pi).fold(-0.5,0.5) * 2).lincurve(-1.0, 1.0, 500, 12000, 3);
 	var la = (m.accelMassFiltered).lincurve(0, 2.0, 0.9, 0.02, -1);
 
-	octave = ((d.sensors.gyroEvent.y / pi.half).linlin(-1.0,1.0,0,4).asInteger * 12) - 24;
+	octave = ((d.sensors.gyroEvent.y / pi.half).linlin(-1.0,1.0,0,4).asInteger * 12) ;
 
 	synth.set(\amp, amp.dbamp);
 	synth.set(\lagAttack, la);

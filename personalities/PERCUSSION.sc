@@ -544,7 +544,7 @@ SynthDef(\timpVoice, {
 	// gravity, so it must be silent.
 	Pdef(m.ptn).set(\baseAmp,
 		if (activity > restFloor,
-			{ activity.lincurve(restFloor, 2.0, 0.05, 0.2, -4) },
+			{ activity.lincurve(restFloor, 2.0, 0.05, 0.7, -4) },
 			{ 0 }
 		)
 	);
