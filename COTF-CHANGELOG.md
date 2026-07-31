@@ -337,3 +337,18 @@ simple2 osc mix, test3). SC-relevant observations from the show logs:
 - A `/airkit/loadPersonality` sent while a seat's device doesn't exist yet errors
   `'index' not understood, RECEIVER: nil` (seen earlier today) — a `d.notNil` guard in the
   load handler would make pre-power-on loads harmless no-ops.
+
+## 2026-07-31 — Friday test session notes (Steph live on M1, afternoon)
+
+Rebrand pull (`ff681c0`) deployed to both engines mid-morning: show set is now
+BASSBUZZ / JUPITERSHARP / ALTOSYNTH / PERCUSSION / SOPRANOVOICE + silence.sc; COTF
+saved seats re-pointed 1=BASSBUZZ 2=JUPITERSHARP 3=ALTOSYNTH 4=PERCUSSION
+5=SOPRANOVOICE (seat 3 was Ciaran-side judgment — cotf_whisperer1 is off-roster but
+still on disk; shout if ALTOSYNTH is not the intent). Full sample set incl. new
+orchkit timpani/kicks synced to `~/Music/cotf_samples/`.
+
+Steph then live-tuned all five on M1 (committed as `acb01de`, authored steph):
+ALTOSYNTH idle-note +24 / tuning pitch 52→64 / octave offset drop; BASSBUZZ tuning
+amp ceiling −8→−1 dB; PERCUSSION baseAmp curve top 0.2→0.7; JUPITERSHARP and
+SOPRANOVOICE voicing reworks. Testing declared a success — no silence incidents
+noted this session.
