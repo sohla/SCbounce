@@ -14,6 +14,7 @@ var padSynth;
 var sampleBuffer;
 var baseMidi = 60;
 var tuneTime = 0;       // TempoClock.beats captured on \tuning entry (§16 ramp)
+var lastTime = 0;
 
 // One sample — loaded MONO (readChannel [0]) because GrainBuf requires
 // a mono buffer. samplerVoice reads mono too and pans in the SynthDef.
@@ -39,11 +40,11 @@ SynthDef(\grainPad, { |out=0, bufnum=0, amp=0, freq=440, srcFreq=440, gate=1,
     grainDur=0.15, grainDensity=20, grainPos=0.5, grainPosSpread=0.1,
     attack=0.5, release=0.5, ffreq=2000, lagAttack=0.05, lagRelease=0.8|
 	var env  = EnvGen.kr(Env.asr(attack, 1, release), gate, doneAction: 2);
-	var rate = freq / srcFreq * 0.99;
+	var rate = freq.lag(0.9) / srcFreq * 0.99;
 	var trig = Impulse.kr(grainDensity);
 	var pos  = grainPos + WhiteNoise.kr(grainPosSpread);
 	var sig  = GrainBuf.ar(2, trig, grainDur, bufnum, rate, pos, 2, 0);
-	var sub = LFTri.ar(freq, 0, 0.1);
+	var sub = LFTri.ar(freq, 0, 0.03);
 	var filt = RLPF.ar(sig, ffreq.lag(0.1), 0.4) + sub;
 	Out.ar(out, filt * env * amp.lagud(lagAttack, lagRelease));
 }).add;
@@ -53,7 +54,7 @@ SynthDef(\grainPad, { |out=0, bufnum=0, amp=0, freq=440, srcFreq=440, gate=1,
 SynthDef(\samplerVoice, { |out=0, bufnum=0, amp=0.5, freq=440, srcFreq=440,
     gate=1, pan=0, attack=0.01, decay=0.1, release=0.3|
 	var env = EnvGen.kr(Env.adsr(attack, decay, 0.07, release), gate, doneAction: Done.freeSelf);
-	var lr  = (freq / srcFreq) * BufRateScale.kr(bufnum) * 0.99;
+	var lr  = (freq.lag(0.4) / srcFreq) * BufRateScale.kr(bufnum) * 0.99;
 	var sig = PlayBuf.ar(1, bufnum, rate: lr, loop: 0);
 	Out.ar(out, Pan2.ar(sig, pan, amp * env));
 }).add;
@@ -78,7 +79,7 @@ SynthDef(\samplerVoice, { |out=0, bufnum=0, amp=0.5, freq=440, srcFreq=440,
 						\out,     ob,
 						\bufnum,  buf.bufnum,
 						\srcFreq, samplePitchMidi.midicps,
-						\freq,    samplePitchMidi.midicps,   // rate = 1 at rest
+						\freq,    (samplePitchMidi - 11).midicps,   // rate = 1 at rest
 						\amp,     0,
 						\attack,  0.5,
 						\release, 1.5,
@@ -175,17 +176,23 @@ SynthDef(\samplerVoice, { |out=0, bufnum=0, amp=0.5, freq=440, srcFreq=440,
 
 	var rel = m.accelMassFiltered.lincurve(0.0, 3.5, 0.005, 1.02);
 
-	padSynth.set(\amp,          samp * 0.2);
+	padSynth.set(\amp,          samp * 0.3);
 	padSynth.set(\ffreq,        1800);
-	padSynth.set(\grainDur,     0.2);
-	padSynth.set(\grainDensity, 15);
+	padSynth.set(\grainDur,     0.1);
+	padSynth.set(\grainDensity, 50);
 	padSynth.set(\lagAttack,    0.2);
 	padSynth.set(\lagRelease,   1.7);
-	padSynth.set(\freq,         (samplePitchMidi - 23).midicps);
+
 	Pdef(m.ptn).set(\amp,   amp * ampa * 0.4);
 	Pdef(m.ptn).set(\dur,   dur);
 	Pdef(m.ptn).set(\attack,  0.1);
 	Pdef(m.ptn).set(\release,  rel);
+
+	if(TempoClock.beats > (lastTime + 5),{
+		padSynth.set(\freq, (samplePitchMidi - [11,18].choose).midicps);
+		lastTime = TempoClock.beats;
+	});
+
 
 	// Step the melody. The interval follows the same rrate curve as \dur,
 	// so one note lands per pattern event however fast it's running.
@@ -208,14 +215,14 @@ SynthDef(\samplerVoice, { |out=0, bufnum=0, amp=0.5, freq=440, srcFreq=440,
 	var amp = m.rrateMassFiltered.lincurve(0, 0.4, -70, 1, -1).dbamp;
 	var dur = m.rrateMassFiltered.lincurve(0, 1.5, 2.5, 0.5, -3);
 
-	padSynth.set(\amp,          m.accelMassFiltered.lincurve(0, 2.0, -80, -20, -3).dbamp);
+	padSynth.set(\amp,          m.accelMassFiltered.lincurve(0, 1.0, -80, -8, -3).dbamp);
 	padSynth.set(\ffreq,        1200);
 	padSynth.set(\grainDur,     0.3);
 	padSynth.set(\grainDensity, 12);
 	padSynth.set(\lagAttack,    0.1);
 	padSynth.set(\lagRelease,   2.1);
 	padSynth.set(\freq,         (tuneMidi - 12).midicps * ptch);
-	Pdef(m.ptn).set(\amp,  amp * 3);
+	Pdef(m.ptn).set(\amp,  amp * 5);
 	Pdef(m.ptn).set(\dur,  dur);
 	Pdef(m.ptn).set(\freq, tuneMidi.midicps * ptch);
 };
@@ -231,7 +238,7 @@ SynthDef(\samplerVoice, { |out=0, bufnum=0, amp=0.5, freq=440, srcFreq=440,
 	// padSynth.set(\grainDur,     m.accelMassFiltered.lincurve(0, 2.0, 0.3, 0.05, 1));
 	// padSynth.set(\grainDensity, m.accelMassFiltered.lincurve(0, 2.0, 15, 50, 1));
 	padSynth.set(\grainPos,    rrand(0.1,0.1));// (d.sensors.gyroEvent.y / pi.half).lincurve(-1, 1, 0.1, 0.9, 1));
-	Pdef(m.ptn).set(\amp, amp * 20);
+	Pdef(m.ptn).set(\amp, amp * 10);
 	Pdef(m.ptn).set(\dur, dur);//m.rrateMassFiltered.lincurve(0, 1.0, 2, 0.25, -1));
 };
 
