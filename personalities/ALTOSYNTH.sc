@@ -21,8 +21,8 @@ var baseMidi = 60; // C4
 var lastTime = 0;
 var tuneTime = 0;
 var excThreshold = 0.3;   // accelMassFiltered must exceed this for the beat's exciter to fire
-
-var ideleNotes = [45,52,45,52,55];
+var octave = -12;
+var ideleNotes = [45,47,50,52,57,59,62,64];  // idle/tuning/curtain — rotates on each half-bar
 
 // Unique per-env event type — see cotf_harp1.sc for the scope-leak rationale.
 var eventTypeName = (\exciterTick_ ++ m.ptn).asSymbol;
@@ -53,7 +53,7 @@ SynthDef(\simple, {|out=0, amp=0.0, freq=440,
 	var exciter = EnvGen.kr(Env.perc(excAttack, excRelease), trig);
 	var tone = LFTri.ar(freq, 0.2, 0.1) + SinOsc.ar(freq, 0, 1);
 	var burst = (WhiteNoise.ar(0.2) + SinOsc.ar(freq * 2, 0, 0.9)) * exciter * excAmp;
-	var filter = RLPF.ar(tone + burst, ffreq, 0.2).tanh * 0.4;
+	var filter = RLPF.ar(tone + burst, ffreq, 0.2).tanh * 0.3;
 	Out.ar(out, filter!2 * lifetime * amp.lagud(lagAttack, lagRelease));
 }).add;
 
@@ -119,18 +119,25 @@ Event.addEventType(eventTypeName, {|e|
 // amp/filter/lag/pitch. \excAmp can be modulated per state too — piece
 // gets a louder exciter, curtain a quieter one.
 ~idleNext = {|d, ctx|
-	var amp = (m.accelMass + m.rrateMass).lincurve(0, 1.0, -70, -8, 4);
+	var amp = (m.accelMass + m.rrateMass).lincurve(0, 1.0, -90, -15, 4);
 	var ffreq = ((d.sensors.gyroEvent.x / pi).fold(-0.5,0.5) * 2).lincurve(-1.0, 1.0, 200, 600, 3);
+	var idx = (d.sensors.gyroEvent.y / pi.half).linlin(-1, 1, 0, ideleNotes.size, 1).asInteger;
+	var la = (m.accelMassFiltered).lincurve(0, 2.0, 0.9, 0.02, -1);
+
 
 	synth.set(\amp, amp.dbamp);
-	synth.set(\lagAttack, 0.04);
+	synth.set(\lagAttack, la);
 	synth.set(\lagRelease, 0.8);
 	synth.set(\ffreq, ffreq);
 	synth.set(\excAmp, 0.9);   // quieter exciter in idle
 
+	// Accel drives the pattern speed. \stretch scales \dur (delta = dur *
+	// stretch), so the [2,1,1] shape survives and just runs faster. 0.3 is
+	// where accelMass sits at rest — gravity, not motion.
+	Pdef(m.ptn).set(\stretch, m.accelMassFiltered.lincurve(0.3, 2.0, 5.0, 0.5, -2));
+
 	if(TempoClock.beats > (lastTime + 0.6),{
-		ideleNotes = ideleNotes.rotate(-1);
-		{synth.set(\freq, (ideleNotes[0]).midicps)}.defer(0.4);
+		{synth.set(\freq, (ideleNotes[idx]).midicps)}.defer(0.4);
 		lastTime = TempoClock.beats;
 	});
 };
@@ -140,6 +147,7 @@ Event.addEventType(eventTypeName, {|e|
 	var ffreq = ((d.sensors.gyroEvent.x / pi).fold(-0.5,0.5) * 2).lincurve(-1.0, 1.0, 200, 800, 3);
 	var fmod = ((d.sensors.gyroEvent.y / pi.half).lincurve(-1.0,1.0,-3.0,3.0,1));
 	var tt = 15.0;
+	var la = (m.accelMassFiltered).lincurve(0, 2.0, 0.9, 0.02, -1);
 
 	if( (TempoClock.beats-tuneTime) < tt, {
 		var val = (TempoClock.beats-tuneTime) / tt;
@@ -149,21 +157,26 @@ Event.addEventType(eventTypeName, {|e|
 	});
 
 	synth.set(\amp, amp.dbamp);
-	synth.set(\lagAttack, 0.4);
+	synth.set(\lagAttack, la);
 	synth.set(\lagRelease, 2.1);
 	synth.set(\ffreq, ffreq);
 	synth.set(\excAmp, 0.3);
+	Pdef(m.ptn).set(\stretch, 1);   // clear idle's speed
 };
 
 ~pieceNext = {|d, ctx|
 	var amp = (m.accelMassFiltered).lincurve(0, 2.0, -90, -2, -1);
 	var ffreq = ((d.sensors.gyroEvent.x / pi).fold(-0.5,0.5) * 2).lincurve(-1.0, 1.0, 500, 12000, 3);
+	var la = (m.accelMassFiltered).lincurve(0, 2.0, 0.9, 0.02, -1);
+
+	octave = ((d.sensors.gyroEvent.y / pi.half).linlin(-1.0,1.0,0,4).asInteger * 12) - 24;
 
 	synth.set(\amp, amp.dbamp);
-	synth.set(\lagAttack, 0.002);
-	synth.set(\lagRelease, 0.9);
+	synth.set(\lagAttack, la);
+	synth.set(\lagRelease, 1.9);
 	synth.set(\ffreq, ffreq);
 	synth.set(\excAmp, 1.0);   // full exciter in piece
+	Pdef(m.ptn).set(\stretch, 1);   // clear idle's speed
 };
 
 ~curtainNext = {|d, ctx|
@@ -175,6 +188,7 @@ Event.addEventType(eventTypeName, {|e|
 	synth.set(\lagAttack, 0.6);
 	synth.set(\lagRelease, 2.0);
 	synth.set(\excAmp, 0.4);
+	Pdef(m.ptn).set(\stretch, 1);   // clear idle's speed
 };
 
 //------------------------------------------------------------
@@ -186,7 +200,7 @@ Event.addEventType(eventTypeName, {|e|
 ~onBeat    = {|ctx| 
 	s.bind {
 		synth.set(\freq,
-			((ctx.voicePool.choose.asInteger % 12) + baseMidi - 12).midicps);
+			((ctx.voicePool.choose.asInteger % 12) + baseMidi + octave).midicps);
 	};
 };
 ~onBar     = {|ctx| 
@@ -211,4 +225,4 @@ Event.addEventType(eventTypeName, {|e|
 //------------------------------------------------------------
 ~plotMin = -1;
 ~plotMax = 1;
-~plot = {|d,p| [m.accelMassFiltered, m.rrateMassFiltered] };
+~plot = {|d,p| [(d.sensors.gyroEvent.y / pi.half)] };

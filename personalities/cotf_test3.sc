@@ -160,17 +160,18 @@ SynthDef(\samplerVoice, { |out=0, bufnum=0, amp=0.5, freq=440, srcFreq=440,
 
 ~idleNext = { |d, ctx|
 
-	var amp = m.rrateMassFiltered.lincurve(0, 0.4, -60, 1, -1).dbamp;
+	var amp = m.rrateMassFiltered.lincurve(0.0, 0.2, -60, 1, -1).dbamp;
+	var ampa = m.accelMassFiltered.lincurve(0, 2.0, 0.5, 1, -3).dbamp;
 	var dur = m.rrateMassFiltered.lincurve(0, 1.5, 2.5, 0.5, -3);
 	var samp = ~curveAbove.(m.accelMassFiltered, 0.2, 2.0, 0.3, 1.0, -4) ;
-	padSynth.set(\amp,          samp);
+	padSynth.set(\amp,          samp * 0.2);
 	padSynth.set(\ffreq,        1800);
 	padSynth.set(\grainDur,     0.2);
 	padSynth.set(\grainDensity, 15);
 	padSynth.set(\lagAttack,    0.07);
 	padSynth.set(\lagRelease,   0.7);
 	padSynth.set(\freq,         (samplePitchMidi - 11).midicps);
-	Pdef(m.ptn).set(\amp,   amp * 5);
+	Pdef(m.ptn).set(\amp,   amp * 5 * ampa);
 	Pdef(m.ptn).set(\dur,   dur);
 	Pdef(m.ptn).set(\freq, [samplePitchMidi + 1].choose.midicps);
 };

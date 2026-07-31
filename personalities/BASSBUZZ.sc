@@ -23,7 +23,8 @@ var lastTime = 0;
 var tuneTime = 0;
 
 // var ideleNotes = [45,49,52,57,52,49,45,46,50,53,58,53,50,46,47,51,54,59,54,51,47,46,50,53,58,53,50,46];
-var ideleNotes = [45,49,52,57,52,4];
+var ideleNotes = [45,49,52,57];
+// var ideleNotes = [45,80];
 
 m.accelMassFilteredAttack = 0.98;
 m.accelMassFilteredDecay = 0.2;
@@ -36,7 +37,7 @@ m.gyroFilteredDecay = 0.7;
 SynthDef(\simple, {|out=0, amp=0.0, freq=440, attack=0.001, decay=0.03, sustain=0.8, release=0.59, gate=1, lagAttack=0.02, lagRelease=1.9, ffreq = 440|
 	var env = EnvGen.kr(Env.adsr(attack, decay, sustain, release), gate, doneAction: Done.freeSelf);
 	var sig = Saw.ar(freq,0.2,0.1) + SinOsc.ar(freq/2,0,0.1);
-	var filter = RLPF.ar(sig, ffreq, 0.2) * 0.5;
+	var filter = RLPF.ar(sig, ffreq.lag(0.3), 0.2) * 0.5;
     Out.ar(out, filter!2 * env * amp.lagud(lagAttack, lagRelease));
 }).add;
 
@@ -87,34 +88,37 @@ SynthDef(\simple, {|out=0, amp=0.0, freq=440, attack=0.001, decay=0.03, sustain=
 // (once/sec) so we can see the routing without spamming the post window.
 ~idleNext = {|d, ctx|
 
-	var amp = (m.accelMass + m.rrateMass).lincurve(0, 1.0, -70, -2, 4);
-	var ffreq = ((d.sensors.gyroEvent.x / pi).fold(-0.5,0.5) * 2).lincurve(-1.0, 1.0, 200, 600, 3);
+	var amp = (m.accelMass + m.rrateMass).lincurve(0, 1.0, -80, -10, 4);
+	var ffreq = ((d.sensors.gyroEvent.x / pi).fold(-0.5,0.5) * 2).lincurve(-1.0, 1.0, 20, 6000, -3);
+	var dur = (m.accelMass + m.rrateMass).lincurve(0, 1.0, 2,0.1, 4);
+	var idx = (d.sensors.gyroEvent.y / pi.half).linlin(-1, 1, 0, ideleNotes.size).asInteger;
 
 	synth.set(\amp, amp.dbamp);
-	synth.set(\lagAttack, 0.4);
+	synth.set(\lagAttack, 0.2);
 	synth.set(\lagRelease, 1.1);
 	synth.set(\ffreq, ffreq);
 	
-	if(TempoClock.beats > (lastTime + 0.4),{
-		ideleNotes = ideleNotes.rotate(-1);
-		{synth.set(\freq, (ideleNotes[0]).midicps)}.defer(0.4);
+
+	if(TempoClock.beats > (lastTime + 0.2),{
+		// ideleNotes = ideleNotes.rotate(-1);
+		{synth.set(\freq, (ideleNotes[idx]).midicps)}.defer(0.4);
 		lastTime = TempoClock.beats;
-	});
 	
+	});
 };
 
 ~tuningNext = {|d, ctx|
 
 	var amp = (m.accelMass + m.rrateMass).lincurve(0, 1.0, -70, -8, 4);
 	var ffreq = ((d.sensors.gyroEvent.x / pi).fold(-0.5,0.5) * 2).lincurve(-1.0, 1.0, 200, 800, 3);
-	var fmod = ((d.sensors.gyroEvent.y / pi.half).lincurve(-1.0,1.0,-3.0,3.0,1));
+	var fmod = ((d.sensors.gyroEvent.y / pi.half).lincurve(-1.0,1.0,-12.0,28.0,1));
 	var tt = 15.0;
 
 	if( (TempoClock.beats-tuneTime) < tt, {
 		var val = (TempoClock.beats-tuneTime) / tt;
-		synth.set(\freq, (45 + (val.linexp(0, 1, 1, 0.0001) * fmod)).midicps);
+		synth.set(\freq, (57 + (val.linexp(0, 1, 1, 0.0001) * fmod)).midicps);
 	},{
-		synth.set(\freq, 45.midicps);
+		synth.set(\freq, 57.midicps);
 
 	});
 
@@ -136,7 +140,6 @@ SynthDef(\simple, {|out=0, amp=0.0, freq=440, attack=0.001, decay=0.03, sustain=
 
 	var amp = (m.accelMass + m.rrateMass).lincurve(0, 2.0, -90, 4, -1);
 	var ffreq = ((d.sensors.gyroEvent.x / pi).fold(-0.5,0.5) * 2).lincurve(-1.0, 1.0, 500, 12000, 3);
-
 	synth.set(\amp, amp.dbamp);
 	synth.set(\lagAttack, 0.002);
 	synth.set(\lagRelease, 0.9);
@@ -166,7 +169,7 @@ SynthDef(\simple, {|out=0, amp=0.0, freq=440, attack=0.001, decay=0.03, sustain=
 ~onHalf    = {|ctx|
 	s.bind {
 		synth.set(\freq,
-			((ctx.voicePool.first.asInteger % 12) + baseMidi - 12).midicps);
+			((ctx.voicePool.first.asInteger % 12) + baseMidi - 24).midicps);
 	};
 };
 ~onBeat    = {|ctx| 
@@ -213,7 +216,8 @@ SynthDef(\simple, {|out=0, amp=0.0, freq=440, attack=0.001, decay=0.03, sustain=
 	// [m.accelMassFiltered * 3, m.rrateMassFiltered * 10, (d.sensors.gyroEvent.z / pi).fold(-0.5,0.5) * 2];
 
 	// Gyro
-		[(d.sensors.gyroEvent.x / pi).fold(-0.5,0.5) * 2];//roll
+		// [(d.sensors.gyroEvent.x / pi).fold(-0.5,0.5) * 2];//roll
+		[d.sensors.gyroEvent.y / pi.half]
 	// [(d.sensors.gyroEvent.y / pi.half)];//up down
 	// [(d.sensors.gyroEvent.z / pi).fold(-0.5,0.5) * 2];//left right
 	// [(d.sensors.gyroEvent.x / pi), (d.sensors.gyroEvent.y / pi.half), (d.sensors.gyroEvent.z / pi)];

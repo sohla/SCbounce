@@ -3,12 +3,14 @@
 		"silence",
 		"PERCUSSION",
 		"ALTOSYNTH",
+		"BASSBUZZ",
+		
+		
 		"cotf_whisperer1",
 		"cotf_cascade1",
 
 
 		"cotf_simple1",
-		"cotf_simple2",
 		"cotf_simple3",
 
 		"cotf_voice1",
