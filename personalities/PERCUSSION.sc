@@ -487,7 +487,7 @@ SynthDef(\timpVoice, {
 		// a dead band just above the threshold.
 		Pdef(m.ptn).set(\baseAmp,
 			if (activity > restFloor,
-				{ activity.lincurve(restFloor, 2.0, 0.05, 0.2, -3) },
+				{ activity.lincurve(restFloor, 2.0, 0.05, 0.5, -3) },
 				{ 0 }
 			)
 		);

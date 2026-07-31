@@ -20,6 +20,12 @@ var tuneTime = 0;       // TempoClock.beats captured on \tuning entry (§16 ramp
 var samplePath      = "~/Music/cotf_samples/voice/aah.wav";
 var samplePitchMidi = 68;   // intrinsic pitch of the file (G#4)
 
+// Idle melody — semitone offsets from the sample pitch, stepped one per
+// pattern note. Score pitch takes over in \piece via ~onHalf.
+var idleNotes = [0, 4, 5, 7, 11, 7, 5, 4];
+var idleStep = 0;
+var lastNoteTime = 0;
+
 m.accelMassFilteredAttack = 0.98;
 m.accelMassFilteredDecay  = 0.2;
 m.rrateMassFilteredAttack = 0.9999;
@@ -163,17 +169,31 @@ SynthDef(\samplerVoice, { |out=0, bufnum=0, amp=0.5, freq=440, srcFreq=440,
 	var amp = m.rrateMassFiltered.lincurve(0.0, 0.2, -60, 1, -1).dbamp;
 	var ampa = m.accelMassFiltered.lincurve(0, 2.0, 0.5, 1, -3).dbamp;
 	var dur = m.rrateMassFiltered.lincurve(0, 1.5, 2.5, 0.5, -3);
+	var noteStep = m.rrateMassFiltered.lincurve(0, 1.5, 1.2, 0.25, -3);   // seconds per note
 	var samp = ~curveAbove.(m.accelMassFiltered, 0.2, 2.0, 0.3, 1.0, -4) ;
+	var idx = (d.sensors.gyroEvent.y / pi.half).linlin(-1, 1, 0, idleNotes.size, 1).asInteger;
+
+	var rel = m.accelMassFiltered.lincurve(0.0, 3.5, 0.005, 1.02);
+
 	padSynth.set(\amp,          samp * 0.2);
 	padSynth.set(\ffreq,        1800);
 	padSynth.set(\grainDur,     0.2);
 	padSynth.set(\grainDensity, 15);
-	padSynth.set(\lagAttack,    0.07);
-	padSynth.set(\lagRelease,   0.7);
-	padSynth.set(\freq,         (samplePitchMidi - 11).midicps);
-	Pdef(m.ptn).set(\amp,   amp * 5 * ampa);
+	padSynth.set(\lagAttack,    0.2);
+	padSynth.set(\lagRelease,   1.7);
+	padSynth.set(\freq,         (samplePitchMidi - 23).midicps);
+	Pdef(m.ptn).set(\amp,   amp * ampa * 0.4);
 	Pdef(m.ptn).set(\dur,   dur);
-	Pdef(m.ptn).set(\freq, [samplePitchMidi + 1].choose.midicps);
+	Pdef(m.ptn).set(\attack,  0.1);
+	Pdef(m.ptn).set(\release,  rel);
+
+	// Step the melody. The interval follows the same rrate curve as \dur,
+	// so one note lands per pattern event however fast it's running.
+	// if (TempoClock.beats > (lastNoteTime + noteStep), {
+	// 	idleStep = idleStep + 1;
+	// 	lastNoteTime = TempoClock.beats;
+	// });
+	Pdef(m.ptn).set(\freq, (samplePitchMidi + 1 + idleNotes.wrapAt(idx)).midicps);
 };
 
 ~tuningNext = { |d, ctx|
