@@ -1,9 +1,9 @@
 /*
 gestures:    [beat, shake, tilt]
-description: ONE mono sample serves two engines — a long-lived GrainBuf pad (amp from accel) + a Pdef PlayBuf pattern (amp + dur from rrate). Both read the same buffer, both track score via ~onHalf freq updates. Simplified rewrite: one buffer, canonical PlayBuf/GrainBuf rate idioms. Both engines are built inside the Buffer read's completion action — nothing touches the bufnum before the server has data behind it, which is what killed scsynth ("server exited with exit code 0") on load.
-sound:       Voice sample used two ways at once: granular ambient pad + rhythmic per-note chops of the same source, tracking score pitch. An LFTri sub at \freq sits under the pad's grains.
-pitch:       ~onHalf sets \freq for both engines, wrapped to pitch class + baseMidi (60) — pad from ctx.voicePool.first, pattern from ctx.voicePool.choose (they diverge). Each SynthDef derives rate from freq/srcFreq, with a fixed 0.99 detune. \tuning rides the §16 ramp (0.7 → 1.0 over 15 s from entry) onto \freq rather than a \ptch control, converging on MIDI 70 — a semitone above the room's A reference.
-rhythm:      Pad continuous; pattern per-note on ~beatClock with \dur from rrate.
+description: ONE mono vocal sample serves two engines at once — a long-lived GrainBuf pad (amp from accel) and a Pdef PlayBuf pattern (amp + dur from rrate). Both read the same buffer. Both engines are built inside the Buffer read's completion action, so nothing addresses the bufnum before the server has data behind it.
+sound:       granular ambient pad with an LFTri sub under the grains, plus rhythmic per-note chops of the same voice over the top. Accel opens the pad, rotation drives the pattern.
+pitch:       Idle plays a melody from idleNotes — semitone offsets above the sample pitch, selected by y tilt, over a pad held two octaves down. Piece hands pitch to ~onHalf: pad from ctx.voicePool.first, pattern from ctx.voicePool.choose, both wrapped to pitch class + baseMidi 60, so the two engines diverge. Tuning rides the §16 ramp (0.7 → 1.0 over 15 s) onto \freq rather than a \ptch control, converging on A (MIDI 69). Each SynthDef derives rate from freq/srcFreq with a fixed 0.99 detune.
+rhythm:      Pad continuous; pattern per-note on ~beatClock with \dur from rrate (2.5 down to 0.5).
 instruments: [brownBall]
 */
 

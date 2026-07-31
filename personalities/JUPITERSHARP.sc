@@ -1,9 +1,9 @@
 /*
 gestures:    [beat, shake, tilt]
-description: Pdef pattern firing per-note sample-playback synths on ~beatClock; state sets pitch/octave/dur; gesture drives amp and (in piece) octave via gyro tilt
-sound:       harp sample library; soft rolling idle drone; tuning bends up over ~15 s; active arpeggios during piece
-pitch:       \root from score voice pool wrapped to pitch class; \octave state-driven (idle 3–6, tuning 5, piece 4–9 from tilt, curtain last-value)
-rhythm:      note per \dur ~beatClock tick; state sets dur (idle 0.5–1 by amp threshold, tuning 0.75, piece 0.5–1 by amp threshold, curtain 0.5)
+description: Pdef pattern firing per-note harp sample synths on ~beatClock. \root comes from the score, everything else is state-driven: octave and dur per state, amp from gesture, and in idle a \ptch transposition picked by y tilt. Sparse sample set resampled via \ptch.
+sound:       harp sample library from ~/Music/cotf_samples/harp; soft rolling idle figure, sparse tuning strokes, active arpeggios during piece
+pitch:       \root from ~scoreVoicePool.choose wrapped to pitch class (0-11). \octave from y tilt — idle 5-7, piece 5-8; tuning pins octave 5 and root 0. Idle adds a \ptch transposition from the notes table [0,2,5,7,10,12,14,16] selected by m.gyroYFiltered. Tuning rides the §16 ramp on \ptch, 1.08 → 1.0 over 15 s.
+rhythm:      one note per \dur ~beatClock tick. Idle and piece pick dur 0.5 / 1.0 / 2 by amp threshold; tuning is sparse and random (3-5); curtain holds its last value.
 instruments: [greenHolder]
 */
 
