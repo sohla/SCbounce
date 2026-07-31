@@ -29,6 +29,33 @@ instruments: [Lumivox | Gravitone | Velaphone | Aetherharp | Cellaris]
 Fixed vocabulary for `instruments`: the five COTF instruments only.
 Everything else is open. Multi-value fields go in `[ ]`.
 
+### The file IS the config — it reloads whole
+
+A personality is one file holding data and logic together. Saving it
+reloads it: `procRout` watches `File.mtime` and fires
+`/airkit/loadPersonality`, which runs `~deinit` then re-interprets the
+whole file. Every `var` at the top is therefore a live config knob —
+edit, save, hear it.
+
+So **do not build live-coding surfaces**. No publishing values into
+`topEnvironment` for the IDE prompt to poke, no setter hooks, no
+preview protocol. To audition a variant, put a plain `var` at the top
+of the file and read it where it's used:
+
+```supercollider
+var idleLayer = \recap;   // pin what idle auditions; nil = follow section
+```
+
+`topEnvironment` is for *reading* what the room owns — `~beatClock`,
+`~roomState`, `~scoreBeatsPerBar` — inside `topEnvironment.use { }`.
+Nothing a personality owns belongs there: five seats share one
+`topEnvironment`, so anything a p-file writes is a cross-seat global.
+
+The same reasoning rules out helper functions at file scope for
+mapping work (§22) — a mapping in a helper is one that can't differ
+per state, and it's a level of indirection away from the tick you're
+tuning.
+
 ---
 
 ## 2. Architecture — pick one of two

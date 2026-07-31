@@ -109,10 +109,14 @@ section already account for that block** (everything below `:9` shifted by +10 o
       `~pieceNext` delegation and re-zero after it, or split the accumulator out).
       **Pass:** by ear across `/airkit/state idle|tuning|piece` — silent in the first two.
 
-- [ ] **1.3 `[open]` Fix the section-table lookup.** Symbol keys in `sectionToLayer`
+- [x] **1.3 `[fixed]` Fix the section-table lookup.** Symbol keys in `sectionToLayer`
       (`:69-76`) plus `sectionToLayer[ctx.sectionId.asSymbol]` at `:314`.
-      **Pass:** the existing `[perc] section %` post at `:319` fires and `currentLayerKey`
-      leaves `\default`.
+      **Pass:** the existing `[perc] section %` post fires and `currentLayerKey` leaves
+      `\default`.
+      **Done 2026-07-31.** `sectionToLayer` re-keyed to Symbols and `~onSection` now does
+      `sectionToLayer[ctx.sectionId.asSymbol]`. Verified in sclang: with String keys all six
+      section IDs returned `NIL`; with Symbol keys all six resolve. The `\A`/`\B` keys need
+      quoting in the Event literal.
 
 - [ ] **1.4 `[open]` One PlayBuf, not two.** `PlayBuf.ar(2, bufnum, rate: [lr, lr * 1.0])`
       at `:126` multichannel-expands over `rate` into **two** stereo PlayBufs; `Out.ar` then
@@ -151,7 +155,7 @@ section already account for that block** (everything below `:9` shifted by +10 o
       mapping by ear, then re-key `layers` by filename Symbol rather than index.
       **Pass:** each role sounds like its name.
 
-- [ ] **1.8 `[open]` Per-sample gain / start / offset tables — the actual feature ask. Do
+- [~] **1.8 `[open]` Per-sample gain / start / offset tables — the actual feature ask. Do
       this LAST.** Highest crash risk in the set: any nil lookup throws inside the handler,
       `Pprotect` kills the Pdef permanently, and we reproduce the exact symptom we started
       from.
@@ -175,6 +179,31 @@ section already account for that block** (everything below `:9` shifted by +10 o
       - **`? default` on every single lookup.** A nil reaching `clock.sched` throws → the
         Pdef is dead for the rest of the show.
       **Pass:** soak a full score pass before this goes anywhere near a group.
+      **Gain half done 2026-07-31.** `sampleGain` (name-keyed, resolved to `gainByIdx` in
+      `~init`) and `roleGain` (per role) are in, multiplying grid velocity × `baseAmp`.
+      `layers` roles are now collections — `kick: [5,2]` — with one sample chosen per hit;
+      `.asArray` keeps bare integers working and `wrapAt` + a `bufIdx.notNil` guard make a
+      bad index unable to throw. `~init` posts the real index→name→gain map on load.
+      **Still open here:** `start` (head trim, in seconds via `BufSampleRate.kr`) and
+      `sampleOffset` (`\timingOffset`, beats, non-negative only) — neither is in yet.
+
+- [ ] **1.10 `[open]` ⚠ Set `previewMode = false` before the show.**
+      `~idleNext` is now a live-code preview rig (task 1.11) and `previewMode` defaults to
+      **`true`**, which makes idle **audible** — the exact walk-in risk flagged as unreported
+      bug 1 above. It is a single `var` at the top of the file. This must be flipped, or
+      every seat is heard exploring the kit before the piece starts.
+      **Pass:** `previewMode = false` → idle silent across `/airkit/state idle`.
+
+- [x] **1.11 `[fixed]` Idle as a layer/section preview rig.** Steph's ask, 2026-07-31:
+      *"fill out idleNext so we can explore each layer and also each section to layer… idle
+      should be a good way to live code preview for all of the layers and sections."*
+      Tilt Y browses `layerOrder`, tilt X browses `sectionOrder` (resolved through
+      `sectionToLayer`, so it previews the real mapping rather than a copy). Mode and pins
+      are read from `topEnvironment`, so they're settable from the IDE prompt while loaded:
+      `~percPreviewMode` (`\layer` | `\section`), `~percPreviewLayer`, `~percPreviewSection`,
+      `~percPreviewPattern`. Label posts on change only, not at 30 Hz.
+      Verified in sclang: tilt Y reaches 5/5 layers, tilt X reaches 6/6 sections, and all
+      30 layer×role slots resolve to valid buffer indices.
 
 - [ ] **1.9 `[open]` A way to audition patterns from code.** Steph's in-file note: *"lots of
       differenc patterns we need to text [test] from code"*. `rawPatterns` (`:97-114`) is

@@ -80,8 +80,11 @@ applyTier = { |tier, maxAmp = 0.8|
 				\amp, 0, \atk, 0.5, \rel, 2.0, \cutoff, 800,
 			], group);
 		});
-		~onResync = { |idx| };   // long-lived — nothing to rebuild
 	};
+
+	// Outside the use block — the conductor dispatches this as
+	// d.env.use { ~onResync.(idx) }, so it must live in the DEVICE env.
+	~onResync = { |idx| };   // long-lived voices — nothing to rebuild
 };
 
 //------------------------------------------------------------
@@ -155,18 +158,7 @@ applyTier = { |tier, maxAmp = 0.8|
 		voices[2].set(\freq, (73).midicps, \lagAttack, 0.09,  \lagRelease, 4, \cutoff, cutoff);
 	});
 
-	// // ghost echo (§26)
-	// if ((now - lastMotion) > 10
-	//     and: { stillnessFired.not }
-	//     and: { engagement > 20 }, {
-	// 	stillnessFired = true;
-	// 	(
-	// 		instrument: \whisperVoice,
-	// 		freq: (lastRoot + 4).midicps,
-	// 		amp: 0.2, atk: 0.8, rel: 6.0, cutoff: 200,
-	// 		out: ob, group: group, type: \note,
-	// 	).play;
-	// });
+
 };
 
 //------------------------------------------------------------

@@ -213,7 +213,13 @@ runCascadeStep = { |ampScale = 1.0, rootOverride = nil, countEngagement = true|
 
 	topEnvironment.use {
 		group = Group.new;
-		~onResync = { |idx| };
+	};
+
+	// Outside the use block — the conductor dispatches this as
+	// d.env.use { ~onResync.(idx) }, so it must live in the DEVICE env.
+	// No Pdef here; the clock re-anchor only strands scheduled notes.
+	~onResync = { |idx|
+		if (group.notNil, { s.bind { group.freeAll } });
 	};
 };
 

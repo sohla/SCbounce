@@ -1,15 +1,15 @@
 (
 	[
 		"silence",
+		"PERCUSSION",
+		"ALTOSYNTH",
 		"cotf_whisperer1",
 		"cotf_cascade1",
-		"cotf_percussionist1",
 
 
 		"cotf_simple1",
 		"cotf_simple2",
 		"cotf_simple3",
-		"cotf_simple4",
 
 		"cotf_voice1",
 		"cotf_harp1",
