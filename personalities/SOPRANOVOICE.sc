@@ -7,6 +7,13 @@ rhythm:      Pad continuous; pattern per-note on ~beatClock with \dur from rrate
 instruments: [brownBall]
 */
 
+/*
+
+- too dynamic 
+
+
+
+*/
 var m = ~model;
 var ob = ~outBus ? 0;
 var group;              // holds padSynth AND per-note pattern synths
@@ -45,7 +52,7 @@ SynthDef(\grainPad, { |out=0, bufnum=0, amp=0, freq=440, srcFreq=440, gate=1,
 	var pos  = grainPos + WhiteNoise.kr(grainPosSpread);
 	var sig  = GrainBuf.ar(2, trig, grainDur, bufnum, rate, pos, 2, 0);
 	var sub = LFTri.ar(freq, 0, 0.03);
-	var filt = RLPF.ar(sig, ffreq.lag(0.1), 0.4) + sub;
+	var filt = RLPF.ar(sig, ffreq.lag(0.04), 0.4) + sub;
 	Out.ar(out, filt * env * amp.lagud(lagAttack, lagRelease));
 }).add;
 
@@ -167,7 +174,7 @@ SynthDef(\samplerVoice, { |out=0, bufnum=0, amp=0.5, freq=440, srcFreq=440,
 
 ~idleNext = { |d, ctx|
 
-	var amp = m.rrateMassFiltered.lincurve(0.0, 0.2, -60, 1, -1).dbamp;
+	var amp = m.rrateMassFiltered.lincurve(0.0, 0.2, -60, -6, -1).dbamp;
 	var ampa = m.accelMassFiltered.lincurve(0, 2.0, 0.5, 1, -3).dbamp;
 	var dur = m.rrateMassFiltered.lincurve(0, 1.5, 2.5, 0.5, -3);
 	var noteStep = m.rrateMassFiltered.lincurve(0, 1.5, 1.2, 0.25, -3);   // seconds per note
@@ -230,15 +237,15 @@ SynthDef(\samplerVoice, { |out=0, bufnum=0, amp=0.5, freq=440, srcFreq=440,
 ~pieceNext = { |d, ctx|
 
 	// var under = m.accelMassFiltered.lincurve(0, 1, m.rrateMassFiltered.neg, 0, -1).neg.lincurve(0, 0.4, 0, 1, -1	);
-	var amp = m.rrateMassFiltered.lincurve(0.2, 0.4, -60, 0, -1).dbamp;
+	var amp = m.rrateMassFiltered.lincurve(0.2, 0.4, -60, -8, -1).dbamp;
 	var dur = m.rrateMassFiltered.lincurve(0, 1.8, 2.5, 0.8, -3);
 
-	padSynth.set(\amp,          amp * 1);
+	padSynth.set(\amp,          amp * 0.5);
 	padSynth.set(\ffreq,        (d.sensors.gyroEvent.x / pi).fold(-0.5, 0.5).lincurve(-0.5, 0.5, 100, 3000, -2));
 	// padSynth.set(\grainDur,     m.accelMassFiltered.lincurve(0, 2.0, 0.3, 0.05, 1));
 	// padSynth.set(\grainDensity, m.accelMassFiltered.lincurve(0, 2.0, 15, 50, 1));
 	padSynth.set(\grainPos,    rrand(0.1,0.1));// (d.sensors.gyroEvent.y / pi.half).lincurve(-1, 1, 0.1, 0.9, 1));
-	Pdef(m.ptn).set(\amp, amp * 10);
+	Pdef(m.ptn).set(\amp, amp * 3);
 	Pdef(m.ptn).set(\dur, dur);//m.rrateMassFiltered.lincurve(0, 1.0, 2, 0.25, -1));
 };
 

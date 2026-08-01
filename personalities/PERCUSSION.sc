@@ -18,6 +18,11 @@ instruments: [brownShaker]
 // Tuning + silent don't advance it. Engagement modulates fillEvery
 // (fills get more frequent as the piece unfolds).
 
+/*
+- quiet moments go into half time
+- compressor
+*/
+
 var m = ~model;
 var ob = ~outBus ? 0;
 var group;
@@ -51,7 +56,7 @@ var tickDt = 0.033;
 // reads ~0.3 from gravity — it never returns to 0. Anything below this
 // is "not moving" and must be silent, or the pattern plays forever.
 // Tune by watching `act` in the post window while holding still.
-var restFloor = 0.3;
+var restFloor = 0.2;
 
 var previewMode = true;
 var idleLayer   = nil;   // pin one of layerOrder;   nil = fall to idleSection
@@ -544,7 +549,7 @@ SynthDef(\timpVoice, {
 	// gravity, so it must be silent.
 	Pdef(m.ptn).set(\baseAmp,
 		if (activity > restFloor,
-			{ activity.lincurve(restFloor, 2.0, 0.05, 0.7, -4) },
+			{ activity.lincurve(restFloor, 2.0, 0.05, 0.7, -3) },
 			{ 0 }
 		)
 	);

@@ -8,9 +8,9 @@ instruments: [Template]
 */
 
 /*
-- make this more like simle2
-- less dynamic gestures
-- this has both so use this
+- add compressor
+- dynamics need some work
+- accel on sub seq multiplier
 
 */
 
@@ -90,7 +90,7 @@ Event.addEventType(eventTypeName, {|e|
 		Pdef(m.ptn,
 			Pbind(
 				\type, eventTypeName,
-				\dur,  Pseq([1,0.5,0.5] * 2, inf),
+				\dur,  Pseq([1,0.5,0.5,1,0.5,0.5,0.5,0.25,0.25,1,0.5,0.5] * 4, inf),
 			);
 		);
 		Pdef(m.ptn).play(~beatClock, quant: ~scoreBeatsPerBar * ~scoreEventsPerBeat);
@@ -143,7 +143,7 @@ Event.addEventType(eventTypeName, {|e|
 };
 
 ~tuningNext = {|d, ctx|
-	var amp = (m.accelMass + m.rrateMass).lincurve(0, 1.0, -70, -12, 4);
+	var amp = (m.accelMass + m.rrateMass).lincurve(0, 1.0, -70, -8, 4);
 	var ffreq = ((d.sensors.gyroEvent.x / pi).fold(-0.5,0.5) * 2).lincurve(-1.0, 1.0, 200, 800, 3);
 	var fmod = ((d.sensors.gyroEvent.y / pi.half).lincurve(-1.0,1.0,-3.0,3.0,1));
 	var tt = 15.0;
@@ -166,12 +166,12 @@ Event.addEventType(eventTypeName, {|e|
 };
 
 ~pieceNext = {|d, ctx|
-	var amp = (m.accelMassFiltered).lincurve(0, 2.0, -90, -2, -1);
-	var ffreq = ((d.sensors.gyroEvent.x / pi).fold(-0.5,0.5) * 2).lincurve(-1.0, 1.0, 500, 12000, 3);
+	var amp = (m.accelMassFiltered).lincurve(0, 1.1, -90, -6, -1);
+	var ffreq = ((d.sensors.gyroEvent.x / pi).fold(-0.5,0.5) * 2).lincurve(-1.0, 1.0, 500, 8000, 1);
 	var la = (m.accelMassFiltered).lincurve(0, 2.0, 0.9, 0.02, -1);
 
-	octave = ((d.sensors.gyroEvent.y / pi.half).linlin(-1.0,1.0,0,4).asInteger * 12) ;
-
+	octave = ((d.sensors.gyroEvent.y / pi.half).linlin(-1.0,1.0,0,2).asInteger * 12) ;
+	
 	synth.set(\amp, amp.dbamp);
 	synth.set(\lagAttack, la);
 	synth.set(\lagRelease, 1.9);

@@ -9,7 +9,8 @@ instruments: [greenHolder]
 
 /*
 
-needs synth
+- compressor
+
 */
 
 var m = ~model;
@@ -244,7 +245,7 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, start=0, pan=0, freq=
 };
 
 ~tuningNext  = {|d, ctx|
-	var amp = (m.accelMassFiltered).lincurve(0, 1.0, -80, -28, -4);
+	var amp = (m.accelMassFiltered).lincurve(0, 1.0, -80, -24, -4);
 	var dur = (m.accelMassFiltered).lincurve(0, 3.0, 4.0, 1.0, -4);
 	var tt = 15.0;
 	var elapsed = TempoClock.beats - tuneTime;

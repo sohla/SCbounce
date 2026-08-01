@@ -352,3 +352,10 @@ ALTOSYNTH idle-note +24 / tuning pitch 52→64 / octave offset drop; BASSBUZZ tu
 amp ceiling −8→−1 dB; PERCUSSION baseAmp curve top 0.2→0.7; JUPITERSHARP and
 SOPRANOVOICE voicing reworks. Testing declared a success — no silence incidents
 noted this session.
+
+## 2026-08-01 — Open day test live tuning (Steph on M1)
+- ALTOSYNTH: longer dur sequence, amp ceiling -12→-8, octave range narrowed
+- BASSBUZZ: amp curve tightened (2.0→1.1 input range), ffreq ceiling 12k→8k
+- JUPITERSHARP: amp -1→-3, tt 15→20
+- PERCUSSION: amp range tightened, rest floor 0.3→0.2, activity curve -4→-3
+- SOPRANOVOICE: amp -28→-24, RLPF lag 0.1→0.04
