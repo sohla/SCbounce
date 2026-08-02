@@ -13,6 +13,22 @@
 		"magicWand",
 		"wind1",
 		"insects1",
+		"rain1",
+		"thunder",
+
+		"mel4",
+		"mel3",
+		"mel1",
+		"melbb2",
+
+		"quackQuack",
+		"chicken2",
+		"frog2",
+
+	    "trainChooka",
+		"trainMove",
+		"trainBass",
+
 		"silence",
 	]
 )

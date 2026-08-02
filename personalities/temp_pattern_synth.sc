@@ -11,7 +11,7 @@ m.gyroFilteredDecay = 0.7;
 //------------------------------------------------------------
 SynthDef(\simple, {|out=0, amp=0.0, freq=440, attack=0.001, decay=0.03, sustain=0.8, release=0.59, gate=1|
 	var env = EnvGen.kr(Env.adsr(attack, decay, sustain, release), gate, doneAction: Done.freeSelf);
-	var sig = SinOsc.ar(freq,0,0.5)!2;
+	var sig = SinOsc.ar(freq,0,0.5)!2 + LFTri.ar(freq,0,0.7);
     Out.ar(out, sig * env * amp);
 }).add;
 
@@ -20,12 +20,13 @@ SynthDef(\simple, {|out=0, amp=0.0, freq=440, attack=0.001, decay=0.03, sustain=
   Pdef(m.ptn,
     Pbind(
       \instrument, \simple,
-      \octave, 3,
+      \octave, 1,
       \note, Pwhite(20,40,inf),
-      \attack,0.03,
+	  \amp,0.8,
+      \attack,0.003,
       \decay, 0.1,
       \sustain,0.1,
-      \release,1.04,
+      \release,0.04,
       \args, #[],
     )
   );
@@ -41,10 +42,10 @@ SynthDef(\simple, {|out=0, amp=0.0, freq=440, attack=0.001, decay=0.03, sustain=
 //------------------------------------------------------------
 ~next = {|d|
 
-  var dur = m.accelMassFiltered.lincurve(0,2.5,0.4,0.04,-3);
+  var dur = m.accelMassFiltered.lincurve(0,0.4,0.4,0.04,-1);
 
   Pdef(m.ptn).set(\dur, dur);
- 	if(m.accelMassFiltered > 0.03,{
+ 	if(m.accelMassFiltered > 0.015,{
 		if( Pdef(m.ptn).isPlaying.not,{
 			Pdef(m.ptn).resume(quant:dur);
 		});

@@ -7,22 +7,22 @@ var personalityDir = "~/Develop/SuperCollider/Projects/AirKit/personalities/";//
 
 // var list = "list_ITR_Mel.sc";
 // var list = "list_NZ.sc";
-// var list = "list_SiS_Alessio.sc";
+// var list = "list_ITR_Nic.sc";
 // var list = "list_yourDNA25.sc";
 
-// var list = "list_glenroy.sc";
-// var defaultLists = list!5;
+var list = "list_workshop1.sc";
+var defaultLists = list!5;
 
 
-var defaultLists = [
-    "list_NZ_Mel.sc",
-    "list_NZ_Mel.sc",
+// var defaultLists = [
+//     "list_NZ_Mel.sc",
+//     "list_NZ_Mel.sc",
 
-    "list_NZ_Suz.sc",
-    "list_NZ_Suz.sc",
+//     "list_NZ_Suz.sc",
+//     "list_NZ_Suz.sc",
 
-    "list_NZ_Suz.sc",
-];
+//     "list_NZ_Suz.sc",
+// ];
 
 // var defaultLists = [
 //     "list_MIM25_James.sc",
