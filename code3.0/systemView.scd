@@ -126,13 +126,33 @@ var freeAllBuffers = Button()
 		Buffer.freeAll(s);
 	});
 
+// visual scene : overlay (all devices composited on one canvas)
+//             vs grid (one canvas per device)
+var sceneButton = Button()
+	.font_(Font(size:18, bold:false))
+	// .maxWidth_(140)
+	.maxHeight_(bh)
+	.states_([
+		["Overlay",Color.black,Color.gray(0.5)],
+		["Grid",Color.white(),Color.blue(0.5)]
+		])
+	.action_({|b|
+		NetAddr.new("127.0.0.1", 57120).sendMsg("/airkit/visualScene",
+			if(b.value == 0, "overlay", "grid"));
+	});
+
+// keep the button in sync when the scene is changed over OSC
+var sceneSync = OSCFunc({ |msg|
+	{ sceneButton.value_(if(msg[1].asSymbol == \grid, 1, 0)) }.defer;
+},'/airkit/visualScene');
+
 var systemView = {
 	View().layout_(VLayout(
 		HLayout(View().maxWidth_(140), cpuView),
 		HLayout(View().maxWidth_(140), serverView),
 		HLayout(meterView, nodeTree),
 		HLayout(
-			View(),
+			sceneButton,
 			networkReset,
 			oscThruButton,
 			freeAllBuffers,

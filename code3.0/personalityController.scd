@@ -105,6 +105,26 @@ var interpretPersonality = {|d|
 
         );
         ~device = d;
+
+        //------------------------------------------------------------
+        // register a draw function for this device's visual events.
+        // Namespaced per device, so two performers can each have their
+        // own \blob. Reloaded with the file like everything else.
+        //
+        //   ~vdef.(\blob, { |ev, c|
+        //       // c: (pos: size: width: color: rotation:
+        //       //     normTime: elapsed: now: bounds: view:)
+        //       Pen.strokeColor = c.color;
+        //       Pen.addOval(Rect.aboutPoint(c.pos, c.size, c.size));
+        //       Pen.stroke;
+        //   });
+        //
+        // then emit  (type: \customVisualEvent, shape: \blob, viewID: d.port, ...)
+        ~vdef = { |name, func|
+            if(~visuals.notNil, { ~visuals.vdef(d.port, name, func) });
+            name
+        };
+
         //------------------------------------------------------------
         // frame rate of rout
         ~secs = 0.03;
@@ -246,6 +266,7 @@ var loadPersonality = { |port, index|
     "loading personality: %".format(d.name).postln;
 
     NetAddr.new("127.0.0.1", 57120).sendMsg("/airkit/personalityName", d.port, d.name);
+    if(~visuals.notNil, { ~visuals.clearVdefs(d.port) });
     d.env = interpretPersonality.(d);
     // ["TODO",d.enabled].postln;
     d.env.use{
@@ -305,6 +326,7 @@ var reLoadPersonality = { |port, index|
     // "loading personality: %".format(d.name).postln;
 
     // NetAddr.new("127.0.0.1", 57120).sendMsg("/airkit/personalityName", d.port, d.name);
+    if(~visuals.notNil, { ~visuals.clearVdefs(d.port) });
     d.env = interpretPersonality.(d);
     // ["TODO",d.enabled].postln;
     d.env.use{
