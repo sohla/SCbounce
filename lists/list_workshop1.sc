@@ -1,6 +1,10 @@
 (
 	[
 		"silence",
+		"drumkit2",
+		"bee",
+		"bees",
+		"westminsterChimes1",
 		"template3",
 		"harp1",
 		"bongo1",

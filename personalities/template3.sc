@@ -2,7 +2,8 @@ var m = ~model;
 var synth;
 var bl = false;
 var frame = 0;
-var bassLines = [[0,2,4,5,7,9,11,12],[0]]-2;
+// var bassLines = [[0,2,4,5,7,9,11,12],[0]];
+var bassLines = [[0,2,5,7,10,12,14],[0]] - 24;
 var bassLine = bassLines[0];
 var beat = 0.2;
 
@@ -94,11 +95,11 @@ SynthDef(\versatilePerc, {
 
 
 			\type, \customVisualEvent,
-			\sx, Pn(Pseries(-0.85,2/bassLines[0].size,bassLines[0].size), inf),
-			\sy, Pn(Pseries(-0.85,2/bassLines[0].size,bassLines[0].size), inf).neg,
+			\sx, Pn(Pseries(-0.65,2/bassLines[0].size,bassLines[0].size), inf),
+			\sy, Pn(Pseries(-0.65,2/bassLines[0].size,bassLines[0].size), inf).neg,
 			\ex, Pkey(\sx),
 			\ey, Pkey(\sy),
-      \startSize, 50,
+      \startSize, 150,
 			\endSize, 10,
       \duration, 0.5,
 			\fill, true,

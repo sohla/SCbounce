@@ -132,7 +132,8 @@ SynthDef(\sheet2, { |out, frq=111, gate=0, amp = 0, pchx=0|
       \octave, Pseq([6,8,7] - 2, inf),
       // \dur, Pseq([0.4,Rest(0.2),0.2] * 0.5, inf),
       \degree, Pseq([0,2,7], inf),
-      \root, Pseq([0,3,-2,0,-5,3,5,2].stutter(30), inf),
+    //   \root, Pseq([0,3,-2,0,-5,3,5,2].stutter(30) - 2, inf),
+      \root, Pseq([0,7,4,2,-5].stutter(30)  + 24, inf),
       \amp, 0.1,
       \pan, Pwhite(-0.6, 0.6),
       \model, 1,//Prand([0, 1, 2,3,4,5,6], inf),
@@ -158,7 +159,7 @@ SynthDef(\sheet2, { |out, frq=111, gate=0, amp = 0, pchx=0|
 	m.com.root = e.root;
 	m.com.dur = e.dur;
 
-  synth.set(\pchx,4 + m.com.root + 14 -12);
+  synth.set(\pchx,4 + m.com.root + 14 -48);
 };
 
 //------------------------------------------------------------
@@ -170,14 +171,14 @@ SynthDef(\sheet2, { |out, frq=111, gate=0, amp = 0, pchx=0|
 	
   var a = m.accelMass * 0.5;
 	var f = 50 + (m.accelMassFiltered * 100);
-	var pchs = [0,12,24,36,48];
+	var pchs = [0,12,24,36,48] + 12;
 	var i = (d.sensors.gyroEvent.y.abs / pi) * (pchs.size);
 	// pchs[i.floor].postln;
 	if(a<0.02,{a=0.0});
 	if(a>0.9,{a=0.3});
-	synth.set(\amp, a * 0.6);
+	synth.set(\amp, a * 0.8);
   
-  Pdef(m.ptn).set(\dur, dur);
+  Pdef(m.ptn).set(\dur, dur * 2);
 	// Pdef(m.ptn).set(\octave, 4 + oct);
 	// Pdef(m.ptn).set(\amp, oct.linlin(2,5,0.1,0.9));
   if(move > 0.05, {

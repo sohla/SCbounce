@@ -2,7 +2,7 @@ var m = ~model;
 var synth;
 var buffer;
 var lastTime = 0;
-var roots = [0,4,-2,2];
+var roots = [2,9,12];
 
 
 m.accelMassFilteredAttack = 0.7;
@@ -70,7 +70,7 @@ SynthDef(\bufGrain, {|bufnum=0, out=0, amp=0.0, rate=1, start=0, pan=0, freq=440
 
 	synth.set(\rezf, rezf);
 	synth.set(\start, start);
-	synth.set(\amp, amp * 0.4);
+	synth.set(\amp, amp * 0.1);
 	synth.set(\rate, 0.5 * ((roots[0]).midiratio));
 
 };

@@ -143,9 +143,9 @@ SynthDef(\funBass, {
 		Pbind(
 			\type, \customEvent,
 			\shape, \line,
-			\startSize, 30,
+			\startSize, 230,
 			\duration, 1.2,
-			\endSize, 1430,
+			\endSize, 200,
 			// \startWidth, 10,
 			\endWidth, 1,
 			\rotation,pi.half + Pwhite(-0.1,0.1),

@@ -160,7 +160,7 @@ SynthDef(\bambooComplex, {
 				\freq, (2 + notes[noteIndex] + currentRoot).midicps,
 				\gate, 1,
 				\att, 0.03,
-				\amp, 0.3 * amp,
+				\amp, 0.5 * amp,
 				\strikePos, 1.0.rand, // Position of strike (affects resonance)
 				\resonance, 0.06, // Amount of resonant body sound
 				\bambooMoisture, 1.0.rand, // Affects damping and resonance

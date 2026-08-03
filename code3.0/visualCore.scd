@@ -93,10 +93,15 @@ var drawCanvas = { |name, view|
 
 				if(vdef.notNil, {
 
-					// personality-defined draw function
+					// personality-defined draw function.
+					// NB the key is `radius`, NOT `size`: this is an Event, and
+					// `size` is a real Collection method, so c.size would
+					// silently return the ENTRY COUNT instead of the value.
+					// (`shape` is likewise unusable as a pseudo-method name -
+					//  read it off the event with ev[\shape].)
 					vdef.(event, (
 						pos: pos,
-						size: size,
+						radius: size,
 						width: width,
 						color: col,
 						rotation: event[\rotation],
@@ -356,6 +361,11 @@ Event.addEventType(\customVisualEvent, {
 		\fill: ~fill ? false,
 		\closed: ~closed ? true,
 		\modulation: ~modulation,
+		// arbitrary extra params for personality-defined draw functions.
+		// The snapshot above is a fixed key set, so a ~vdef can only see
+		// custom values if they come through here:
+		//   \vargs, (wobble: 0.3, lobes: 5)   ->  ev[\vargs][\wobble]
+		\vargs: ~vargs,
 		\startTime: thisThread.seconds + (~vLatency ? core.latency)
 	);
 

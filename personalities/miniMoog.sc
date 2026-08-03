@@ -1,6 +1,12 @@
 
 var m = ~model;
 
+// growth curve for the visual circles: fast out, slow settle
+var sizeEnv = Env([0, 1], [1], [-3]);
+// hold the bright colour while the circle grows, then fade late - with a
+// linear fade the big end of the growth is already invisible
+var colorEnv = Env([0, 1], [1], [3]);
+
 m.accelMassFilteredAttack = 0.7;
 m.accelMassFilteredDecay = 0.2;
 m.rrateMassFilteredAttack = 0.9;
@@ -21,19 +27,72 @@ SynthDef(\miniMoog, {
 
 //------------------------------------------------------------
 ~init = ~init <> {
+
+	// A growing, wobbling circle. Radius is modulated around the ring by
+	// `lobes` and rotates over time by `spin`, so it breathes rather than
+	// just scaling. Live-coded: edit and save, next frame draws the change.
+	//
+	//   c    : (pos: radius: width: color: normTime: now: bounds:) per frame
+	//          NB `radius`, not `size` - `size` is a real Collection method
+	//          and c.size would return the entry count, not the value.
+	//   ev   : the whole visual event, incl. ev[\vargs] custom params
+	~vdef.(\blob, { |ev, c|
+		var n = 48;
+		var va = ev[\vargs] ? ();
+		var wob = va[\wobble] ? 0.3;
+		var lobes = va[\lobes] ? 5;
+		var spin = va[\spin] ? 3;
+		var pt = { |i|
+			var th = i / n * 2pi;
+			var r = c.radius * (1 + (wob * sin((th * lobes) + (c.now * spin))));
+			c.pos + Polar(r, th).asPoint
+		};
+		Pen.width = c.width;
+		Pen.strokeColor = c.color;
+		Pen.moveTo(pt.(0));
+		(1..n).do { |i| Pen.lineTo(pt.(i)) };	// i == n lands back on th = 2pi
+		if(ev[\fill] == true, { Pen.fill }, { Pen.stroke });
+	});
+
 	Pdef(m.ptn,
 		Pbind(
 			\instrument, \miniMoog,
-            \note, Pseq([0,5,2,9,4], inf),
+            // \note, Pseq([0,5,2,9,4], inf),
+            \note, Pseq([0,12,10,7,2] + 2, inf),
+
             \octave, Pseq([1,2,3].stutter(2) + 2, inf),
-            \root, Pseq([0,4,8].stutter(60), inf),
-            \amp, 0.3,
+            // \root, Pseq([0,4,8].stutter(60), inf),
+            \root, Pseq([0].stutter(60), inf),
+            \amp, 0.1,
             \attack, Pwhite(0.02,0.09),
             \decay, 0.1,
             \sustain, 0.1,
             \release, Pwhite(0.1,2.4),
             \fq, 0.3,
-            \pan, Pseq([-0.3, 0.3], inf),
+            \pan, Pseq([-0.5, 0.5], inf),
+
+			// ---- one circle per note ----------------------------------
+			// \customVisualEvent emits the shape then replays the event as
+			// a \note, so this stays a normal synth line as well.
+			\type, \customVisualEvent,
+			\shape, \blob,
+			\fill, false,
+			\sx, 0, \sy, 0,		// drift with the stereo position
+			\ex, 0, \ey, 0,
+			\startSize, 20,
+			\endSize, 220,
+			// Env must be wrapped: Env defines asStream, so a bare Env in a
+			// Pbind gets streamed as its LEVELS (0, 1, ...) instead of being
+			// passed through as the envelope object.
+			\sizeEnv, Pfunc({ sizeEnv }),
+			\duration, 2.2,
+			\startWidth, 2,
+			\endWidth, 0.4,
+			\startColor, Pfunc({ |e| Color.hsv(((e[\note] ? 0) / 12.0).mod(1.0), 0.85, 1.0, 0.9) }),
+			\endColor,   Pfunc({ |e| Color.hsv(((e[\note] ? 0) / 12.0).mod(1.0), 0.85, 1.0, 0.0) }),
+			\colorEnv,   Pfunc({ colorEnv }),	// wrapped: see \sizeEnv above
+			// -----------------------------------------------------------
+
 			\func, Pfunc({|e| ~onEvent.(e)}),
 			\args, #[]
 		);
@@ -72,6 +131,14 @@ SynthDef(\miniMoog, {
 	Pdef(m.ptn).set(\atk, atk);
 	Pdef(m.ptn).set(\rel, rel);
     Pdef(m.ptn).set(\filterFreq, ff);
+
+	// visuals : route to this device, and let movement drive the wobble
+	Pdef(m.ptn).set(\viewID, d.port);
+	Pdef(m.ptn).set(\vargs, (
+		wobble: m.accelMassFiltered.lincurve(0, 2.5, 0.004, 0.04, -2),
+		lobes: 5,
+		spin: 3
+	));
 
 	if(m.rrateMassFiltered > 0.01,{
 		if( Pdef(m.ptn).isPlaying.not,{

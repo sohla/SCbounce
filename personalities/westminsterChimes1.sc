@@ -1,6 +1,6 @@
 var m = ~model;
 var bi = 0;
-var dur = 0.3;
+var dur = 0.5 ;
 
 ~buffers;
 m.accelMassFilteredAttack = 0.99;
@@ -8,13 +8,13 @@ m.accelMassFilteredDecay = 0.6;
 
 //------------------------------------------------------------
 SynthDef(\drumkit, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
-    attack=0.01, decay=0.1, sustain=0.8, release=0.3, gate=1,cutoff=10, rq=1|
+    attack=0.01, decay=0.1, sustain=0.8, release=2.3, gate=1,cutoff=10, rq=1|
 
 	var lr = rate * BufRateScale.kr(bufnum);// * (freq/440.0);
 	var cd = BufDur.kr(bufnum);
   var env = EnvGen.kr(Env.adsr(attack, decay, sustain, release), gate, doneAction: 2);
 
-	var sig = PlayBuf.ar(1, bufnum, rate: [lr, lr * 1.0], startPos: start * BufFrames.kr(bufnum), loop: 0) ;
+	var sig = PlayBuf.ar(2, bufnum, rate: [lr, lr * 1.0], startPos: start * BufFrames.kr(bufnum), loop: 0) ;
     sig = RHPF.ar(sig, cutoff, rq);
 		sig = Compander.ar(sig, sig,
         thresh: -15.dbamp,
@@ -32,7 +32,7 @@ SynthDef(\drumkit, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 //------------------------------------------------------------
 ~init = ~init <> {
 
-	var folder  = PathName("~/Downloads/yourDNASamples/drums");
+	var folder  = PathName("~/Downloads/westminsterChimes");
 	postf("loading samples : % \n", folder);
 
 	~buffers = folder.entries.collect({ |path,i|
@@ -49,7 +49,7 @@ SynthDef(\drumkit, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 			\instrument, \drumkit,
 			
 			\bufnum, Pfunc{
-				if(bi >= (~buffers.size-1),{bi=0});
+				if(bi >= (~buffers.size),{bi=0});
 				~buffers[bi];
 			},
 			\octave, Pseq([5].stutter(24), inf),
@@ -57,12 +57,11 @@ SynthDef(\drumkit, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 			// \amp, 1,
 			\start, 0,
 			\note, Pseq([40], inf),
-		//  \dur, Pseq([1,Rest(0.5),0.5,0.5,1,0.5,Rest(0.5),1,0.25,0.25] * dur, inf),
-		 \dur, Pseq([1,0.5,1,1] * dur, inf),
+		 \dur, Pseq([1,1,1,0.5,0.5,1,1,0.5,0.5] * dur, inf),
 		//  \latency, Pwhite(0,0.013),
 		 \pan,Pwhite(-0.1,0.1),
 			\attack, 0.02,
-			\release,0.3,
+			\release,2.3,
 			\args, #[],
 		)
 	);
@@ -75,9 +74,9 @@ SynthDef(\drumkit, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 	Pdef(m.ptn).remove;
 
 	~buffers.do({|buf|
-		buf.free;
-		s.sync;
 		postf("buffer dealloc [%] \n", buf);
+		s.sync;
+		buf.free;
 	});
 	// synth.free;
 };
@@ -86,16 +85,18 @@ SynthDef(\drumkit, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 //------------------------------------------------------------
 ~next = {|d|
 
-	var rate = m.rrateMassFiltered.linlin(0,1.3,1.5,4);
-	var amp = m.accelMassFiltered.lincurve(0,2.5,0.3,1, -1);
-	Pdef(m.ptn).set(\amp, amp * 0.8);
-	Pdef(m.ptn).set(\rate, rate);
-	// bi = (d.sensors.gyroEvent.y.abs / pi) * (~buffers.size-1);
-	// bi = bi.asInteger;
-	bi = [3,4,5,6,7,8,9].choose;
+	var rate = m.accelMassFiltered.linlin(0,2.5,0.5,0.3);
+	var amp = m.accelMassFiltered.lincurve(0,2.5,-20,0,-1);
+  	var notes = [7,8,9];
+	var index = (d.sensors.gyroEvent.y/pi).linlin(-0.5,0.5,0.0,~buffers.size-1); 
+	
+	Pdef(m.ptn).set(\amp, amp.dbamp * 0.5);
+	Pdef(m.ptn).set(\rate, 1.05);
 
+	dur = 0.125;
+	bi = index;//notes[index.floor];
 
-	if(m.accelMassFiltered > 0.1,{
+	if(m.accelMassFiltered > 0.05,{
 		if( Pdef(m.ptn).isPlaying.not,{
 			// Pdef(m.ptn).resume(quant:dur);
 			Pdef(m.ptn).play(quant:dur);
@@ -114,10 +115,11 @@ SynthDef(\drumkit, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 ~plotMax = 1;
 ~plot = { |d,p|
 	// [m.rrateMass * 0.1, m.rrateMassFiltered * 0.1];
-	[m.accelMassFiltered * 0.15];
+	// [m.accelMassFiltered * 0.15];
 	// [m.accelMass * 0.3, m.accelMassFiltered * 0.5];
 	// [m.rrateMassFiltered, m.rrateMassThreshold];
-	// [m.rrateMassFiltered, m.rrateMassThreshold, m.accelMassAmp];
+	[m.rrateMassFiltered * 4]
+	// [m.accelMassFiltered]
 	// [d.sensors.gyroEvent.x, d.sensors.gyroEvent.y, d.sensors.gyroEvent.z];
 	// [d.sensors.rrateEvent.x, d.sensors.rrateEvent.y, d.sensors.rrateEvent.z];
 	// [d.sensors.accelEvent.x, d.sensors.accelEvent.y, d.sensors.accelEvent.z];

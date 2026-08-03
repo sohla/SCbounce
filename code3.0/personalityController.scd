@@ -120,8 +120,13 @@ var interpretPersonality = {|d|
         //   });
         //
         // then emit  (type: \customVisualEvent, shape: \blob, viewID: d.port, ...)
+        // NOTE: must reach for topEnvironment explicitly. This runs inside
+        // the personality Environment (~init is called via d.env.use), so a
+        // bare ~visuals would resolve against THAT env and always be nil -
+        // silently turning every ~vdef call into a no-op.
         ~vdef = { |name, func|
-            if(~visuals.notNil, { ~visuals.vdef(d.port, name, func) });
+            var v = topEnvironment[\visuals];
+            if(v.notNil, { v.vdef(d.port, name, func) });
             name
         };
 

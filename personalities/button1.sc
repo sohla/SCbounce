@@ -2,6 +2,7 @@ var m = ~model;
 var synth;
 var bl = false;
 var frame = 0;
+// var bassLines = [[0,2,4,-5],[0]] - 2 + 24;
 var bassLines = [[0,10,17,16],[0]];
 var bassLine = bassLines[0];
 
@@ -18,7 +19,7 @@ SynthDef(\simple, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=440,
 }).add;
 
 SynthDef(\funBass, {
-    |out=0, freq = 440, gate = 1, amp = 0.2, filtFreq = 2000, filtRes = 0.5, envAtk = 0.001, envDec = 0.1, envSus = 0.8, envRel = 1.2, rm = 0.5|
+    |out=0, freq = 440, gate = 1, amp = 0.2, filtFreq = 2000, filtRes = 0.5, envAtk = 0.001, envDec = 0.1, envSus = 1.8, envRel = 1.2, rm = 0.5|
     var osc1, osc2, osc3, env, filter, output;
     freq = freq.lag(0.7);
     env = EnvGen.ar(Env.adsr(envAtk, envDec, envSus, envRel), gate, doneAction: 0);
@@ -83,14 +84,14 @@ SynthDef(\versatilePerc, {
 
 
 			\type, \customVisualEvent,
-			\sx, Pseq([-1,1,1,-1] * 0.8, inf),
-			\sy, Pseq([-1,-1,1,1] * 0.8, inf),
-			\ex, Pseq([-1,1,1,-1] * 0.1, inf),
-			\ey, Pseq([-1,-1,1,1] * 0.1, inf),
-			\endSize, 1,
-      \duration, 2.0,
+			\sx, Pseg(Pseq([-1,1]*0.4,inf), 2, \sine),//Pseq([-1,1,1,-1] * 0.8, inf),
+			\sy, Pseg(Pseq([1,-1]*0.4,inf), 3, \sine),//Pseq([-1,-1,1,1] * 0.8, inf),
+			\ex, Pkey(\sx),//Pseq([-1,1,1,-1] * 0.2, inf),
+			\ey, Pkey(\sy),//Pseq([-1,-1,1,1] * 0.2, inf),
+			\endSize, 60,
+      \duration, 1.0,
 			\fill, false,
-      \startWidth, 3,
+      \startWidth, 1,
       
 
 			\func, Pfunc({|e| ~onEvent.(e)}),
@@ -128,7 +129,7 @@ SynthDef(\versatilePerc, {
 	var filtFreq = m.accelMassFiltered.lincurve(0.0,2.5,20,5040,2);
 	var dcy = m.accelMassFiltered.lincurve(0.0,2.5,0.2,1.5,-2);
 
-  var notes = [26,19,17] + 12;
+  var notes = [26,19,17] + 12 - 2;
   var colors = [Color.red, Color.green, Color.blue, Color.yellow, Color.cyan];
   var ni = (d.sensors.gyroEvent.z / pi).lincurve(-0.5,0.5,0,notes.size-1,1).asInteger;//cw/ccw
   var shapes = [\square, \triangle, \hexagon];
@@ -145,9 +146,9 @@ SynthDef(\versatilePerc, {
   Pdef(m.ptn).set(\root, notes[ni]-12-23-3);
   Pdef(m.ptn).set(\filtFreq, filtFreq);
   Pdef(m.ptn).set(\decay, dcy);
-  Pdef(m.ptn).set(\level, level*1.5);
+  Pdef(m.ptn).set(\level, level*1.5 * 0);
   Pdef(m.ptn).set(\shape, shapes[ni % shapes.size]);
-  Pdef(m.ptn).set(\startSize, 30 + (100 * level));
+  Pdef(m.ptn).set(\startSize, 30 + (30 * level));
 
 	Pdef(m.ptn).set(\viewID, d.port);
 	Pdef(m.ptn).set(\startColor, Color.hsv((frame/10.0).mod(1.0),1,1.0, 0.5 + level));
@@ -155,8 +156,8 @@ SynthDef(\versatilePerc, {
 	Pdef(m.ptn).set(\rotation, (pi/60) * frame);
 	Pdef(m.ptn).set(\modulation, (
 			type: \radial,
-			freq: 10,
-			amp: level * 20,
+			freq: 20,
+			amp: level * 5,
 			harmonics: 1
 	));
 
@@ -189,7 +190,7 @@ SynthDef(\versatilePerc, {
     ),
     );
 
-    // event.play;
+    event.play;
     if(bl == false, {
       bl = true;
       synth.set(\gate, 1);
