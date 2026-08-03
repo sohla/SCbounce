@@ -148,7 +148,7 @@ SynthDef(\bambooComplex, {
 	var noteIndex = m.accelMassFiltered.linlin(0,2,0.0001,notes.size).floor;
 	var space = m.accelMassFiltered.lincurve(0,1.0,0.25,0.02,-1);
 	if(noteIndex>=notes.size,{noteIndex=notes.size-1});
-	if(move > 0.02, {
+	if(move > 0.01, {
 		if(TempoClock.beats > (lastTime + space),{
 			lastTime = TempoClock.beats;
 			notes = notes.rotate(-1);
@@ -159,7 +159,7 @@ SynthDef(\bambooComplex, {
 			synth = Synth(\bambooComplex, [
 				\freq, (2 + notes[noteIndex] + currentRoot).midicps,
 				\gate, 1,
-				\att, att,
+				\att, 0.03,
 				\amp, 0.3 * amp,
 				\strikePos, 1.0.rand, // Position of strike (affects resonance)
 				\resonance, 0.06, // Amount of resonant body sound
