@@ -4,6 +4,23 @@ One entry per push batch from the Concerts of the Future side, newest first: wha
 why, and what (if anything) behaves differently on your machine. The intent is that nothing
 here ever changes how AirKit behaves for you — if it does, that's a bug, tell us.
 
+## 2026-08-06 — seat trims made room-aware + `EDINBURGH-NOTES.md` (cotf)
+
+**Nothing changes on your machine.** Edinburgh day 1 balance notes: Room 3 seats 1+2
+(LUMIVOX/GRAVITONE) ran a little quiet against the rest of the chair-speaker mix, and
+Room 2 seat 3 (ALTOSYNTH) needed more presence under the Genelecs than the flat room
+pad gave it. Extended the per-seat static trim from the previous entry to be room-aware:
+
+- `~cotfSeatTrims` — Room 3 is now `[1.2589, 1.2589, 1.4125, 0.5623, 1]` (seat 1 +2 dB,
+  seat 2 +2 dB, seat 3 +3 dB, seat 4 −5 dB, all ear-tuned live). Room 2 is now
+  `[1, 1, 1.7783, 1, 1]` (seat 3 +5 dB, on top of the existing −10 dB `~cotfMonitorTrim`
+  room pad; other Room 2 seats stay flat). On your machine `~cotfRoom` isn't 2 or 3, so
+  this is inert either way.
+- New `EDINBURGH-NOTES.md` — a running, append-only log of live observations that don't
+  necessarily need a patch-side change (as opposed to this changelog, which is changes we
+  made). First entry: seat 3 (ALTOSYNTH) didn't sound like an A pitch-set during tuning —
+  flagging for whenever you're next in the patch, no action requested.
+
 ## 2026-08-06 — per-seat static trim `/airkit/seatTrim` + Room 3 seat 4 −5 dB (cotf)
 
 **Nothing changes on your machine.** Edinburgh day 1 balance note: PERCUSSION on Room 3

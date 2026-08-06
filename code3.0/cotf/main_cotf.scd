@@ -92,13 +92,13 @@ s.waitForBoot({
     // atmosphere bed. Room 3 (headsets) is unchanged. 10^(-10/20) = 0.3162.
     ~cotfMonitorTrim = if(~cotfRoom == 2, 0.3162, 1.0);
 
-    // [COTF] Per-seat static trim (2026-08-06, Edinburgh day 1): seat 4
-    // (percussion) ran hot in the Room 3 chair-speaker mix, seat 3 (altosynth)
-    // sat under it. Room 3 only — Room 2 keeps its flat room pad. Values tuned
-    // by ear with a test group: seat 3 +3 dB = 1.4125, seat 4 −5 dB = 0.5623.
-    // Live-tunable via /airkit/seatTrim (API.md); bake the tuned value HERE so
-    // an engine restart re-asserts it with no M0-side persistence.
-    ~cotfSeatTrims = if(~cotfRoom == 3, { [1, 1, 1.4125, 0.5623, 1] }, { [1, 1, 1, 1, 1] });
+    // Seat trims (linear gain). Room 3: seat1 +2dB, seat2 +2dB (Ciaran, Edinburgh day 1),
+    // seat3 +3dB / seat4 -5dB (2026-07 bench). Room 2: seat3 +5dB (Ciaran, Edinburgh day 1),
+    // on top of the -10dB ~cotfMonitorTrim room pad. Live-tunable via /airkit/seatTrim; bake here to persist.
+    ~cotfSeatTrims = if(~cotfRoom == 3,
+        { [1.2589, 1.2589, 1.4125, 0.5623, 1] },
+        { [1, 1, 1.7783, 1, 1] }
+    );
 
     ~cotfSeatBus = Dictionary();   // seat (1..5) -> private Bus (personalities' ~outBus)
     ~cotfMonitors = Dictionary();  // seat (1..5) -> monitor Synth
