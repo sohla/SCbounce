@@ -63,6 +63,13 @@ var loadPersonalityList = {|i|
 
 var interpretPersonality = {|d|
 
+    // Resolved HERE, in our own environment, and captured lexically.
+    // ~visuals lives in topEnvironment (set by visualCore.scd), but the
+    // functions below run under d.env.use{}, and a personality Environment
+    // is built by Environment.make with a nil parent/proto - so a ~visuals
+    // lookup from inside them silently returns nil.
+    var visuals = ~visuals;
+
     var path = PathName.new(personalityDir++d.name++".sc");
     var file = File.new(path.asAbsolutePath,"r");
     var str = file.readAllString;
@@ -121,7 +128,7 @@ var interpretPersonality = {|d|
         //
         // then emit  (type: \customVisualEvent, shape: \blob, viewID: d.port, ...)
         ~vdef = { |name, func|
-            if(~visuals.notNil, { ~visuals.vdef(d.port, name, func) });
+            if(visuals.notNil, { visuals.vdef(d.port, name, func) });
             name
         };
 
@@ -266,7 +273,10 @@ var loadPersonality = { |port, index|
     "loading personality: %".format(d.name).postln;
 
     NetAddr.new("127.0.0.1", 57120).sendMsg("/airkit/personalityName", d.port, d.name);
-    if(~visuals.notNil, { ~visuals.clearVdefs(d.port) });
+    if(~visuals.notNil, {
+        ~visuals.clearVdefs(d.port);
+        ~visuals.clearEvents(d.port);
+    });
     d.env = interpretPersonality.(d);
     // ["TODO",d.enabled].postln;
     d.env.use{
@@ -326,7 +336,10 @@ var reLoadPersonality = { |port, index|
     // "loading personality: %".format(d.name).postln;
 
     // NetAddr.new("127.0.0.1", 57120).sendMsg("/airkit/personalityName", d.port, d.name);
-    if(~visuals.notNil, { ~visuals.clearVdefs(d.port) });
+    if(~visuals.notNil, {
+        ~visuals.clearVdefs(d.port);
+        ~visuals.clearEvents(d.port);
+    });
     d.env = interpretPersonality.(d);
     // ["TODO",d.enabled].postln;
     d.env.use{
