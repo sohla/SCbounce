@@ -4,6 +4,24 @@ One entry per push batch from the Concerts of the Future side, newest first: wha
 why, and what (if anything) behaves differently on your machine. The intent is that nothing
 here ever changes how AirKit behaves for you — if it does, that's a bug, tell us.
 
+## 2026-08-06 — per-seat static trim `/airkit/seatTrim` + Room 3 seat 4 −5 dB (cotf)
+
+**Nothing changes on your machine.** Edinburgh day 1 balance note: PERCUSSION on Room 3
+seat 4 ran hot against the other four in the chair-speaker mix, so we added a per-seat
+static trim to our monitor chain (`main_cotf.scd` only — your controllers untouched):
+
+- `~cotfSeatTrims` — per-seat multipliers folded into each `\cotfMonitor`'s existing
+  `trim` at boot. Room 3 ships `[1, 1, 1, 0.5623, 1]` (seat 4 −5 dB); Room 2 stays flat
+  (its −10 dB room pad is unchanged). On your machine `~cotfRoom` isn't 3, so all 1s.
+- `/airkit/seatTrim seat linearGain [fadeSec]` — additive OSC address (API.md updated
+  same commit) so we can tune a seat live by ear, then bake the value. Doesn't touch
+  voiceMute's `gain`, masterLevel's `masterGain`, or any other seat.
+- `\cotfMonitor`'s `trim` now goes through `.lag(trimLagT=0.5)` so a live trim change
+  fades instead of clicking. Boot value is set via creation args, so no ramp at start.
+
+If PERCUSSION suddenly sounds quieter than you intend in the Room 3 mix, this is why —
+tell us and we'll re-tune or drop the trim.
+
 ## 2026-07-25 — prints.json inventory export + optional `prints:` header key (cotf)
 
 **Nothing changes for your workflow unless you opt in.** Two additions, both data/docs:

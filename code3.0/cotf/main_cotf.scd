@@ -79,9 +79,9 @@ s.waitForBoot({
     // (/airkit/outputMode crossfades); the inactive side is HARD 0 because the
     // chair amps are powered in both modes. gain/trim semantics unchanged.
     SynthDef(\cotfMonitor, { |in, out, physOut = 0, gain = 1, lagT = 0.5, trim = 1,
-                              webrtcGain = 1, physicalGain = 0, modeLagT = 0.5,
+                              trimLagT = 0.5, webrtcGain = 1, physicalGain = 0, modeLagT = 0.5,
                               masterGain = 1, masterLagT = 0.5|
-        var sig = In.ar(in, 2) * gain.lag(lagT) * trim * masterGain.lag(masterLagT);
+        var sig = In.ar(in, 2) * gain.lag(lagT) * trim.lag(trimLagT) * masterGain.lag(masterLagT);
         Out.ar(out, sig * webrtcGain.lag(modeLagT));
         Out.ar(physOut, sig.sum * 0.7071 * physicalGain.lag(modeLagT));
     }).add;
@@ -92,6 +92,13 @@ s.waitForBoot({
     // atmosphere bed. Room 3 (headsets) is unchanged. 10^(-10/20) = 0.3162.
     ~cotfMonitorTrim = if(~cotfRoom == 2, 0.3162, 1.0);
 
+    // [COTF] Per-seat static trim (2026-08-06, Edinburgh day 1): seat 4
+    // (percussion) ran hot in the Room 3 chair-speaker mix. Room 3 only —
+    // Room 2 keeps its flat room pad. −5 dB = 0.5623. Live-tunable via
+    // /airkit/seatTrim (API.md); bake the tuned value HERE so an engine
+    // restart re-asserts it with no M0-side persistence.
+    ~cotfSeatTrims = if(~cotfRoom == 3, { [1, 1, 1, 0.5623, 1] }, { [1, 1, 1, 1, 1] });
+
     ~cotfSeatBus = Dictionary();   // seat (1..5) -> private Bus (personalities' ~outBus)
     ~cotfMonitors = Dictionary();  // seat (1..5) -> monitor Synth
     5.do { |i|
@@ -101,7 +108,7 @@ s.waitForBoot({
         ~cotfSeatBus.put(seat, bus);
         ~cotfMonitors.put(seat,
             Synth.tail(s, \cotfMonitor, [
-                \in, bus.index, \out, ~cotfFinalBus.(seat), \trim, ~cotfMonitorTrim,
+                \in, bus.index, \out, ~cotfFinalBus.(seat), \trim, ~cotfMonitorTrim * ~cotfSeatTrims[i],
                 // Room 2 has no chair speakers: physOut parks on its own final
                 // bus with physicalGain pinned 0 (writes nothing audible).
                 \physOut, if(~cotfRoom == 3, { ~cotfPhysicalBus.(seat) }, { ~cotfFinalBus.(seat) }),
@@ -251,6 +258,22 @@ s.waitForBoot({
         ~cotfMonitors.do { |syn| syn.set(\masterLagT, fade, \masterGain, level) };
         "[COTF] masterLevel -> % (fade %s)".format(level.round(0.001), fade).postln;
     }, '/airkit/masterLevel');
+
+    // --- [COTF] /airkit/seatTrim <seat 1-5> <linearGain> [fadeSec=0.5] (API.md)
+    // Per-seat static trim on top of the room trim — the live tuning knob
+    // behind ~cotfSeatTrims' baked defaults. Independent of gain (voiceMute's
+    // 0/1) and masterGain (masterLevel); like them it never touches any other
+    // seat. Not persisted by M0 — bake the tuned value into ~cotfSeatTrims.
+    OSCdef(\cotfSeatTrim, { |msg|
+        var seat = msg[1].asInteger.clip(1, 5);
+        var level = msg[2].asFloat.clip(0, 2.0);
+        var fade = (msg[3] ? 0.5).asFloat.max(0.05);
+        ~cotfSeatTrims[seat - 1] = level;
+        ~cotfMonitors.at(seat) !? { |syn|
+            syn.set(\trimLagT, fade, \trim, ~cotfMonitorTrim * level);
+        };
+        "[COTF] seatTrim: seat % -> % (fade %s)".format(seat, level.round(0.001), fade).postln;
+    }, '/airkit/seatTrim');
 
     // --- [COTF] /airkit/testTone <seat 1-5> [durSec=1.0] (API.md) -----------
     // Speaker-test burst through the seat's monitor chain (so it proves
