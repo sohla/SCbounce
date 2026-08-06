@@ -11,8 +11,9 @@ seat 4 ran hot against the other four in the chair-speaker mix, so we added a pe
 static trim to our monitor chain (`main_cotf.scd` only — your controllers untouched):
 
 - `~cotfSeatTrims` — per-seat multipliers folded into each `\cotfMonitor`'s existing
-  `trim` at boot. Room 3 ships `[1, 1, 1, 0.5623, 1]` (seat 4 −5 dB); Room 2 stays flat
-  (its −10 dB room pad is unchanged). On your machine `~cotfRoom` isn't 3, so all 1s.
+  `trim` at boot. Room 3 ships `[1, 1, 1.4125, 0.5623, 1]` (seat 3 +3 dB, seat 4 −5 dB,
+  ear-tuned with a test group in the room); Room 2 stays flat (its −10 dB room pad is
+  unchanged). On your machine `~cotfRoom` isn't 3, so all 1s.
 - `/airkit/seatTrim seat linearGain [fadeSec]` — additive OSC address (API.md updated
   same commit) so we can tune a seat live by ear, then bake the value. Doesn't touch
   voiceMute's `gain`, masterLevel's `masterGain`, or any other seat.
