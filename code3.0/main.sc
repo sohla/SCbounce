@@ -71,7 +71,7 @@ var shutdown = {
 var initGUI = {
 
 	QtGUI.palette = QPalette.dark;
-	w = Window("AirKit", border: false)
+	w = Window("AirKit", border: true)
 		.bounds_(Rect(0,0,1280,800))
 		.layout_(mainView)
 		.front
