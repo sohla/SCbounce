@@ -1,0 +1,115 @@
+class:: VisualRenderer
+summary:: Post/overlay effects and instrumentation for visual views
+categories:: Libraries>VisualServer
+related:: Classes/VisualServer, Guides/VisualServer
+
+description::
+
+Wraps a view's draw function to add effects (trails, grids, particles, checkerboard) and a performance monitor. Effects are layered by wrapping the existing draw function; link::#-clearEffects:: restores the server's default render.
+
+A singleton is available as link::#*default::.
+
+code::
+r = VisualRenderer.default;
+r.addTrailEffect(\demo, 0.08);
+r.addGrid(\demo, 60, Color.gray(0.15));
+r.addPerformanceMonitor(\demo);
+::
+
+CLASSMETHODS::
+
+method:: default
+Shared singleton (bound to link::Classes/VisualServer::'s default).
+
+method:: new
+argument:: server
+A link::Classes/VisualServer:: (defaults to link::Classes/VisualServer#*default::).
+
+INSTANCEMETHODS::
+
+private:: init
+
+method:: start
+Start the renderer (and its server).
+
+method:: stop
+Stop the renderer (and its server).
+
+method:: createView
+Create a view via the server, optionally installing a custom render function called after the default render.
+argument:: name
+argument:: bounds
+argument:: background
+argument:: customRenderFunc
+code::{ |view, viewData, server| ... }:: or code::nil::.
+
+method:: addEffect
+Append an arbitrary effect drawn after existing content.
+argument:: viewName
+argument:: effectFunc
+code::{ |view, viewData, server| ... }::.
+
+method:: addTrailEffect
+Motion-blur trail: draws a translucent background each frame instead of clearing. Disables the opaque background clear for the view.
+argument:: viewName
+argument:: alpha
+Overlay opacity (default code::0.1::). Smaller = longer trails.
+
+method:: addBlurEffect
+Simple motion-blur (delegates to link::#-addTrailEffect:: with alpha 0.2).
+argument:: viewName
+argument:: amount
+
+method:: addGrid
+Draw a grid overlay.
+argument:: viewName
+argument:: spacing
+Pixels (default 50).
+argument:: color
+Default code::Color.gray(0.3)::.
+
+method:: addParticleSystem
+Add a bouncing particle field.
+argument:: viewName
+argument:: numParticles
+Default 50.
+argument:: bounds
+Default code::Rect(0, 0, 800, 600)::.
+
+method:: addCheckerboard
+Draw a checkerboard background.
+argument:: viewName
+argument:: size
+Cell size (default 20).
+argument:: color1
+argument:: color2
+
+method:: addPerformanceMonitor
+Overlay FPS and live node count.
+argument:: viewName
+
+method:: clearEffects
+Remove all wrapped effects from a view by restoring the server's default draw function and re-enabling background clearing.
+argument:: viewName
+
+method:: free
+Stop the renderer.
+
+method:: server
+method:: views
+method:: isRunning
+
+EXAMPLES::
+
+code::
+(
+v = VisualServer.default; v.start;
+v.createView(\fx, Rect(200,200,800,600), Color.black);
+r = VisualRenderer.default;
+r.addCheckerboard(\fx, 40);
+r.addTrailEffect(\fx, 0.06);
+r.addPerformanceMonitor(\fx);
+)
+Vbind(\x, Pwhite(-0.8,0.8), \y, Pwhite(-0.8,0.8), \dur, 0.1, \legato, 6, \view, \fx).vplay;
+// later: r.clearEffects(\fx);
+::

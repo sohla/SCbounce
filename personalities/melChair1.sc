@@ -1,10 +1,10 @@
 var m = ~model;
 var synth;
 
-m.accelMassFilteredAttack = 0.9;
-m.accelMassFilteredDecay = 0.1;
-m.rrateMassFilteredAttack = 0.2;
-m.rrateMassFilteredDecay = 0.08;
+m.accelMassFilteredAttack = 0.99;
+m.accelMassFilteredDecay = 0.03;
+m.rrateMassFilteredAttack = 0.99;
+m.rrateMassFilteredDecay = 0.1;
 m.gyroFilteredAttack = 0.7;
 m.gyroFilteredDecay = 0.7;
 
@@ -21,7 +21,7 @@ SynthDef(\growl, {|out=0, amp=0.0, freq=66, attack=0.001, decay=0.03, sustain=0.
 
 //------------------------------------------------------------
 ~init = ~init <> {
-	synth = Synth(\growl);
+	synth = Synth(\growl,[\freq, 65]);
 };
 
 //------------------------------------------------------------
@@ -31,13 +31,16 @@ SynthDef(\growl, {|out=0, amp=0.0, freq=66, attack=0.001, decay=0.03, sustain=0.
 
 //------------------------------------------------------------
 ~next = {|d|
-  var amp = m.rrateMassFiltered.lincurve(0.0,0.1,-70,-2,-8);
+//   var amp = m.rrateMassFiltered.lincurve(0.0,0.009,-60,-5,-1);
+  var amp = m.accelMassFiltered.lincurve(0.0,0.02,-70,-15,1);
   var pos = (d.sensors.gyroEvent.z / pi).fold(-0.5,0.5) * 2;
   var gr = pos.lincurve(-1.0,1.0,0.0,2.0,-3);
-var amp2 = m.rrateMassFiltered.lincurve(0.0,0.02, -50,-2, -9);
-  synth.set(\amp, amp2.dbamp);
-  synth.set(\gr, gr);
-  synth.set(\freq, ( m.com.root + 24).midicps);
+  var freq = m.rrateMassFiltered.lincurve(0.0,0.1,130,130,-1);
+  synth.set(\amp, amp.dbamp);
+//   pos.postln;
+  synth.set(\gr, gr*1);
+  synth.set(\freq,freq)
+
 };
 //------------------------------------------------------------
 ~plotMin = -1;
@@ -69,5 +72,7 @@ var amp2 = m.rrateMassFiltered.lincurve(0.0,0.02, -50,-2, -9);
 	// [ ((m.gyroZFiltered.fold(-0.5,0.5) * 2)+1) + (m.gyroYFiltered + 1)] - 2 * 0.5 ;
 	// [(d.sensors.gyroEvent.y / pi.half).lincurve(-1.0,1.0,-1.0,1.0,3)];
 
-	[m.accelMassFiltered * 3, m.rrateMassFiltered * 10, (d.sensors.gyroEvent.z / pi).fold(-0.5,0.5) * 2];
+	// [m.accelMassFiltered * 3, m.rrateMassFiltered * 10, (d.sensors.gyroEvent.z / pi).fold(-0.5,0.5) * 2];
+	// [m.accelMassFiltered*15, m.rrateMassFiltered*300];
+	[m.accelMassFiltered];
 };

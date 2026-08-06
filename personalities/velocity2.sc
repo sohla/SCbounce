@@ -2,13 +2,13 @@ var m = ~model;
 var synth;
 var index =0;
 var trig = false;
-// var notes = [0,7,16,0,7,16,0,7,16,0,7,16,0,7,17,0,7,17,0,7,17,0,7,17];
-var notes = [-5];
+var notes = [0,7,16,0,7,16,0,7,16,0,7,16,0,7,17,0,7,17,0,7,17,0,7,17];
+// var notes = [-5] + 24;
 var note = notes[0];
 m.accelMassFilteredAttack = 0.99;
-m.accelMassFilteredDecay = 0.15;
+m.accelMassFilteredDecay = 0.04;
 m.rrateMassFilteredAttack = 0.3;
-m.rrateMassFilteredDecay = 0.2;
+m.rrateMassFilteredDecay = 0.02;
 m.gyroFilteredAttack = 0.7;
 m.gyroFilteredDecay = 0.7;
 
@@ -41,12 +41,12 @@ SynthDef(\noise, { |out=0, frq=10000, gate=0, amp = 0, atk=0.02, sus=0.9, rel=1.
 //------------------------------------------------------------
 ~next = {|d|
 
-	var amp = m.accelMassFiltered.lincurve(0,2.5,0.0,0.1,-3);
+	var amp = m.accelMassFiltered.lincurve(0,0.3,0.0,0.08,-3);
     var ud = m.gyroYFiltered.linexp(-0.8,0.9,400,10000);
 
     if(amp<0.02,{
         amp=0;
-        synth.set(\lag,0.9);
+        synth.set(\lag,0.1);
         if(trig, {
             trig = false;
         });

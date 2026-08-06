@@ -3,21 +3,23 @@ var buffers;
 var synths=[];
 var lastTime=0;
 
+//------------------------------------------------------------
 m.accelMassFilteredAttack = 0.08;
 m.accelMassFilteredDecay = 0.04;
-
-SynthDef(\rainSampler, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0,
-    attack=0.01, decay=0.1, sustain=0.3, release=0.9, gate=1,cutoff=20, rq=1|
-
-	  var env = EnvGen.kr(Env.adsr(attack, decay, sustain, release), gate, timeScale: 1, doneAction: 2);
-	var sig = PlayBuf.ar(2, bufnum, rate: rate, startPos: start * BufFrames.kr(bufnum), loop: 1);
-    sig = HPF.ar(sig, cutoff);
-    sig = Balance2.ar(sig[0],sig[1], pan.lag(2), amp * env);
-    Out.ar(out, sig);
-}).add;
+m.rrateMassFilteredAttack = 0.9;
+m.rrateMassFilteredDecay = 0.9;
+m.gyroFilteredAttack = 0.7;
+m.gyroFilteredDecay = 0.7;
 
 //------------------------------------------------------------
-// intial state
+SynthDef(\rainSampler, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, attack=0.8, decay=0.1, sustain=0.3, release=0.9, gate=1,cutoff=20, rq=1|
+	var env = EnvGen.kr(Env.adsr(attack, decay, sustain, release), gate, timeScale: 1, doneAction: 2);
+	var sig = PlayBuf.ar(2, bufnum, rate: rate, startPos: start * BufFrames.kr(bufnum), loop: 1);
+	sig = HPF.ar(sig, cutoff);
+	sig = Balance2.ar(sig[0],sig[1], pan.lag(2), amp * env);
+	Out.ar(out, sig);
+}).add;
+
 //------------------------------------------------------------
 ~init = ~init <> {
 
@@ -47,9 +49,10 @@ SynthDef(\rainSampler, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0,
 
 ~deinit = ~deinit <> {
 
+	var size = synths.size - 1;
 	synths.do({|synth, i|
 		synth.onFree({
-			if(i >= 3,{
+			if(i >= size,{
 				"all synths on free".postln;
 				buffers.do({|buf|
 					{
@@ -63,11 +66,19 @@ SynthDef(\rainSampler, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0,
 		synth.set(\gate, 0);	
 	});
 
+	// fork{
+	// synths.do({|synth, i|
+	// 	synth.free;
+	// 	s.sync;
+	// });
+
 	// buffers.do({|buf|
 	// 	buf.free;
 	// 	s.sync;
 	// 	postf("buffer dealloc [%] \n", buf);
 	// });
+	// s.sync;
+	// };
 };
 
 //------------------------------------------------------------
@@ -79,7 +90,7 @@ SynthDef(\rainSampler, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0,
 		m.accelMassFiltered.clip2(1.4).linlin(0.8,1.4,0,1),
 		m.accelMassFiltered.clip2(3.0).linlin(1.4,3.0,0,1)];
 
-	var mix = [0.6,1,1,1.5] * 8;
+	var mix = [0.6,1,1,1.5] * 4;
 	var cutoff = m.accelMassFiltered.lincurve(0,1.5,600,20,-2);
 	var pan = d.sensors.gyroEvent.z.linlin(-1,1,-0.3,0.3);
 

@@ -3,27 +3,37 @@
 var staker;
 var personalityController = Require("personalityController.scd");
 var oscController = Require("oscController.scd");
+var visualCore = Require("visualCore.scd");
+var hdmiRect = Require("screens.scd").();
 var specsView;
 
 var midiCC;
+var labels;
+var z;
 
+// With a second screen the visuals get their own window on it and there
+// is no visual tab. Without one, the visual tab holds the same surface.
 var stack = {
 	var deviceView = Require("deviceView.scd");
-	var visualView = Require("visualView.scd");
-	// var controlView = Require("controlView.scd");
+	var controlView = Require("controlView.scd");
 	var systemView = Require("systemView.scd");
-	var view = View().layout_(staker =StackLayout(
-		deviceView.(),
-		visualView.(),
-		// controlView.(),
-		systemView.()
-	));
-	
-	view
+	var pages = [deviceView.()];
+
+	labels = ["device"];
+
+	if(hdmiRect.isNil, {
+		var visualView = Require("visualView.scd");
+		pages = pages.add(visualView.());
+		labels = labels.add("visual");
+	});
+
+	pages = pages ++ [controlView.(), systemView.()];
+	labels = labels ++ ["control", "system"];
+
+	View().layout_(staker = StackLayout(*pages));
 };
 
 var tabButton = {|i|
-	var d = ["device","visual","system"];
 	UserView()
 	.background_( if(i==0,Color.black.lighten(0.25),Color.black))
 	.mouseDownAction_({|but|
@@ -36,18 +46,19 @@ var tabButton = {|i|
 			});
 		},{});
 	})
-	.drawFunc_({|v|Pen.stringAtPoint(d[i], (v.bounds.width-45/2)-40@25, Font(size:30), Color.white.darken(0.75))})
+	.drawFunc_({|v|Pen.stringAtPoint(labels[i], (v.bounds.width-45/2)-40@25, Font(size:30), Color.white.darken(0.75))})
 	.animate_(false)
+};
 
-}!3;
+var stackView = stack.();
 
-var tabs = {|t|
-	View().layout_(HLayout(*tabButton.()).spacing_(2).margins_(0)).maxHeight_(100);
+var tabs = {
+	View().layout_(HLayout(*labels.size.collect(tabButton)).spacing_(2).margins_(0)).maxHeight_(100);
 };
 
 var mainView = VLayout(
 		tabs.(),
-		stack.()
+		stackView
 ).spacing_(4).margins_(0);
 
 var shutdown = {
@@ -58,21 +69,40 @@ var shutdown = {
 };
 
 var initGUI = {
+
 	QtGUI.palette = QPalette.dark;
-	w = Window("AirKit")
-		.bounds_(Rect(100,100,1000,700))
+	w = Window("AirKit", border: false)
+		.bounds_(Rect(0,0,1280,800))
 		.layout_(mainView)
 		.front
 		// .fullScreen
 		.background_(Color.black.lighten(0.25));
+
 	w.onClose = {
 		shutdown.();
 	};
-	CmdPeriod.doOnce({w.close});
+
+	// second screen : visuals only, borderless, exact geometry.
+	// setTopLeftBounds bypasses Window.flipY (which measures against the
+	// PRIMARY screen height and would drop the window in the wrong place).
+	if(hdmiRect.notNil, {
+		z = Window("AirKit Visuals", border: false)
+			.layout_(VLayout(visualCore.makeSurface()).margins_(0).spacing_(0))
+			.background_(Color.black);
+		z.setTopLeftBounds(hdmiRect, 0);
+		z.userCanClose = false;
+		z.front;
+		w.front;	// keep the control panel focused on the DSI panel
+	});
+
+	CmdPeriod.doOnce({
+		w.close;
+		if(z.notNil, { z.close });
+	});
 };
 
 s.volume = -2; // in db
-s.options.blockSize = 128; 
+s.options.blockSize = 128;
 s.options.numBuffers = 2048;  // more buffers
 s.options.memSize = 65536;    // more memory
 s.options.numOutputBusChannels = 2; // for quad output
@@ -83,15 +113,18 @@ s.waitForBoot({
 
 	midiCC = MIDIFunc.cc({|...args|
 		// args[1].postln;
-		NetAddr.new("127.0.0.1", 57120).sendMsg(format("/airkit/cc/%",args[1]), args[0]);	
+		NetAddr.new("127.0.0.1", 57120).sendMsg(format("/airkit/cc/%",args[1]), args[0]);
 	});
+
+	visualCore.latency = s.latency;
 
 	["local port:", NetAddr.localAddr.port].postln;
 	NetAddr.new("127.0.0.1", 57120).sendMsg("/airkit/startOSCListening", 57120);
 
 	initGUI.();
-	
-	ShutDown.add({"shut down...".postln})
+
+	ShutDown.add({"shut down...".postln});
+
 });
 
 

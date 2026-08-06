@@ -1,0 +1,898 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Repository Work Type Timeline - SCbounce Evolution</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #0a0a0a;
+            color: #e0e0e0;
+            overflow: hidden;
+        }
+
+        #container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        #timeline-controls {
+            background: #1a1a1a;
+            padding: 20px;
+            border-bottom: 2px solid #333;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            flex-shrink: 0;
+            flex-wrap: wrap;
+        }
+
+        #timeline-controls h3 {
+            color: #4CAF50;
+            margin-right: 20px;
+            min-width: 150px;
+            font-size: 18px;
+        }
+
+        #timeline-slider {
+            flex: 1;
+            height: 10px;
+            background: #333;
+            border-radius: 5px;
+            outline: none;
+            cursor: pointer;
+            min-width: 300px;
+        }
+
+        #timeline-slider::-webkit-slider-thumb {
+            appearance: none;
+            width: 24px;
+            height: 24px;
+            background: #4CAF50;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(76, 175, 80, 0.4);
+        }
+
+        #timeline-slider::-moz-range-thumb {
+            width: 24px;
+            height: 24px;
+            background: #4CAF50;
+            border-radius: 50%;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 2px 8px rgba(76, 175, 80, 0.4);
+        }
+
+        .date-label {
+            color: #888;
+            font-size: 14px;
+            min-width: 100px;
+            text-align: center;
+        }
+
+        #current-date {
+            color: #4CAF50;
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        #filter-controls {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            padding: 15px 20px;
+            background: #111;
+            border-bottom: 2px solid #333;
+            flex-wrap: wrap;
+        }
+
+        #filter-controls h4 {
+            color: #4CAF50;
+            font-size: 14px;
+            margin-right: 10px;
+        }
+
+        .category-filter {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 16px;
+            border-radius: 25px;
+            border: 2px solid transparent;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            font-size: 13px;
+            user-select: none;
+            min-width: 120px;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .category-filter:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+
+        .category-filter.active {
+            border-color: rgba(255,255,255,0.3);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        .category-filter.inactive {
+            opacity: 0.4;
+            filter: grayscale(70%);
+        }
+
+        .category-filter input {
+            display: none;
+        }
+
+        .category-filter label {
+            font-size: 13px;
+            cursor: pointer;
+            margin: 0;
+            color: #000;
+            text-shadow: none;
+            font-weight: 600;
+        }
+
+        .category-color-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 4px;
+            border: 2px solid rgba(255,255,255,0.8);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+        }
+
+        #visualization-area {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+        }
+
+        #chart-container {
+            width: 100%;
+            height: 100%;
+        }
+
+        #stats-panel {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(26, 26, 26, 0.95);
+            border: 1px solid #444;
+            border-radius: 8px;
+            padding: 15px;
+            min-width: 250px;
+            backdrop-filter: blur(10px);
+        }
+
+        #stats-panel h4 {
+            color: #4CAF50;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            margin: 8px 0;
+            font-size: 14px;
+        }
+
+        .stat-category {
+            color: #ccc;
+        }
+
+        .stat-value {
+            color: #4CAF50;
+            font-weight: bold;
+        }
+
+        .chart-tooltip {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.9);
+            color: #fff;
+            padding: 10px;
+            border-radius: 5px;
+            pointer-events: none;
+            font-size: 12px;
+            border: 1px solid #666;
+            z-index: 1000;
+        }
+
+        .legend {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(26, 26, 26, 0.95);
+            border: 1px solid #444;
+            border-radius: 8px;
+            padding: 15px;
+            backdrop-filter: blur(10px);
+        }
+
+        .legend h5 {
+            color: #4CAF50;
+            margin-bottom: 10px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin: 5px 0;
+            font-size: 12px;
+        }
+
+        .legend-color {
+            width: 16px;
+            height: 16px;
+            margin-right: 8px;
+            border-radius: 3px;
+        }
+
+        #view-controls {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .view-button {
+            background: #333;
+            border: 1px solid #666;
+            color: #fff;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s ease;
+        }
+
+        .view-button:hover {
+            background: #444;
+        }
+
+        .view-button.active {
+            background: #4CAF50;
+            color: #000;
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <div id="timeline-controls">
+            <h3>Work Type Timeline</h3>
+            <span class="date-label" id="start-date">2024-03</span>
+            <input type="range" id="timeline-slider" min="0" max="100" value="100">
+            <span class="date-label" id="end-date">2026-03</span>
+            <div id="current-date">2026-03</div>
+        </div>
+        
+        <div id="filter-controls">
+            <h4>Categories:</h4>
+            <div id="category-filters"></div>
+        </div>
+
+        <div id="visualization-area">
+            <div id="view-controls">
+                <button class="view-button active" data-view="stacked">Stacked Area</button>
+                <button class="view-button" data-view="bubbles">Category Bubbles</button>
+                <button class="view-button" data-view="stream">Stream Graph</button>
+            </div>
+
+            <div id="stats-panel">
+                <h4>Current Period Stats</h4>
+                <div id="stats-content"></div>
+            </div>
+
+            <div class="legend">
+                <h5>Work Categories</h5>
+                <div id="legend-content"></div>
+            </div>
+
+            <div id="chart-container"></div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let timelineData = [];
+        let currentTimeIndex = 0;
+        let activeCategories = new Set();
+        let currentView = 'stacked';
+        let previousView = 'stacked'; // Track previous view
+        let bubbleStore = new Map(); // Persistent bubble store
+        let bubbleSimulation = null; // Store simulation instance
+        
+        // Color scheme for categories
+        const categoryColors = {
+            'Implementation': '#FF6B6B',
+            'Personalities': '#4ECDC4', 
+            'Visual': '#9B59B6',
+            'Experimentation': '#45B7D1',
+            'Analysis': '#96CEB4',
+            'Performance': '#FFEAA7',
+            'Infrastructure': '#DDA0DD',
+            'Other': '#95A5A6'
+        };
+
+        const subcategoryColors = {
+            // Implementation subcategories
+            'Communications': '#FF8E8E',
+            'Logic': '#FF4444',
+            'IMU Data Processing': '#FF1111',
+            'Core System': '#CC0000',
+            'Mapping': '#FF7777',
+            'Bug Fixes': '#AA0000',
+            
+            // Visual subcategories
+            'System': '#B19CD9',
+            'Code': '#A569BD',
+            
+            // Personalities subcategories  
+            'Synth Design': '#6BEBE8',
+            'Documentation': '#8AF4F1',
+            'Data Analysis': '#2BD9D3',
+            
+            // Analysis subcategories
+            'Scripts': '#B8E6B8', 
+            'Visualization': '#A6DFA6',
+            'Data': '#85D685',
+            'Other': '#6BBF6B',
+            
+            // Others
+            'Legacy Code': '#6BC4F1',
+            'Live Session': '#FFED7A',
+            'Version Control': '#E8B8E8'
+        };
+
+        // Load and initialize
+        async function loadData() {
+            try {
+                const response = await fetch('work_type_data.json');
+                const data = await response.json();
+                timelineData = data.timeline;
+                
+                setupControls();
+                initializeFilters();
+                updateVisualization();
+                
+                console.log('Data loaded:', data.summary);
+            } catch (error) {
+                console.error('Error loading data:', error);
+            }
+        }
+
+        function setupControls() {
+            const slider = document.getElementById('timeline-slider');
+            const startDate = document.getElementById('start-date');
+            const endDate = document.getElementById('end-date');
+            const currentDate = document.getElementById('current-date');
+            
+            if (timelineData.length > 0) {
+                startDate.textContent = timelineData[0].date;
+                endDate.textContent = timelineData[timelineData.length - 1].date;
+                slider.max = timelineData.length - 1;
+                slider.value = timelineData.length - 1;
+                currentTimeIndex = timelineData.length - 1;
+                currentDate.textContent = timelineData[currentTimeIndex].date;
+            }
+            
+            slider.addEventListener('input', (e) => {
+                currentTimeIndex = parseInt(e.target.value);
+                currentDate.textContent = timelineData[currentTimeIndex].date;
+                updateVisualization();
+            });
+
+            // View control buttons
+            document.querySelectorAll('.view-button').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    document.querySelectorAll('.view-button').forEach(b => b.classList.remove('active'));
+                    button.classList.add('active');
+                    currentView = button.dataset.view;
+                    updateVisualization();
+                });
+            });
+        }
+
+        function initializeFilters() {
+            const filtersContainer = document.getElementById('category-filters');
+            const allCategories = Object.keys(categoryColors);
+            
+            // Initialize all categories as active
+            allCategories.forEach(cat => activeCategories.add(cat));
+            
+            allCategories.forEach(category => {
+                const filterDiv = document.createElement('div');
+                filterDiv.className = 'category-filter active';
+                filterDiv.style.backgroundColor = categoryColors[category];
+                
+                // Create color dot
+                const colorDot = document.createElement('div');
+                colorDot.className = 'category-color-dot';
+                colorDot.style.backgroundColor = categoryColors[category];
+                
+                // Hidden checkbox for state tracking
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.id = `filter-${category}`;
+                checkbox.checked = true;
+                
+                const label = document.createElement('label');
+                label.htmlFor = `filter-${category}`;
+                label.textContent = category;
+                
+                filterDiv.appendChild(colorDot);
+                filterDiv.appendChild(checkbox);
+                filterDiv.appendChild(label);
+                
+                filterDiv.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    checkbox.checked = !checkbox.checked;
+                    
+                    if (checkbox.checked) {
+                        filterDiv.classList.remove('inactive');
+                        filterDiv.classList.add('active');
+                        activeCategories.add(category);
+                    } else {
+                        filterDiv.classList.remove('active');
+                        filterDiv.classList.add('inactive');
+                        activeCategories.delete(category);
+                    }
+                    
+                    updateVisualization();
+                });
+                
+                filtersContainer.appendChild(filterDiv);
+            });
+        }
+
+        function updateVisualization() {
+            if (!timelineData[currentTimeIndex]) return;
+            
+            const currentData = timelineData[currentTimeIndex];
+            updateStats(currentData);
+            updateLegend();
+            
+            // Handle different visualization types
+            switch(currentView) {
+                case 'stacked':
+                    // Clear for stacked area (it recreates)
+                    d3.select("#chart-container").select("svg").remove();
+                    createStackedArea();
+                    break;
+                case 'bubbles':
+                    // Clear SVG only when switching TO bubble view from another view
+                    if (previousView !== 'bubbles') {
+                        d3.select("#chart-container").select("svg").remove();
+                        bubbleStore.clear(); // Reset bubble store when switching to bubbles
+                        bubbleSimulation = null; // Reset simulation
+                    }
+                    createBubbleChart(currentData);
+                    break;
+                case 'stream':
+                    // Clear for stream graph (it recreates)
+                    d3.select("#chart-container").select("svg").remove();
+                    createStreamGraph();
+                    break;
+            }
+            
+            // Update previous view tracking
+            previousView = currentView;
+        }
+
+        function updateStats(currentData) {
+            const statsContent = document.getElementById('stats-content');
+            statsContent.innerHTML = '';
+            
+            // Calculate total commits for current period
+            let totalCommits = 0;
+            Object.entries(currentData.categories).forEach(([category, data]) => {
+                if (activeCategories.has(category)) {
+                    totalCommits += data.total;
+                }
+            });
+            
+            // Add total
+            const totalDiv = document.createElement('div');
+            totalDiv.className = 'stat-item';
+            totalDiv.innerHTML = `
+                <span class="stat-category">Total Commits:</span>
+                <span class="stat-value">${totalCommits}</span>
+            `;
+            statsContent.appendChild(totalDiv);
+            
+            // Add category breakdown
+            Object.entries(currentData.categories)
+                .filter(([category]) => activeCategories.has(category))
+                .sort((a, b) => b[1].total - a[1].total)
+                .forEach(([category, data]) => {
+                    if (data.total > 0) {
+                        const div = document.createElement('div');
+                        div.className = 'stat-item';
+                        div.innerHTML = `
+                            <span class="stat-category">${category}:</span>
+                            <span class="stat-value">${data.total}</span>
+                        `;
+                        statsContent.appendChild(div);
+                    }
+                });
+        }
+
+        function updateLegend() {
+            const legendContent = document.getElementById('legend-content');
+            legendContent.innerHTML = '';
+            
+            activeCategories.forEach(category => {
+                const item = document.createElement('div');
+                item.className = 'legend-item';
+                item.innerHTML = `
+                    <div class="legend-color" style="background-color: ${categoryColors[category]}"></div>
+                    <span>${category}</span>
+                `;
+                legendContent.appendChild(item);
+            });
+        }
+
+        function createBubbleChart(currentData) {
+            const container = d3.select("#chart-container");
+            const containerRect = container.node().getBoundingClientRect();
+            const width = containerRect.width;
+            const height = containerRect.height;
+            const margin = {top: 40, right: 40, bottom: 40, left: 40};
+            const chartWidth = width - margin.left - margin.right;
+            const chartHeight = height - margin.top - margin.bottom;
+            
+            // Get or create SVG and chart group - only once
+            let svg = container.select("svg");
+            if (svg.empty()) {
+                svg = container.append("svg")
+                    .attr("width", width)
+                    .attr("height", height);
+                
+                // Create chart group
+                svg.append("g")
+                    .attr("class", "bubble-chart-group")
+                    .attr("transform", `translate(${margin.left},${margin.top})`);
+                
+                // Create title
+                svg.append("text")
+                    .attr("class", "bubble-title")
+                    .attr("x", width / 2)
+                    .attr("y", 25)
+                    .attr("text-anchor", "middle")
+                    .style("fill", "#4CAF50")
+                    .style("font-size", "18px")
+                    .style("font-weight", "bold");
+                
+                // Create tooltip only once
+                if (d3.select(".bubble-tooltip").empty()) {
+                    d3.select("body").append("div")
+                        .attr("class", "bubble-tooltip chart-tooltip")
+                        .style("opacity", 0);
+                }
+            }
+            
+            const g = svg.select(".bubble-chart-group");
+            const tooltip = d3.select(".bubble-tooltip");
+            
+            // Ensure all categories exist in the bubble store (create if needed)
+            const allCategories = Object.keys(categoryColors);
+            allCategories.forEach(category => {
+                if (!bubbleStore.has(category)) {
+                    const bubbleData = {
+                        category,
+                        total: 0,
+                        subcategories: {},
+                        x: chartWidth / 2,
+                        y: chartHeight / 2,
+                        vx: 0,
+                        vy: 0
+                    };
+                    bubbleStore.set(category, bubbleData);
+                }
+            });
+            
+            // Update bubble data for current frame
+            allCategories.forEach(category => {
+                const bubbleData = bubbleStore.get(category);
+                const categoryData = currentData.categories[category];
+                
+                if (activeCategories.has(category) && categoryData && categoryData.total > 0) {
+                    // Category should be visible
+                    bubbleData.total = categoryData.total;
+                    bubbleData.subcategories = categoryData.subcategories;
+                } else {
+                    // Category should be hidden (size 0)
+                    bubbleData.total = 0;
+                    bubbleData.subcategories = {};
+                }
+            });
+            
+            // Use all bubbles from store (they all exist now)
+            const allBubbleData = Array.from(bubbleStore.values());
+            
+            // Scale for bubble size
+            const visibleTotals = allBubbleData.map(d => d.total).filter(t => t > 0);
+            const maxTotal = Math.max(...visibleTotals, 1);
+            const sizeScale = d3.scaleSqrt()
+                .domain([0, maxTotal])
+                .range([0, Math.min(chartWidth, chartHeight) / 8]);
+            
+            // Data join with ALL categories (persistent)
+            const bubbles = g.selectAll(".bubble")
+                .data(allBubbleData, d => d.category);
+            
+            // ENTER: Only happens once per category (first time seeing it)
+            const enteringBubbles = bubbles.enter()
+                .append("g")
+                .attr("class", "bubble")
+                .attr("transform", d => `translate(${d.x},${d.y})`);
+            
+            // Add circle to new bubbles (starts at 0)
+            enteringBubbles.append("circle")
+                .attr("r", 0)
+                .attr("fill", d => categoryColors[d.category])
+                .attr("fill-opacity", 0.7)
+                .attr("stroke", d => categoryColors[d.category])
+                .attr("stroke-width", 2)
+                .on("mouseover", function(event, d) {
+                    if (d.total > 0) {
+                        tooltip.transition().duration(200).style("opacity", .9);
+                        let tooltipContent = `<strong>${d.category}</strong><br/>Total: ${d.total} commits<br/>`;
+                        Object.entries(d.subcategories).forEach(([sub, count]) => {
+                            if (count > 0) tooltipContent += `${sub}: ${count}<br/>`;
+                        });
+                        tooltip.html(tooltipContent)
+                            .style("left", (event.pageX + 10) + "px")
+                            .style("top", (event.pageY - 28) + "px");
+                    }
+                })
+                .on("mouseout", function() {
+                    tooltip.transition().duration(500).style("opacity", 0);
+                });
+            
+            // Add text to new bubbles (starts invisible)
+            enteringBubbles.append("text")
+                .attr("text-anchor", "middle")
+                .attr("dy", ".35em")
+                .style("fill", "#fff")
+                .style("font-weight", "bold")
+                .style("pointer-events", "none")
+                .style("font-size", "0px")
+                .text(d => d.category);
+            
+            // UPDATE: All bubbles animate to their new size (0 or actual size)
+            const allBubbles = bubbles.merge(enteringBubbles);
+            
+            // Animate circle size based on total (0 if hidden, actual size if visible)
+            allBubbles.select("circle")
+                .transition()
+                .duration(600)
+                .ease(d3.easeElasticOut.amplitude(1).period(0.5))
+                .attr("r", d => sizeScale(d.total));
+            
+            // Animate text size (0 if hidden, calculated size if visible)
+            allBubbles.select("text")
+                .transition()
+                .duration(600)
+                .ease(d3.easeElasticOut.amplitude(1).period(0.5))
+                .style("font-size", d => d.total > 0 ? Math.max(10, sizeScale(d.total) / 4) + "px" : "0px");
+            
+            // Create or update simulation with all bubbles
+            if (bubbleSimulation) {
+                bubbleSimulation.nodes(allBubbleData);
+                bubbleSimulation.force("collide", d3.forceCollide().radius(d => Math.max(sizeScale(d.total) + 5, 2)).strength(0.8));
+                bubbleSimulation.alpha(0.3).restart();
+            } else {
+                bubbleSimulation = d3.forceSimulation(allBubbleData)
+                    .force("x", d3.forceX(chartWidth / 2).strength(0.05))
+                    .force("y", d3.forceY(chartHeight / 2).strength(0.05))
+                    .force("collide", d3.forceCollide().radius(d => Math.max(sizeScale(d.total) + 5, 2)).strength(0.8))
+                    .alphaDecay(0.02)
+                    .velocityDecay(0.3);
+            }
+            
+            // Update positions on simulation tick
+            bubbleSimulation.on("tick", () => {
+                allBubbles.attr("transform", d => `translate(${d.x},${d.y})`);
+            });
+            
+            // Update title
+            svg.select(".bubble-title")
+                .text(`Work Categories - ${currentData.date}`);
+        }
+
+        function createStackedArea() {
+            const container = d3.select("#chart-container");
+            const containerRect = container.node().getBoundingClientRect();
+            const width = containerRect.width;
+            const height = containerRect.height;
+            const margin = {top: 40, right: 60, bottom: 60, left: 80};
+            
+            const svg = container.append("svg")
+                .attr("width", width)
+                .attr("height", height);
+                
+            const g = svg.append("g")
+                .attr("transform", `translate(${margin.left},${margin.top})`);
+            
+            // Prepare data for stacked area
+            const stackData = timelineData.slice(0, currentTimeIndex + 1).map(d => {
+                const row = {date: d.date};
+                Object.keys(categoryColors).forEach(category => {
+                    row[category] = activeCategories.has(category) ? (d.categories[category]?.total || 0) : 0;
+                });
+                return row;
+            });
+            
+            // Set up scales
+            const xScale = d3.scalePoint()
+                .domain(stackData.map(d => d.date))
+                .range([0, width - margin.left - margin.right]);
+            
+            const yScale = d3.scaleLinear()
+                .domain([0, d3.max(stackData, d => {
+                    return d3.sum(Object.keys(categoryColors), cat => d[cat] || 0);
+                })])
+                .range([height - margin.top - margin.bottom, 0]);
+            
+            // Create stack
+            const stack = d3.stack()
+                .keys(Array.from(activeCategories))
+                .order(d3.stackOrderNone)
+                .offset(d3.stackOffsetNone);
+                
+            const stackedData = stack(stackData);
+            
+            // Create area generator
+            const area = d3.area()
+                .x(d => xScale(d.data.date))
+                .y0(d => yScale(d[0]))
+                .y1(d => yScale(d[1]))
+                .curve(d3.curveBasis);
+            
+            // Draw areas
+            g.selectAll(".area")
+                .data(stackedData)
+                .enter().append("path")
+                .attr("class", "area")
+                .attr("d", area)
+                .attr("fill", d => categoryColors[d.key])
+                .attr("fill-opacity", 0.7)
+                .attr("stroke", d => categoryColors[d.key])
+                .attr("stroke-width", 1);
+            
+            // Add axes
+            g.append("g")
+                .attr("transform", `translate(0,${height - margin.top - margin.bottom})`)
+                .call(d3.axisBottom(xScale).tickValues(xScale.domain().filter((d, i) => i % 3 === 0)))
+                .selectAll("text")
+                .style("fill", "#ccc")
+                .style("font-size", "12px");
+            
+            g.append("g")
+                .call(d3.axisLeft(yScale))
+                .selectAll("text")
+                .style("fill", "#ccc")
+                .style("font-size", "12px");
+            
+            // Add axis labels
+            g.append("text")
+                .attr("transform", "rotate(-90)")
+                .attr("y", 0 - margin.left)
+                .attr("x", 0 - (height - margin.top - margin.bottom) / 2)
+                .attr("dy", "1em")
+                .style("text-anchor", "middle")
+                .style("fill", "#ccc")
+                .text("Commits");
+            
+            // Add title
+            svg.append("text")
+                .attr("x", width / 2)
+                .attr("y", 25)
+                .attr("text-anchor", "middle")
+                .style("fill", "#4CAF50")
+                .style("font-size", "18px")
+                .style("font-weight", "bold")
+                .text("Repository Evolution Timeline");
+        }
+
+        function createStreamGraph() {
+            const container = d3.select("#chart-container");
+            const containerRect = container.node().getBoundingClientRect();
+            const width = containerRect.width;
+            const height = containerRect.height;
+            const margin = {top: 40, right: 60, bottom: 60, left: 80};
+            
+            const svg = container.append("svg")
+                .attr("width", width)
+                .attr("height", height);
+                
+            const g = svg.append("g")
+                .attr("transform", `translate(${margin.left},${margin.top})`);
+            
+            // Prepare data for stream graph
+            const streamData = timelineData.slice(0, currentTimeIndex + 1).map(d => {
+                const row = {date: d.date};
+                Object.keys(categoryColors).forEach(category => {
+                    row[category] = activeCategories.has(category) ? (d.categories[category]?.total || 0) : 0;
+                });
+                return row;
+            });
+            
+            // Set up scales
+            const xScale = d3.scalePoint()
+                .domain(streamData.map(d => d.date))
+                .range([0, width - margin.left - margin.right]);
+            
+            // Create stack with stream offset
+            const stack = d3.stack()
+                .keys(Array.from(activeCategories))
+                .order(d3.stackOrderInsideOut)
+                .offset(d3.stackOffsetWiggle);
+                
+            const stackedData = stack(streamData);
+            
+            // Find the extent for y scale
+            const yExtent = d3.extent(stackedData.flat().flat());
+            const yScale = d3.scaleLinear()
+                .domain(yExtent)
+                .range([height - margin.top - margin.bottom, 0]);
+            
+            // Create area generator
+            const area = d3.area()
+                .x(d => xScale(d.data.date))
+                .y0(d => yScale(d[0]))
+                .y1(d => yScale(d[1]))
+                .curve(d3.curveBasis);
+            
+            // Draw streams
+            g.selectAll(".stream")
+                .data(stackedData)
+                .enter().append("path")
+                .attr("class", "stream")
+                .attr("d", area)
+                .attr("fill", d => categoryColors[d.key])
+                .attr("fill-opacity", 0.8)
+                .attr("stroke", "none");
+            
+            // Add x-axis
+            g.append("g")
+                .attr("transform", `translate(0,${(height - margin.top - margin.bottom) / 2})`)
+                .call(d3.axisBottom(xScale).tickValues(xScale.domain().filter((d, i) => i % 3 === 0)))
+                .selectAll("text")
+                .style("fill", "#ccc")
+                .style("font-size", "12px");
+            
+            // Add title
+            svg.append("text")
+                .attr("x", width / 2)
+                .attr("y", 25)
+                .attr("text-anchor", "middle")
+                .style("fill", "#4CAF50")
+                .style("font-size", "18px")
+                .style("font-weight", "bold")
+                .text("Work Flow Stream - Repository Evolution");
+        }
+
+        // Initialize the application
+        loadData();
+    </script>
+</body>
+</html>

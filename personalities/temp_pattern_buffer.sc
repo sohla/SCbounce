@@ -28,9 +28,9 @@ SynthDef(\sampler, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=440,
 }).add;
 //------------------------------------------------------------
 ~init = ~init <> {
-	// var path = PathName("~/Downloads/yourDNASamples/violin/Violin_02.wav");
+	var path = PathName("~/Downloads/yourDNASamples/violin/Violin_02.wav");
 	// var path = PathName("~/Downloads/melSamples/hello/mel_hello3.wav");
-	var path = PathName("~/Downloads/yourDNASamples/bath/MrHeyHeyscrubadubdub-001.wav");
+	// var path = PathName("~/Downloads/yourDNASamples/bath/MrHeyHeyscrubadubdub-001.wav");
 	// var path = PathName("~/Downloads/yourDNASamples/bath/Heatherbathtimerubberducky.wav");
 	// var path = PathName("~/Downloads/yourDNASamples/TR laughing2.wav");
 	// var path = PathName("~/Downloads/yourDNASamples/DC power of love.wav");

@@ -63,11 +63,11 @@ SynthDef(\funMelody, {
 	var oct = m.gyroZFiltered.linlin(-1,1,3,7).floor;
 
 	Pdef(m.ptn).set(\dur, dur);
-	Pdef(m.ptn).set(\filtFreq, m.accelMassFiltered.linexp(0,1,180,14000));
-	Pdef(m.ptn).set(\amp, m.accelMassFiltered.lincurve(0,0.3,0.11,0.045,-2));
+	Pdef(m.ptn).set(\filtFreq, m.accelMassFiltered.linexp(0,3,180,14000));
+	Pdef(m.ptn).set(\amp, m.accelMassFiltered.lincurve(0,2,0.11,0.045,-2)* 1.5);
 	Pdef(m.ptn).set(\octave,oct);
 
-	if(m.accelMass > 0.03,{
+	if(m.accelMass > 0.1,{
 		if( Pdef(~model.ptn).isPlaying.not,{
 			Pdef(~model.ptn).resume(quant:dur);
 		});

@@ -1,16 +1,28 @@
 var listsDir = "~/Develop/SuperCollider/Projects/AirKit/lists/";//RPI
 var personalityDir = "~/Develop/SuperCollider/Projects/AirKit/personalities/";//RPI
+
+
 // var personalityDir = "~/Develop/SuperCollider/Projects/scbounce/personalities/"; //laptop
 // var personalityDir = "~/Develop/SuperCollider/oscMusic/personalities/"; //mac mini cabin
 
-// var list = "list_performanceTests.sc";
-var list = "list_ITR_Mel.sc";
-// var list = "list_SiS_Alessio.sc";
-// var list = "list_yourDNA26.sc";
+// var list = "list_ITR_Mel.sc";
+// var list = "list_NZ.sc";
+// var list = "list_ITR_Nic.sc";
+// var list = "list_yourDNA25.sc";
 
-// var list = "list_glenroy.sc";
+var list = "list_workshop1.sc";
 var defaultLists = list!5;
 
+
+// var defaultLists = [
+//     "list_NZ_Mel.sc",
+//     "list_NZ_Mel.sc",
+
+//     "list_NZ_Suz.sc",
+//     "list_NZ_Suz.sc",
+
+//     "list_NZ_Suz.sc",
+// ];
 
 // var defaultLists = [
 //     "list_MIM25_James.sc",
@@ -38,7 +50,7 @@ var com = (
 );
 
 //------------------------------------------------------------
-// 
+//
 //------------------------------------------------------------
 var loadPersonalityList = {|i|
     var path = PathName.new(listsDir++defaultLists[i]);
@@ -93,6 +105,26 @@ var interpretPersonality = {|d|
 
         );
         ~device = d;
+
+        //------------------------------------------------------------
+        // register a draw function for this device's visual events.
+        // Namespaced per device, so two performers can each have their
+        // own \blob. Reloaded with the file like everything else.
+        //
+        //   ~vdef.(\blob, { |ev, c|
+        //       // c: (pos: size: width: color: rotation:
+        //       //     normTime: elapsed: now: bounds: view:)
+        //       Pen.strokeColor = c.color;
+        //       Pen.addOval(Rect.aboutPoint(c.pos, c.size, c.size));
+        //       Pen.stroke;
+        //   });
+        //
+        // then emit  (type: \customVisualEvent, shape: \blob, viewID: d.port, ...)
+        ~vdef = { |name, func|
+            if(~visuals.notNil, { ~visuals.vdef(d.port, name, func) });
+            name
+        };
+
         //------------------------------------------------------------
         // frame rate of rout
         ~secs = 0.03;
@@ -181,7 +213,7 @@ var interpretPersonality = {|d|
 };
 
 //------------------------------------------------------------
-// 
+//
 //------------------------------------------------------------
 
 var createProcRout = {|d|
@@ -192,7 +224,7 @@ var createProcRout = {|d|
                     ~fileTime = File.mtime(~filePath);
                     "[file saved]".postln;
                     NetAddr.new("127.0.0.1", 57120).sendMsg("/airkit/loadPersonality", d.port, d.personality);
-                }); 
+                });
                 if(d.enabled == true,{
                     // pre-process data -> personality model
                     ~processDeviceData.(d);
@@ -234,6 +266,7 @@ var loadPersonality = { |port, index|
     "loading personality: %".format(d.name).postln;
 
     NetAddr.new("127.0.0.1", 57120).sendMsg("/airkit/personalityName", d.port, d.name);
+    if(~visuals.notNil, { ~visuals.clearVdefs(d.port) });
     d.env = interpretPersonality.(d);
     // ["TODO",d.enabled].postln;
     d.env.use{
@@ -253,7 +286,7 @@ var loadPersonality = { |port, index|
 
 };
 //------------------------------------------------------------
-// 
+//
 //------------------------------------------------------------
 
 var unLoadPersonality = { |port, index|
@@ -279,7 +312,7 @@ var unLoadPersonality = { |port, index|
 };
 
 //------------------------------------------------------------
-// 
+//
 //------------------------------------------------------------
 
 var reLoadPersonality = { |port, index|
@@ -293,6 +326,7 @@ var reLoadPersonality = { |port, index|
     // "loading personality: %".format(d.name).postln;
 
     // NetAddr.new("127.0.0.1", 57120).sendMsg("/airkit/personalityName", d.port, d.name);
+    if(~visuals.notNil, { ~visuals.clearVdefs(d.port) });
     d.env = interpretPersonality.(d);
     // ["TODO",d.enabled].postln;
     d.env.use{
@@ -313,7 +347,7 @@ var reLoadPersonality = { |port, index|
 };
 
 //------------------------------------------------------------
-// 
+//
 //------------------------------------------------------------
 ~devices = Dictionary();
 

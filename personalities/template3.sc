@@ -2,7 +2,7 @@ var m = ~model;
 var synth;
 var bl = false;
 var frame = 0;
-var bassLines = [[0,2,4,5,7,9,11,12],[0]];
+var bassLines = [[0,2,4,5,7,9,11,12],[0]]-2;
 var bassLine = bassLines[0];
 var beat = 0.2;
 
@@ -94,8 +94,8 @@ SynthDef(\versatilePerc, {
 
 
 			\type, \customVisualEvent,
-			\sx, Pn(Pseries(-1.0,2/bassLines[0].size,bassLines[0].size), inf),
-			\sy, Pn(Pseries(-1.0,2/bassLines[0].size,bassLines[0].size), inf).neg,
+			\sx, Pn(Pseries(-0.85,2/bassLines[0].size,bassLines[0].size), inf),
+			\sy, Pn(Pseries(-0.85,2/bassLines[0].size,bassLines[0].size), inf).neg,
 			\ex, Pkey(\sx),
 			\ey, Pkey(\sy),
       \startSize, 50,
@@ -176,7 +176,7 @@ SynthDef(\versatilePerc, {
 	));
 
 
-	if(m.rrateMassFiltered > 0.045,{
+	if(m.accelMassFiltered > 0.3,{
 		if( Pdef(m.ptn).isPlaying.not,{
 			Pdef(m.ptn).resume(quant:beat);
 		});
@@ -219,7 +219,7 @@ SynthDef(\versatilePerc, {
     if(bl == false, {
       bl = true;
       // synth.set(\gate, 1);
-      	synth = Synth(\funBass, [\amp, 0.1]);
+      	synth = Synth(\funBass, [\amp, 0.05]);
         synth.set(\freq, 26.midicps);
     });
 

@@ -1,0 +1,27 @@
+class:: Vwrand
+summary:: Pwrand (weighted random) over visual events
+categories:: Libraries>VisualServer
+related:: Classes/Pwrand, Classes/Vrand, Classes/Vseq, Guides/VisualServer
+
+description::
+
+Returns a link::Classes/Pwrand:: that picks visual events with the given weights (same item normalisation as link::Classes/Vseq::).
+
+CLASSMETHODS::
+
+method:: new
+argument:: list
+Events or instrument symbols.
+argument:: weights
+An link::Classes/Array:: of weights (should sum to 1), as link::Classes/Pwrand::.
+argument:: repeats
+Default code::inf::.
+argument:: view
+Default code::\default::.
+returns:: a link::Classes/Pwrand::.
+
+EXAMPLES::
+
+code::
+Vwrand([\circle, \square, \pulse], [0.6, 0.3, 0.1], inf, \demo).vplay;
+::

@@ -67,7 +67,7 @@ SynthDef(\pullstretchMonoQN, {|out, amp = 1, buffer = 0, envbuf = -1, pch = 1, d
 	// 	amp = 0;
 	// });
 
-	if(amp<0.005,{
+	if(amp<0.002,{
 		amp=0;
 		// synth.set(\lag,0.8);
 		if(trig, {

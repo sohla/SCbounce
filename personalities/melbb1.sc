@@ -39,6 +39,8 @@ SynthDef(\drumkit2, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 
 	var folder  = PathName("~/Downloads/melSamples/melbb");
 	var shapes = [\circle,\circle,\hexagon,\hexagon,\hexagon,\circle,\hexagon];
+	var condition = Condition.new;
+
 	postf("loading samples : % \n", folder);
 
 	buffers = folder.entries.collect({ |path,i|
@@ -47,15 +49,18 @@ SynthDef(\drumkit2, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 			postf("buffer alloc [%] \n", buf);
 			if(folder.entries.size - 1 == i,{
 				"samples loaded".postln;
+				condition.unhang;
 			});
 		});
 	});
+
+	condition.hang;
 
 	Pdef(m.ptn,
 		Pbind(
 			\instrument, \drumkit2,			
 			\bufnum, Pfunc{
-        bi = bi + step;
+        		bi = bi + step;
 				if(bi >= (7),{bi=0});
 				buffers[bi];
 				bi.asInteger.postln;
@@ -81,7 +86,7 @@ SynthDef(\drumkit2, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 			\endWidth, 1,
 			// \widthEnv: ~sizeEnv ? defaultEnv,
 
-			\startSize, 100,
+			\startSize, 200,
 			\endSize, 60,
 			// \sizeEnv: ~sizeEnv ? defaultEnv,
 
@@ -135,7 +140,7 @@ SynthDef(\drumkit2, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 			\endWidth, 10,
 			// \widthEnv: ~sizeEnv ? defaultEnv,
 
-			\startSize, 100,
+			\startSize, 200,
 			\endSize, 10,
 			// \sizeEnv: ~sizeEnv ? defaultEnv,
 
@@ -162,14 +167,19 @@ SynthDef(\drumkit2, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 };
 
 ~deinit = ~deinit <> {
+
+	var count = buffers.size;
+	var condition = Condition.new;
+
 	Pdef(m.ptn).remove;
 	Pdef(\shaker).remove;
 
-	buffers.do({|buf|
+	buffers.do({|buf,i|
 		postf("buffer dealloc [%] \n", buf);
 		buf.free;
-		s.sync;
+		if(i >= count,{condition.unhang});
 	});
+	condition.hang;
 };
 
 //------------------------------------------------------------
@@ -201,7 +211,7 @@ SynthDef(\drumkit2, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 	Pdef(m.ptn).set(\amp, amp * 0.2);
 	Pdef(m.ptn).set(\release, rel);
 	Pdef(m.ptn).set(\rate, roll);
-	step = 2.pow(m.accelMassFiltered.lincurve(0,1.0,-1,0, -1));
+	step = 2.pow(m.accelMassFiltered.lincurve(0,1.0,-3,-1, -1));
 
 	Pdef(\shaker).set(\amp, sa*0.7);	
 	Pdef(m.ptn).set(\dur, dur);	

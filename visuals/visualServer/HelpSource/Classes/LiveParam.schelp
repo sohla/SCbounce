@@ -1,0 +1,36 @@
+class:: LiveParam
+summary:: A pattern that evaluates a function once per event (live value)
+categories:: Libraries>VisualServer
+related:: Classes/LiveStream, Classes/Pfunc, Classes/Vlive, Guides/VisualServer
+
+description::
+
+A link::Classes/Pattern:: whose value is code::func.value(inval):: re-evaluated each event. Timing is controlled entirely by the host link::Classes/Pbind::'s code::\dur:: — code::LiveParam:: never waits internally (an internal wait would be yielded as a parameter value and corrupt the stream). Extra code::*new:: arguments are accepted and ignored for backward compatibility.
+
+Functionally similar to link::Classes/Pfunc::; provided for readable live-input pattern code. link::Classes/LiveStream:: is an alias subclass.
+
+CLASSMETHODS::
+
+method:: new
+argument:: func
+A link::Classes/Function:: returning the value for this event.
+argument:: ... ignored
+Accepted and ignored (e.g. legacy code::lag::/code::dur:: args).
+
+INSTANCEMETHODS::
+
+method:: embedInStream
+Yields code::func.value(inval):: forever (one value per pulled event).
+argument:: inval
+
+EXAMPLES::
+
+code::
+~imu = (x: 0);
+Routine({ loop { ~imu.x = 1.0.rand2; 0.1.wait } }).play;
+
+Vbind(\instrument, \circle,
+    \x, LiveParam({ ~imu.x }),
+    \dur, 0.2, \view, \demo
+).vplay;
+::

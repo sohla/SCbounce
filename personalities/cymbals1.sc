@@ -1,8 +1,8 @@
 var m = ~model;
 var bi = 0;
 var dur = 0.11;
+var buffers;
 
-~buffers;
 m.accelMassFilteredAttack = 0.99;
 m.accelMassFilteredDecay = 0.9;
 m.rrateMassFilteredAttack = 0.7;
@@ -37,11 +37,14 @@ SynthDef(\drumkit, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 
 	postf("loading samples : % \n", folder);
 
-	~buffers = folder.entries.collect({ |path,i|
+	buffers = folder.entries.collect({ |path,i|
 		Buffer.read(s, path.fullPath, action:{|buf|
 			postf("buffer alloc [%] \n", buf);
 			if(folder.entries.size - 1 == i,{
 				"samples loaded".postln;
+
+
+				
 			});
 		});
 	});
@@ -50,8 +53,8 @@ SynthDef(\drumkit, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 		Pbind(
 			\instrument, \drumkit,			
 			\bufnum, Pfunc{
-				if(bi >= (~buffers.size-1),{bi=0});
-				~buffers[bi];
+				if(bi >= (buffers.size-1),{bi=0});
+				buffers[bi];
 			},
 			\octave, Pseq([5].stutter(24), inf),
 			\start, 0,
@@ -81,14 +84,14 @@ SynthDef(\drumkit, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 	);
 
 	Pdef(m.ptn).play(quant:dur);
-	Pdef(m.ptn).set(\bufnum, ~buffers[0]);
+	Pdef(m.ptn).set(\bufnum, buffers[0]);
 
 };
 
 ~deinit = ~deinit <> {
 	Pdef(m.ptn).remove;
 
-	~buffers.do({|buf|
+	buffers.do({|buf|
 		// s.sync;
 		postf("buffer dealloc [%] \n", buf);
 		buf.free;
@@ -102,7 +105,7 @@ SynthDef(\drumkit, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 	var rate = m.rrateMassFiltered.linlin(0,1,0.2,10.4);
 	var amp = m.accelMassFiltered.lincurve(0,1.0,0.02,3, 2);
 
-	Pdef(m.ptn).set(\amp, amp * 1.5);
+	Pdef(m.ptn).set(\amp, amp * 2.0);
 	Pdef(m.ptn).set(\rate, rate);
 
 	Pdef(m.ptn).set(\viewID, d.port);
@@ -121,9 +124,9 @@ SynthDef(\drumkit, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 	// bi = (d.sensors.gyroEvent.y.abs / pi) * (~buffers.size-1);
 	// bi = bi.asInteger;
 	// bi = [0,1].choose;
-  bi = ~buffers.size.rand;
-	Pdef(m.ptn).set(\startColor, Color.hsv(bi/~buffers.size,1,1.0,1));
-	Pdef(m.ptn).set(\endColor, Color.hsv(bi/~buffers.size,1,1.0,0.1));
+  bi = buffers.size.rand;
+	Pdef(m.ptn).set(\startColor, Color.hsv(bi/buffers.size,1,1.0,1));
+	Pdef(m.ptn).set(\endColor, Color.hsv(bi/buffers.size,1,1.0,0.1));
 
 
 	if(m.accelMassFiltered > 0.02,{

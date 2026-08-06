@@ -1,11 +1,18 @@
 var m = ~model;
 var synth;
 
+m.accelMassFilteredAttack = 0.9;
+m.accelMassFilteredDecay = 0.1;
+m.rrateMassFilteredAttack = 0.95;
+m.rrateMassFilteredDecay = 0.5;
+m.gyroFilteredAttack = 0.7;
+m.gyroFilteredDecay = 0.7;
+
 //------------------------------------------------------------
 SynthDef(\sheet4, {
 
 	|out=0, amp=0.5, density=0.5, strength=0.5,
-     filterFreq=1000, filterQ=0.5,
+     filterFreq=100, filterQ=0.5,
      reverbMix=0.5, reverbRoom=0.5, reverbDamp=0.2, gate=0, my=0.5, mx=1x|
 
     var wind, filtered, reverbed;
@@ -41,21 +48,22 @@ SynthDef(\sheet4, {
 };
 
 ~deinit = ~deinit <> {
-	synth.free;
+	synth.set(\gate, 0);
+
 };
 
 //------------------------------------------------------------
 ~next = {|d|
 
-	var a = m.accelMassFiltered.lincurve(0,3,0,5,-6);
+	var a = m.accelMassFiltered.lincurve(0,2.5,0,7,-6);
 	var b = m.accelMassFiltered.linexp(0,3,0.1,1);
 	var r = m.rrateMassFiltered.linlin(0,1.5,0.8,1.0);
 	var e = (d.sensors.gyroEvent.y / 2pi) + 0.5;
 	e = e.fold(0,0.5) * 2;
-	e = e.linexp(0,1,600,1600);
-	if(a<0.03,{a=0});
+	e = e.linexp(0,1,30,400);
+	if(a<0.02,{a=0});
 	if(a>0.9,{a=0.9});
-	synth.set(\amp, a * 2);
+	synth.set(\amp, a * 15);
 	synth.set(\my, b);
 	synth.set(\mx, r);
 	synth.set(\filterFreq, e);
