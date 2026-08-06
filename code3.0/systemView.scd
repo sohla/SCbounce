@@ -5,8 +5,10 @@ var bh = 100;
 var isOSX = thisProcess.platform.name == \osx;
 var cores = if(isOSX, {"sysctl -n hw.ncpu"}, {"nproc"}).unixCmdGetStdOut.asInteger.max(1);
 
+// ask the routing table which interface is actually up rather than
+// assuming en0 (Wi-Fi on most Macs, but wrong when we're on ethernet)
 var hosts = if(isOSX,
-	{"ipconfig getifaddr en0"},
+	{"ipconfig getifaddr $(route -n get default 2>/dev/null | awk '/interface:/{print $2}')"},
 	{"hostname -I"}).unixCmdGetStdOut.stripWhiteSpace.replace($ ," | ");
 
 var getSCLoad = {
@@ -59,9 +61,9 @@ var cpuView = UserView()
 	.frameRate_(10)
 	.animate_(true)
 	.drawFunc_({|uv|
-			("CPU Load: "++getSystemLoad.().asStringPrec(2)++"%").drawAtPoint(10@4, Font.default, Color.yellow);
-			("CPU Load: "++getSCLoad.()[1].asStringPrec(2)++"%").drawAtPoint(120@4, Font.default, Color.yellow);
-			thermalString.().drawAtPoint(220@4, Font.default, Color.yellow);
+			("System Load: "++getSystemLoad.().asStringPrec(2)++"%").drawAtPoint(10@4, Font.default, Color.yellow);
+			("SC Load: "++getSCLoad.()[1].asStringPrec(2)++"%").drawAtPoint(140@4, Font.default, Color.yellow);
+			thermalString.().drawAtPoint(240@4, Font.default, Color.yellow);
 });
 
 var serverView = UserView()
