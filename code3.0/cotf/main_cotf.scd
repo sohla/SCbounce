@@ -92,9 +92,11 @@ s.waitForBoot({
     // atmosphere bed. Room 3 (headsets) is unchanged. 10^(-10/20) = 0.3162.
     ~cotfMonitorTrim = if(~cotfRoom == 2, 0.3162, 1.0);
 
-    // Seat trims (linear gain). Room 3: seat1 +2dB, seat2 +2dB (Ciaran, Edinburgh day 1),
-    // seat3 +3dB / seat4 -5dB (2026-07 bench). Room 2: seat3 +5dB (Ciaran, Edinburgh day 1),
-    // on top of the -10dB ~cotfMonitorTrim room pad. Live-tunable via /airkit/seatTrim; bake here to persist.
+    // Seat trims (linear gain), all Room 3 values from Edinburgh day 1 (2026-08-06, Ciaran):
+    // seat4 (percussion) ran hot in the Room 3 chair-speaker mix, seat3 (altosynth) sat under
+    // it, so seat3 +3dB / seat4 -5dB earlier that day; seat1 +2dB / seat2 +2dB added that
+    // evening. Room 2: seat3 +5dB (Ciaran, Edinburgh day 1), on top of the -10dB
+    // ~cotfMonitorTrim room pad. Live-tunable via /airkit/seatTrim; bake here to persist.
     ~cotfSeatTrims = if(~cotfRoom == 3,
         { [1.2589, 1.2589, 1.4125, 0.5623, 1] },
         { [1, 1, 1.7783, 1, 1] }
