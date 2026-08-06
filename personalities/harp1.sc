@@ -258,7 +258,7 @@ SynthDef(\funBass, {
 		bassSynth.set(\filtFreq, ff);
 	});
 
-	if(m.accelMassFiltered > 0.07,{
+	if(m.accelMassFiltered > 0.03,{
 		if( Pdef(m.ptn).isPlaying.not,{
 			Pdef(m.ptn).resume(quant:dur);
 		});

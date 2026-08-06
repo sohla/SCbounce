@@ -1,5 +1,8 @@
 var m = ~model;
 var synth;
+// the control "bus" for the held frame : ~next writes, the draw func reads
+var droneAmp = 0;
+var droneAmpSmooth = 0;
 m.accelMassFilteredAttack = 0.99;
 m.accelMassFilteredDecay = 0.9;
 
@@ -124,7 +127,115 @@ SynthDef(\sheet2, { |out, frq=111, gate=0, amp = 0, pchx=0|
 	Out.ar(out, dly);
 }).add;
 //------------------------------------------------------------
-~init = ~init <> {
+~init = ~init <> {|d|
+
+	//------------------------------------------------------------
+	// visual : the \sheet2 drone gets ONE held event, not a stream of them.
+	//
+	// duration: inf means the cull never expires it and normTime stays
+	// pinned at 0, so the core's own start->end blending never advances.
+	// This draw func does that blending instead, using the drone amp
+	// (0-1) as the blend position in place of normTime. So start* is how
+	// the frame looks silent, end* is how it looks at full drone, and
+	// EVERYTHING that defines it lives in the event below - nothing here
+	// invents a size, a colour or a scale factor of its own.
+	//
+	// clearEvents (personality unload) is what removes it.
+	~vdef.(\sheetFrame, { |ev, c|
+		var amp, size, col;
+		// Glide toward the value ~next handed the synth - droneAmp steps once
+		// per ~next tick (~secs, 30ms) while this runs at 60fps, so raw it
+		// reads stepped.
+		//
+		// Attack and release are deliberately asymmetric. `a` upstream is RAW
+		// accelMass, so the drive is short spikes; a symmetric one-pole slow
+		// enough to look smooth only ever climbs a few percent per spike, and
+		// the blend below then never leaves the bottom of start->end. Fast
+		// attack reaches the peak, slow release keeps the settle.
+		droneAmpSmooth = if(droneAmp > droneAmpSmooth, {
+			droneAmpSmooth + ((droneAmp - droneAmpSmooth) * 0.007)	// attack
+		},{
+			droneAmpSmooth + ((droneAmp - droneAmpSmooth) * 0.007)	// release
+		});
+		amp = droneAmpSmooth.clip(0, 1);
+
+		size = ev[\startSize].blend(ev[\endSize], amp);
+		col = ev[\startColor].blend(ev[\endColor], amp);
+
+		col.alpha = col.alpha * amp.lincurve(0,1,0,1,-8); // make it a bit more transparent
+
+		Pen.width = ev[\startWidth].blend(ev[\endWidth], amp);
+		Pen.addRect(Rect.aboutPoint(c[\pos], size, size));
+		// the fill: key is only acted on by the built-in shapeLib branch
+		// (visualCore.scd:173) - the vdef branch returns before it, so a
+		// draw func has to honour it itself
+		if(ev[\fill] ? false, {
+			Pen.fillColor = col;
+			Pen.fill;
+		},{
+			Pen.strokeColor = col;
+			Pen.stroke;
+		});
+	});
+
+	// Fired once, then held. start* = silent, end* = full drone; the draw
+	// func above blends between them on amp. Sizes are half-extents in
+	// pixels, so endSize 320 is a 640px square.
+	(
+		type: \customVisualEvent,
+		amp: 0,
+		dur: 0.01,
+		viewID: d.port,
+		shape: \sheetFrame,
+		fill: false,
+		startSize: 100,
+		endSize: 1000,
+		startWidth: 1,
+		endWidth: 7,
+		startColor: Color.hsv(0.55, 0.25, 1.0, 1),
+		endColor: Color.hsv(0.55, 0.25, 1.0, 1),
+		sx: 0, sy: 0, ex: 0, ey: 0,
+		duration: inf,
+	).play;
+
+	//------------------------------------------------------------
+	// visual : each note is a ring that flattens into a line, with a
+	// wobble riding on top. Registered here so it reloads with the file
+	// (loadPersonality calls clearVdefs before re-interpreting us).
+	//
+	// A vdef is needed rather than shape: \circle because the built-in
+	// path picks ONE shapeLib function per event - it can't interpolate
+	// between two shapes over the life of the note.
+	~vdef.(\morphLine, { |ev, c|
+		var n = ev[\numPoints] ? 48;
+		var mod = ev[\modulation] ? ();
+		var wobFreq = mod[\freq] ? 6;
+		var wobHarm = mod[\harmonics] ? 3;
+		var wobPhase = mod[\phase] ? 0;
+		// wobble eases off as the ring settles into the line
+		// NB: bracket access, not c.size / c.width - Set declares `var <size`,
+		// so c.size would return the ctx Event's item count, not the radius.
+		var sz = c[\size];
+		var wobAmp = (mod[\amp] ? 4) * (1 - (c[\normTime] * 0.7));
+		// ring -> line : holds the circle briefly, then collapses y
+		var morph = c[\normTime].pow(1.5);
+
+		var pts = Array.fill(n, { |i|
+			var angle = i / n * 2pi;
+			var wob = cos((angle * wobHarm) + (2pi * wobFreq * c[\now]) + wobPhase) * wobAmp;
+			c[\pos] + (
+				(cos(angle) * sz)
+				@ (((sin(angle) * sz) * (1 - morph)) + wob)
+			)
+		});
+
+		Pen.width = c[\width];
+		Pen.strokeColor = c[\color];
+		Pen.moveTo(pts[0]);
+		pts[1..].do { |p| Pen.lineTo(p) };
+		Pen.lineTo(pts[0]);
+		Pen.stroke;
+	});
 
 	Pdef(m.ptn,
 		Pbind(
@@ -142,6 +253,30 @@ SynthDef(\sheet2, { |out, frq=111, gate=0, amp = 0, pchx=0|
       \rel, 1.9,
         \func, Pfunc({|e| ~onEvent.(e)}),
 			\args, #[],
+
+			\type, \customVisualEvent,
+			\shape, \morphLine,
+            \fill, true,
+			\numPoints, 48,
+			\sx, Pwhite(-0.05, 0.05),
+			\sy, Pwhite(-0.05, 0.05),
+			\ex, 0,
+			\ey, 0,
+			\startSize, Pkey(\root).linlin(0,127,10,300),
+			\endSize, 110,
+			\startWidth, 3.5,
+			\endWidth, 0.4,
+			\rotation, Pwhite(0, 0.02),
+			\startColor, Color.hsv(0.55, 0.35, 1.0, 0.9),
+			\endColor, Color.hsv(0.6, 0.9, 0.5, 0.0),
+			\duration, 0.8,
+			// per-note wobble : fresh phase and rate on every strike
+			\modulation, Pfunc({ (
+				freq: rrand(4.0, 9.0) * 0.5,
+				amp: rrand(2.0, 4.0),
+				phase: 2pi.rand,
+				harmonics: [2, 3, 4].choose
+			) }),
 		)
 	);
 
@@ -176,7 +311,14 @@ SynthDef(\sheet2, { |out, frq=111, gate=0, amp = 0, pchx=0|
 	if(a<0.02,{a=0.0});
 	if(a>0.9,{a=0.3});
 	synth.set(\amp, a * 0.6);
-  
+
+	// same drive as the synth.set above, normalised 0-1 for the held frame.
+	// `a` is clamped to 0.9 just above, so that is the ceiling.
+	droneAmp = a.linlin(0, 0.9, 0, 1);
+
+	// tells the visual router which device these shapes came from
+	Pdef(m.ptn).set(\viewID, d.port);
+
   Pdef(m.ptn).set(\dur, dur);
 	// Pdef(m.ptn).set(\octave, 4 + oct);
 	// Pdef(m.ptn).set(\amp, oct.linlin(2,5,0.1,0.9));

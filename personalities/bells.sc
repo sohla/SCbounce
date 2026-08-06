@@ -129,6 +129,50 @@ SynthDef(\bambooComplex, {
 
 
 ~init = ~init <> {
+
+	//------------------------------------------------------------
+	// visual : a triangle whose three edges break apart and tumble.
+	// Registered here so it reloads with the file (loadPersonality
+	// calls clearVdefs before re-interpreting us).
+	//
+	// Needs a vdef rather than shape: \triangle because the built-in
+	// shapeLib path draws one connected outline - it has no notion of
+	// the edges separating from each other.
+	~vdef.(\shards, { |ev, c|
+		var mod = ev[\modulation] ? ();
+		var spread = mod[\spread] ? 1.2;
+		var spin = mod[\spin] ? 1.0;
+		var seed = mod[\phase] ? 0;
+		// bracket access, not c.size - Set declares `var <size`, so the
+		// dot form returns the ctx Event's item count, not the radius
+		var sz = c[\size];
+		var pos = c[\pos];
+		// holds together briefly, then the edges fly
+		var brk = c[\normTime].pow(2);
+		var verts = Array.fill(3, { |i|
+			pos + Polar(sz, (i / 3 * 2pi) - 0.5pi).asPoint
+		});
+
+		Pen.width = c[\width];
+		Pen.strokeColor = c[\color];
+
+		3.do { |i|
+			var pa = verts[i];
+			var pb = verts[(i + 1) % 3];
+			var mid = (pa + pb) / 2;
+			// each edge drifts out along its own outward normal...
+			var drift = (mid - pos) * (brk * spread);
+			// ...and tumbles about its own midpoint, alternating direction
+			var ang = brk * spin * (1 + sin(seed + i)) * if(i.even, 1, -1);
+			var swing = { |p|
+				var v = p - mid;
+				mid + Polar(v.rho, v.theta + ang).asPoint + drift
+			};
+			Pen.moveTo(swing.(pa));
+			Pen.lineTo(swing.(pb));
+		};
+		Pen.stroke;
+	});
 };
 
 ~deinit = ~deinit <> {
@@ -168,6 +212,38 @@ SynthDef(\bambooComplex, {
 
 			]);
 			synth.server.sendBundle(0.1,[\n_set, synth.nodeID, \gate, 0]);
+
+			// visual : one triangle per strike, breaks apart as it rises.
+			// amp:0 / dur - the event type re-types this to \note and plays
+			// it, so the silent \default note is kept short. The bell above
+			// is the sound.
+			(
+				type: \customVisualEvent,
+				amp: 0,
+				dur: 0.05,
+				viewID: d.port,
+				shape: \shards,
+				startSize: 16 + (50 * amp),
+				endSize: 24 + (70 * amp),
+				startWidth: 2.5,
+				endWidth: 0.3,
+				// starts low, drifts off the top of the screen
+				sx: rrand(-0.02, 0.02),
+				sy: 0.7 + rrand(-0.1,0.1),
+				ex: rrand(-0.9, 0.9),
+				ey: -1.31,
+				yEnv: Env([0, 1], [1], \sin),
+				startColor: Color.hsv(noteIndex / notes.size, 0.45, 1.0, 0.9),
+				endColor: Color.hsv(noteIndex / notes.size, 0.9, 0.6, 0.0),
+				rotation: 2pi.rand,
+				duration: rrand(3.0, 4.5) * 0.5,
+				// per-strike break-up character
+				modulation: (
+					spread: rrand(0.8, 1.8),
+					spin: rrand(0.5, 2.0),
+					phase: 2pi.rand
+				)
+			).play;
 		});
 	});
 };

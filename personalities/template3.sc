@@ -176,7 +176,7 @@ SynthDef(\versatilePerc, {
 	));
 
 
-	if(m.accelMassFiltered > 0.3,{
+	if(m.accelMassFiltered > 0.1,{
 		if( Pdef(m.ptn).isPlaying.not,{
 			Pdef(m.ptn).resume(quant:beat);
 		});
