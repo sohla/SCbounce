@@ -252,6 +252,21 @@ core.vdef = { |self, port, name, func|
 core.clearVdefs = { |self, port| core.vdefs[port] = nil };
 
 //------------------------------------------------------------
+// drop a device's in-flight events.
+//
+// The cull below expires events on duration alone, so anything a
+// personality left behind keeps drawing until its time runs out - and
+// once clearVdefs has removed the matching draw function, the leftover
+// falls through to the shapeLib branch and renders as a stray circle.
+// Held events (duration: inf) would never leave at all.
+//------------------------------------------------------------
+core.clearEvents = { |self, port|
+	core.canvases.values.do { |c|
+		c[\events] = c[\events].select { |e| e[\src] != port };
+	};
+};
+
+//------------------------------------------------------------
 // the surface : one StackLayout, page 0 = overlay, page 1 = grid.
 // Lives either in the HDMI window or in the visual tab - same thing.
 //------------------------------------------------------------
