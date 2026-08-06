@@ -63,11 +63,11 @@ SynthDef(\pullstretchMonoQN, {|out, amp = 1, buffer = 0, envbuf = -1, pch = 1, d
 	var speed= m.gyroXFiltered.fold(-0.5,0.5).lincurve(-0.5,0.5,0.1,0.001,-1);
 
 
-	if(amp < 0.01, {
-		amp = 0;
-	});
+	// if(amp < 0.01, {
+	// 	amp = 0;
+	// });
 
-	if(amp<0.005,{
+	if(amp<0.002,{
 		amp=0;
 		// synth.set(\lag,0.8);
 		if(trig, {

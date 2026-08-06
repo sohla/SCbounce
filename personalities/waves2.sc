@@ -62,11 +62,19 @@ SynthDef(\looper, {|bufnum=0, out=0, amp=1.0, rate=1, start=0, pan=0, freq=440,
 
 	bgWaveBuffer1 = Buffer.read(s, bgWave1.fullPath, action:{ |buf|
 		postf("buffer alloc [%] \n", buf);
+<<<<<<< HEAD
 		bgWaveSynth1 = Synth(\looper, [\bufnum, buf, \amp, 0.4]);
 	});
 	bgWaveBuffer2 = Buffer.read(s, bgWave2.fullPath, action:{ |buf|
 		postf("buffer alloc [%] \n", buf);
 		bgWaveSynth2 = Synth(\looper, [\bufnum, buf, \amp, 0.2]);
+=======
+		bgWaveSynth1 = Synth(\looper, [\bufnum, buf, \amp, 0.5]);
+	});
+	bgWaveBuffer2 = Buffer.read(s, bgWave2.fullPath, action:{ |buf|
+		postf("buffer alloc [%] \n", buf);
+		bgWaveSynth2 = Synth(\looper, [\bufnum, buf, \amp, 0.3]);
+>>>>>>> b025cac (stuff)
 	});
 
 };
@@ -74,6 +82,7 @@ SynthDef(\looper, {|bufnum=0, out=0, amp=1.0, rate=1, start=0, pan=0, freq=440,
 //------------------------------------------------------------
 ~deinit = ~deinit <> {
 
+<<<<<<< HEAD
 	bgWaveSynth1.onFree({
 		postf("free synth [%] & buffer dealloc [%] \n", bgWaveSynth1, bgWaveBuffer1);
 		bgWaveBuffer1.free;
@@ -92,6 +101,31 @@ SynthDef(\looper, {|bufnum=0, out=0, amp=1.0, rate=1, start=0, pan=0, freq=440,
 			buf.free;
 		});
 	}.defer(4.5);//more than the release of the synth 
+=======
+	bgWaveSynth1.free;
+	bgWaveSynth2.free;
+	bgWaveBuffer1.free;
+	bgWaveBuffer2.free;
+	
+	fork{
+	buffers.do({|buf|
+		buf.free;
+		s.sync;
+	});
+		s.sync;
+	};
+	// bgWaveSynth1.set(\gate, 0);
+	// bgWaveSynth2.set(\gate, 0);
+	// fork{
+	// 	1.0.yield;
+    //     buffers.do({|buf|
+    //         postf("buffer dealloc [%] \n", buf);
+    //         buf.free;
+    //         s.sync;
+    //     });
+	// 	s.sync;
+	// };
+>>>>>>> b025cac (stuff)
 };
 
 //------------------------------------------------------------

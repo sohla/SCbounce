@@ -83,7 +83,7 @@ SynthDef(\drumkit, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 	// bi = (d.sensors.gyroEvent.y.abs / pi) * (~buffers.size-1);
 	// bi = bi.asInteger;
 	bi = [0,1,10].choose;
-	if(m.accelMassFiltered > 0.2,{
+	if(m.accelMassFiltered > 0.1,{
 		if( Pdef(m.ptn).isPlaying.not,{
 			Pdef(m.ptn).resume(quant:dur);
 		});

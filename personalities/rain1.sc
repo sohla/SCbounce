@@ -66,11 +66,19 @@ SynthDef(\rainSampler, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, attack=
 		synth.set(\gate, 0);	
 	});
 
+	// fork{
+	// synths.do({|synth, i|
+	// 	synth.free;
+	// 	s.sync;
+	// });
+
 	// buffers.do({|buf|
 	// 	buf.free;
 	// 	s.sync;
 	// 	postf("buffer dealloc [%] \n", buf);
 	// });
+	// s.sync;
+	// };
 };
 
 //------------------------------------------------------------

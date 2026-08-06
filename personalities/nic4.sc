@@ -77,7 +77,7 @@ SynthDef(\bufGrainN, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=44
 	// [m.accelMass * 0.3, m.accelMassFiltered * 0.5];
 	// [m.rrateMassFiltered, m.rrateMassThreshold];
 	// [m.rrateMassFiltered, m.rrateMassThreshold, m.accelMassAmp];
-	[m.accelMass];
+	[m.accelMass *2];
 	// [d.sensors.rrateEvent.x, d.sensors.rrateEvent.y, d.sensors.rrateEvent.z];
 	// [d.sensors.accelEvent.x, d.sensors.accelEvent.y, d.sensors.accelEvent.z];
 };

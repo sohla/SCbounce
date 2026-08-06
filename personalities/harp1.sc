@@ -293,7 +293,7 @@ SynthDef(\funBass, {
 	// [m.accelMass * 0.1, m.accelMassFiltered.linlin(0,3,0,1)];
 
 	// ROTATE
-	[m.rrateMass/2, m.rrateMassFiltered.linlin(0,2,0,1)];
+	[m.rrateMassFiltered.linlin(0,2,0,1)];
 
 	// X axis
 	// [d.sensors.gyroEvent.x/pi]; // norm
