@@ -1,14 +1,23 @@
 var bh = 100;
-var hosts = "hostname -I".unixCmdGetStdOut.replace($ ," | ");
+
+// The panel was written for the RPI; procfs/sysfs and `hostname -I` don't
+// exist on macOS, so each probe picks its own command per platform.
+var isOSX = thisProcess.platform.name == \osx;
+var cores = if(isOSX, {"sysctl -n hw.ncpu"}, {"nproc"}).unixCmdGetStdOut.asInteger.max(1);
+
+var hosts = if(isOSX,
+	{"ipconfig getifaddr en0"},
+	{"hostname -I"}).unixCmdGetStdOut.stripWhiteSpace.replace($ ," | ");
 
 var getSCLoad = {
 	var pidLine, sumLine, raw, norm;
     pidLine = "pgrep -f sclang | tr '\n' ',' | sed 's/,$//'".unixCmdGetStdOut.stripWhiteSpace;
     if (pidLine.notEmpty) {
-        sumLine = ("ps -p " ++ pidLine ++ " -o %cpu --no-header | awk '{s+=$1} END{print s}'")
+		// `-o %cpu=` suppresses the header on both BSD and GNU ps
+        sumLine = ("ps -p " ++ pidLine ++ " -o %cpu= | awk '{s+=$1} END{print s}'")
             .unixCmdGetStdOut.stripWhiteSpace;
         raw  = sumLine.asFloat;
-        norm = (raw / 4).round(0.1); // 4 cores
+        norm = (raw / cores).round(0.1);
         [raw, norm]
     } {
         [0.0, 0.0]  // sclang not found
@@ -16,20 +25,32 @@ var getSCLoad = {
 };
 
 var getSystemLoad = {
-    var result = "cat /proc/loadavg".unixCmdGetStdOut;
-    var load = result.split($ )[0].asFloat * 100 / 4; // Assuming 4 cores
-	load.round(0.1) 
+    var result = if(isOSX,
+		{"sysctl -n vm.loadavg".unixCmdGetStdOut.replace("{","").replace("}","").stripWhiteSpace},
+		{"cat /proc/loadavg".unixCmdGetStdOut});
+    var load = result.split($ )[0].asFloat * 100 / cores;
+	load.round(0.1)
 };
 
+// no unprivileged temp/fan source on macOS (powermetrics needs sudo)
 var getTemp = {
-    var result = "cat /sys/class/thermal/thermal_zone0/temp".unixCmdGetStdOut;
-    var temp = result.asInteger / 1000.0; // Convert millidegrees to degrees
-    temp
+	if(isOSX, { nil }, {
+		var result = "cat /sys/class/thermal/thermal_zone0/temp".unixCmdGetStdOut;
+		result.asInteger / 1000.0 // Convert millidegrees to degrees
+	})
 };
 
 var getFan = {
-    var result = "cat /sys/class/thermal/cooling_device0/cur_state".unixCmdGetStdOut;
-		result.asInteger 
+	if(isOSX, { nil }, {
+		"cat /sys/class/thermal/cooling_device0/cur_state".unixCmdGetStdOut.asInteger
+	})
+};
+
+var thermalString = {
+	var temp = getTemp.();
+	if(temp.isNil,
+		{ "Temp: n/a.   Fan: n/a" },
+		{ "Temp: "++temp.asStringPrec(2)++"°C"++".   Fan: "++getFan.() })
 };
 
 var cpuView = UserView()
@@ -40,7 +61,7 @@ var cpuView = UserView()
 	.drawFunc_({|uv|
 			("CPU Load: "++getSystemLoad.().asStringPrec(2)++"%").drawAtPoint(10@4, Font.default, Color.yellow);
 			("CPU Load: "++getSCLoad.()[1].asStringPrec(2)++"%").drawAtPoint(120@4, Font.default, Color.yellow);
-			("Temp: "++getTemp.().asStringPrec(2)++"°C"++".   Fan: "++getFan.()).drawAtPoint(220@4, Font.default, Color.yellow);
+			thermalString.().drawAtPoint(220@4, Font.default, Color.yellow);
 });
 
 var serverView = UserView()
