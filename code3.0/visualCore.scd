@@ -11,6 +11,14 @@
 //   ~visuals.routes    devicePort -> [\canvasName, ...]
 //   ~visuals.vdefs     devicePort -> (\shapeName -> drawFunc)
 //
+// GOTCHA for every *Env key (\sizeEnv, \xEnv, \colorEnv, \widthEnv ...):
+// Env implements embedInStream (Env.sc:277), so inside a Pbind an Env is
+// consumed as a time-varying VALUE - the event gets a Float, and the draw
+// call fails with "Message 'at' not understood". Pass it as
+//   \sizeEnv, Pfunc({ myEnv })
+// A direct (type: \customVisualEvent, ...).play is unaffected: nothing
+// streams the value, so a literal Env arrives intact.
+//
 // Scenes are just routing-table swaps:
 //   \overlay : every device -> \main        (all animations composited)
 //   \grid    : device N     -> \devN        (one canvas each)
@@ -93,8 +101,17 @@ var drawCanvas = { |name, view|
 
 				if(vdef.notNil, {
 
-					// personality-defined draw function
-					vdef.(event, (
+					// A vdef may honour either contract:
+					//
+					//   points func : returns an Array of Points, and then gets
+					//                 \modulation, \closed and \fill below, exactly
+					//                 like a shapeLib shape.
+					//   draw func   : draws with Pen itself and returns anything
+					//                 else - nothing further is done to it.
+					//
+					// Either way, position, rotation, Pen.width and both pen
+					// colours have already been applied above.
+					points = vdef.(event, (
 						pos: pos,
 						size: size,
 						width: width,
@@ -107,6 +124,10 @@ var drawCanvas = { |name, view|
 						view: view
 					));
 
+					// isArray is false for nil and for whatever Pen.stroke returns,
+					// so a draw func stops cleanly here
+					if(points.isArray.not, { points = nil });
+
 				},{
 
 					// built-in shapeLib path
@@ -116,6 +137,11 @@ var drawCanvas = { |name, view|
 						var shapeFunc = shapeLib[event[\shape]] ? shapeLib[\circle];
 						points = shapeFunc.(pos, size, event[\numPoints] ? 32);
 					});
+				});
+
+				// shared pipeline : warp -> trace -> close -> fill/stroke.
+				// Reached by shapeLib shapes AND by points-func vdefs.
+				if(points.notNil, {
 
 					if(event[\modulation].notNil, {
 
