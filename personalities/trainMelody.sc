@@ -31,7 +31,7 @@ SynthDef(\funMelody, {
 			\note, Pseq([12,14,10,7,0]-1, inf),
 			// \octave,Pseq([5,6].stutter(2),inf),
 			// \root, Pseq([0].stutter(32), inf),
-			\envAtk, Pwhite(0.02,0.04, inf),
+			\envAtk, Pwhite(0.002,0.04, inf),
 			\envDec, Pwhite(0.2, 0.1, inf),
 			\envSus, 0.0,
 			// \envRel,Pkey(\octave) * 0.4,

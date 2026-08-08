@@ -3,12 +3,14 @@ var synth;
 var note = 60;
 var dur = 0.22;
 
+//------------------------------------------------------------
 m.accelMassFilteredAttack = 0.1;
 m.accelMassFilteredDecay = 0.99;
 m.rrateMassFilteredAttack = 0.7;
 m.rrateMassFilteredDecay = 0.3;
 m.gyroFilteredAttack = 0.7;
 m.gyroFilteredDecay = 0.7;
+//------------------------------------------------------------
 
 //------------------------------------------------------------
 
@@ -111,8 +113,7 @@ SynthDef(\versatilePerc, {
     // Mix and output
     Out.ar(out, Balance2.ar(sig[0], sig[1],pan,amp))
 }).add;
-//------------------------------------------------------------
-// intial state
+
 //------------------------------------------------------------
 ~init = ~init <> {
 
@@ -120,40 +121,23 @@ SynthDef(\versatilePerc, {
 		Pbind(
 			\instrument, \versatilePerc,
 			\note, Pseq([0,10,5,4,7,7,2,5,4,4,-2,2,0,0,0,0].stutter(2) + 4, inf),
-      \dur, Pseq([0.22,0.22,Rest(0.22),0.22,0.22,0.22], inf),
+    		\dur, Pseq([0.22,0.22,Rest(0.22),0.22,0.22,0.22], inf),
 			\octave,Pseq([3,4].stutter(1),inf),
-			\root, Pseq([0,-2].stutter(64), inf),
+			\root, Pseq([0,-2,0,3].stutter(32), inf),
 			\envAtk,0.001,
 			\envDec,0.3,
 			\envSus, 0.0,
 			\envRel,Pkey(\octave).squared * 0.05,
-   		// \amp, 0.65,
-			\pan, Pxrand([-0.5,0.5], inf),
-   		\filtRes, 1,//Pwhite(0.4,0.7),
+   			\pan, Pxrand([-0.5,0.5], inf),
+   			\filtRes, 1,//Pwhite(0.4,0.7),
 			\func, Pfunc({|e| ~onEvent.(e)}),
 			\args, #[],
 		)
 	);
 
 	Pdef(m.ptn).play(quant:dur);
-	// synth = Synth(\warmPad, [
-	// 	\freq, note.midicps, 
-	// 	\amp, 0.05,
-	// 	\gate, 1,
-  //   \atk, 1.02,
-  //   \rel, 1.8,
-  //   \filtMin, 800,
-  //   \filtMax, 8000,
-  //   \filtSpeed, 0.1,
-  //   \chorusRate, 0.001,
-  //   \chorusDepth, 0.0001,
-	// 	\detuneAmount, 0.0002
-	// ]);
 };
 
-
-//------------------------------------------------------------
-// triggers
 //------------------------------------------------------------
 ~deinit = ~deinit <> {
 	Pdef(m.ptn).remove;
@@ -161,7 +145,7 @@ SynthDef(\versatilePerc, {
 	// synth.set(\gate, 0);
 };
 
-// example feeding the community
+//------------------------------------------------------------
 ~onEvent = {|e|
 	if(e.root != m.com.root,{
 		// "key change".postln;
@@ -171,11 +155,6 @@ SynthDef(\versatilePerc, {
 	m.com.dur = e.dur;
 };
 
-~onHit = {|state|
-};
-
-//------------------------------------------------------------
-// do all the work(logic) taking data in and playing pattern/synth
 //------------------------------------------------------------
 ~next = {|d|
 

@@ -26,6 +26,7 @@
 		"frog2",
 
 	    "trainChooka",
+	    "trainMelody",
 		"trainMove",
 		"trainBass",
 

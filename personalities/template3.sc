@@ -86,7 +86,7 @@ SynthDef(\versatilePerc, {
       \dur, beat,
       \octave, 5,
       \dist, 10,
-      \amp,0.5,
+      \amp,0.12,
       // \filtFreq, 100,
       \filtRes, 0.1,
       \tension, 0.1,

@@ -147,8 +147,8 @@ SynthDef(\bambooComplex, {
 		// dot form returns the ctx Event's item count, not the radius
 		var sz = c[\size];
 		var pos = c[\pos];
-		// holds together briefly, then the edges fly
-		var brk = c[\normTime].pow(2);
+		// holds together briefly, then the edges fly. Higher = holds longer.
+		var brk = c[\normTime].pow(mod[\hold] ? 2);
 		var verts = Array.fill(3, { |i|
 			pos + Polar(sz, (i / 3 * 2pi) - 0.5pi).asPoint
 		});
@@ -223,25 +223,27 @@ SynthDef(\bambooComplex, {
 				dur: 0.05,
 				viewID: d.port,
 				shape: \shards,
-				startSize: 16 + (50 * amp),
+				startSize: 106 + (50 * amp),
 				endSize: 24 + (70 * amp),
-				startWidth: 2.5,
+				startWidth: 1.3,
 				endWidth: 0.3,
 				// starts low, drifts off the top of the screen
 				sx: rrand(-0.02, 0.02),
-				sy: 0.7 + rrand(-0.1,0.1),
+				sy: 0+ rrand(-0.01,0.01),
 				ex: rrand(-0.9, 0.9),
-				ey: -1.31,
+				ey: 0,
 				yEnv: Env([0, 1], [1], \sin),
 				startColor: Color.hsv(noteIndex / notes.size, 0.45, 1.0, 0.9),
 				endColor: Color.hsv(noteIndex / notes.size, 0.9, 0.6, 0.0),
 				rotation: 2pi.rand,
-				duration: rrand(3.0, 4.5) * 0.5,
+				duration: rrand(3.0, 4.5) * 0.7,
 				// per-strike break-up character
 				modulation: (
-					spread: rrand(0.8, 1.8),
+					spread: rrand(7.0, 7.0),
 					spin: rrand(0.5, 2.0),
-					phase: 2pi.rand
+					phase: 2pi.rand,
+					// how long the triangle holds before the edges break away
+					hold: 2
 				)
 			).play;
 		});

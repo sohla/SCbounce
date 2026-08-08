@@ -3,8 +3,13 @@ var synth;
 // the control "bus" for the held frame : ~next writes, the draw func reads
 var droneAmp = 0;
 var droneAmpSmooth = 0;
+
+//------------------------------------------------------------
 m.accelMassFilteredAttack = 0.99;
 m.accelMassFilteredDecay = 0.9;
+m.rrateMassFilteredAttack = 0.2;
+m.rrateMassFilteredDecay = 0.08;
+//------------------------------------------------------------
 
 SynthDef(\bambooComplex1, {
   arg out=0, freq=440, pan=0, amp=0.5,
@@ -117,6 +122,7 @@ SynthDef(\bambooComplex1, {
 
   Out.ar(out, output);
 }).add;
+
 SynthDef(\sheet2, { |out, frq=111, gate=0, amp = 0, pchx=0|
 	var env = EnvGen.ar(Env.asr(0.3,1.0,8.0), gate, doneAction:Done.freeSelf);
 	var follow = Amplitude.kr(amp.lag(3), 0.3, 0.5);
@@ -126,6 +132,7 @@ SynthDef(\sheet2, { |out, frq=111, gate=0, amp = 0, pchx=0|
 	var dly = DelayC.ar(sig,0.03,[0.02,0.027]);
 	Out.ar(out, dly);
 }).add;
+
 //------------------------------------------------------------
 ~init = ~init <> {|d|
 
@@ -142,30 +149,36 @@ SynthDef(\sheet2, { |out, frq=111, gate=0, amp = 0, pchx=0|
 	//
 	// clearEvents (personality unload) is what removes it.
 	~vdef.(\sheetFrame, { |ev, c|
+		var mod = ev[\modulation] ? ();
+		var atk = mod[\attack] ? 0.007;
+		var rel = mod[\release] ? 0.007;
+		var fade = mod[\fade] ? -8;
 		var amp, size, col;
 		// Glide toward the value ~next handed the synth - droneAmp steps once
 		// per ~next tick (~secs, 30ms) while this runs at 60fps, so raw it
 		// reads stepped.
 		//
-		// Attack and release are deliberately asymmetric. `a` upstream is RAW
-		// accelMass, so the drive is short spikes; a symmetric one-pole slow
-		// enough to look smooth only ever climbs a few percent per spike, and
-		// the blend below then never leaves the bottom of start->end. Fast
-		// attack reaches the peak, slow release keeps the settle.
+		// Attack and release are separate because `a` upstream is RAW
+		// accelMass, so the drive is short spikes; one symmetric coefficient
+		// slow enough to look smooth only climbs a few percent per spike and
+		// the blend below never leaves the bottom of start->end. Both are set
+		// on the event, not here.
 		droneAmpSmooth = if(droneAmp > droneAmpSmooth, {
-			droneAmpSmooth + ((droneAmp - droneAmpSmooth) * 0.007)	// attack
+			droneAmpSmooth + ((droneAmp - droneAmpSmooth) * atk)
 		},{
-			droneAmpSmooth + ((droneAmp - droneAmpSmooth) * 0.007)	// release
+			droneAmpSmooth + ((droneAmp - droneAmpSmooth) * rel)
 		});
 		amp = droneAmpSmooth.clip(0, 1);
 
+		// every dimension is the event's own, positioned by amp instead of
+		// by normTime - this func invents nothing
 		size = ev[\startSize].blend(ev[\endSize], amp);
 		col = ev[\startColor].blend(ev[\endColor], amp);
-
-		col.alpha = col.alpha * amp.lincurve(0,1,0,1,-8); // make it a bit more transparent
+		col.alpha = col.alpha * amp.lincurve(0, 1, 0, 1, fade);
 
 		Pen.width = ev[\startWidth].blend(ev[\endWidth], amp);
-		Pen.addRect(Rect.aboutPoint(c[\pos], size, size));
+		// Pen.addRect(Rect.aboutPoint(c[\pos], size, size));
+		Pen.addArc(c[\pos], size, 0, 2pi);
 		// the fill: key is only acted on by the built-in shapeLib branch
 		// (visualCore.scd:173) - the vdef branch returns before it, so a
 		// draw func has to honour it itself
@@ -187,15 +200,29 @@ SynthDef(\sheet2, { |out, frq=111, gate=0, amp = 0, pchx=0|
 		dur: 0.01,
 		viewID: d.port,
 		shape: \sheetFrame,
-		fill: false,
-		startSize: 100,
-		endSize: 1000,
+		fill: true,
+		startSize: 60,
+		endSize: 600,
 		startWidth: 1,
-		endWidth: 7,
-		startColor: Color.hsv(0.55, 0.25, 1.0, 1),
-		endColor: Color.hsv(0.55, 0.25, 1.0, 1),
+		endWidth: 10,
+		rotation: pi.half,
+		startColor: Color.hsv(0.55, 0.25, 1.0, 0.5),
+		endColor: Color.hsv(0.55, 0.25, 1.0, 0.1),
 		sx: 0, sy: 0, ex: 0, ey: 0,
 		duration: inf,
+
+			// \sheetFrame's only inputs that are not standard event keys :
+			// how fast the frame follows the drone up and down, and the
+			// curve that thins it out at low amp. (freq/amp/phase/harmonics
+			// were inert here - this is a draw func, so the core's built-in
+			// modulation never runs on it.)
+			modulation: (
+				attack: 0.007,
+				release: 0.007,
+				fade: -8
+			),
+
+
 	).play;
 
 	//------------------------------------------------------------
@@ -212,51 +239,56 @@ SynthDef(\sheet2, { |out, frq=111, gate=0, amp = 0, pchx=0|
 		var wobFreq = mod[\freq] ? 6;
 		var wobHarm = mod[\harmonics] ? 3;
 		var wobPhase = mod[\phase] ? 0;
-		// wobble eases off as the ring settles into the line
+		var ease = mod[\ease] ? 0.7;
 		// NB: bracket access, not c.size / c.width - Set declares `var <size`,
 		// so c.size would return the ctx Event's item count, not the radius.
 		var sz = c[\size];
-		var wobAmp = (mod[\amp] ? 4) * (1 - (c[\normTime] * 0.7));
-		// ring -> line : holds the circle briefly, then collapses y
-		var morph = c[\normTime].pow(1.5);
-
+		// wobble eases off as the note settles
+		var wobAmp = (mod[\amp] ? 4) * (1 - (c[\normTime] * ease));
 		var pts = Array.fill(n, { |i|
 			var angle = i / n * 2pi;
 			var wob = cos((angle * wobHarm) + (2pi * wobFreq * c[\now]) + wobPhase) * wobAmp;
 			c[\pos] + (
-				(cos(angle) * sz)
-				@ (((sin(angle) * sz) * (1 - morph)) + wob)
+				(sin(angle) * sz)
+				@ (((cos(angle) * sz) ) + wob)
 			)
 		});
 
 		Pen.width = c[\width];
-		Pen.strokeColor = c[\color];
 		Pen.moveTo(pts[0]);
 		pts[1..].do { |p| Pen.lineTo(p) };
 		Pen.lineTo(pts[0]);
-		Pen.stroke;
+		// the fill: key is only acted on by the built-in shapeLib branch -
+		// the vdef branch returns before it, so a draw func has to read it
+		if(ev[\fill] ? false, {
+			Pen.fillColor = c[\color];
+			Pen.fill;
+		},{
+			Pen.strokeColor = c[\color];
+			Pen.stroke;
+		});
 	});
 
 	Pdef(m.ptn,
 		Pbind(
 			\instrument, \bambooComplex1,
-      \octave, Pseq([6,8,7] - 2, inf),
-      // \dur, Pseq([0.4,Rest(0.2),0.2] * 0.5, inf),
-      \degree, Pseq([0,2,7], inf),
-      \root, Pseq([0,3,-2,0,-5,3,5,2].stutter(30), inf),
-      \amp, 0.1,
-      \pan, Pwhite(-0.6, 0.6),
-      \model, 1,//Prand([0, 1, 2,3,4,5,6], inf),
-      \strikePos, Pwhite(0.1, 0.9),
-      \resonance, Pwhite(0.1, 0.9),
-      \bambooMoisture, Pwhite(0.1,0.9),
-      \rel, 1.9,
-        \func, Pfunc({|e| ~onEvent.(e)}),
+			\octave, Pseq([6,8,7] - 2, inf),
+			// \dur, Pseq([0.4,Rest(0.2),0.2] * 0.5, inf),
+			\degree, Pseq([0,2,7], inf),
+			\root, Pseq([0,3,-2,0,-5,3,5,2].stutter(30), inf),
+			\amp, 0.1,
+			\pan, Pwhite(-0.6, 0.6),
+			\model, 1,//Prand([0, 1, 2,3,4,5,6], inf),
+			\strikePos, Pwhite(0.1, 0.9),
+			\resonance, Pwhite(0.1, 0.9),
+			\bambooMoisture, Pwhite(0.1,0.9),
+			\rel, 1.9,
+	        \func, Pfunc({|e| ~onEvent.(e)}),
 			\args, #[],
 
 			\type, \customVisualEvent,
 			\shape, \morphLine,
-            \fill, true,
+            \fill, false,
 			\numPoints, 48,
 			\sx, Pwhite(-0.05, 0.05),
 			\sy, Pwhite(-0.05, 0.05),
@@ -267,27 +299,31 @@ SynthDef(\sheet2, { |out, frq=111, gate=0, amp = 0, pchx=0|
 			\startWidth, 3.5,
 			\endWidth, 0.4,
 			\rotation, Pwhite(0, 0.02),
-			\startColor, Color.hsv(0.55, 0.35, 1.0, 0.9),
-			\endColor, Color.hsv(0.6, 0.9, 0.5, 0.0),
+			\startColor, Color.hsv(0.55, 0.85, 1.0, 0.9),
+			\endColor, Color.hsv(0.2, 0.9, 0.5, 0.0),
 			\duration, 0.8,
-			// per-note wobble : fresh phase and rate on every strike
+			// per-note wobble : fresh phase and rate on every strike.
+			// ease is how fast it settles over the note - tune it here.
 			\modulation, Pfunc({ (
 				freq: rrand(4.0, 9.0) * 0.5,
 				amp: rrand(2.0, 4.0),
 				phase: 2pi.rand,
-				harmonics: [2, 3, 4].choose
+				harmonics: [2, 3, 4].choose,
+				ease: 0.7
 			) }),
 		)
 	);
 
 	Pdef(m.ptn).play(quant:0.1);
-  synth = Synth(\sheet2, [\frq, 10.midicps, \gate, 1]);
+	synth = Synth(\sheet2, [\frq, 10.midicps, \gate, 1]);
 };
 
+//------------------------------------------------------------
 ~deinit = ~deinit <> {
 	Pdef(m.ptn).remove;
   synth.set(\gate, 0);
 };
+
 //------------------------------------------------------------
 ~onEvent = {|e|
 	m.com.root = e.root;
@@ -300,10 +336,10 @@ SynthDef(\sheet2, { |out, frq=111, gate=0, amp = 0, pchx=0|
 ~next = {|d|
 
 	var move = m.accelMassFiltered.linlin(0,2,0,1);
-  var oct = m.accelMassFiltered.linlin(0,5,2,5).floor;
+	var oct = m.accelMassFiltered.linlin(0,5,2,5).floor;
 	var dur = m.accelMassFiltered.lincurve(0,1.5,0.3,0.05,-3);
 	
-  var a = m.accelMass * 0.5;
+  	var a = m.accelMass * 0.5;
 	var f = 50 + (m.accelMassFiltered * 100);
 	var pchs = [0,12,24,36,48];
 	var i = (d.sensors.gyroEvent.y.abs / pi) * (pchs.size);
@@ -319,10 +355,10 @@ SynthDef(\sheet2, { |out, frq=111, gate=0, amp = 0, pchx=0|
 	// tells the visual router which device these shapes came from
 	Pdef(m.ptn).set(\viewID, d.port);
 
-  Pdef(m.ptn).set(\dur, dur);
+ 	Pdef(m.ptn).set(\dur, dur);
 	// Pdef(m.ptn).set(\octave, 4 + oct);
 	// Pdef(m.ptn).set(\amp, oct.linlin(2,5,0.1,0.9));
-  if(move > 0.05, {
+	if(move > 0.05, {
 		if( Pdef(m.ptn).isPlaying.not,{
 			Pdef(m.ptn).resume(quant:0.4);
 		});
