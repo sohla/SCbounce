@@ -114,16 +114,37 @@ var interpretPersonality = {|d|
         ~device = d;
 
         //------------------------------------------------------------
-        // register a draw function for this device's visual events.
+        // register a custom shape for this device's visual events.
         // Namespaced per device, so two performers can each have their
         // own \blob. Reloaded with the file like everything else.
         //
+        // The core has ALREADY applied position, rotation, Pen.width and
+        // both pen colours before your function runs. It hands you
+        //   ev : the raw event    (startSize: endSize: fill: modulation: ...)
+        //   c  : resolved values  (pos: size: width: color: rotation:
+        //                          normTime: elapsed: now: bounds: view:)
+        // NB read c with brackets - c[\size], NOT c.size. Set declares
+        // `var <size`, so the dot form returns the Event's item count.
+        //
+        // Two contracts, chosen by what you return:
+        //
+        // 1. POINTS FUNC - return an Array of Points. \modulation, \closed
+        //    and \fill are then applied for you, same as a shapeLib shape.
+        //
         //   ~vdef.(\blob, { |ev, c|
-        //       // c: (pos: size: width: color: rotation:
-        //       //     normTime: elapsed: now: bounds: view:)
-        //       Pen.strokeColor = c.color;
-        //       Pen.addOval(Rect.aboutPoint(c.pos, c.size, c.size));
-        //       Pen.stroke;
+        //       Array.fill(32, { |i|
+        //           var a = i / 32 * 2pi;
+        //           c[\pos] + Polar(c[\size], a).asPoint
+        //       })
+        //   });
+        //
+        // 2. DRAW FUNC - draw with Pen and return anything else. You get
+        //    full control, but \modulation, \closed and \fill are yours to
+        //    honour (they act on a points array, which you never produce).
+        //
+        //   ~vdef.(\blob, { |ev, c|
+        //       Pen.addOval(Rect.aboutPoint(c[\pos], c[\size], c[\size]));
+        //       if(ev[\fill] ? false, { Pen.fill },{ Pen.stroke });
         //   });
         //
         // then emit  (type: \customVisualEvent, shape: \blob, viewID: d.port, ...)
