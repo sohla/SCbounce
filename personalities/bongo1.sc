@@ -105,53 +105,29 @@ SynthDef(\bongo1, {
 		var rest = mod[\rest] ? false;
 		var chirpAmt = mod[\chirp] ? 0.5;
 		var chirpTime = mod[\chirpTime] ? 0.04;
-		// how wide the arc reads, in radians. Deliberately NOT tied to the
-		// number of cycle steps - that sets where marks land, not how long
-		// a tick should be.
 		var arcSpan = mod[\arcSpan] ? 0.45;
 		var arcAlpha = mod[\arcAlpha] ? 0.22;
 		var head = mod[\head] ? 30;
 		var t = c[\normTime];
-		var mid = c[\pos];		// sx/sy default 0 -> the canvas centre
-		var ring = c[\size];	// startSize -> endSize, ring radius in PIXELS
-		var wid = c[\width];	// startWidth -> endWidth
-		var col = c[\color];	// startColor -> endColor
+		var mid = c[\pos];
+		var ring = c[\size];
+		var wid = c[\width];
+		var col = c[\color];
 		var tension = (mod[\tension] ? 0.5).clip(0, 1);
-		// the synth's Line.kr(1.5, 1, 0.02) attack bend, scaled by tension
 		var chirp = 1 + (chirpAmt * tension * exp(t.neg / chirpTime));
-		// \rotation has already swung the frame to this step's angle, so the
-		// mark is simply "out along +x by the ring radius". Radius comes from
-		// the event's size, which is in pixels and therefore round on any
-		// canvas - no bounds, no aspect term.
 		var pos = mid + (ring @ 0);
 
-		// Rests reach here as events but draw nothing - the silence is the
-		// gap, and it is the most important thing on screen.
 		if(rest.not, {
 
-			// this step's slice of the cycle, so the ring is assembled only
-			// from steps that actually sounded
 			Pen.width = wid;
 			Pen.strokeColor = Color.new(col.red, col.green, col.blue,
 				col.alpha * arcAlpha);
-			// centred on +x too, so \rotation carries it round with the mark
 			Pen.addArc(mid, ring, arcSpan.neg * 0.5, arcSpan);
 			Pen.stroke;
 
-			// The membrane : higher modes are tighter nodal circles and die
-			// soonest, so the bullseye thins from the inside out.
-			//
-			// modeDecays is used directly as a normTime constant rather than
-			// being scaled by damp. In the synth the mode decay is
-			// damp*modeDecays SECONDS against an Env.perc(0.001, damp), so
-			// once \duration tracks damp the two cancel and the decay SHAPE
-			// is the same every hit - damp shows up as how long the mark
-			// lives, which is what it actually does to the drum.
 			modeRatios.do { |ratio, i|
 				var a = modeAmps[i] * exp(t.neg / modeDecays[i]);
 				var r = head / ratio * chirp;
-				// every dimension is the event's own - this func only scales
-				// them by the mode's current amplitude
 				if(a > 0.01, {
 					Pen.width = wid * a;
 					Pen.strokeColor = Color.new(col.red, col.green, col.blue,
@@ -180,62 +156,32 @@ SynthDef(\bongo1, {
 
 			\type, \customVisualEvent,
 			\shape, \membrane,
-
-			// ---- the polar composition ----
-			// Where on the ring, and how far out. The draw func turns these
-			// into canvas coordinates; see the note in \membrane for why the
-			// position keys are not used for a canvas-anchored ring.
-			//
-			// \cyc advances once per event, rests included, so the step
-			// counter is read and written in exactly one place.
 			\cyc, Pfunc({
 				var s = 128;
 				var ph = (step % s) / s;
 				step = step + 1;
 				ph
 			}),
-			// radius = pitch, high notes further out
 			\rad, Pfunc({ |e|
 				((e[\note] ? 0) + ((e[\octave] ? 5) * 12)).linlin(48, 81, 0.34, 0.78)
 			}),
-			// angle round the ring. The core rotates about the mark's own
-			// origin, which for a centred event IS the ring centre - so the
-			// draw func never computes an angle at all.
 			\rotation, Pfunc({ |e| (e[\cyc] * 2pi) - 0.5pi }),
-			// ring radius, in pixels. Pixels are pixels, so this is round on
-			// the panel, the HDMI window and a grid column alike.
 			\startSize, Pfunc({ |e| e[\rad] * 400 }),
 			\endSize, Pkey(\startSize),
-			// stroke weight = dynamic. The draw func multiplies this by each
-			// mode's current amplitude, so the bullseye is heaviest at the
-			// strike and thins as the head settles.
 			\startWidth, 2,
 			\endWidth, 0.8,
-			// saturated primary on black
 			\startColor, Color.new(1.0, 0.42, 0.12, 0.95),
 			\endColor, Color.new(1.0, 0.42, 0.12, 0.0),
-			// The mark lasts as long as the drum rings. explin, not linexp:
-			// ~next drives damp through lincurve(...,5), so it spends most
-			// of its life near 0.001 and a linear reading of it would leave
-			// every hit an identical one-frame flash.
 			\duration, Pfunc({ |e|
 				(e[\damp] ? 1).clip(0.001, 14).explin(0.001, 14, 0.3, 3.2)
 			}),
-			// Only what is NOT a standard event key. phase and radius are
-			// \cyc and \rad passed straight through - one source, no second
-			// copy of the geometry.
 			\modulation, Pfunc({ |e| (
 				rest: e.isRest,
 				tension: e[\tension] ? 0.5,
 				chirp: 0.5,
 				chirpTime: 0.04,
-				// arc width in radians - 0.45 is about 26 degrees, roughly a
-				// tenth of the ring. Tune the tick length here.
 				arcSpan: 0.45,
 				arcAlpha: 0.22,
-				// head radius in px, from amp - ~next drives it 0.02..3.
-				// The event's own size is the RING radius, so the membrane
-				// travels here.
 				head: (e[\amp] ? 1).clip(0.02, 3).linexp(0.02, 3, 12, 70)
 			) })
 		);

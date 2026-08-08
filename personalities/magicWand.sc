@@ -55,22 +55,16 @@ SynthDef(\glockenspiel, {
 		var lane = mod[\lane] ? 26;
 		var t = c[\normTime];
 		var pos = c[\pos];
-		var len = c[\size];		// startSize -> endSize
-		var wid = c[\width];	// startWidth -> endWidth
-		var col = c[\color];	// startColor -> endColor
-		// hardness is the synth's decayscale - it stretches every ring time
+		var len = c[\size];
+		var wid = c[\width];
+		var col = c[\color];
 		var ringScale = hard.linlin(0, 1, 0.15, 1.0);
 
 		partials.do { |ratio, i|
-			// true interval spacing : the partials bunch toward the top,
-			// which is exactly what makes a struck bar sound inharmonic
 			var y = pos.y - (ratio.log2 * lane);
 			var tau = partialAmps[i] * ringScale;
 			var a = partialAmps[i] * exp(t.neg / tau);
 			var half = len * a * 0.9;
-			// High partials flash and vanish, the fundamental rings on.
-			// Every dimension below is the event's own - this func only
-			// scales them by the partial's current amplitude.
 			if(a > 0.01, {
 				Pen.width = wid * a;
 				Pen.strokeColor = Color.new(col.red, col.green, col.blue,
@@ -92,28 +86,17 @@ SynthDef(\glockenspiel, {
 
 			\type, \customVisualEvent,
 			\shape, \partialComb,
-			// right to left, so the accumulated field reads as a plate
-			// transport - the traversal is the drift itself
 			\sx, 0.0,
 			\ex, 0.0,
-			// Pfunc rather than Pkey throughout : ~next has not run yet when
-			// the first events fire, so octave / amp / hardness are still nil
 			\sy, Pfunc({ |e|
 				((e[\note] ? 0) + ((e[\octave] ? 5) * 12))
 					.linlin(36, 103, 0.8, -0.8)
 			}),
 			\ey, Pkey(\sy),
-			// amp is 0.15..0.25 and FALLS as the device moves (see ~next),
-			// so the marks are longest when the wand is still
 			\startSize, Pfunc({ |e| (e[\amp] ? 0.2).linlin(0.15, 0.25, 40, 120) }),
 			\endSize, Pkey(\startSize),
-			// stroke weight = dynamic. The draw func multiplies this by each
-			// partial's current amplitude, so the comb tapers up the stack
-			// and thins as the note dies.
 			\startWidth, 5,
 			\endWidth, 0.6,
-			// ANS / oscilloscope phosphor, fading to nothing
-			// \startColor, Color.new(1.0.rand, 1.0, 0.627, 0.95),
 			\startColor, Pfunc({ |e|
 				var c = ((e[\note] ? 0) + ((e[\octave] ? 5) * 12))
 					.linlin(36, 103, 0.0, 1.0);
@@ -121,9 +104,6 @@ SynthDef(\glockenspiel, {
 			}),
 			\endColor, Pkey(\startColor),
 			\duration, 0.9,
-			// the draw func's only two inputs that are not standard event
-			// keys : the synth's hardness, and px per octave of partial
-			// spacing. Tune the comb's height here, not in the vdef.
 			\modulation, Pfunc({ |e| (
 				hardness: e[\hardness] ? 0.5,
 				lane: 26

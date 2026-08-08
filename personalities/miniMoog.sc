@@ -34,12 +34,8 @@ SynthDef(\miniMoog, {
 	~vdef.(\squircle, { |ev, c|
 		var n = ev[\numPoints] ? 64;
 		var mod = ev[\modulation] ? ();
-		// 0 = perfectly round, 1 = hard corners
 		var sharp = (mod[\sharp] ? 0).clip(0, 1);
-		// superellipse exponent : 2 is a true circle, larger flattens the
-		// sides and tightens the corners. Both ends set on the event.
 		var expo = 2 / sharp.linexp(0, 1, mod[\round] ? 2, mod[\corner] ? 14);
-		// bracket access - c.size would hit Set's size method
 		var sz = c[\size];
 		var pos = c[\pos];
 		var pts = Array.fill(n, { |i|
@@ -91,8 +87,6 @@ SynthDef(\miniMoog, {
 				phase: 2pi.rand,
 				harmonics: 3,
 				sharp: m.accelMassFiltered.lincurve(0, 2.0, 0, 1,-1),
-				// the two ends of the superellipse : 2 is a true circle,
-				// 14 reads as a rectangle with slightly rounded corners
 				round: 2,
 				corner: 14
 			) })

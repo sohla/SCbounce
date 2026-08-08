@@ -154,15 +154,6 @@ SynthDef(\sheet2, { |out, frq=111, gate=0, amp = 0, pchx=0|
 		var rel = mod[\release] ? 0.007;
 		var fade = mod[\fade] ? -8;
 		var amp, size, col;
-		// Glide toward the value ~next handed the synth - droneAmp steps once
-		// per ~next tick (~secs, 30ms) while this runs at 60fps, so raw it
-		// reads stepped.
-		//
-		// Attack and release are separate because `a` upstream is RAW
-		// accelMass, so the drive is short spikes; one symmetric coefficient
-		// slow enough to look smooth only climbs a few percent per spike and
-		// the blend below never leaves the bottom of start->end. Both are set
-		// on the event, not here.
 		droneAmpSmooth = if(droneAmp > droneAmpSmooth, {
 			droneAmpSmooth + ((droneAmp - droneAmpSmooth) * atk)
 		},{
@@ -170,18 +161,12 @@ SynthDef(\sheet2, { |out, frq=111, gate=0, amp = 0, pchx=0|
 		});
 		amp = droneAmpSmooth.clip(0, 1);
 
-		// every dimension is the event's own, positioned by amp instead of
-		// by normTime - this func invents nothing
 		size = ev[\startSize].blend(ev[\endSize], amp);
 		col = ev[\startColor].blend(ev[\endColor], amp);
 		col.alpha = col.alpha * amp.lincurve(0, 1, 0, 1, fade);
 
 		Pen.width = ev[\startWidth].blend(ev[\endWidth], amp);
-		// Pen.addRect(Rect.aboutPoint(c[\pos], size, size));
 		Pen.addArc(c[\pos], size, 0, 2pi);
-		// the fill: key is only acted on by the built-in shapeLib branch
-		// (visualCore.scd:173) - the vdef branch returns before it, so a
-		// draw func has to honour it itself
 		if(ev[\fill] ? false, {
 			Pen.fillColor = col;
 			Pen.fill;
@@ -210,19 +195,11 @@ SynthDef(\sheet2, { |out, frq=111, gate=0, amp = 0, pchx=0|
 		endColor: Color.hsv(0.55, 0.25, 1.0, 0.1),
 		sx: 0, sy: 0, ex: 0, ey: 0,
 		duration: inf,
-
-			// \sheetFrame's only inputs that are not standard event keys :
-			// how fast the frame follows the drone up and down, and the
-			// curve that thins it out at low amp. (freq/amp/phase/harmonics
-			// were inert here - this is a draw func, so the core's built-in
-			// modulation never runs on it.)
-			modulation: (
-				attack: 0.007,
-				release: 0.007,
-				fade: -8
-			),
-
-
+		modulation: (
+			attack: 0.007,
+			release: 0.007,
+			fade: -8
+		),
 	).play;
 
 	//------------------------------------------------------------
@@ -240,10 +217,7 @@ SynthDef(\sheet2, { |out, frq=111, gate=0, amp = 0, pchx=0|
 		var wobHarm = mod[\harmonics] ? 3;
 		var wobPhase = mod[\phase] ? 0;
 		var ease = mod[\ease] ? 0.7;
-		// NB: bracket access, not c.size / c.width - Set declares `var <size`,
-		// so c.size would return the ctx Event's item count, not the radius.
 		var sz = c[\size];
-		// wobble eases off as the note settles
 		var wobAmp = (mod[\amp] ? 4) * (1 - (c[\normTime] * ease));
 		var pts = Array.fill(n, { |i|
 			var angle = i / n * 2pi;
@@ -258,8 +232,6 @@ SynthDef(\sheet2, { |out, frq=111, gate=0, amp = 0, pchx=0|
 		Pen.moveTo(pts[0]);
 		pts[1..].do { |p| Pen.lineTo(p) };
 		Pen.lineTo(pts[0]);
-		// the fill: key is only acted on by the built-in shapeLib branch -
-		// the vdef branch returns before it, so a draw func has to read it
 		if(ev[\fill] ? false, {
 			Pen.fillColor = c[\color];
 			Pen.fill;
@@ -302,8 +274,6 @@ SynthDef(\sheet2, { |out, frq=111, gate=0, amp = 0, pchx=0|
 			\startColor, Color.hsv(0.55, 0.85, 1.0, 0.9),
 			\endColor, Color.hsv(0.2, 0.9, 0.5, 0.0),
 			\duration, 0.8,
-			// per-note wobble : fresh phase and rate on every strike.
-			// ease is how fast it settles over the note - tune it here.
 			\modulation, Pfunc({ (
 				freq: rrand(4.0, 9.0) * 0.5,
 				amp: rrand(2.0, 4.0),

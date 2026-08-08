@@ -143,11 +143,8 @@ SynthDef(\bambooComplex, {
 		var spread = mod[\spread] ? 1.2;
 		var spin = mod[\spin] ? 1.0;
 		var seed = mod[\phase] ? 0;
-		// bracket access, not c.size - Set declares `var <size`, so the
-		// dot form returns the ctx Event's item count, not the radius
 		var sz = c[\size];
 		var pos = c[\pos];
-		// holds together briefly, then the edges fly. Higher = holds longer.
 		var brk = c[\normTime].pow(mod[\hold] ? 2);
 		var verts = Array.fill(3, { |i|
 			pos + Polar(sz, (i / 3 * 2pi) - 0.5pi).asPoint
@@ -160,9 +157,7 @@ SynthDef(\bambooComplex, {
 			var pa = verts[i];
 			var pb = verts[(i + 1) % 3];
 			var mid = (pa + pb) / 2;
-			// each edge drifts out along its own outward normal...
 			var drift = (mid - pos) * (brk * spread);
-			// ...and tumbles about its own midpoint, alternating direction
 			var ang = brk * spin * (1 + sin(seed + i)) * if(i.even, 1, -1);
 			var swing = { |p|
 				var v = p - mid;
@@ -227,7 +222,6 @@ SynthDef(\bambooComplex, {
 				endSize: 24 + (70 * amp),
 				startWidth: 1.3,
 				endWidth: 0.3,
-				// starts low, drifts off the top of the screen
 				sx: rrand(-0.02, 0.02),
 				sy: 0+ rrand(-0.01,0.01),
 				ex: rrand(-0.9, 0.9),
@@ -237,12 +231,10 @@ SynthDef(\bambooComplex, {
 				endColor: Color.hsv(noteIndex / notes.size, 0.9, 0.6, 0.0),
 				rotation: 2pi.rand,
 				duration: rrand(3.0, 4.5) * 0.7,
-				// per-strike break-up character
 				modulation: (
 					spread: rrand(7.0, 7.0),
 					spin: rrand(0.5, 2.0),
 					phase: 2pi.rand,
-					// how long the triangle holds before the edges break away
 					hold: 2
 				)
 			).play;

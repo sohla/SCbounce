@@ -358,6 +358,36 @@ there before designing a mark.
   Canvas grounds are fixed black, so the phosphor/ANS and saturated-primary
   rows work; ink-on-vellum and graph-paper do not.
 
+### Comments: the code tells the story
+
+**No comments inside a `Pbind`, an event literal, or a `~vdef` body.** If a
+line needs explaining, name the variable better or pull the expression out —
+the code is the explanation.
+
+Comments belong in **one place**: the block above `~vdef` / above the event, in
+`~init`. That block carries the context the code genuinely cannot — what the
+mark is, the atlas lineage it comes from, and which musical parameter drives
+which visual dimension:
+
+```supercollider
+// visual : a cyclic score. Hits are laid round a ring by their position
+// in a 128 step cycle ... Rests draw nothing, so the gaps are real.
+//
+// Lineage: the cyclic notations in the atlas crossed with Chladni/cymatic
+// plate figures for the mark itself. Atlas grammars G8 / G7.
+//
+//   cycle    -> angle round the ring       (\cyc -> \rotation)
+//   pitch    -> radius                     (\rad -> \startSize)
+//   amp      -> head size                  (\modulation)
+//   damp     -> how long the mark lives    (\duration)
+~vdef.(\membrane, { |ev, c|
+    ...
+});
+```
+
+That mapping table is the useful part and the part nothing else records. A
+comment restating what `Pen.width = wid * a` does is noise.
+
 ### The tightness rule
 
 A draw function reads `size`, `width` and `color` **from the event** and scales
