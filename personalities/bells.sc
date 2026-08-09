@@ -135,9 +135,9 @@ SynthDef(\bambooComplex, {
 	// Registered here so it reloads with the file (loadPersonality
 	// calls clearVdefs before re-interpreting us).
 	//
-	// Needs a vdef rather than shape: \triangle because the built-in
-	// shapeLib path draws one connected outline - it has no notion of
-	// the edges separating from each other.
+	// Needs a vdef rather than shape: \triangle because the library
+	// triangle is one connected outline - it has no notion of the edges
+	// separating from each other.
 	~vdef.(\shards, { |ev, c|
 		var mod = ev[\modulation] ? ();
 		var spread = mod[\spread] ? 1.2;
@@ -150,9 +150,6 @@ SynthDef(\bambooComplex, {
 			pos + Polar(sz, (i / 3 * 2pi) - 0.5pi).asPoint
 		});
 
-		Pen.width = c[\width];
-		Pen.strokeColor = c[\color];
-
 		3.do { |i|
 			var pa = verts[i];
 			var pb = verts[(i + 1) % 3];
@@ -163,10 +160,8 @@ SynthDef(\bambooComplex, {
 				var v = p - mid;
 				mid + Polar(v.rho, v.theta + ang).asPoint + drift
 			};
-			Pen.moveTo(swing.(pa));
-			Pen.lineTo(swing.(pb));
+			c[\render].([ swing.(pa), swing.(pb) ], 1, 1, false);
 		};
-		Pen.stroke;
 	});
 };
 
@@ -235,7 +230,8 @@ SynthDef(\bambooComplex, {
 					spread: rrand(7.0, 7.0),
 					spin: rrand(0.5, 2.0),
 					phase: 2pi.rand,
-					hold: 2
+					amp: 0,
+					hold: 4
 				)
 			).play;
 		});

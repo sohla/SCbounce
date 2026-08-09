@@ -90,8 +90,8 @@ SynthDef(\bongo1, {
 	// cycles) crossed with Chladni/cymatic plate figures for the mark
 	// itself. Atlas grammars G8 / G7.
 	//
-	//   cycle    -> angle round the ring       (\cyc -> \sx \sy)
-	//   pitch    -> radius                     (\rad -> \sx \sy)
+	//   cycle    -> angle round the ring       (\cyc -> \rotation)
+	//   pitch    -> radius                     (\rad -> \startSize)
 	//   amp      -> head size                  (\startSize)
 	//   damp     -> how long the mark lives    (\duration)
 	//   tension  -> attack overshoot           (\modulation)
@@ -99,41 +99,31 @@ SynthDef(\bongo1, {
 	// A draw func, because concentric rings are several subpaths. It knows
 	// no geometry of its own : the event is anchored at the canvas centre
 	// (\sx \sy default 0), \rotation carries the angle, and \startSize is
-	// the ring radius in pixels. The draw func just steps out along +x.
+	// the ring radius in pixels. The draw func steps out along +x and asks
+	// c[\draw] for library shapes, so it never touches Pen.
 	~vdef.(\membrane, { |ev, c|
 		var mod = ev[\modulation] ? ();
 		var rest = mod[\rest] ? false;
 		var chirpAmt = mod[\chirp] ? 0.5;
 		var chirpTime = mod[\chirpTime] ? 0.04;
-		var arcSpan = mod[\arcSpan] ? 0.45;
 		var arcAlpha = mod[\arcAlpha] ? 0.22;
 		var head = mod[\head] ? 30;
 		var t = c[\normTime];
 		var mid = c[\pos];
 		var ring = c[\size];
-		var wid = c[\width];
-		var col = c[\color];
 		var tension = (mod[\tension] ? 0.5).clip(0, 1);
 		var chirp = 1 + (chirpAmt * tension * exp(t.neg / chirpTime));
 		var pos = mid + (ring @ 0);
 
 		if(rest.not, {
 
-			Pen.width = wid;
-			Pen.strokeColor = Color.new(col.red, col.green, col.blue,
-				col.alpha * arcAlpha);
-			Pen.addArc(mid, ring, arcSpan.neg * 0.5, arcSpan);
-			Pen.stroke;
+			c[\draw].(\arc, (pos: mid, size: ring), 1, arcAlpha, false);
 
 			modeRatios.do { |ratio, i|
 				var a = modeAmps[i] * exp(t.neg / modeDecays[i]);
 				var r = head / ratio * chirp;
 				if(a > 0.01, {
-					Pen.width = wid * a;
-					Pen.strokeColor = Color.new(col.red, col.green, col.blue,
-						col.alpha * a);
-					Pen.addOval(Rect.aboutPoint(pos, r, r));
-					Pen.stroke;
+					c[\draw].(\circle, (pos: pos, size: r), a, a);
 				});
 			};
 		});
@@ -181,6 +171,7 @@ SynthDef(\bongo1, {
 				chirp: 0.5,
 				chirpTime: 0.04,
 				arcSpan: 0.45,
+				amp: 0,
 				arcAlpha: 0.22,
 				head: (e[\amp] ? 1).clip(0.02, 3).linexp(0.02, 3, 12, 70)
 			) })

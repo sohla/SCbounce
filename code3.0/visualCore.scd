@@ -28,7 +28,7 @@
 // router resolves it. No personality edits required.
 //------------------------------------------------------------
 
-var shapeLib = Require("shapeLib.scd");
+var vdefLib = Require("vdefLib.scd");
 var defaultEnv = Env([0, 1], [1], \linear);
 var spacing = 4;
 
@@ -84,9 +84,93 @@ var drawCanvas = { |name, view|
 				var size = event[\startSize].blend(event[\endSize], event[\sizeEnv].at(normTime));
 				var width = event[\startWidth].blend(event[\endWidth], event[\widthEnv].at(normTime));
 				var col = event[\startColor].blend(event[\endColor], event[\colorEnv].at(normTime));
-				var points, vdef, table;
+				var points, vdef, table, renderPoints, ctx, drawShape;
 
-				// vdef lookup: device-local shape, then global, then legacy shapeLib
+				// The whole render pipeline as one callable : warp -> trace ->
+				// close -> fill/stroke, using this event's resolved values. The
+				// built-in path calls it once; a DRAW FUNC is handed it as
+				// c[\render] so each of its sub-paths goes through the same code
+				// instead of reimplementing \modulation, \closed and \fill by
+				// hand - which is how those quietly go missing.
+				//
+				// wScale / aScale multiply the event's own width and alpha, for
+				// marks whose parts vary - a decaying partial, one mode of a
+				// membrane. Absolute values still come from the event.
+				renderPoints = { |pts, wScale = 1, aScale = 1, closed|
+					var p = pts;
+					var useCol = Color.new(col.red, col.green, col.blue,
+						col.alpha * aScale);
+					if(p.notNil and: { p.size > 1 }, {
+
+						// NB the displacement is windowed by |sin(harmonics * t * 2pi)|,
+						// which is 0 at both ends of the path so a warped shape does not
+						// tear at its seam. A 2-point path is only ends, so it never moves.
+						if(event[\modulation].notNil, {
+
+							var modFreq = event[\modulation][\freq] ? 0.5;
+							var baseModAmp = event[\modulation][\amp] ? 5;
+							var modPhase = event[\modulation][\phase] ? 0;
+							var modType = event[\modulation][\type] ? \radial;
+							var modAmp = baseModAmp * (1.0 - event[\sizeEnv].at(normTime));
+							var lfoValue = sin(2pi * modFreq * now + modPhase) * modAmp;
+							var harmonics = event[\modulation][\harmonics] ? 1;
+
+							p = p.collect { |point, i|
+								var t = i / (p.size - 1);
+								var vec, len, angle, modVector;
+
+								switch(modType,
+									\radial, {
+										var modFactor = lfoValue * sin(harmonics * t * 2pi).abs;
+										vec = point - pos;
+										len = vec.rho;
+										angle = vec.theta;
+										len = len + modFactor;
+										pos + Polar(len, angle).asPoint;
+									},
+									\normal, {
+										vec = point - pos;
+										angle = vec.theta;
+										modVector = Polar(lfoValue * sin(harmonics * t * 2pi), angle + 0.5pi).asPoint;
+										point + modVector;
+									},
+									\noise, {
+										var seed = (i * 1000) + (now.floor * 50);
+										var rnd = {|s| sin(s * 12345.6789).abs };
+										var jitterFactor = sin(t * harmonics * 2pi);
+										var jitterX = lfoValue * jitterFactor * (rnd.(seed) * 2 - 1);
+										var jitterY = lfoValue * jitterFactor * (rnd.(seed + 500) * 2 - 1);
+										point + (jitterX @ jitterY);
+									},
+									\phase, {
+										var idx = (i + (lfoValue * harmonics)).wrap(0, p.size - 1);
+										var idealPoint = p[idx.floor];
+										var nextPoint = p[idx.ceil % p.size];
+										var blend = idx - idx.floor;
+										idealPoint.blend(nextPoint, blend);
+									},
+									{ point }
+								);
+							};
+						});
+
+						Pen.width = width * wScale;
+						Pen.fillColor = useCol;
+						Pen.strokeColor = useCol;
+
+						Pen.moveTo(p[0]);
+						p[1..].do { |point| Pen.lineTo(point) };
+						if(closed ? (event[\closed] ? true), { Pen.lineTo(p[0]) });
+
+						if(event[\fill] ? false, {
+							if(event[\shape] == \line, { Pen.stroke },{ Pen.fill });
+						},{
+							Pen.stroke;
+						});
+					});
+				};
+
+				// shape lookup : the personality's own vdefs, then the shared library
 				table = core.vdefs[event[\src]];
 				if(table.notNil, { vdef = table[event[\shape]] });
 				if(vdef.isNil, {
@@ -99,19 +183,29 @@ var drawCanvas = { |name, view|
 				Pen.fillColor = col;
 				Pen.strokeColor = col;
 
-				if(vdef.notNil, {
+				// \points short-circuits the lookup entirely
+				if(event[\points].notNil, {
+					points = event[\points];
+				},{
 
-					// A vdef may honour either contract:
+					// an unrecognised name falls back to a circle, but says so once
+					if(vdef.isNil, {
+						vdef = vdefLib[\circle];
+						if(core.warnedShapes.includes(event[\shape]).not, {
+							core.warnedShapes.add(event[\shape]);
+							"[visuals] unknown shape % - drawing a circle".format(event[\shape]).warn;
+						});
+					});
+
+					// Either contract:
+					//   points func : returns an Array of Points, and the render call
+					//                 below applies \modulation, \closed and \fill.
+					//   draw func   : draws with Pen itself, usually via c[\render],
+					//                 and returns anything that is not an Array.
 					//
-					//   points func : returns an Array of Points, and then gets
-					//                 \modulation, \closed and \fill below, exactly
-					//                 like a shapeLib shape.
-					//   draw func   : draws with Pen itself and returns anything
-					//                 else - nothing further is done to it.
-					//
-					// Either way, position, rotation, Pen.width and both pen
-					// colours have already been applied above.
-					points = vdef.(event, (
+					// Position, rotation, Pen.width and both pen colours are already
+					// applied either way.
+					ctx = (
 						pos: pos,
 						size: size,
 						width: width,
@@ -121,87 +215,35 @@ var drawCanvas = { |name, view|
 						elapsed: elapsed,
 						now: now,
 						bounds: view.bounds,
-						view: view
-					));
+						view: view,
+						render: renderPoints
+					);
 
-					// isArray is false for nil and for whatever Pen.stroke returns,
-					// so a draw func stops cleanly here
+					// c[\draw] : use any library shape as a sub-path of a draw func.
+					// over is an Event of ctx overrides - usually (pos:) and (size:) -
+					// so a mark can place the same generator repeatedly. Goes through
+					// renderPoints, so sub-paths get \modulation, \closed and \fill.
+					// closed overrides \closed for this sub-path only - an arc is open
+					// while the rings around it are not.
+					drawShape = { |name, over, wScale = 1, aScale = 1, closed|
+						var localTable = core.vdefs[event[\src]];
+						var fn = nil;
+						var sub = ctx.copy;
+						if(localTable.notNil, { fn = localTable[name] });
+						fn = fn ? vdefLib[name] ? vdefLib[\circle];
+						if(over.notNil, { sub.putAll(over) });
+						renderPoints.(fn.(event, sub), wScale, aScale, closed);
+					};
+					ctx[\draw] = drawShape;
+
+					points = vdef.(event, ctx);
+
 					if(points.isArray.not, { points = nil });
-
-				},{
-
-					// built-in shapeLib path
-					if(event[\points].notNil, {
-						points = event[\points];
-					},{
-						var shapeFunc = shapeLib[event[\shape]] ? shapeLib[\circle];
-						points = shapeFunc.(pos, size, event[\numPoints] ? 32);
-					});
 				});
 
-				// shared pipeline : warp -> trace -> close -> fill/stroke.
-				// Reached by shapeLib shapes AND by points-func vdefs.
-				if(points.notNil, {
-
-					if(event[\modulation].notNil, {
-
-						var modFreq = event[\modulation][\freq] ? 0.5;
-						var baseModAmp = event[\modulation][\amp] ? 5;
-						var modPhase = event[\modulation][\phase] ? 0;
-						var modType = event[\modulation][\type] ? \radial;
-						var modAmp = baseModAmp * (1.0 - event[\sizeEnv].at(normTime));
-						var lfoValue = sin(2pi * modFreq * now + modPhase) * modAmp;
-						var harmonics = event[\modulation][\harmonics] ? 1;
-
-						points = points.collect { |point, i|
-							var t = i / (points.size - 1);
-							var vec, len, angle, modVector;
-
-							switch(modType,
-								\radial, {
-									var modFactor = lfoValue * sin(harmonics * t * 2pi).abs;
-									vec = point - pos;
-									len = vec.rho;
-									angle = vec.theta;
-									len = len + modFactor;
-									pos + Polar(len, angle).asPoint;
-								},
-								\normal, {
-									vec = point - pos;
-									angle = vec.theta;
-									modVector = Polar(lfoValue * sin(harmonics * t * 2pi), angle + 0.5pi).asPoint;
-									point + modVector;
-								},
-								\noise, {
-									var seed = (i * 1000) + (now.floor * 50);
-									var rnd = {|s| sin(s * 12345.6789).abs };
-									var jitterFactor = sin(t * harmonics * 2pi);
-									var jitterX = lfoValue * jitterFactor * (rnd.(seed) * 2 - 1);
-									var jitterY = lfoValue * jitterFactor * (rnd.(seed + 500) * 2 - 1);
-									point + (jitterX @ jitterY);
-								},
-								\phase, {
-									var idx = (i + (lfoValue * harmonics)).wrap(0, points.size - 1);
-									var idealPoint = points[idx.floor];
-									var nextPoint = points[idx.ceil % points.size];
-									var blend = idx - idx.floor;
-									idealPoint.blend(nextPoint, blend);
-								},
-								{ point }
-							);
-						};
-					});
-
-					Pen.moveTo(points[0]);
-					points[1..].do { |point| Pen.lineTo(point) };
-					if(event[\closed] ? true, { Pen.lineTo(points[0]) });
-
-					if(event[\fill] ? false, {
-						if(event[\shape] == \line, { Pen.stroke },{ Pen.fill });
-					},{
-						Pen.stroke;
-					});
-				});
+				// one call for the built-in path; a draw func has already used
+				// c[\render] itself and returned something that is not an Array
+				renderPoints.(points);
 
 				Pen.rotate(event[\rotation].neg, pos.x, pos.y);
 			});
@@ -276,6 +318,9 @@ core.vdef = { |self, port, name, func|
 };
 
 core.clearVdefs = { |self, port| core.vdefs[port] = nil };
+
+core.vdefs[\global] = vdefLib;
+core.warnedShapes = IdentitySet.new;
 
 //------------------------------------------------------------
 // drop a device's in-flight events.

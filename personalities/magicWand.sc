@@ -56,8 +56,6 @@ SynthDef(\glockenspiel, {
 		var t = c[\normTime];
 		var pos = c[\pos];
 		var len = c[\size];
-		var wid = c[\width];
-		var col = c[\color];
 		var ringScale = hard.linlin(0, 1, 0.15, 1.0);
 
 		partials.do { |ratio, i|
@@ -66,12 +64,10 @@ SynthDef(\glockenspiel, {
 			var a = partialAmps[i] * exp(t.neg / tau);
 			var half = len * a * 0.9;
 			if(a > 0.01, {
-				Pen.width = wid * a;
-				Pen.strokeColor = Color.new(col.red, col.green, col.blue,
-					col.alpha * a);
-				Pen.moveTo((pos.x - half) @ y);
-				Pen.lineTo((pos.x + half) @ y);
-				Pen.stroke;
+				c[\render].([
+					(pos.x - half) @ y,
+					(pos.x + half) @ y
+				], a, a);
 			});
 		};
 	});

@@ -49,16 +49,21 @@ output is "a piece in the lineage of X", never "page 47 of X".
 | File | Responsibility |
 |---|---|
 | `code3.0/visualCore.scd` | Canvases, the device→canvas router, the `\customVisualEvent` type, and `drawCanvas` (the per-frame draw loop). |
-| `code3.0/shapeLib.scd` | Built-in point generators: `circle square line triangle star hexagon cross wave leaf spiral blobby`. |
+| `code3.0/vdefLib.scd` | The shared shape library, registered into `core.vdefs[\global]`: `circle arc square triangle hexagon star cross line wave spiral leaf blobby`. Every entry is a points func. |
 | `code3.0/personalityController.scd` | Builds each personality's Environment, injects `~vdef` / `~model` / `~device`, runs `~init` / `~next` / `~plot`. |
 | `code3.0/plotterView.scd` | The per-device plotter driven by `~plot`. |
 | `personalities/*.sc` | The personality files ("p-files"). |
 | `visuals/graphic-scores-atlas.md` | Design source document for visual grammars. |
 
-Reference implementations to read before writing a new one: `metal1.sc`
-(held event + per-note marks), `magicWand.sc` (spectrum as the mark),
-`bongo1.sc` (cyclic rhythm score with rests), `personalities/templateVisual.sc`
-(commented skeleton).
+Reference implementations to read before writing a new one:
+
+| file | shows |
+|---|---|
+| `templateVisual.sc` | commented skeleton, points func |
+| `miniMoog.sc` | a points func with a continuous parameter (superellipse) |
+| `bongo1.sc` | draw func built entirely from `c[\draw]` — no `Pen` |
+| `magicWand.sc`, `bells.sc` | draw funcs built from `c[\render]` |
+| `metal1.sc` | a held `duration: inf` event, and the one justified `Pen` case |
 
 ---
 
@@ -101,7 +106,7 @@ keys and their defaults:
 
 | Key | Default | Notes |
 |---|---|---|
-| `\shape` | `\circle` | shapeLib name, or a vdef name |
+| `\shape` | `\circle` | a library name, or the personality's own vdef |
 | `\points` | `nil` | explicit point array, bypasses shape lookup |
 | `\numPoints` | `nil` (→32) | |
 | `\sx \sy \ex \ey` | `0.0` | normalised, 0 = canvas centre, ±1 = edge |
@@ -144,7 +149,8 @@ So a vdef that wants the normal colour can simply call `Pen.stroke` and set
 nothing. It also receives a context Event:
 
 ```
-c: (pos: size: width: color: rotation: normTime: elapsed: now: bounds: view:)
+c: (pos: size: width: color: rotation: normTime: elapsed: now: bounds: view:
+    render: draw:)
 ```
 
 `normTime` runs 0→1 across the event's `duration`.
@@ -199,7 +205,7 @@ to reach for size-plus-rotation, never a reason to leave the API.
 is decided by **what the function returns** (`visualCore.scd:129`):
 
 **Points func — preferred.** Return an `Array` of `Point`s. The core then
-applies `\modulation`, `\closed` and `\fill` to it exactly as for a shapeLib
+applies `\modulation`, `\closed` and `\fill` to it exactly as for a library
 shape.
 
 ```supercollider
@@ -211,24 +217,74 @@ shape.
 });
 ```
 
-**Draw func.** Draw with `Pen` and return anything else. `\modulation`,
-`\closed` and `\fill` are then **yours to honour** — all three operate on a
-point array you never produce.
+**Draw func.** For a mark that is several sub-paths — concentric rings
+(`bongo1`), disjoint strokes (`magicWand`), separating edges (`bells`). Return
+anything that is not an Array.
+
+**Do not call `Pen` yourself. Call `c[\render]`.**
 
 ```supercollider
-~vdef.(\blob, { |ev, c|
-    Pen.addOval(Rect.aboutPoint(c[\pos], c[\size], c[\size]));
-    if(ev[\fill] ? false, { Pen.fill },{ Pen.stroke });
+c[\render].(points, widthScale, alphaScale, closed)
+```
+
+It is the same pipeline the points-func path uses, bound to this event, so
+each sub-path gets `\modulation`, `\closed` and `\fill` correctly. The two
+scales default to 1 and **multiply** the event's own width and alpha — for
+marks whose parts vary, like a decaying partial or one mode of a membrane.
+Absolute values still come from the event.
+
+`closed` overrides `\closed` for that sub-path only, and is the one you will
+forget: it defaults to the event's, which is **true**, so an arc gets a chord
+drawn back to its start while the rings around it correctly close.
+
+```supercollider
+~vdef.(\comb, { |ev, c|
+    partialAmps.do { |amp, i|
+        var y = c[\pos].y - (i * 26);
+        c[\render].([ (c[\pos].x - 40) @ y, (c[\pos].x + 40) @ y ], amp, amp);
+    };
 });
 ```
 
-Use a draw func only when the mark genuinely is not one polyline — concentric
-rings (`bongo1`'s `\membrane`), disjoint strokes (`magicWand`'s
-`\partialComb`), or separating edges (`bells`' `\shards`). Otherwise use a
-points func and inherit the whole pipeline.
+**`c[\draw]` — use a library shape as a sub-path.** Rather than generating
+points yourself, ask any entry in `vdefLib.scd` for them:
 
-Note the free side-effect: because the core skips modulation for draw funcs,
-`\modulation` is available to them purely as a data channel.
+```supercollider
+c[\draw].(name, ctxOverrides, widthScale, alphaScale, closed)
+```
+
+`ctxOverrides` is an Event replacing parts of the context for that sub-path —
+usually `(pos:)` and `(size:)` — so one generator can be placed repeatedly. It
+routes through `c[\render]`, so sub-paths get the pipeline too. Shape
+parameters still come from `\modulation`, since that is the event's only
+free-form channel.
+
+`bongo1`'s `\membrane` is the worked example — an arc plus four decaying
+rings, no `Pen` anywhere:
+
+```supercollider
+c[\draw].(\arc, (pos: mid, size: ring), 1, arcAlpha, false);
+modeRatios.do { |ratio, i|
+    var a = modeAmps[i] * exp(t.neg / modeDecays[i]);
+    c[\draw].(\circle, (pos: pos, size: head / ratio), a, a);
+};
+```
+
+One consequence to expect when converting a draw func: its sub-paths now go
+through `\modulation`, which they previously escaped. If the event carries a
+`\modulation` Event without an `amp`, the default of 5 will start warping
+marks that never used to move — set `amp: 0` to keep the old look.
+
+This only bites sub-paths of **more than two points**; see the trap below on
+the endpoint window. `bongo1`'s rings needed `amp: 0`; `magicWand`'s and
+`bells`' 2-point spans were never going to move either way.
+
+Reaching for `Pen` directly means reimplementing `\modulation`, `\closed`
+and `\fill` by hand, and a partial implementation is **indistinguishable**
+from a complete one until someone uses the missing part. That is exactly how
+`\morphLine` silently ignored `\fill` and how `\membrane`'s rings stayed
+unmodulatable. `Pen` is for output a point list cannot express — fills with
+holes, text, images. Nothing in this repo currently needs it.
 
 ### Held events
 
@@ -319,6 +375,24 @@ the first events see nil for anything `~next` supplies. A bare
 \startSize, Pfunc({ |e| (e[\amp] ? 0.2).linlin(0.15, 0.25, 40, 120) }),
 ```
 
+### `\modulation` does nothing to a 2-point path
+
+Every displacement is windowed by `|sin(harmonics * t * 2pi)|`, where
+`t = i / (size - 1)`. That window is **0 at both ends of any path** — by
+design, so a warped shape does not tear at its seam. A 2-point path is
+nothing but ends, so it never moves however large `amp` is:
+
+```
+n=2   window = [0.0, 0.0]
+n=5   window = [0.0, 1.0, 0.0, 1.0, 0.0]
+n=16  window = [0.0, 0.407, 0.743, 0.951, 0.995, 0.866, ...]
+```
+
+So a mark built from 2-point spans — `magicWand`'s partials, `bells`' shard
+edges — is unmodulatable as written. To make it respond, build the span as an
+N-point polyline (`Array.fill(n, { |j| a.blend(b, j / (n - 1)) })`), or call
+`c[\draw].(\line, ...)`, which honours `numPoints`. 16 or more looks smooth.
+
 ### `Require` caches — reload `main.sc` after editing the core
 
 `Require` caches by path. Reloading a **personality** does not re-evaluate
@@ -326,13 +400,21 @@ the first events see nil for anything `~next` supplies. A bare
 clears the `\evaluate` cache.
 
 Symptom: a correct new vdef draws nothing at all, with no error, while
-shapeLib shapes still work — the live `drawCanvas` is the old one.
+library shapes still work — the live `drawCanvas` is the old one.
 
-### `shapeLib` `\square` with `numPoints < 8`
+### Shape lookup, and unknown names
 
-`shapeLib.scd:18` divides by `(count - 1)`. With `numPoints: 4`,
-`pointsPerSide` is 1 and every corner gets a nan. Use 8 or more (the default
-32 is fine).
+Lookup is two tiers: the personality's own `~vdef`s, then the shared library
+in `vdefLib.scd`. A personality can therefore **shadow** any library shape by
+registering the same name — that is the intended way to start from a stock
+shape and diverge.
+
+An unrecognised name falls back to `\circle` and warns once. Before the
+libraries were folded it fell back silently, so a typo drew a plausible shape
+and never said anything.
+
+(The old `shapeLib` `\square` divide-by-zero — nan corners for
+`numPoints < 8` — was fixed during the port.)
 
 ---
 

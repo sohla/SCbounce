@@ -42,14 +42,34 @@ SynthDef(\templateVisual, {
 ~init = ~init <> {
 
 	//--------------------------------------------------------
-	// A POINTS FUNC - the preferred vdef contract. Returning an Array of
-	// Points hands \modulation, \closed and \fill back to the core, so this
-	// function only has to describe geometry.
+	// Before writing a shape at all, check code3.0/vdefLib.scd - the shared
+	// library already has circle arc square triangle hexagon star cross
+	// line wave spiral leaf blobby, and shape: \name uses them with no code
+	// here whatsoever. Registering a name the library already defines
+	// shadows it for this device only, which is how you start from a stock
+	// shape and diverge.
 	//
-	// Use a draw func (draw with Pen, return anything else) ONLY when the
-	// mark is genuinely not one polyline - concentric rings, disjoint
-	// strokes, separating edges. Then \modulation, \closed and \fill become
-	// yours to honour.
+	// A POINTS FUNC - the preferred contract, and what every library entry
+	// is. Returning an Array of Points hands \modulation, \closed and \fill
+	// back to the core, so this only has to describe geometry.
+	//
+	// For a mark that is SEVERAL sub-paths - concentric rings, disjoint
+	// strokes, separating edges - write a draw func instead: return anything
+	// that is not an Array, and build it from
+	//
+	//   c[\render].(points, widthScale, alphaScale, closed)
+	//   c[\draw].(\circle, (pos: p, size: r), widthScale, alphaScale, closed)
+	//
+	// closed defaults to the event's \closed, which is true - an open
+	// sub-path such as an arc must pass false or it draws a chord.
+	//
+	// \modulation is windowed to zero at both ends of a path, so a 2-point
+	// sub-path never warps however large amp is. Build spans as N-point
+	// polylines if you want them to respond.
+	//
+	// Both route through the core's pipeline, so sub-paths still get
+	// \modulation, \closed and \fill. Do NOT call Pen directly - see
+	// bongo1.sc for a worked draw func that never touches it.
 	//
 	// Note what is NOT here: no position, no rotation, no Pen.width, no
 	// colour. The core applied all of those before this ran.

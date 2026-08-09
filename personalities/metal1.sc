@@ -148,6 +148,10 @@ SynthDef(\sheet2, { |out, frq=111, gate=0, amp = 0, pchx=0|
 	// invents a size, a colour or a scale factor of its own.
 	//
 	// clearEvents (personality unload) is what removes it.
+	//
+	// One of the few legitimate Pen cases : it re-derives COLOUR from amp,
+	// not just alpha, and c[\render] can only scale the event's own colour.
+	// It is a single path, so nothing is lost by drawing it directly.
 	~vdef.(\sheetFrame, { |ev, c|
 		var mod = ev[\modulation] ? ();
 		var atk = mod[\attack] ? 0.007;
@@ -207,9 +211,8 @@ SynthDef(\sheet2, { |out, frq=111, gate=0, amp = 0, pchx=0|
 	// wobble riding on top. Registered here so it reloads with the file
 	// (loadPersonality calls clearVdefs before re-interpreting us).
 	//
-	// A vdef is needed rather than shape: \circle because the built-in
-	// path picks ONE shapeLib function per event - it can't interpolate
-	// between two shapes over the life of the note.
+	// A vdef rather than shape: \circle because this wobbles the ring
+	// per-point from \modulation values the library circle cannot see.
 	~vdef.(\morphLine, { |ev, c|
 		var n = ev[\numPoints] ? 48;
 		var mod = ev[\modulation] ? ();
@@ -218,7 +221,7 @@ SynthDef(\sheet2, { |out, frq=111, gate=0, amp = 0, pchx=0|
 		var wobPhase = mod[\phase] ? 0;
 		var ease = mod[\ease] ? 0.7;
 		var sz = c[\size];
-		var wobAmp = (mod[\amp] ? 4) * (1 - (c[\normTime] * ease));
+		var wobAmp = (mod[\wob] ? 4) * (1 - (c[\normTime] * ease));
 		var pts = Array.fill(n, { |i|
 			var angle = i / n * 2pi;
 			var wob = cos((angle * wobHarm) + (2pi * wobFreq * c[\now]) + wobPhase) * wobAmp;
@@ -228,17 +231,7 @@ SynthDef(\sheet2, { |out, frq=111, gate=0, amp = 0, pchx=0|
 			)
 		});
 
-		Pen.width = c[\width];
-		Pen.moveTo(pts[0]);
-		pts[1..].do { |p| Pen.lineTo(p) };
-		Pen.lineTo(pts[0]);
-		if(ev[\fill] ? false, {
-			Pen.fillColor = c[\color];
-			Pen.fill;
-		},{
-			Pen.strokeColor = c[\color];
-			Pen.stroke;
-		});
+		pts
 	});
 
 	Pdef(m.ptn,
@@ -276,7 +269,8 @@ SynthDef(\sheet2, { |out, frq=111, gate=0, amp = 0, pchx=0|
 			\duration, 0.8,
 			\modulation, Pfunc({ (
 				freq: rrand(4.0, 9.0) * 0.5,
-				amp: rrand(2.0, 4.0),
+				wob: rrand(2.0, 4.0),
+				amp: 0,
 				phase: 2pi.rand,
 				harmonics: [2, 3, 4].choose,
 				ease: 0.7

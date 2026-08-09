@@ -116,20 +116,26 @@ var interpretPersonality = {|d|
         //------------------------------------------------------------
         // register a custom shape for this device's visual events.
         // Namespaced per device, so two performers can each have their
-        // own \blob. Reloaded with the file like everything else.
+        // own \blob. Reloaded with the file like everything else, which is
+        // why this - not vdefLib.scd - is where you live-code a shape.
+        //
+        // Registering a name that vdefLib.scd already defines SHADOWS it for
+        // this device only : lookup is device-local, then the library.
         //
         // The core has ALREADY applied position, rotation, Pen.width and
         // both pen colours before your function runs. It hands you
         //   ev : the raw event    (startSize: endSize: fill: modulation: ...)
         //   c  : resolved values  (pos: size: width: color: rotation:
-        //                          normTime: elapsed: now: bounds: view:)
+        //                          normTime: elapsed: now: bounds: view:
+        //                          render: draw:)
         // NB read c with brackets - c[\size], NOT c.size. Set declares
         // `var <size`, so the dot form returns the Event's item count.
         //
         // Two contracts, chosen by what you return:
         //
         // 1. POINTS FUNC - return an Array of Points. \modulation, \closed
-        //    and \fill are then applied for you, same as a shapeLib shape.
+        //    and \fill are then applied for you. Every entry in vdefLib.scd
+        //    is one of these.
         //
         //   ~vdef.(\blob, { |ev, c|
         //       Array.fill(32, { |i|
@@ -138,14 +144,32 @@ var interpretPersonality = {|d|
         //       })
         //   });
         //
-        // 2. DRAW FUNC - draw with Pen and return anything else. You get
-        //    full control, but \modulation, \closed and \fill are yours to
-        //    honour (they act on a points array, which you never produce).
+        // 2. DRAW FUNC - for a mark that is several sub-paths. Return
+        //    anything that is not an Array. Do NOT call Pen yourself; call
+        //    c[\render], which is the same pipeline bound to this event, so
+        //    each sub-path still gets \modulation, \closed and \fill:
         //
-        //   ~vdef.(\blob, { |ev, c|
-        //       Pen.addOval(Rect.aboutPoint(c[\pos], c[\size], c[\size]));
-        //       if(ev[\fill] ? false, { Pen.fill },{ Pen.stroke });
+        //      c[\render].(points, widthScale, alphaScale, closed)
+        //
+        //    closed overrides \closed for that sub-path only - it defaults
+        //    to the event's, which is true, so an open shape needs false.
+        //
+        //    The scales default to 1 and multiply the event's own width and
+        //    alpha - absolutes still come from the event.
+        //
+        //    c[\draw] does the same but sources the points from vdefLib,
+        //    so a mark can reuse library shapes as its parts:
+        //
+        //      c[\draw].(\circle, (pos: p, size: r), wScale, aScale, closed)
+        //
+        //   ~vdef.(\pair, { |ev, c|
+        //       c[\render].([ c[\pos], c[\pos] + (c[\size] @ 0) ], 1, 0.5);
+        //       c[\render].([ c[\pos], c[\pos] - (c[\size] @ 0) ], 1, 1.0);
         //   });
+        //
+        // Pen is for output a point list cannot express - fills with holes,
+        // text, images. Reimplementing the API by hand is how \fill and
+        // \modulation quietly go missing.
         //
         // then emit  (type: \customVisualEvent, shape: \blob, viewID: d.port, ...)
         ~vdef = { |name, func|
