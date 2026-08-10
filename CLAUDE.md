@@ -375,6 +375,42 @@ the first events see nil for anything `~next` supplies. A bare
 \startSize, Pfunc({ |e| (e[\amp] ? 0.2).linlin(0.15, 0.25, 40, 120) }),
 ```
 
+### A draw func must not end on `.do` or `.collect`
+
+The two contracts are told apart by the **return value**, so what a draw func
+returns matters even though it is meant to be ignored. `.do` returns the
+collection it iterated:
+
+```supercollider
+~vdef.(\comb, { |ev, c|
+    partials.do { |ratio, i|          // WRONG - returns partials
+        c[\render].([ ... ], a, a);
+    };
+});
+```
+
+`magicWand` did exactly this and handed back `[1, 4.08, 10.7, 18.8, 24.5,
+31.2]`. Those were read as coordinates and drawn as `Point(1,1)` through
+`Point(31.2, 31.2)` — six short lines in a 31-pixel box at the **top-left
+corner** of the canvas, with no error.
+
+**End a draw func with `nil`:**
+
+```supercollider
+~vdef.(\comb, { |ev, c|
+    partials.do { |ratio, i| c[\render].([ ... ], a, a) };
+    nil
+});
+```
+
+`.collect`, and an `if` whose last branch is a `.do`, have the same problem —
+`bongo1`'s `if(rest.not, { ... modeRatios.do { ... } })` returned
+`modeRatios` on every step that sounded.
+
+The core now also requires the array to contain **Points**, so a stray
+collection is treated as "the draw func drew itself" rather than as geometry.
+That catches it, but returning `nil` says what you mean.
+
 ### `\modulation` does nothing to a 2-point path
 
 Every displacement is windowed by `|sin(harmonics * t * 2pi)|`, where

@@ -240,7 +240,12 @@ var drawCanvas = { |name, view|
 
 					points = vdef.(event, ctx);
 
-					if(points.isArray.not, { points = nil });
+					// must be an Array OF POINTS. A draw func whose last statement is
+					// a .do returns the collection it iterated, which would otherwise
+					// be drawn as coordinates near the origin.
+					if(points.isArray.not or: { points[0].isKindOf(Point).not }, {
+						points = nil;
+					});
 				});
 
 				// one call for the built-in path; a draw func has already used

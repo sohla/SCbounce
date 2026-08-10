@@ -144,8 +144,10 @@ var interpretPersonality = {|d|
         //       })
         //   });
         //
-        // 2. DRAW FUNC - for a mark that is several sub-paths. Return
-        //    anything that is not an Array. Do NOT call Pen yourself; call
+        // 2. DRAW FUNC - for a mark that is several sub-paths. END IT WITH
+        //    nil : .do returns the collection it iterated, and an Array of
+        //    numbers would be drawn as coordinates near the origin.
+        //    Do NOT call Pen yourself; call
         //    c[\render], which is the same pipeline bound to this event, so
         //    each sub-path still gets \modulation, \closed and \fill:
         //
