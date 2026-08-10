@@ -1,6 +1,12 @@
 (
 	[
 		"silence",
+
+		"mel4",
+		"mel3",
+		"mel1",
+		"melbb2",
+
 		"template3",
 		"harp1",
 		"bongo1",
@@ -16,10 +22,6 @@
 		"rain1",
 		"thunder",
 
-		"mel4",
-		"mel3",
-		"mel1",
-		"melbb2",
 
 		"quackQuack",
 		"chicken2",

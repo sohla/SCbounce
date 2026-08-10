@@ -1,7 +1,7 @@
 var m = ~model;
 var synth;
-// the control "bus" for the held frame : ~next writes, the draw func reads
-var droneAmp = 0;
+// the one-pole accumulator the draw func carries between frames. The drive
+// itself is not held here - the draw func reads m and computes it.
 var droneAmpSmooth = 0;
 
 //------------------------------------------------------------
@@ -157,11 +157,17 @@ SynthDef(\sheet2, { |out, frq=111, gate=0, amp = 0, pchx=0|
 		var atk = mod[\attack] ? 0.007;
 		var rel = mod[\release] ? 0.007;
 		var fade = mod[\fade] ? -8;
+		var drive = m.accelMass * 0.5;
 		var amp, size, col;
-		droneAmpSmooth = if(droneAmp > droneAmpSmooth, {
-			droneAmpSmooth + ((droneAmp - droneAmpSmooth) * atk)
+
+		if(drive < 0.02, { drive = 0.0 });
+		if(drive > 0.9, { drive = 0.3 });
+		drive = drive.linlin(0, 0.9, 0, 1);
+
+		droneAmpSmooth = if(drive > droneAmpSmooth, {
+			droneAmpSmooth + ((drive - droneAmpSmooth) * atk)
 		},{
-			droneAmpSmooth + ((droneAmp - droneAmpSmooth) * rel)
+			droneAmpSmooth + ((drive - droneAmpSmooth) * rel)
 		});
 		amp = droneAmpSmooth.clip(0, 1);
 
@@ -311,10 +317,6 @@ SynthDef(\sheet2, { |out, frq=111, gate=0, amp = 0, pchx=0|
 	if(a<0.02,{a=0.0});
 	if(a>0.9,{a=0.3});
 	synth.set(\amp, a * 0.6);
-
-	// same drive as the synth.set above, normalised 0-1 for the held frame.
-	// `a` is clamped to 0.9 just above, so that is the ceiling.
-	droneAmp = a.linlin(0, 0.9, 0, 1);
 
 	// tells the visual router which device these shapes came from
 	Pdef(m.ptn).set(\viewID, d.port);

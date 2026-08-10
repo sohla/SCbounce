@@ -17,7 +17,7 @@ SynthDef(\stereoSampler1, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, fr
 	var env = EnvGen.kr(Env.adsr(attack, decay, sustain, release), gate, timeScale: 2,doneAction: 2);
 	var sig = PlayBuf.ar(2, bufnum, rate: [lr, lr * 1.003], startPos: start * BufFrames.kr(bufnum), loop: 0);
 	var hs = RHPF.ar(sig, [6000,7000], 0.99,13).tanh;
-	sig = RLPF.ar(sig, cutoff, rq);// + osc;
+	sig = RLPF.ar(sig, cutoff, rq);
 	sig = Pan2.ar(hs + sig, pan, amp * env);
 	sig = FreeVerb.ar(sig,0.5,0.4);
 	sig = LeakDC.ar(sig);
@@ -38,19 +38,12 @@ SynthDef(\stereoSampler1, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, fr
 			Pbind(
 				\instrument, \stereoSampler1,
 				\bufnum, buf,
-				// \octave, Pxrand([0,1,2,1,3,2], inf),
 				\note, Pwhite(33,33, inf).floor,
 				\start,Pwhite(0.0,0.9),
 				\root, 0,
-				\attack,0.01,
 				\decay, 0.2,
 				\sustain,0.1,
-				\release,0.1,
-				// \rate, Pwhite(0.3,3.0),
 				\rate, Pslide(notes.midiratio, inf, Pkey(\range), 0, 0),
-
-				// \rate, Pseq(notes.midiratio, inf),
-				// \dur, Pseq([0.25], inf),
 				\args, #[],
 			)
 		);
@@ -74,6 +67,8 @@ SynthDef(\stereoSampler1, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, fr
 	var start = m.gyroXFiltered.lincurve(0.0,1.0,0.1,0.9,0);
 	var amp = m.accelMassFiltered.lincurve(0,2.5,0,1,-6);
 	var rate= m.accelMass.linlin(0,1,0,2);
+	var atk = m.accelMassFiltered.lincurve(0,1.5,0.2,0.01,-3);
+	var rel = m.accelMassFiltered.lincurve(0,1.5,0.1,1.7,2);
 	var range = m.accelMassFiltered.lincurve(0,2.0,1,notes.size,-2).asInteger;
 	var octave = m.gyroYFiltered.lincurve(-1.0,1.0,0,4,0).asInteger;
 	var bal = m.gyroYFiltered.lincurve(-1.0,1.0,4,1,0).asInteger;
@@ -84,6 +79,8 @@ SynthDef(\stereoSampler1, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, fr
 	Pdef(m.ptn).set(\amp, amp * bal * 0.4);
 	Pdef(m.ptn).set(\range, range);
 	Pdef(m.ptn).set(\octave, octave);
+	Pdef(m.ptn).set(\release, rel);
+	Pdef(m.ptn).set(\attack, atk);
 
 };
 
