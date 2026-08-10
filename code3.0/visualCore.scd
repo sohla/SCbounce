@@ -207,6 +207,8 @@ var drawCanvas = { |name, view|
 					// applied either way.
 					ctx = (
 						pos: pos,
+						posStart: ((event[\sx] * mx) + mx) @ ((event[\sy] * my) + my),
+						posEnd: ((event[\ex] * mx) + mx) @ ((event[\ey] * my) + my),
 						size: size,
 						width: width,
 						color: col,
@@ -292,6 +294,15 @@ core.makeCanvas = { |self, name, frameRate = 60, action|
 // scenes : routing-table swaps
 //------------------------------------------------------------
 core.applyScene = { |self, name|
+	// Events already in flight are re-routed with the scene, not stranded.
+	// A held event (duration: inf) was routed once when it was fired, so
+	// without this it would stay on whichever canvas it started on and the
+	// other scene would draw nothing at all.
+	var live = IdentitySet.new;
+
+	core.canvases.values.do { |c| c[\events].do { |e| live.add(e) } };
+	core.canvases.values.do { |c| c[\events] = List.new(32) };
+
 	core.scene = name;
 	core.routes.clear;
 
@@ -306,6 +317,15 @@ core.applyScene = { |self, name|
 		},
 		{ "unknown visual scene: %".format(name).warn }
 	);
+
+	// NB an event that named an explicit \canvas is re-routed by \src like
+	// any other - nothing uses \canvas today.
+	live.do { |e|
+		(core.routes[e[\src]] ? []).do { |cn|
+			var c = core.canvases[cn];
+			if(c.notNil, { c[\events] = c[\events].add(e) });
+		};
+	};
 };
 
 //------------------------------------------------------------

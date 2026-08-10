@@ -7,11 +7,22 @@ from datetime import datetime
 from collections import defaultdict
 from pathlib import Path
 
+# Generated data lands here and is gitignored - the scripts are the source of
+# truth, not their output. Anchored to this file rather than the working
+# directory so it does not matter where the script is invoked from.
+OUTPUT_DIR = Path(__file__).resolve().parent / 'output'
+
+# Commit scope. Must stay identical across every analyzer in this directory,
+# or the timelines are drawn from different populations and cannot be read
+# against each other. This script was missing --all, so it saw only the
+# checked-out branch: 585 commits against the 801 the others analysed.
+GIT_SCOPE = ['--all', '--since=2024-01-01']
+
 def get_git_log():
     """Get git log with file changes and dates"""
     cmd = [
-        'git', 'log', '--name-only', '--pretty=format:%H|%ad|%s', 
-        '--date=iso', '--since=2024-01-01'
+        'git', 'log', '--name-only', '--pretty=format:%H|%ad|%s',
+        '--date=iso', *GIT_SCOPE
     ]
     result = subprocess.run(cmd, capture_output=True, text=True, cwd='..')
     return result.stdout.strip()
@@ -263,7 +274,8 @@ def main():
     viz_data = generate_visualization_data(timeline_data)
     
     # Save to JSON
-    output_file = 'work_type_data.json'
+    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+    output_file = OUTPUT_DIR / 'work_type_data.json'
     with open(output_file, 'w') as f:
         json.dump(viz_data, f, indent=2)
     

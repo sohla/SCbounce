@@ -4,6 +4,31 @@ import re
 import json
 from collections import defaultdict, Counter
 from datetime import datetime
+from pathlib import Path
+
+# Generated data lands here and is gitignored - the scripts are the source of
+# truth, not their output. Anchored to this file rather than the working
+# directory so it does not matter where the script is invoked from.
+OUTPUT_DIR = Path(__file__).resolve().parent / 'output'
+
+# Commit scope. Must stay identical across every analyzer in this directory,
+# or the timelines are drawn from different populations and cannot be read
+# against each other.
+GIT_SCOPE = ['--all', '--since=2024-01-01']
+
+# Field and record separators for `git log --pretty`. A commit body spans
+# multiple lines and may itself contain '|', so neither a newline nor a pipe
+# can delimit anything. Splitting on them truncated every multi-line body to
+# its first line, and turned one body line that happened to contain pipes
+# ("/airkit/state now lists idle|tuning|piece|curtain") into a phantom commit
+# whose "hash" was then handed to `git show`.
+#
+# The format string uses git's %x00/%x01 placeholders rather than the bytes
+# themselves: a literal NUL cannot be passed through argv (subprocess raises
+# "embedded null byte"), so git emits the separators and only the parsing side
+# below splits on the real characters.
+FIELD_FMT, FIELD_SEP = '%x00', '\x00'
+RECORD_FMT, RECORD_SEP = '%x01', '\x01'
 
 def get_commit_files(commit_hash):
     """Get list of files changed in a commit."""
@@ -48,33 +73,37 @@ def categorize_commit(files):
 
 def get_all_commits():
     """Extract all commits with their metadata."""
+    fmt = FIELD_FMT.join(['%H', '%ai', '%an', '%s', '%b']) + RECORD_FMT
     result = subprocess.run(
-        ['git', 'log', '--all', '--since=2024-01-01', '--pretty=format:%H|%ai|%an|%s|%b'],
+        ['git', 'log', *GIT_SCOPE, '--pretty=format:' + fmt],
         capture_output=True,
         text=True
     )
 
     commits = []
-    for line in result.stdout.strip().split('\n'):
-        if not line or '|' not in line:
+    for record in result.stdout.split(RECORD_SEP):
+        # `format:` joins records with a newline, so every record after the
+        # first arrives with one leading.
+        record = record.lstrip('\n')
+        if not record.strip():
             continue
 
-        parts = line.split('|', 4)
-        if len(parts) >= 4:
-            commit_hash = parts[0]
-            files = get_commit_files(commit_hash)
-            commit_type = categorize_commit(files)
+        parts = record.split(FIELD_SEP)
+        if len(parts) < 5:
+            continue
 
-            commit = {
-                'hash': commit_hash,
-                'date': parts[1],
-                'author': parts[2],
-                'subject': parts[3],
-                'body': parts[4] if len(parts) > 4 else '',
-                'files': files,
-                'type': commit_type
-            }
-            commits.append(commit)
+        commit_hash = parts[0]
+        files = get_commit_files(commit_hash)
+
+        commits.append({
+            'hash': commit_hash,
+            'date': parts[1],
+            'author': parts[2],
+            'subject': parts[3],
+            'body': parts[4],
+            'files': files,
+            'type': categorize_commit(files)
+        })
 
     return commits
 
@@ -177,10 +206,12 @@ def main():
     data = generate_json_data(word_counts, word_to_commits, top_n=200)
     
     # Save to file
-    with open('commits_data.json', 'w') as f:
+    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+    output_file = OUTPUT_DIR / 'commits_data.json'
+    with open(output_file, 'w') as f:
         json.dump(data, f, indent=2)
-    
-    print("commits.json")
+
+    print(f"Wrote {output_file}")
 
 if __name__ == '__main__':
     main()

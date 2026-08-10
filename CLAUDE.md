@@ -303,9 +303,9 @@ assignment is the visual equivalent of `synth.set`.
 and `:362`) is what removes held events when the personality unloads. Without
 it they would outlive their vdef and degrade into a stray fallback circle.
 
-Known limitation: a held event does **not** follow a scene switch
-(overlay↔grid), because it is already sitting in one canvas's list while
-routes are re-resolved per fire.
+`applyScene` re-routes every live event when the scene changes, so a held
+event follows an overlay↔grid switch rather than being stranded on the canvas
+it was fired to.
 
 ---
 
@@ -491,5 +491,56 @@ Pen.width = wid * a;          // a = this partial's current amplitude
 ```
 
 File-level vars are for **structure** (SynthDef mirrors) and **state**
-(`step`, `droneAmp` — values that must persist between events). Never for
+(`step`, `sincePluck` — accumulators that cannot be recomputed). Never for
 values you would want to tweak; those belong on the event.
+
+### Never relay values through file-level vars
+
+**A draw function runs inside the personality's Environment, so it can read
+`m` — the model — directly, live, at frame rate.** Whatever it needs to know
+about the performance, it computes for itself from the same source `~next`
+uses.
+
+So do **not** do this:
+
+```supercollider
+var pluckRate = 2;                                  // WRONG - a relayed value
+~next = { |d| pluckRate = pch.linlin(30,300,1,30) }; // written here...
+~vdef.(\band, { |ev, c| ... pluckRate ... });        // ...read there
+```
+
+Do this:
+
+```supercollider
+~vdef.(\band, { |ev, c|
+    var pch = 40 + (m.accelMass * 150);      // the same expression ~next uses
+    var pluckRate = pch.linlin(30, 300, 1, 30);
+    ...
+});
+```
+
+Three reasons, in order of how much they bite:
+
+1. The relayed copy is **one tick stale**, and can drift out of step with the
+   synth it is supposed to be mirroring.
+2. The mapping now lives in **two places** and has to be kept in sync by hand.
+3. The draw function's real inputs become **invisible** — you cannot tell what
+   it depends on by reading it.
+
+**The test:** could this be computed from `m` and the event? If yes, it must
+be. A file-level var is only justified when the answer is genuinely no —
+`sincePluck` and `lastNow` in `pluck1` are accumulators over frames, `step` in
+`bongo1` counts events; none can be derived.
+
+**Corollary for held events.** A `duration: inf` event's `\modulation` is
+fixed at fire time, so live values cannot come from it. Do not hold a
+reference and mutate it. Put the **range** on the event and let the model pick
+the point inside it:
+
+```supercollider
+modulation: (modeMin: 1, modeMax: 10)          // the event owns the bounds
+var modes = pch.linlin(40, 190, modeMin, modeMax)   // the model picks
+```
+
+`pluck1.sc` and `metal1.sc` are the worked examples — both draw functions
+recompute their drive from `m` rather than being handed it.

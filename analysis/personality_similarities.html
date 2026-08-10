@@ -861,7 +861,7 @@
         });
         
         // Load data and initialize
-        d3.json('personality_similarities.json').then(function(data) {
+        d3.json('output/personality_similarities.json').then(function(data) {
             personalityData = data;
             
             console.log('Personality data loaded:', Object.keys(data.personalities).length, 'personalities');

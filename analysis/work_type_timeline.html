@@ -364,7 +364,7 @@
         // Load and initialize
         async function loadData() {
             try {
-                const response = await fetch('work_type_data.json');
+                const response = await fetch('output/work_type_data.json');
                 const data = await response.json();
                 timelineData = data.timeline;
                 

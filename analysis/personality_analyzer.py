@@ -16,6 +16,27 @@ from pathlib import Path
 from typing import Dict, List, Set, Tuple, Any
 from collections import defaultdict, Counter
 
+# Generated data lands here and is gitignored - the scripts are the source of
+# truth, not their output. Anchored to this file rather than the working
+# directory so it does not matter where the script is invoked from.
+OUTPUT_DIR = Path(__file__).resolve().parent / 'output'
+
+
+def jaccard(s1: Set, s2: Set) -> float:
+    """Jaccard index, treating two empty sets as agreeing rather than differing.
+
+    Absence is a shared property: two personalities that both use no gyro are
+    alike in that respect, not maximally unlike. The mapping, technique and
+    approach metrics below used to score the both-empty case 0 while still
+    dividing by the full axis count, which capped similarity well below 1 for
+    anything sparse - melChair1 and toot1, with byte-identical IMU mappings,
+    scored 0.667. calculate_pattern_similarity already used this convention.
+    """
+    if not s1 and not s2:
+        return 1.0
+    return len(s1 & s2) / len(s1 | s2)
+
+
 class PersonalityAnalyzer:
     def __init__(self, personalities_dir: str):
         self.personalities_dir = Path(personalities_dir)
@@ -472,22 +493,18 @@ class PersonalityAnalyzer:
         m1, m2 = p1['imu_mappings'], p2['imu_mappings']
         
         # Sensor usage similarity
-        sensor_sim = 0
-        for sensor_type in ['accel', 'gyro', 'rrate']:
-            s1 = set(m1['sensor_usage'][sensor_type])
-            s2 = set(m2['sensor_usage'][sensor_type])
-            if s1 or s2:
-                sensor_sim += len(s1.intersection(s2)) / len(s1.union(s2))
-        sensor_sim /= 3  # Average across sensor types
-        
+        sensor_types = ['accel', 'gyro', 'rrate']
+        sensor_sim = sum(
+            jaccard(set(m1['sensor_usage'][s]), set(m2['sensor_usage'][s]))
+            for s in sensor_types
+        ) / len(sensor_types)
+
         # Mapping function similarity
-        funcs1, funcs2 = set(m1['mapping_functions']), set(m2['mapping_functions'])
-        func_sim = len(funcs1.intersection(funcs2)) / len(funcs1.union(funcs2)) if (funcs1 or funcs2) else 0
-        
+        func_sim = jaccard(set(m1['mapping_functions']), set(m2['mapping_functions']))
+
         # Parameter target similarity
-        params1, params2 = set(m1['parameter_targets']), set(m2['parameter_targets'])
-        param_sim = len(params1.intersection(params2)) / len(params1.union(params2)) if (params1 or params2) else 0
-        
+        param_sim = jaccard(set(m1['parameter_targets']), set(m2['parameter_targets']))
+
         return (sensor_sim + func_sim + param_sim) / 3
     
     def calculate_technique_similarity(self, p1: Dict, p2: Dict) -> float:
@@ -495,13 +512,11 @@ class PersonalityAnalyzer:
         t1, t2 = p1['synthesis_techniques'], p2['synthesis_techniques']
         
         # Synthesis method similarity
-        methods1, methods2 = set(t1['synthesis_methods']), set(t2['synthesis_methods'])
-        method_sim = len(methods1.intersection(methods2)) / len(methods1.union(methods2)) if (methods1 or methods2) else 0
-        
+        method_sim = jaccard(set(t1['synthesis_methods']), set(t2['synthesis_methods']))
+
         # Effects similarity
-        effects1, effects2 = set(t1['effects']), set(t2['effects'])
-        effect_sim = len(effects1.intersection(effects2)) / len(effects1.union(effects2)) if (effects1 or effects2) else 0
-        
+        effect_sim = jaccard(set(t1['effects']), set(t2['effects']))
+
         # Binary feature similarity
         binary_features = ['sample_based', 'generative', 'buffer_usage']
         binary_sim = sum(1 for feat in binary_features if t1[feat] == t2[feat]) / len(binary_features)
@@ -517,12 +532,10 @@ class PersonalityAnalyzer:
         binary_sim = sum(1 for feat in binary_features if a1[feat] == a2[feat]) / len(binary_features)
         
         # List features
-        timing1, timing2 = set(a1['timing_approach']), set(a2['timing_approach'])
-        timing_sim = len(timing1.intersection(timing2)) / len(timing1.union(timing2)) if (timing1 or timing2) else 0
-        
-        control1, control2 = set(a1['control_style']), set(a2['control_style'])
-        control_sim = len(control1.intersection(control2)) / len(control1.union(control2)) if (control1 or control2) else 0
-        
+        timing_sim = jaccard(set(a1['timing_approach']), set(a2['timing_approach']))
+
+        control_sim = jaccard(set(a1['control_style']), set(a2['control_style']))
+
         return (binary_sim + timing_sim + control_sim) / 3
     
     def calculate_pattern_similarity(self, p1: Dict, p2: Dict) -> float:
@@ -692,7 +705,8 @@ class PersonalityAnalyzer:
 def main():
     # Configuration
     personalities_dir = "../personalities"
-    output_file = "personality_similarities.json"
+    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+    output_file = OUTPUT_DIR / "personality_similarities.json"
     
     # Initialize analyzer
     analyzer = PersonalityAnalyzer(personalities_dir)

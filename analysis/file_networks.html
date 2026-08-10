@@ -854,7 +854,7 @@
         });
         
         // Load data and initialize
-        d3.json('file_networks.json').then(function(data) {
+        d3.json('output/file_networks.json').then(function(data) {
             networkData = data;
             
             console.log('Raw data loaded:', data.nodes.length, 'nodes,', data.edges.length, 'edges');

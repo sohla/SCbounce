@@ -406,7 +406,7 @@
         // Load and process data
         async function loadData() {
             try {
-                const response = await fetch('commit_imu_analysis.json');
+                const response = await fetch('output/commit_imu_analysis.json');
                 data = await response.json();
                 
                 console.log('Loaded commit IMU data:', data);

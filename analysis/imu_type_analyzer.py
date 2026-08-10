@@ -21,6 +21,11 @@ from typing import Dict, List, Set, Tuple, Any
 from collections import defaultdict, Counter
 from datetime import datetime
 
+# Generated data lands here and is gitignored - the scripts are the source of
+# truth, not their output. Anchored to this file rather than the working
+# directory so it does not matter where the script is invoked from.
+OUTPUT_DIR = Path(__file__).resolve().parent / 'output'
+
 class IMUDataAnalyzer:
     def __init__(self, personalities_dir: str):
         self.personalities_dir = Path(personalities_dir)
@@ -584,7 +589,8 @@ class IMUDataAnalyzer:
 def main():
     # Configuration
     personalities_dir = "../personalities"
-    output_file = "imu_type_analysis.json"
+    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+    output_file = OUTPUT_DIR / "imu_type_analysis.json"
     
     # Initialize analyzer
     analyzer = IMUDataAnalyzer(personalities_dir)

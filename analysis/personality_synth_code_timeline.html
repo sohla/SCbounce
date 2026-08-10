@@ -605,7 +605,7 @@
         };
 
         // Load data
-        d3.json('personality_code_data.json').then(function(loadedData) {
+        d3.json('output/personality_code_data.json').then(function(loadedData) {
             data = loadedData;
             allCommits = data.commits.map(c => ({
                 ...c,

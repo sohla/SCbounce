@@ -21,13 +21,25 @@ import subprocess
 from datetime import datetime
 from typing import Dict, List, Set, Tuple, Any
 from collections import defaultdict
+from pathlib import Path
+
+# Generated data lands here and is gitignored - the scripts are the source of
+# truth, not their output. Anchored to this file rather than the working
+# directory so it does not matter where the script is invoked from.
+OUTPUT_DIR = Path(__file__).resolve().parent / 'output'
+
+# Commit scope. Must stay identical across every analyzer in this directory,
+# or the timelines are drawn from different populations and cannot be read
+# against each other. This script used a relative window ("2 years ago"),
+# which slid forward on every run, and was missing --all.
+SINCE = '2024-01-01'
 
 class CommitIMUAnalyzer:
     def __init__(self, repo_path: str = "../"):
         self.repo_path = repo_path
         self.commits = []
-        
-    def analyze_commits(self, since_date: str = "1 year ago") -> Dict[str, Any]:
+
+    def analyze_commits(self, since_date: str = SINCE) -> Dict[str, Any]:
         """Analyze commits for IMU mapping changes"""
         print(f"🔍 Analyzing commits since {since_date}...")
         
@@ -62,6 +74,7 @@ class CommitIMUAnalyzer:
             # Get commit log for personality files
             cmd = [
                 'git', 'log',
+                '--all',
                 f'--since={since_date}',
                 '--format=%H|%ad|%s|%an',
                 '--date=iso',
@@ -387,14 +400,15 @@ class CommitIMUAnalyzer:
 
 def main():
     # Configuration
-    output_file = "commit_imu_analysis.json"
+    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+    output_file = OUTPUT_DIR / "commit_imu_analysis.json"
     
     # Initialize analyzer
     analyzer = CommitIMUAnalyzer()
     
     # Run analysis
     print("🚀 Starting commit IMU mapping analysis...")
-    results = analyzer.analyze_commits(since_date="2 years ago")
+    results = analyzer.analyze_commits()
     
     # Save results
     print(f"💾 Saving results to {output_file}")
