@@ -96,7 +96,7 @@ SynthDef(\pluck1, { |out=0, amp=0, pch=30, frq=30, gate=0 |
 		dur: 0.01,
 		viewID: d.port,
 		shape: \rubberBand,
-		numPoints: 64,
+		numPoints: 4,
 		fill: false,
 		closed: false,
 		sx: -0.85, sy: 0,

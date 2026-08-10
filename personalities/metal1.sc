@@ -6,7 +6,7 @@ var droneAmpSmooth = 0;
 
 //------------------------------------------------------------
 m.accelMassFilteredAttack = 0.99;
-m.accelMassFilteredDecay = 0.9;
+m.accelMassFilteredDecay = 0.4;
 m.rrateMassFilteredAttack = 0.2;
 m.rrateMassFilteredDecay = 0.08;
 //------------------------------------------------------------
@@ -195,20 +195,20 @@ SynthDef(\sheet2, { |out, frq=111, gate=0, amp = 0, pchx=0|
 		dur: 0.01,
 		viewID: d.port,
 		shape: \sheetFrame,
-		fill: true,
+		fill: false,
 		startSize: 60,
 		endSize: 600,
-		startWidth: 1,
+		startWidth: 180,
 		endWidth: 10,
 		rotation: pi.half,
-		startColor: Color.hsv(0.55, 0.25, 1.0, 0.5),
+		startColor: Color.hsv(0.45, 0.95, 1.0, 0.2),
 		endColor: Color.hsv(0.55, 0.25, 1.0, 0.1),
 		sx: 0, sy: 0, ex: 0, ey: 0,
 		duration: inf,
 		modulation: (
 			attack: 0.007,
 			release: 0.007,
-			fade: -8
+			fade: -8,
 		),
 	).play;
 
@@ -261,13 +261,13 @@ SynthDef(\sheet2, { |out, frq=111, gate=0, amp = 0, pchx=0|
 			\shape, \morphLine,
             \fill, false,
 			\numPoints, 48,
-			\sx, Pwhite(-0.05, 0.05),
-			\sy, Pwhite(-0.05, 0.05),
+			\sx, Pwhite(-0.02, 0.02),
+			\sy, Pwhite(-0.02, 0.02),
 			\ex, 0,
 			\ey, 0,
-			\startSize, Pkey(\root).linlin(0,127,10,300),
-			\endSize, 110,
-			\startWidth, 3.5,
+			\startSize, Pkey(\root).linlin(0,127,100,300),
+			\endSize, 200,
+			\startWidth, 13.5,
 			\endWidth, 0.4,
 			\rotation, Pwhite(0, 0.02),
 			\startColor, Color.hsv(0.55, 0.85, 1.0, 0.9),

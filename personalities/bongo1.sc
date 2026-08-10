@@ -127,6 +127,7 @@ SynthDef(\bongo1, {
 				});
 			};
 		});
+		nil
 	});
 
 	Pdef(m.ptn,

@@ -71,6 +71,10 @@ SynthDef(\templateVisual, {
 	// \modulation, \closed and \fill. Do NOT call Pen directly - see
 	// bongo1.sc for a worked draw func that never touches it.
 	//
+	// End a draw func with nil. The contracts are told apart by the
+	// return value, and .do hands back the collection it iterated -
+	// which then gets drawn as coordinates in the top-left corner.
+	//
 	// Note what is NOT here: no position, no rotation, no Pen.width, no
 	// colour. The core applied all of those before this ran.
 	~vdef.(\templateMark, { |ev, c|

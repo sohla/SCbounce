@@ -70,6 +70,7 @@ SynthDef(\glockenspiel, {
 				], a, a);
 			});
 		};
+		nil
 	});
 
 	Pdef(m.ptn,

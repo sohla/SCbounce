@@ -40,8 +40,8 @@ SynthDef(\miniMoog, {
 		var pos = c[\pos];
 		var pts = Array.fill(n, { |i|
 			var ang = i / n * 2pi;
-			var ca = cos(ang);
-			var sa = sin(ang);
+			var ca = cos(ang) * 3;
+			var sa = sin(ang) * 1 ;
 			pos + (
 				(ca.sign * ca.abs.pow(expo) * sz)
 				@ (sa.sign * sa.abs.pow(expo) * sz)
@@ -70,25 +70,25 @@ SynthDef(\miniMoog, {
 			\numPoints, 64,
 			\fill, true,
 			\duration, Pkey(\release),
-			\sx, 0.5,
-			\ex, 0.5.neg * Pkey(\release),
+			\sx, 0,
+			\ex, 0,
 			\sy, (Pkey(\note) + (Pkey(\octave) * 12)).linlin(36, 69, 0.55, -0.55),
 			\ey, (Pkey(\note) + (Pkey(\octave) * 12)).linlin(36, 69, 0.55, -0.55),
-			\startSize, Pkey(\amp).linlin(0.018, 0.89, 20, 260),
-			\endSize, Pkey(\amp).linlin(0.018, 0.89, 1, 90),
+			\startSize, Pkey(\amp).lincurve(0.018, 0.89, 8, 80, -3),
+			\endSize, Pkey(\amp).lincurve(0.018, 0.89, 1, 60, -1),
 			\startWidth, 2,
 			\endWidth, 0.5,
 			\startColor, Color.hsv(0.0, 0.7, 1.0, 1.0),
 			\endColor, Color.hsv(0.2, 0.8, 0.6, 0.0),
 			\modulation, Pfunc({ (
 				type: \normal,
-				freq: rrand(10.3, 10.9),
-				amp: m.accelMassFiltered.linlin(0, 2.0, 1, 20),
+				freq: m.accelMassFiltered.lincurve(0, 2.0, 1, 12, -1),
+				amp: m.accelMassFiltered.lincurve(0, 2.0, 0.0, 12, 2),
 				phase: 2pi.rand,
 				harmonics: 3,
 				sharp: m.accelMassFiltered.lincurve(0, 2.0, 0, 1,-1),
-				round: 2,
-				corner: 14
+				round: 3,
+				corner: 1
 			) })
 
 			

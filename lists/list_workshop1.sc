@@ -3,6 +3,7 @@
 		"silence",
 
 		"mel4",
+		"mel5",
 		"mel3",
 		"mel1",
 		"melbb2",

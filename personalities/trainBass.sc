@@ -124,12 +124,9 @@ SynthDef(\versatilePerc, {
     		\dur, Pseq([0.22,0.22,Rest(0.22),0.22,0.22,0.22], inf),
 			\octave,Pseq([3,4].stutter(1),inf),
 			\root, Pseq([0,-2,0,3].stutter(32), inf),
-			\envAtk,0.001,
-			\envDec,0.3,
-			\envSus, 0.0,
-			\envRel,Pkey(\octave).squared * 0.05,
+			\decay,Pkey(\octave).squared * 0.05,
    			\pan, Pxrand([-0.5,0.5], inf),
-   			\filtRes, 1,//Pwhite(0.4,0.7),
+   			\filtRes, 1.0,//Pwhite(0.4,0.7),
 			\func, Pfunc({|e| ~onEvent.(e)}),
 			\args, #[],
 		)
@@ -162,14 +159,14 @@ SynthDef(\versatilePerc, {
 	var a = m.accelMassFiltered.lincurve(0,3,0,1,-3);
 	var filtSpeed = m.accelMassFiltered.lincurve(0,2.5,0.1,20,3);
 	var lfoFreq = m.accelMassFiltered.lincurve(0,2.5,0.1,18,-1);
-	var filtFreq = m.accelMassFiltered.lincurve(0,3,3,400,3);//d.sensors.gyroEvent.z.abs.linlin(0.3,0.7,30,200);
+	var filtFreq = m.accelMassFiltered.lincurve(0,2.5,3,1000,-3);//d.sensors.gyroEvent.z.abs.linlin(0.3,0.7,30,200);
 
 	if(a<0.03,{a=0});
 	if(a>0.9,{a=0.9});
 
 	// synth.set(\amp, a * 0.4);
-	// synth.set(\filtSpeed, filtSpeed);
-	// synth.set(\lfoFreq, lfoFreq);
+	synth.set(\filtSpeed, filtSpeed);
+	synth.set(\lfoFreq, lfoFreq);
 
 	Pdef(m.ptn).set(\filtFreq, filtFreq);
 	// Pdef(m.ptn).set(\dur, dur);
