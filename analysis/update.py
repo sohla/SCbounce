@@ -36,6 +36,7 @@ ANALYZERS = [
     ('commit_imu_analyzer.py',      'commit_imu_analysis.json'),
     ('analyze_personality_code.py', 'personality_code_data.json'),
     ('personality_analyzer.py',     'personality_similarities.json'),
+    ('analyze_personality_history.py', 'personality_history.json'),
     ('analyze_git.py',              'commits_data.json'),
 ]
 
