@@ -148,6 +148,10 @@
         border-top: 1px solid #242424;
         backdrop-filter: blur(6px);
     }
+    /* An author `display` beats the `hidden` attribute's UA rule, so without
+       this the bar shows before a p-file has been picked and with nothing to
+       scrub. */
+    #timebar[hidden] { display: none; }
     #timebar.past { border-top-color: #5a4d28; background: rgba(22, 19, 12, 0.97); }
     #timebar .tb-label {
         font-size: 9.5px;
