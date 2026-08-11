@@ -5,6 +5,37 @@ Guidance for Claude Code when working in this repository.
 This file is about **`code3.0/` — the live AirKit system**, and specifically
 about adding visuals to personality files.
 
+---
+
+## RULE ZERO — NEVER CHANGE THE SOUND
+
+**Never modify a SynthDef, a sensor mapping, a `Pbind`'s musical content,
+model filter coefficients, or `~plot` — unless that is the literal thing you
+were asked to do.**
+
+Adding a visual means adding a visual, and nothing else. The synth, `~next`,
+the mappings and the plot probes are the instrument. They are
+performance-tested on hardware and they are the user's work — not scaffolding
+to be tidied while passing through. Commented-out probe lines in `~plot` are
+working notes; they are not dead code.
+
+If the existing synth seems hard to draw, **that is the job**. Read it and
+find what it actually does. Do *not* replace it with one that is easier to
+illustrate — that inverts the design rule in §C ("represent the synth, not the
+idea of the instrument") while appearing to obey it.
+
+If you believe the sound genuinely needs to change, **stop and ask**. Never
+bundle it into a commit about something else.
+
+> This happened. Commit `5781bd3 "more visuals"` replaced `droplet.sc`'s
+> `\raindrop` SynthDef with a new `\droplet`, dropped four of its six sensor
+> mappings (gyro-Y, gyro-X and the accel side-channel), changed the model
+> filter coefficients, rewrote the `Pbind`'s note material, and deleted every
+> `~plot` probe line — all under a heading that said "visuals". Restored from
+> `047f07d`.
+
+---
+
 > **Not to be confused with `visuals/visualServer/`.** That is a separate,
 > older system: an installed SuperCollider Extension providing
 > `VisualServer` / `VisualSynthDef` / `Vbind` and the event types
