@@ -24,7 +24,7 @@ SynthDef(\beeSynth1, { |out=0, rr=0.1, amp = 0.0, gate = 1, release = 2, af=264,
 		),
 	ffrq)!2;
 
-	var sub = SinOsc.ar(pitch * 0.5,0,0.4);
+	var sub = SinOsc.ar(pitch * 0.5,0,0.41);
 	sig = (sub) * EnvGen.kr(Env.adsr(0.1, 0.1, 7, release), gate: gate, doneAction: Done.freeSelf) * ampa.lag(0.1);
 	Out.ar(out, sig);
 

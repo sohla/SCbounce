@@ -1,5 +1,5 @@
 var addTitleView = { |d|
-	var fs = 70 - (d.name.size * 3.5);
+	var fs = 70 - (d.name.size * 1.5);
 	var button = Button()
 		.minWidth_(100)
 		.minHeight_(100)
@@ -18,7 +18,7 @@ var addTitleView = { |d|
 
 	OSCFunc({ |msg, time, addr, recvPort|
 		if(msg[1].asInteger == d.port, {
-			var fs = 70 - (msg[2].asString.size * 3.5);
+			var fs = 70 - (msg[2].asString.size * 1.5);
 			{
 				button.font = Font(size:fs, bold:true);
 				button.states = [
