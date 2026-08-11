@@ -159,7 +159,7 @@ SynthDef(\bongo1, {
 			\rotation, Pfunc({ |e| (e[\cyc] * 2pi) - 0.5pi }),
 			\startSize, Pfunc({ |e| e[\rad] * 400 }),
 			\endSize, Pkey(\startSize),
-			\startWidth, 2,
+			\startWidth, 23,
 			\endWidth, 0.8,
 			\startColor, Color.new(1.0, 0.42, 0.12, 0.95),
 			\endColor, Color.new(1.0, 0.42, 0.12, 0.0),
@@ -171,7 +171,7 @@ SynthDef(\bongo1, {
 				tension: e[\tension] ? 0.5,
 				chirp: 0.5,
 				chirpTime: 0.04,
-				arcSpan: 0.45,
+				arcSpan: 0.65,
 				amp: 0,
 				arcAlpha: 0.22,
 				head: (e[\amp] ? 1).clip(0.02, 3).linexp(0.02, 3, 12, 70)

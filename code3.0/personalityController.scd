@@ -1,16 +1,19 @@
 var listsDir = "~/Develop/SuperCollider/Projects/AirKit/lists/";//RPI
 var personalityDir = "~/Develop/SuperCollider/Projects/AirKit/personalities/";//RPI
-
-
 // var personalityDir = "~/Develop/SuperCollider/Projects/scbounce/personalities/"; //laptop
 // var personalityDir = "~/Develop/SuperCollider/oscMusic/personalities/"; //mac mini cabin
 
 // var list = "list_ITR_Mel.sc";
+// var list = "list_SiS_Alessio.sc";
+// var list = "list_glenroy.sc";
+// var list = "list_dev.sc";
+// var list = "list_Mel_26.sc";
 // var list = "list_NZ.sc";
 // var list = "list_ITR_Nic.sc";
 // var list = "list_yourDNA25.sc";
+// var list = "list_workshop1.sc";
 
-var list = "list_workshop1.sc";
+var list = "list_alon26.sc";
 var defaultLists = list!5;
 
 
@@ -181,7 +184,7 @@ var interpretPersonality = {|d|
 
         //------------------------------------------------------------
         // frame rate of rout
-        ~secs = 0.03;
+        ~secs = 0.01;
 
         //------------------------------------------------------------
         // process data->model

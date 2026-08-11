@@ -62,7 +62,7 @@ SynthDef(\pluck1, { |out=0, amp=0, pch=30, frq=30, gate=0 |
 		var frq = 110 + (m.accelMassFiltered * 100);
 		var pluckRate = pch.linlin(30, 300, 1, 30);
 		var modes = pch.linlin(40, 190, modeMin, modeMax).round.asInteger.clip(1, 16);
-		var gate = m.accelMassFiltered;//if(m.accelMass < 0.01, 0, 1);
+		var gate = m.accelMassFiltered * 0.5;//if(m.accelMass < 0.01, 0, 1);
 		var a = c[\posStart];
 		var b = c[\posEnd];
 		var normal = Polar(1, (b - a).theta + 0.5pi).asPoint;
@@ -96,16 +96,16 @@ SynthDef(\pluck1, { |out=0, amp=0, pch=30, frq=30, gate=0 |
 		dur: 0.01,
 		viewID: d.port,
 		shape: \rubberBand,
-		numPoints: 4,
+		numPoints: 14,
 		fill: false,
 		closed: false,
 		sx: -0.85, sy: 0,
 		ex: 0.85, ey: 0,
-		startSize: 150,
-		endSize: 150,
-		startWidth: 2,
+		startSize: 50,
+		endSize: 50,
+		startWidth: 30,
 		endWidth: 1,
-		startColor: d.color,
+		startColor: Color.blue.alpha_(0.3),
 		endColor: d.color,
 		duration: inf,
 		modulation: (
