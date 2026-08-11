@@ -1,6 +1,6 @@
 var m = ~model;
 var bi = 0;
-var dur = 0.3;
+// var dur = 0.4;
 
 ~buffers;
 m.accelMassFilteredAttack = 0.99;
@@ -58,7 +58,8 @@ SynthDef(\drumkit, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 			\start, 0,
 			\note, Pseq([40], inf),
 		//  \dur, Pseq([1,Rest(0.5),0.5,0.5,1,0.5,Rest(0.5),1,0.25,0.25] * dur, inf),
-		 \dur, Pseq([1,0.5,1,1] * dur, inf),
+		//  \dur, Pseq([1,0.5,0.25,0.25,1] * dur, inf),
+		//  \dur, Pseq([1] * dur, inf),
 		//  \latency, Pwhite(0,0.013),
 		 \pan,Pwhite(-0.1,0.1),
 			\attack, 0.02,
@@ -67,7 +68,7 @@ SynthDef(\drumkit, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 		)
 	);
 
-	Pdef(m.ptn).play(quant:dur);
+	Pdef(m.ptn).play(quant:0.1);
 	Pdef(m.ptn).set(\bufnum, ~buffers[0]);
 };
 
@@ -88,12 +89,14 @@ SynthDef(\drumkit, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 
 	var rate = m.rrateMassFiltered.linlin(0,1.3,1.5,4);
 	var amp = m.accelMassFiltered.lincurve(0,2.5,0.3,1, -1);
+	var dur = m.accelMassFiltered.linlin(0,2.5,1,3).asInteger;
+	
+	Pdef(m.ptn).set(\dur, 2.pow(dur).reciprocal * 0.7);	
 	Pdef(m.ptn).set(\amp, amp * 0.8);
 	Pdef(m.ptn).set(\rate, rate);
-	// bi = (d.sensors.gyroEvent.y.abs / pi) * (~buffers.size-1);
-	// bi = bi.asInteger;
-	bi = [3,4,5,6,7,8,9].choose;
-
+	bi = (d.sensors.gyroEvent.y.abs / pi) * (~buffers.size-1);
+	bi = bi.asInteger;
+	// bi = [3,4,5,6,7,8,9].choose;
 
 	if(m.accelMassFiltered > 0.1,{
 		if( Pdef(m.ptn).isPlaying.not,{
