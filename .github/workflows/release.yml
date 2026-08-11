@@ -1,0 +1,42 @@
+# GitHub Actions workflow for the AirKit SuperCollider app repo.
+# Place this file at: .github/workflows/release.yml
+#
+# Usage:
+#   git tag v1.2.0
+#   git push origin v1.2.0
+#
+# This will zip the directories listed in release.config.json and
+# publish them as a GitHub Release asset named airkit_app_v1.2.0.zip.
+
+name: Release App
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build release zip
+        run: |
+          VERSION=${GITHUB_REF_NAME#v}
+          DIRS=$(python3 -c "import json; d=json.load(open('release.config.json')); print(' '.join(d['release_dirs']))")
+          echo "$VERSION" > VERSION
+          zip -r "airkit_app_v${VERSION}.zip" $DIRS VERSION
+          rm VERSION
+          echo "Built airkit_app_v${VERSION}.zip"
+          unzip -l "airkit_app_v${VERSION}.zip" | tail -5
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: airkit_app_*.zip
+          generate_release_notes: true
