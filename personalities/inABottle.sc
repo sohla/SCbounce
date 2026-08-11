@@ -3,7 +3,7 @@ var synth;
 var tsynth;
 
 m.accelMassFilteredAttack = 0.3;
-m.accelMassFilteredDecay = 0.04;
+m.accelMassFilteredDecay = 0.1;
 m.rrateMassFilteredAttack = 0.2;
 m.rrateMassFilteredDecay = 0.08;
 m.gyroFilteredAttack = 0.7;
@@ -14,12 +14,12 @@ m.gyroFilteredDecay = 0.7;
 SynthDef(\timWind1, { |out, freq=65, gate=0, amp = 0.3, pchx=0|
 	var env = EnvGen.ar(Env.asr(0.007,1.0,5.0), gate, doneAction:Done.freeSelf);
 	var follow = Amplitude.kr(amp, 0.03, 0.03);
-	var trig = PinkNoise.ar(0.01) * env * follow.lag(2);
+	var trig = PinkNoise.ar(0.04) * env * follow.lag(2);
 	var sig =  DynKlank.ar(`[[freq, freq*2].lag(3), [1,0.4,0.3], [2, 1, 1, 1]], trig);
-  	var tone = SinOsc.ar([freq * 4, freq * 0.5] * LFNoise2.ar(12,0.02,1), LFNoise2.ar(3,6),[0.04,0.4 ]* env * 6);
+  	var tone = SinOsc.ar([freq * 3, freq * 0.5] * LFNoise2.ar(12,0.02,1), LFNoise2.ar(3,6),[0.04,0.4 ]* env * 6);
 	var dly = DelayC.ar(sig + tone,0.03,[0.02,0.027]);
 	var eq = BLowShelf.ar(dly,1000,0.4, -7).tanh;
-	Out.ar(out, eq * amp.lag(0.1));
+	Out.ar(out, eq * amp.lag(0.1) * 0.2);
 }).add;
 
 //------------------------------------------------------------
@@ -66,7 +66,7 @@ SynthDef(\inabottle, { |out, frq=111, gate=0, amp = 0, dust=10, tone = 0.8, bits
 	synth.set(\bits, bits);
 
 	tsynth.set(\amp, tamp.dbamp);
-	tsynth.set(\freq, 70 + (freq * 70));
+	tsynth.set(\freq, 140 + (freq * 70));
 
 };
 

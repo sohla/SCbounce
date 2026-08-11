@@ -7,8 +7,13 @@ var roots = [0,0,9,8,8].dupEach(24);
 // var roots = [0].dupEach(18);
 var currentNote = notes[0];
 var currentRoot = roots[0];
+
 m.accelMassFilteredAttack = 0.5;
 m.accelMassFilteredDecay = 0.999;
+m.rrateMassFilteredAttack = 0.2;
+m.rrateMassFilteredDecay = 0.08;
+m.gyroFilteredAttack = 0.7;
+m.gyroFilteredDecay = 0.7;
 
 
 SynthDef(\bambooComplex, {
@@ -124,6 +129,40 @@ SynthDef(\bambooComplex, {
 
 
 ~init = ~init <> {
+
+	//------------------------------------------------------------
+	// visual : a triangle whose three edges break apart and tumble.
+	// Registered here so it reloads with the file (loadPersonality
+	// calls clearVdefs before re-interpreting us).
+	//
+	// Needs a vdef rather than shape: \triangle because the library
+	// triangle is one connected outline - it has no notion of the edges
+	// separating from each other.
+	~vdef.(\shards, { |ev, c|
+		var mod = ev[\modulation] ? ();
+		var spread = mod[\spread] ? 1.2;
+		var spin = mod[\spin] ? 1.0;
+		var seed = mod[\phase] ? 0;
+		var sz = c[\size];
+		var pos = c[\pos];
+		var brk = c[\normTime].pow(mod[\hold] ? 2);
+		var verts = Array.fill(3, { |i|
+			pos + Polar(sz, (i / 3 * 2pi) - 0.5pi).asPoint
+		});
+
+		3.do { |i|
+			var pa = verts[i];
+			var pb = verts[(i + 1) % 3];
+			var mid = (pa + pb) / 2;
+			var drift = (mid - pos) * (brk * spread);
+			var ang = brk * spin * (1 + sin(seed + i)) * if(i.even, 1, -1);
+			var swing = { |p|
+				var v = p - mid;
+				mid + Polar(v.rho, v.theta + ang).asPoint + drift
+			};
+			c[\render].([ swing.(pa), swing.(pb) ], 1, 1, false);
+		};
+	});
 };
 
 ~deinit = ~deinit <> {
@@ -138,12 +177,12 @@ SynthDef(\bambooComplex, {
 ~next = {|d|
 
 	var move = m.accelMassFiltered.linlin(0,3,0,1);
-	var att = m.accelMassFiltered.lincurve(0,2.5,0.2,0.001,-8);
+	var att = m.accelMassFiltered.lincurve(0,2.5,0.1,0.001,-8);
 	var amp = m.accelMassFiltered.linexp(0,2.5,0.08,1);
 	var noteIndex = m.accelMassFiltered.linlin(0,2,0.0001,notes.size).floor;
-	var space = m.accelMassFiltered.lincurve(0,2.5,0.25,0.02,-2);
+	var space = m.accelMassFiltered.lincurve(0,1.0,0.25,0.02,-1);
 	if(noteIndex>=notes.size,{noteIndex=notes.size-1});
-	if(move > 0.04, {
+	if(move > 0.01, {
 		if(TempoClock.beats > (lastTime + space),{
 			lastTime = TempoClock.beats;
 			notes = notes.rotate(-1);
@@ -152,17 +191,49 @@ SynthDef(\bambooComplex, {
 			currentRoot = roots[0];
 			m.com.root = currentRoot;
 			synth = Synth(\bambooComplex, [
-				\freq, (30 + notes[noteIndex] + currentRoot).midicps,
+				\freq, (2 + notes[noteIndex] + currentRoot).midicps,
 				\gate, 1,
-				\att, att,
+				\att, 0.03,
 				\amp, 0.3 * amp,
 				\strikePos, 1.0.rand, // Position of strike (affects resonance)
-				\resonance, 0.2, // Amount of resonant body sound
+				\resonance, 0.06, // Amount of resonant body sound
 				\bambooMoisture, 1.0.rand, // Affects damping and resonance
 				\model, 6.rand.floor, // Model selecto
 
 			]);
 			synth.server.sendBundle(0.1,[\n_set, synth.nodeID, \gate, 0]);
+
+			// visual : one triangle per strike, breaks apart as it rises.
+			// amp:0 / dur - the event type re-types this to \note and plays
+			// it, so the silent \default note is kept short. The bell above
+			// is the sound.
+			(
+				type: \customVisualEvent,
+				amp: 0,
+				dur: 0.05,
+				viewID: d.port,
+				shape: \shards,
+				startSize: 150 + (50 * amp),
+				endSize: 10 + (50 * amp),
+				startWidth: 80.3,
+				endWidth: 0.3,
+				sx: rrand(-0.02, 0.02),
+				sy: 0+ rrand(-0.01,0.01),
+				ex: rrand(-0.1, 0.1),
+				ey: rrand(-0.1, 0.1),
+				yEnv: Env([0, 1], [1], \sin),
+				startColor: Color.hsv(noteIndex / notes.size, 0.45, 1.0, 0.5),
+				endColor: Color.hsv(noteIndex / notes.size, 0.9, 0.6, 0.0),
+				rotation: 2pi.rand,
+				duration: m.accelMassFiltered.lincurve(0,2.5,0.3,3,-3),
+				modulation: (
+					spread: rrand(7.0, 7.0) * 0.2,
+					spin: rrand(0.5, 2.0) * 0.1,
+					phase: 2pi.rand,
+					amp: 0,
+					hold: 2
+				)
+			).play;
 		});
 	});
 };

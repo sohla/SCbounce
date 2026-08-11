@@ -59,15 +59,15 @@ SynthDef(\pullstretchMonoQN, {|out, amp = 1, buffer = 0, envbuf = -1, pch = 1, d
 ~next = {|d|
 
 	var delta = m.gyroYFiltered.linlin(-1,1,10,-10).lcurve;
-	var amp = m.accelMassFiltered.lincurve(0,1.5,0.0,1,1);
+	var amp = m.rrateMassFiltered.lincurve(0,0.5,0.0,1,1);
 	var speed= m.gyroXFiltered.fold(-0.5,0.5).lincurve(-0.5,0.5,0.1,0.001,-1);
 
 
-	if(amp < 0.01, {
-		amp = 0;
-	});
+	// if(amp < 0.01, {
+	// 	amp = 0;
+	// });
 
-	if(amp<0.005,{
+	if(amp<0.002,{
 		amp=0;
 		// synth.set(\lag,0.8);
 		if(trig, {

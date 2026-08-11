@@ -1,0 +1,53 @@
+class:: VpatternPlayer
+summary:: Plays a visual pattern via an EventStreamPlayer
+categories:: Libraries>VisualServer
+related:: Classes/Vbind, Classes/EventStreamPlayer, Classes/VisualServer, Guides/VisualServer
+
+description::
+
+Manages playback of a visual pattern. Created implicitly by code::Pattern:vplay:: (added to link::Classes/Pattern:: by this library), so you rarely construct it directly.
+
+It calls code::pattern.play(clock, Event.new, quant):: — an strong::empty:: proto event, not code::nil::. Passing code::nil:: would make link::Classes/EventStreamPlayer:: copy code::Event.default:: into every event, leaking SC's audio machinery (code::sustain:: as a Function, code::legato:: 0.8) as own keys and breaking the visual envelope model. link::Classes/Event#-play:: still attaches the default parent for code::~play::/code::~eventTypes::, so scheduling and dispatch keep working.
+
+CLASSMETHODS::
+
+method:: new
+argument:: pattern
+The visual pattern (e.g. a link::Classes/Vbind::).
+argument:: clock
+Default link::Classes/TempoClock#*default::.
+argument:: view
+Fallback view symbol (default code::\default::).
+argument:: server
+Default link::Classes/VisualServer#*default::.
+
+INSTANCEMETHODS::
+
+method:: play
+Build and play the link::Classes/EventStreamPlayer::.
+argument:: quant
+returns:: this player.
+
+method:: stop
+Stop playback and clear the player.
+
+method:: pause
+method:: resume
+method:: isPlaying
+Returns true while the underlying player is playing.
+
+method:: pattern
+method:: clock
+method:: view
+method:: server
+method:: player
+The underlying link::Classes/EventStreamPlayer:: (read/write).
+
+EXAMPLES::
+
+code::
+p = Vbind(\x, Pwhite(-0.8,0.8), \dur, 0.25, \view, \demo).vplay;  // returns a VpatternPlayer
+p.isPlaying;
+p.pause; p.resume;
+p.stop;
+::

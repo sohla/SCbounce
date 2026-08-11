@@ -1,7 +1,7 @@
 var m = ~model;
 var synth;
 m.accelMassFilteredAttack = 0.09;
-m.accelMassFilteredDecay = 0.06;
+m.accelMassFilteredDecay = 0.1;
 m.rrateMassFilteredAttack = 0.4;
 m.rrateMassFilteredDecay = 0.4;
 
@@ -41,18 +41,18 @@ SynthDef(\sheet3, {
 ~next = {|d|
 
 	// var a = (d.sensors.accelEvent.y+d.sensors.accelEvent.z).abs;//m.accelMass.lincurve(0,2.5,0,1,-6);
-	var a = m.accelMassFiltered.lincurve(0,2.5,0,3,-2);
+	var a = m.accelMassFiltered.lincurve(0,2.2,0,3,-2);
 	var b = m.accelMassFiltered.linexp(0,3,0.1,1);
 	var r = m.rrateMassFiltered.linlin(0,1.5,0.8,1.0);
 	var e = (d.sensors.gyroEvent.y / 2pi) + 0.5;
 	var pan = d.sensors.gyroEvent.z.linlin(-1,1,-1,1);
 
 	e = e.fold(0,0.5) * 2;
-	e = e.linexp(0,1,400,1200);
+	e = e.linexp(0,1,500,900);
 	// if(a<0.03,{a=0});
 	if(a>0.9,{a=0.9});
 	
-	synth.set(\amp, a * 14.3);
+	synth.set(\amp, a * 13);
 	synth.set(\my, b);
 	synth.set(\mx, r);
 	synth.set(\filterFreq, e);

@@ -2,7 +2,7 @@ var m = ~model;
 var synth;
 var bl = false;
 var frame = 0;
-var bassLines = [[0,2,4,5,7,9,11,12],[0]];
+var bassLines = [[0,2,4,5,7,9,11,12],[0]]-2;
 var bassLine = bassLines[0];
 var beat = 0.2;
 
@@ -45,35 +45,6 @@ SynthDef(\funBass, {
 }).add;
 
 
-SynthDef(\versatilePerc, {
-    |out=0, freq=50, tension=0.1, decay=0.5, clickLevel=0.5, level=0.1, dist = 5, filtFreq = 20, filtRes = 0.8,pan =0, gate=1|
-    var pitch_contour, drum_osc, click_osc, drum_env, click_env, sig, pch;
-
-    // Pitch envelope
-    pitch_contour = Line.kr(1, 0, 0.02);
-
-    // Drum oscillator
-
-	pch = freq * (1 + (pitch_contour * tension));
-	drum_osc = SinOsc.ar([pch,pch*1.004], LFNoise2.ar([4,5],10,-10),0.5);
-
-    // Click oscillator
-    click_osc = LPF.ar(WhiteNoise.ar(1), 1500);
-
-    // Drum envelope
-    drum_env = EnvGen.ar(Env.perc(attackTime: 0.005, releaseTime: decay, curve: -4),gate, doneAction: Done.freeSelf);
-
-    // Click envelope
-    click_env = EnvGen.ar(
-        Env.perc(attackTime: 0.001, releaseTime: 0.01), 
-        levelScale: clickLevel
-    );
-	sig = (drum_osc * drum_env) + (click_osc * click_env);
-	sig = (sig * dist).tanh.distort;
-	sig = HPF.ar(sig, filtFreq) * level;
-    // Mix and output
-    Out.ar(out, Balance2.ar(sig[0], sig[1],pan));
-}).add;
 //------------------------------------------------------------
 ~init = ~init <> {
   var size = 60;
@@ -86,30 +57,19 @@ SynthDef(\versatilePerc, {
       \dur, beat,
       \octave, 5,
       \dist, 10,
-      \amp,0.5,
-      // \filtFreq, 100,
+      \amp,0.12,
       \filtRes, 0.1,
       \tension, 0.1,
-      // \decay, 0.2,
-
 
 			\type, \customVisualEvent,
-			\sx, Pn(Pseries(-1.0,2/bassLines[0].size,bassLines[0].size), inf),
-			\sy, Pn(Pseries(-1.0,2/bassLines[0].size,bassLines[0].size), inf).neg,
+			\sx, Pn(Pseries(-0.85,2/bassLines[0].size,bassLines[0].size), inf),
+			\sy, Pn(Pseries(-0.85,2/bassLines[0].size,bassLines[0].size), inf).neg,
 			\ex, Pkey(\sx),
 			\ey, Pkey(\sy),
       \startSize, 50,
 			\endSize, 10,
       \duration, 0.5,
 			\fill, true,
-      // \startWidth, 3,
-      // \modulation, (
-      //     type: \radial,
-      //     freq: 4,
-      //     amp: 10,
-      //     harmonics: 1
-      // ),
-
 			\func, Pfunc({|e| ~onEvent.(e)}),
 			\args, #[]
 		);
@@ -140,7 +100,8 @@ SynthDef(\versatilePerc, {
 
 //------------------------------------------------------------
 ~next = {|d|
-	var amp = m.accelMassFiltered.lincurve(0,2.5,0.00001,0.14,-4);
+	
+  var amp = m.accelMassFiltered.lincurve(0,2.5,0.00001,0.14,-4);
 	var level = m.accelMassFiltered.lincurve(0,2.5,0.01,0.5,-4);
 	var filtFreq = m.accelMassFiltered.lincurve(0.0,2.5,20,5040,2);
 	var dcy = m.accelMassFiltered.lincurve(0.0,2.5,0.2,1.5,-2);
@@ -149,7 +110,7 @@ SynthDef(\versatilePerc, {
   var notes = [0,5,10] + 24;
   var colors = [Color.red, Color.green, Color.blue, Color.yellow, Color.cyan];
   var ni = (d.sensors.gyroEvent.z / pi).lincurve(-0.5,0.5,0,notes.size,1).floor;//cw/ccw
-  var shapes = [\circle, \square, \triangle];
+  var shapes = [\circle, \square, \triangle, \star];
   var bassLine = bassLines[0];
   // var ni = (d.sensors.gyroEvent.y / pi).lincurve(-1.0,1.0,0,notes.size,0).floor;//left/right
   // var ni = (d.sensors.gyroEvent.x / pi).lincurve(-1.0,1.0,notes.size,0,0).floor; //up/down
@@ -160,8 +121,7 @@ SynthDef(\versatilePerc, {
   // Pdef(m.ptn).set(\root, notes[ni]-12-23-3);
   Pdef(m.ptn).set(\filtFreq, filtFreq);
   Pdef(m.ptn).set(\decay, dcy);
-  Pdef(m.ptn).set(\level, level*1.5);
-  Pdef(m.ptn).set(\shape, shapes[ni % shapes.size]);
+  Pdef(m.ptn).set(\shape, shapes.choose);//shapes[ni % shapes.size]);
   // Pdef(m.ptn).set(\startSize, 30 + (100 * level));
 
 	Pdef(m.ptn).set(\viewID, d.port);
@@ -176,7 +136,7 @@ SynthDef(\versatilePerc, {
 	));
 
 
-	if(m.rrateMassFiltered > 0.045,{
+	if(m.accelMassFiltered > 0.1,{
 		if( Pdef(m.ptn).isPlaying.not,{
 			Pdef(m.ptn).resume(quant:beat);
 		});
@@ -212,14 +172,13 @@ SynthDef(\versatilePerc, {
         freq: 2,
         amp: 80 * amp * 10,
         harmonics: 2
-    ),
-    );
+      )
+    ).play;
 
-    event.play;
     if(bl == false, {
       bl = true;
       // synth.set(\gate, 1);
-      	synth = Synth(\funBass, [\amp, 0.1]);
+      	synth = Synth(\funBass, [\amp, 0.05]);
         synth.set(\freq, 26.midicps);
     });
 

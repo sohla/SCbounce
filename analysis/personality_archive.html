@@ -1,0 +1,1350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Personality Archive</title>
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        background: #0a0a0a;
+        color: #e0e0e0;
+        line-height: 1.55;
+    }
+
+    a { color: inherit; }
+
+    /* ---- layout ---- */
+    #shell { display: flex; min-height: 100vh; }
+
+    #sidebar {
+        width: 290px;
+        flex: 0 0 290px;
+        border-right: 1px solid #222;
+        background: #0d0d0d;
+        height: 100vh;
+        position: sticky;
+        top: 0;
+        display: flex;
+        flex-direction: column;
+    }
+
+    #sidebar header { padding: 18px 18px 12px; border-bottom: 1px solid #222; }
+    #sidebar h1 { color: #FF6B6B; font-size: 19px; letter-spacing: .2px; }
+    #sidebar .blurb { color: #777; font-size: 12px; margin-top: 6px; }
+
+    #search {
+        width: 100%;
+        margin-top: 12px;
+        padding: 8px 10px;
+        background: #151515;
+        border: 1px solid #2a2a2a;
+        border-radius: 5px;
+        color: #e0e0e0;
+        font-size: 13px;
+        font-family: inherit;
+    }
+    #search:focus { outline: none; border-color: #FF6B6B; }
+
+    #count { color: #666; font-size: 11px; margin-top: 8px; }
+
+    #list { overflow-y: auto; flex: 1; padding: 8px 0 40px; }
+
+    .item {
+        padding: 7px 18px;
+        cursor: pointer;
+        font-size: 13px;
+        display: flex;
+        justify-content: space-between;
+        gap: 8px;
+        border-left: 3px solid transparent;
+    }
+    .item:hover { background: #161616; }
+    .item.active { background: #1c1414; border-left-color: #FF6B6B; color: #fff; }
+    .item .n { color: #888; font-size: 11px; font-variant-numeric: tabular-nums; }
+
+    /* ---- detail ---- */
+    #detail { flex: 1; padding: 34px 44px 90px; max-width: 1080px; }
+
+    #empty { color: #666; padding-top: 60px; font-size: 15px; }
+
+    .title-row { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; }
+    h2.pname {
+        font-size: 31px;
+        color: #fff;
+        font-weight: 600;
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    }
+    .facts { color: #7a7a7a; font-size: 13px; }
+
+    section { margin-top: 34px; }
+    section > h3 {
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 1.4px;
+        color: #FF6B6B;
+        margin-bottom: 12px;
+        border-bottom: 1px solid #222;
+        padding-bottom: 6px;
+    }
+
+    .prose { font-size: 15px; color: #cfcfcf; max-width: 78ch; }
+    .prose + .prose { margin-top: 12px; }
+
+    /* ---- lineage ---- */
+    .lineage { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+    .node {
+        padding: 7px 13px;
+        border-radius: 5px;
+        border: 1px solid #2c2c2c;
+        background: #141414;
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 13px;
+    }
+    .node.self { border-color: #FF6B6B; color: #fff; background: #1c1414; }
+    .node.link { cursor: pointer; }
+    .node.link:hover { border-color: #FF6B6B; color: #fff; }
+    .node.dead { opacity: .55; border-style: dashed; cursor: default; }
+    .node .pct { color: #777; font-size: 11px; margin-left: 6px; }
+    .arrow { color: #555; font-size: 17px; }
+    .hop { display: flex; flex-direction: column; align-items: center; line-height: 1.1; }
+    .hop-label {
+        font-size: 9.5px;
+        color: #6d6d6d;
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        margin-top: 2px;
+    }
+    .hop-date { font-size: 9px; color: #4d4d4d; font-family: ui-monospace, monospace; }
+    .lineage-note { color: #666; font-size: 12px; margin-top: 10px; }
+    .contested {
+        margin-top: 10px;
+        font-size: 12px;
+        color: #d8c27f;
+        background: #1a1710;
+        border-left: 2px solid #5a4d28;
+        padding: 8px 12px;
+        border-radius: 0 4px 4px 0;
+        max-width: 80ch;
+    }
+
+    /* ---- sticky time bar ----
+       Permanently on screen, so it must announce that it is time travel: a
+       control that silently changes things above it is how a 2024 state gets
+       read as current. It goes amber the moment it leaves "now". */
+    #timebar {
+        position: fixed;
+        left: 290px;
+        right: 0;
+        bottom: 0;
+        z-index: 200;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 9px 22px;
+        background: rgba(12, 12, 12, 0.97);
+        border-top: 1px solid #242424;
+        backdrop-filter: blur(6px);
+    }
+    /* An author `display` beats the `hidden` attribute's UA rule, so without
+       this the bar shows before a p-file has been picked and with nothing to
+       scrub. */
+    #timebar[hidden] { display: none; }
+    #timebar.past { border-top-color: #5a4d28; background: rgba(22, 19, 12, 0.97); }
+    #timebar .tb-label {
+        font-size: 9.5px;
+        letter-spacing: 1.2px;
+        text-transform: uppercase;
+        color: #666;
+    }
+    #timebar.past .tb-label { color: #d8c27f; }
+    #tb-caption {
+        font-size: 11.5px;
+        color: #999;
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        flex: 1;
+    }
+    #tb-slider { flex: 0 0 300px; }
+    #tb-now {
+        background: #1c1414;
+        border: 1px solid #4a2424;
+        color: #FF6B6B;
+        border-radius: 5px;
+        padding: 4px 11px;
+        font-size: 11px;
+        cursor: pointer;
+        font-family: inherit;
+        visibility: hidden;
+    }
+    #timebar.past #tb-now { visibility: visible; }
+    #detail { padding-bottom: 90px; }
+
+    /* Elements showing a past state rather than the current file. */
+    .at-past { outline: 1px solid #5a4d28; outline-offset: 6px; border-radius: 3px; }
+
+    /* ---- signal flow graph ---- */
+    .flow-head { display: flex; align-items: baseline; gap: 10px; margin: 16px 0 6px; }
+    .flow-name {
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        color: #ddd;
+        font-size: 13px;
+    }
+    .flow-played {
+        font-size: 9.5px;
+        letter-spacing: .6px;
+        text-transform: uppercase;
+        color: #FF6B6B;
+        border: 1px solid #4a2424;
+        border-radius: 9px;
+        padding: 1px 7px;
+    }
+    .flow-count { color: #666; font-size: 11px; }
+    .flow-wrap { overflow-x: auto; padding-bottom: 4px; }
+    .flow-svg { display: block; }
+    .flow-box { fill: #131313; stroke-width: 1.4; }
+    .flow-box.control { stroke-dasharray: 3 2; fill: #101010; }
+    .flow-box.dense { stroke-width: 2.4; }
+    .flow-label {
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 10.5px;
+        text-anchor: middle;
+    }
+    .flow-sub {
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 8.5px;
+        fill: #6a6a6a;
+        text-anchor: middle;
+    }
+    .flow-edge { fill: none; stroke: #3a3a3a; stroke-width: 1.3; }
+    .flow-edge.control { stroke: #2e2e2e; stroke-dasharray: 3 3; }
+
+    /* ---- timeline scrubber ---- */
+    .tl-intro { color: #777; font-size: 12.5px; margin-bottom: 14px; max-width: 78ch; }
+    .tl-bar { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+    .tl-step {
+        background: #161616;
+        border: 1px solid #2c2c2c;
+        color: #ccc;
+        border-radius: 5px;
+        width: 32px;
+        height: 28px;
+        cursor: pointer;
+        font-size: 12px;
+        font-family: inherit;
+    }
+    .tl-step:hover:not(:disabled) { border-color: #FF6B6B; color: #fff; }
+    .tl-step:disabled { opacity: .3; cursor: default; }
+    .tl-slider { flex: 1; max-width: 620px; accent-color: #FF6B6B; cursor: pointer; }
+    .tl-caption { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+    .tl-date {
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        color: #FF6B6B;
+        font-size: 13px;
+    }
+    .tl-subject { color: #ddd; font-size: 14px; }
+    .tl-count { color: #666; font-size: 11.5px; font-family: ui-monospace, monospace; }
+    .tl-changes { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+    .tl-chip {
+        font-size: 11px;
+        padding: 3px 9px;
+        border-radius: 11px;
+        border: 1px solid #2a2a2a;
+        color: #999;
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    }
+    .tl-add { color: #7fd897; border-color: #244a2e; background: #12200f; }
+    .tl-remove { color: #d87f7f; border-color: #4a2424; background: #200f0f; }
+    .tl-reshape { color: #FFD166; border-color: #4a3f1e; background: #201c0f; }
+    .tl-sound { color: #7fbcd8; border-color: #23394a; background: #0f1a20; }
+    .tl-note { color: #b79fd8; border-color: #382a4a; background: #170f20; }
+    .tl-first { color: #888; }
+    .tl-state {
+        margin-top: 12px;
+        color: #6f6f6f;
+        font-size: 11.5px;
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    }
+    .tl-static { color: #666; font-size: 13px; }
+    tr.at-stop td { background: #1a1710; }
+    tr.at-stop td.date { color: #d8c27f; }
+    .tl-facts { color: #6f6f6f; font-size: 11.5px; font-family: ui-monospace, monospace; margin-top: 10px; }
+    .curve-ghost {
+        fill: none;
+        stroke: #6a6a6a;
+        stroke-width: 1.4;
+        stroke-dasharray: 2 3;
+    }
+    .curve-card.reshaped { border-color: #4a3f1e; }
+    .curve-card.fresh { border-color: #244a2e; }
+
+    /* ---- authored notes (written in the p-file) ---- */
+    .note {
+        white-space: pre-wrap;
+        font-size: 14.5px;
+        color: #d5cbe4;
+        background: #14101a;
+        border-left: 2px solid #4a3a63;
+        padding: 12px 16px;
+        border-radius: 0 5px 5px 0;
+        max-width: 80ch;
+    }
+    .note-mark {
+        display: block;
+        font-size: 10px;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        color: #6f5f8a;
+        margin-bottom: 7px;
+    }
+    .kids { display: flex; flex-direction: column; gap: 6px; }
+
+    /* ---- chips ---- */
+    .chips { display: flex; flex-wrap: wrap; gap: 7px; }
+    .chip {
+        padding: 4px 10px;
+        border-radius: 12px;
+        background: #161616;
+        border: 1px solid #282828;
+        font-size: 12px;
+        color: #bbb;
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    }
+    .chip.link { cursor: pointer; }
+    .chip.link:hover { border-color: #FF6B6B; color: #fff; }
+    .chip .pct { color: #666; }
+
+    /* ---- mapping curves ---- */
+    .curves {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-top: 16px;
+    }
+    .curve-card {
+        background: #101010;
+        border: 1px solid #242424;
+        border-radius: 6px;
+        padding: 10px 12px 8px;
+        width: 176px;
+    }
+    /* Sensor and target on separate lines: side by side they overflow the card
+       and it is always the target that gets clipped, which is the half that
+       matters. */
+    .curve-head {
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        margin-bottom: 8px;
+        line-height: 1.35;
+    }
+    .curve-sensor {
+        color: #4ECDC4;
+        font-size: 10.5px;
+        display: block;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    .curve-param { color: #FFD166; font-size: 12.5px; display: block; }
+    .curve-param .curve-arrow { color: #555; }
+    .curve-svg { display: block; }
+    .curve-ref { stroke: #2e2e2e; stroke-width: 1; stroke-dasharray: 3 3; }
+    .curve-path { fill: none; stroke: #FF6B6B; stroke-width: 1.8; stroke-linejoin: round; }
+    .curve-axis {
+        display: flex;
+        justify-content: space-between;
+        font-size: 10px;
+        color: #666;
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        margin-top: 4px;
+    }
+    .curve-func {
+        font-size: 10px;
+        color: #7a7a7a;
+        margin-top: 3px;
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    }
+    .curve-none { font-size: 11px; color: #666; padding: 16px 0; }
+
+    /* ---- authored notes ---- */
+    .authored {
+        white-space: pre-wrap;
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 12.5px;
+        color: #9fb8a8;
+        background: #0f1210;
+        border-left: 2px solid #2e4034;
+        padding: 12px 16px;
+        border-radius: 0 5px 5px 0;
+        max-width: 90ch;
+        overflow-x: auto;
+    }
+    .authored + .authored { margin-top: 10px; }
+    .authored .where { color: #55705f; display: block; margin-bottom: 6px; font-size: 11px; }
+
+    /* ---- chart ---- */
+    #chart { width: 100%; }
+    .legend { display: flex; gap: 16px; font-size: 12px; color: #999; margin-bottom: 10px; }
+    .swatch { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 5px; }
+
+    /* ---- commits ---- */
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th {
+        text-align: left;
+        color: #666;
+        font-weight: 500;
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: .8px;
+        padding: 6px 10px 6px 0;
+        border-bottom: 1px solid #222;
+    }
+    td { padding: 9px 10px 9px 0; border-bottom: 1px solid #161616; vertical-align: top; }
+    td.date, td.hash {
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        color: #888;
+        white-space: nowrap;
+        font-size: 12px;
+    }
+    td.subject { color: #ddd; }
+    .badge {
+        display: inline-block;
+        font-size: 10px;
+        padding: 1px 6px;
+        border-radius: 3px;
+        margin-left: 7px;
+        vertical-align: middle;
+        letter-spacing: .5px;
+    }
+    .badge.A { background: #1d3a24; color: #7fd897; }
+    .badge.C { background: #1d3140; color: #7fbcd8; }
+    .badge.R { background: #3a3320; color: #d8c27f; }
+    .badge.D { background: #3a1d1d; color: #d87f7f; }
+    .delta { font-family: ui-monospace, monospace; font-size: 11.5px; white-space: nowrap; }
+    .with { color: #777; font-size: 11.5px; margin-top: 5px; }
+    .with b { color: #999; font-weight: 500; }
+    .with .p { cursor: pointer; color: #8a8a8a; }
+    .with .p:hover { color: #FF6B6B; }
+
+    .muted { color: #666; font-size: 13px; }
+</style>
+</head>
+<body>
+<div id="shell">
+    <nav id="sidebar">
+        <header>
+            <h1>Personality Archive</h1>
+            <div class="blurb">Pick a p-file for its origin, lineage and history.</div>
+            <input id="search" type="text" placeholder="filter&hellip;" autocomplete="off">
+            <div id="count"></div>
+        </header>
+        <div id="list"></div>
+    </nav>
+    <main id="detail">
+        <div id="empty">Loading&hellip;</div>
+    </main>
+</div>
+<footer id="timebar" hidden>
+    <span class="tb-label">time</span>
+    <button class="tl-step" id="tb-back">&#9664;</button>
+    <input type="range" class="tl-slider" id="tb-slider" min="0" max="0" step="1">
+    <button class="tl-step" id="tb-forward">&#9654;</button>
+    <span id="tb-caption"></span>
+    <button id="tb-now">return to now</button>
+</footer>
+
+<script>
+const KIND_COLOR = { synthdef: '#FFD166', mapping: '#4ECDC4', visual: '#C77DFF' };
+const KIND_LABEL = { synthdef: 'synthesis', mapping: 'mapping', visual: 'visual' };
+
+let DATA = null;
+let NAMES = [];
+let current = null;
+
+const el = (tag, cls, text) => {
+    const node = document.createElement(tag);
+    if (cls) node.className = cls;
+    if (text !== undefined) node.textContent = text;
+    return node;
+};
+
+// A name is only clickable if we hold a record for it. Ancestors and siblings
+// routinely name p-files that were later deleted - the analyzer covers the
+// working tree only - so those render as dead nodes rather than dead links.
+const known = name => DATA && Object.prototype.hasOwnProperty.call(DATA.personalities, name);
+
+function pill(name, extra) {
+    const node = el('span', 'node' + (known(name) ? ' link' : ' dead'), name);
+    if (extra) node.appendChild(el('span', 'pct', extra));
+    if (known(name)) node.onclick = () => select(name);
+    else node.title = name + ' is not in the working tree - no entry for it';
+    return node;
+}
+
+function chip(name, extra) {
+    const node = el('span', 'chip' + (known(name) ? ' link' : ''), name);
+    if (extra) node.appendChild(el('span', 'pct', ' ' + extra));
+    if (known(name)) node.onclick = () => select(name);
+    return node;
+}
+
+function section(title) {
+    const node = el('section');
+    node.appendChild(el('h3', null, title));
+    return node;
+}
+
+/* ------------------------------------------------------------------ list */
+
+function renderList(filter) {
+    const list = document.getElementById('list');
+    list.innerHTML = '';
+    const needle = (filter || '').toLowerCase();
+    const shown = NAMES.filter(n => n.toLowerCase().includes(needle));
+
+    shown.forEach(name => {
+        const entry = DATA.personalities[name];
+        const item = el('div', 'item' + (name === current ? ' active' : ''));
+        item.appendChild(el('span', null, name));
+        item.appendChild(el('span', 'n', entry.stats.commit_count));
+        item.onclick = () => select(name);
+        list.appendChild(item);
+    });
+
+    document.getElementById('count').textContent =
+        `${shown.length} of ${NAMES.length} p-files`;
+}
+
+/* ---------------------------------------------------------------- detail */
+
+function select(name, keepState) {
+    current = name;
+    const target = keepState ? location.hash.slice(1) : name;
+    if (location.hash.slice(1) !== target) location.hash = target;
+    renderList(document.getElementById('search').value);
+    render(DATA.personalities[name]);
+    document.getElementById('detail').scrollTo(0, 0);
+    window.scrollTo(0, 0);
+}
+
+function render(entry) {
+    const detail = document.getElementById('detail');
+    detail.innerHTML = '';
+    // Stale references would otherwise point at the previous p-file's DOM.
+    COMMIT_ROWS = {};
+    CHART_MARKS = {};
+    TIMELINE_PAINT = null;
+    const bar = document.getElementById('timebar');
+    bar.hidden = true;
+    bar.classList.remove('past');
+
+    /* header */
+    const head = el('div');
+    const row = el('div', 'title-row');
+    row.appendChild(el('h2', 'pname', entry.name + '.sc'));
+    const stats = entry.stats;
+    const facts = [`${entry.lines} lines`,
+                   `${stats.commit_count} commit${stats.commit_count === 1 ? '' : 's'}`];
+    if (stats.first) facts.push(`${stats.first} → ${stats.last}`);
+    row.appendChild(el('span', 'facts', facts.join('  ·  ')));
+    head.appendChild(row);
+    detail.appendChild(head);
+
+    /* lineage */
+    const lineage = section('Lineage');
+    const strip = el('div', 'lineage');
+    const ancestor = entry.lineage.ancestor;
+
+    // The whole line, not just the parent. Each arrow is labelled with the hop
+    // it represents, because "copied at 100%" and "copied at 51%" are entirely
+    // different events and the chain is unreadable without them.
+    const chain = entry.lineage.chain || (ancestor ? [ancestor] : []);
+    chain.forEach(node => {
+        strip.appendChild(pill(node.name, node.in_tree === false ? '(gone)' : ''));
+        const hop = el('span', 'hop');
+        hop.appendChild(el('span', 'arrow', node.kind === 'rename' ? '⇒' : '→'));
+        const label = [node.kind === 'rename' ? 'renamed' : 'copied'];
+        if (node.similarity) label.push(node.similarity + '%');
+        hop.appendChild(el('span', 'hop-label', label.join(' ')));
+        if (node.hop_date) hop.appendChild(el('span', 'hop-date', node.hop_date));
+        strip.appendChild(hop);
+    });
+
+    strip.appendChild(el('span', 'node self', entry.name));
+    const kids = entry.lineage.descendants;
+    if (kids.length) {
+        strip.appendChild(el('span', 'arrow', '→'));
+        const box = el('div', 'chips');
+        kids.forEach(k => box.appendChild(chip(k.name, k.similarity + '%')));
+        strip.appendChild(box);
+    }
+    lineage.appendChild(strip);
+
+    const notes = [];
+    if (ancestor) {
+        notes.push(ancestor.kind === 'copy'
+            ? `Born as a copy of ${ancestor.name} (${ancestor.similarity}% identical at the time).`
+            : `Renamed from ${ancestor.name} (${ancestor.similarity}% identical).`);
+        if (chain.length > 1) notes.push(`${chain.length} generations deep.`);
+    } else if (!entry.origin.predates_window) {
+        notes.push('Git detects no ancestor — written fresh rather than duplicated.');
+    }
+    entry.lineage.renames.forEach(r =>
+        notes.push(`Renamed ${r.from} → ${r.to} on ${r.date} (${r.short}).`));
+    if (kids.length) notes.push(`${kids.length} later p-file${kids.length === 1 ? ' was' : 's were'} derived from it.`);
+    if (notes.length) lineage.appendChild(el('div', 'lineage-note', notes.join(' ')));
+
+    // Git names exactly one parent. When several candidates were near-identical
+    // that pick is close to a coin toss, and saying so is the difference
+    // between an archive and a guess with a percentage on it.
+    if (entry.origin.ancestor_contested) {
+        const rivals = (entry.origin.rivals || []).slice(0, 3)
+            .map(r => `${r.name} ${(r.score * 100).toFixed(0)}%`).join(', ');
+        lineage.appendChild(el('div', 'contested',
+            'Parent uncertain — other files were nearly as close a match at the ' +
+            `time (${rivals}), and git names only the single best. ` +
+            'The family is right; the exact parent may not be.'));
+    }
+    detail.appendChild(lineage);
+
+    /* A note written in the p-file itself, marked with a `// note:` line.
+       Promoted above the generated prose because a deliberate note is the more
+       considered account; incidental comments stay further down under "what
+       the file says about itself". */
+    if (entry.current.notes && entry.current.notes.length) {
+        const box = section('Note');
+        entry.current.notes.forEach(n => {
+            const body = el('div', 'note');
+            body.appendChild(el('span', 'note-mark', `written in the p-file · line ${n.line}`));
+            body.appendChild(document.createTextNode(n.text));
+            box.appendChild(body);
+        });
+        detail.appendChild(box);
+    }
+
+    /* narrative. Each is a list of paragraphs; older data may hold a string. */
+    const prose = (node, text) => {
+        (Array.isArray(text) ? text : [text])
+            .forEach(p => node.appendChild(el('p', 'prose', p)));
+    };
+
+    const evolution = section('How it evolved');
+    prose(evolution, entry.narrative.evolution);
+    detail.appendChild(evolution);
+
+    const sound = section('Sound and synthesis');
+    prose(sound, entry.narrative.sound);
+    renderGraphs(sound, entry.current.graphs, entry.current.played);
+    detail.appendChild(sound);
+
+    const gesture = section('Gesture and control');
+    prose(gesture, entry.narrative.gesture);
+    const bindings = entry.current.gesture.bindings;
+    if (bindings.length) {
+        const box = el('div', 'curves');
+        bindings.forEach(b => box.appendChild(bindingCard(b)));
+        gesture.appendChild(box);
+    }
+    detail.appendChild(gesture);
+
+    /* the same thing, over time */
+    const stops = entry.timeline || [];
+    if (stops.length) {
+        const tl = section(stops.length > 1
+            ? `Step through the changes (${stops.length} states)`
+            : 'Step through the changes');
+        tl.appendChild(el('div', 'tl-intro',
+            'Every point at which anything tracked here changed — mappings, ' +
+            'synthesis, visuals or comments. Commits that changed none of it ' +
+            'are not stops.'));
+        renderTimeline(tl, entry);
+        detail.appendChild(tl);
+    }
+
+    /* the file's own words */
+    const authored = [];
+    if (entry.current.authored_header) {
+        authored.push({ line: 1, text: entry.current.authored_header });
+    }
+    entry.current.authored_blocks.forEach(b => {
+        if (b.text !== entry.current.authored_header) authored.push(b);
+    });
+    if (authored.length) {
+        const own = section('What the file says about itself');
+        authored.slice(0, 6).forEach(block => {
+            const box = el('div', 'authored');
+            box.appendChild(el('span', 'where', `line ${block.line}`));
+            box.appendChild(document.createTextNode(block.text));
+            own.appendChild(box);
+        });
+        detail.appendChild(own);
+    }
+
+    /* chart */
+    if (entry.commits.length) {
+        const chart = section('Change over time');
+        const legend = el('div', 'legend');
+        Object.keys(KIND_COLOR).forEach(kind => {
+            const item = el('span');
+            const swatch = el('span', 'swatch');
+            swatch.style.background = KIND_COLOR[kind];
+            item.appendChild(swatch);
+            item.appendChild(document.createTextNode(KIND_LABEL[kind] + ' lines added'));
+            legend.appendChild(item);
+        });
+        chart.appendChild(legend);
+        const holder = el('div');
+        holder.id = 'chart';
+        chart.appendChild(holder);
+        detail.appendChild(chart);
+        drawChart(entry, holder);
+    }
+
+    /* companions */
+    if (entry.siblings.length) {
+        const companions = section('Most often committed alongside');
+        const box = el('div', 'chips');
+        entry.siblings.slice(0, 24).forEach(s =>
+            box.appendChild(chip(s.name, s.count + '×')));
+        companions.appendChild(box);
+        detail.appendChild(companions);
+    }
+
+    /* commits */
+    const history = section(`Every commit (${entry.commits.length})`);
+    if (!entry.commits.length) {
+        history.appendChild(el('div', 'muted',
+            'No commits inside the analysis window touch this file.'));
+    } else {
+        history.appendChild(commitTable(entry));
+    }
+    detail.appendChild(history);
+
+    // The timeline paints before the chart and the commit table exist, so the
+    // playhead and row highlight have nothing to attach to on that first pass.
+    if (TIMELINE_PAINT) TIMELINE_PAINT();
+}
+
+function commitTable(entry) {
+    const table = el('table');
+    const head = el('tr');
+    ['Date', 'Commit', 'What changed', 'Lines'].forEach(h =>
+        head.appendChild(el('th', null, h)));
+    table.appendChild(head);
+
+    entry.commits.forEach(commit => {
+        const tr = el('tr');
+        COMMIT_ROWS[commit.short] = tr;
+        tr.appendChild(el('td', 'date', commit.date));
+        tr.appendChild(el('td', 'hash', commit.short));
+
+        const what = el('td', 'subject');
+        what.appendChild(document.createTextNode(commit.subject));
+        if (commit.status !== 'M') {
+            const label = { A: 'ADDED', C: 'COPIED', R: 'RENAMED', D: 'DELETED' }[commit.status];
+            if (label) what.appendChild(el('span', 'badge ' + commit.status, label));
+        }
+        if (commit.old_path && commit.status !== 'M') {
+            what.appendChild(el('div', 'with',
+                `from ${commit.old_path.replace('personalities/', '')}` +
+                (commit.similarity ? ` (${commit.similarity}%)` : '')));
+        }
+        if (commit.siblings.length) {
+            // Sweep commits touch well over a hundred p-files at once; listing
+            // them all buries every other row in the table. The full list is
+            // still on the element's tooltip.
+            const CAP = 12;
+            const shown = commit.siblings.slice(0, CAP);
+            const with_ = el('div', 'with');
+            with_.appendChild(el('b', null,
+                `with ${commit.siblings.length} other p-file` +
+                (commit.siblings.length === 1 ? ': ' : 's: ')));
+            shown.forEach((name, i) => {
+                if (i) with_.appendChild(document.createTextNode(', '));
+                const span = el('span', known(name) ? 'p' : null, name);
+                if (known(name)) span.onclick = () => select(name);
+                with_.appendChild(span);
+            });
+            if (commit.siblings.length > CAP) {
+                const more = el('span', null,
+                    ` and ${commit.siblings.length - CAP} more`);
+                more.title = commit.siblings.join(', ');
+                with_.appendChild(more);
+            }
+            if (commit.other_file_count) {
+                with_.appendChild(document.createTextNode(
+                    `  ·  +${commit.other_file_count} non-personality file` +
+                    (commit.other_file_count === 1 ? '' : 's')));
+            }
+            with_.title = commit.other_files.join('\n');
+            with_.appendChild(document.createTextNode(''));
+            what.appendChild(with_);
+        } else if (commit.other_file_count) {
+            const only = el('div', 'with',
+                `the only p-file in this commit  ·  +${commit.other_file_count} other file` +
+                (commit.other_file_count === 1 ? '' : 's'));
+            only.title = commit.other_files.join('\n');
+            what.appendChild(only);
+        }
+        tr.appendChild(what);
+
+        const delta = el('td', 'delta');
+        Object.keys(KIND_COLOR).forEach(kind => {
+            const n = commit.added[kind] || 0;
+            if (!n) return;
+            const span = el('span', null, `+${n} `);
+            span.style.color = KIND_COLOR[kind];
+            span.title = KIND_LABEL[kind];
+            delta.appendChild(span);
+        });
+        if (!delta.childNodes.length) delta.appendChild(el('span', 'muted', '—'));
+        tr.appendChild(delta);
+
+        table.appendChild(tr);
+    });
+    return table;
+}
+
+/* ------------------------------------------------------- mapping curves */
+
+// SuperCollider's own definitions, so the drawing is the transfer function the
+// instrument actually has rather than an impression of it. `lincurve` in
+// particular is not a curve anyone can read off the digits: the sign of the
+// last argument flips the whole shape, and it degenerates to linear near zero
+// exactly as SimpleNumber.lincurve does.
+function applyMap(spec, x) {
+    const [inMin, inMax] = spec.in;
+    const [outMin, outMax] = spec.out;
+    const t = (x - inMin) / (inMax - inMin);
+
+    if (spec.func === 'lincurve') {
+        if (Math.abs(spec.curve) < 0.001) return outMin + t * (outMax - outMin);
+        const grow = Math.exp(spec.curve);
+        const a = (outMax - outMin) / (1 - grow);
+        const b = outMin + a;
+        return b - (a * Math.pow(grow, t));
+    }
+    if (spec.func === 'linexp') {
+        if (outMin === 0) return outMin + t * (outMax - outMin);
+        return Math.pow(outMax / outMin, t) * outMin;
+    }
+    if (spec.func === 'explin') {
+        if (inMin === 0) return outMin + t * (outMax - outMin);
+        return Math.log(x / inMin) / Math.log(inMax / inMin) * (outMax - outMin) + outMin;
+    }
+    return outMin + t * (outMax - outMin);           // linlin
+}
+
+const tidy = n =>
+    (Math.abs(n) >= 100 || (Math.abs(n) < 0.01 && n !== 0))
+        ? n.toPrecision(2)
+        : String(Math.round(n * 1000) / 1000);
+
+function curvePlot(spec, ghost) {
+    const W = 150, H = 62, PAD = 5;
+    const svgNS = 'http://www.w3.org/2000/svg';
+    const svg = document.createElementNS(svgNS, 'svg');
+    svg.setAttribute('width', W);
+    svg.setAttribute('height', H);
+    svg.setAttribute('class', 'curve-svg');
+
+    const N = 60;
+    const sampleOf = s => {
+        const out = [];
+        for (let i = 0; i <= N; i++) {
+            const x = s.in[0] + (s.in[1] - s.in[0]) * (i / N);
+            out.push([i / N, applyMap(s, x)]);
+        }
+        return out;
+    };
+    const samples = sampleOf(spec);
+    // The previous shape, drawn behind on the SAME scale, so a reshape reads
+    // as a movement rather than as two charts to compare by eye.
+    const ghostSamples = (ghost && ghost.in) ? sampleOf(ghost) : null;
+
+    const all = samples.concat(ghostSamples || []);
+    const lo = Math.min(...all.map(s => s[1]));
+    const hi = Math.max(...all.map(s => s[1]));
+    const range = (hi - lo) || 1;
+
+    const px = t => PAD + t * (W - 2 * PAD);
+    // Output up the page: these are ranges, not screen coordinates, and an
+    // inverted mapping (0.4 → 0.07) must visibly fall.
+    const py = v => H - PAD - ((v - lo) / range) * (H - 2 * PAD);
+
+    // A straight reference from first to last sample, so the amount of bend is
+    // legible rather than something you have to imagine.
+    const ref = document.createElementNS(svgNS, 'line');
+    ref.setAttribute('x1', px(0));
+    ref.setAttribute('y1', py(samples[0][1]));
+    ref.setAttribute('x2', px(1));
+    ref.setAttribute('y2', py(samples[N][1]));
+    ref.setAttribute('class', 'curve-ref');
+    svg.appendChild(ref);
+
+    const line = (pts, cls) => {
+        const p = document.createElementNS(svgNS, 'path');
+        p.setAttribute('d', pts
+            .map((s, i) => `${i ? 'L' : 'M'}${px(s[0]).toFixed(1)},${py(s[1]).toFixed(1)}`)
+            .join(' '));
+        p.setAttribute('class', cls);
+        svg.appendChild(p);
+    };
+    if (ghostSamples) line(ghostSamples, 'curve-ghost');
+    line(samples, 'curve-path');
+    return svg;
+}
+
+function bindingCard(binding, ghost) {
+    const card = el('div', 'curve-card');
+    const head = el('div', 'curve-head');
+    head.appendChild(el('span', 'curve-sensor', binding.sensor));
+    const target = el('span', 'curve-param');
+    target.appendChild(el('span', 'curve-arrow', '→ '));
+    target.appendChild(document.createTextNode('\\' + binding.param));
+    head.appendChild(target);
+    card.appendChild(head);
+
+    const spec = binding.curve;
+    if (spec && spec.in) {
+        card.appendChild(curvePlot(spec, ghost));
+        const axis = el('div', 'curve-axis');
+        axis.appendChild(el('span', null, `${tidy(spec.in[0])} → ${tidy(spec.in[1])}`));
+        axis.appendChild(el('span', null, `${tidy(spec.out[0])} → ${tidy(spec.out[1])}`));
+        card.appendChild(axis);
+        card.appendChild(el('div', 'curve-func',
+            spec.func + (spec.func === 'lincurve' ? ` curve ${tidy(spec.curve)}` : '')));
+    } else {
+        card.appendChild(el('div', 'curve-none',
+            binding.func ? binding.func + ' — not plottable' : 'direct'));
+    }
+    card.title = binding.expr;
+    return card;
+}
+
+/* ----------------------------------------------------- signal flow graph */
+
+const ROLE_COLOR = {
+    sample: '#4ECDC4', input: '#4ECDC4',
+    oscillator: '#7fd897', noise: '#9fd87f',
+    resonator: '#C77DFF',
+    filter: '#7fbcd8', reverb: '#8fa8e8', delay: '#8fa8e8',
+    dynamics: '#FFD166', mix: '#FFD166',
+    control: '#6f6f6f', housekeeping: '#555',
+    out: '#FF6B6B', other: '#999',
+};
+
+// Layered by dependency depth, ordered by declaration within a layer, so the
+// same topology always renders identically. A force layout would settle
+// differently at every timeline stop and make the diagrams impossible to
+// compare, which is the entire reason for drawing them over time.
+function renderGraph(host, graph) {
+    const NS = 'http://www.w3.org/2000/svg';
+    const nodes = graph.nodes.slice().sort((a, b) =>
+        a.depth - b.depth || a.id - b.id);
+    if (!nodes.length) return;
+
+    const columns = new Map();
+    nodes.forEach(n => {
+        if (!columns.has(n.depth)) columns.set(n.depth, []);
+        columns.get(n.depth).push(n);
+    });
+
+    const depths = [...columns.keys()].sort((a, b) => a - b);
+    const rows = Math.max(...[...columns.values()].map(c => c.length));
+
+    // Columns narrow as the chain lengthens so a ten-stage graph still fits
+    // the reading column instead of scrolling off it. Derived only from the
+    // graph's own shape, so it stays deterministic across timeline stops.
+    const AVAILABLE = 940, PAD = 14, ROW = 46, BOX_H = 30;
+    const COL = Math.max(86, Math.min(148, AVAILABLE / Math.max(1, depths.length)));
+    const BOX_W = COL - 32;
+    const width = depths.length * COL + PAD * 2;
+    const height = rows * ROW + PAD * 2;
+
+    const place = {};
+    depths.forEach((depth, ci) => {
+        const column = columns.get(depth);
+        column.forEach((node, ri) => {
+            // Centre short columns against the tallest so the spine reads
+            // horizontally rather than sagging to the top edge.
+            const offset = (rows - column.length) / 2;
+            place[node.id] = {
+                x: PAD + ci * COL,
+                y: PAD + (ri + offset) * ROW,
+            };
+        });
+    });
+
+    const svg = document.createElementNS(NS, 'svg');
+    svg.setAttribute('width', width);
+    svg.setAttribute('height', height);
+    svg.setAttribute('class', 'flow-svg');
+
+    const edgeLayer = document.createElementNS(NS, 'g');
+    svg.appendChild(edgeLayer);
+
+    graph.edges.forEach(edge => {
+        const a = place[edge.from], b = place[edge.to];
+        if (!a || !b) return;
+        const x1 = a.x + BOX_W, y1 = a.y + BOX_H / 2;
+        const x2 = b.x, y2 = b.y + BOX_H / 2;
+        const mid = (x1 + x2) / 2;
+        const path = document.createElementNS(NS, 'path');
+        path.setAttribute('d', `M${x1},${y1} C${mid},${y1} ${mid},${y2} ${x2},${y2}`);
+        const source = nodes.find(n => n.id === edge.from);
+        path.setAttribute('class',
+            'flow-edge' + (source && source.rate === 'control' ? ' control' : ''));
+        edgeLayer.appendChild(path);
+    });
+
+    nodes.forEach(node => {
+        const p = place[node.id];
+        const group = document.createElementNS(NS, 'g');
+
+        const box = document.createElementNS(NS, 'rect');
+        box.setAttribute('x', p.x);
+        box.setAttribute('y', p.y);
+        box.setAttribute('width', BOX_W);
+        box.setAttribute('height', BOX_H);
+        box.setAttribute('rx', 4);
+        box.setAttribute('class', 'flow-box' +
+            (node.rate === 'control' ? ' control' : '') +
+            (node.dense ? ' dense' : ''));
+        box.setAttribute('stroke', ROLE_COLOR[node.role] || ROLE_COLOR.other);
+        group.appendChild(box);
+
+        const label = document.createElementNS(NS, 'text');
+        label.setAttribute('x', p.x + BOX_W / 2);
+        label.setAttribute('y', p.y + 13);
+        label.setAttribute('class', 'flow-label');
+        label.setAttribute('fill', ROLE_COLOR[node.role] || ROLE_COLOR.other);
+        const room = Math.floor(BOX_W / 6.6);
+        label.textContent = node.label.length > room
+            ? node.label.slice(0, room - 1) + '…' : node.label;
+        group.appendChild(label);
+
+        const sub = document.createElementNS(NS, 'text');
+        sub.setAttribute('x', p.x + BOX_W / 2);
+        sub.setAttribute('y', p.y + 24);
+        sub.setAttribute('class', 'flow-sub');
+        sub.textContent = node.var === node.label ? node.role : node.var;
+        group.appendChild(sub);
+
+        const tip = document.createElementNS(NS, 'title');
+        tip.textContent =
+            `${node.var} = ${node.ugens.join(', ') || node.label}\n` +
+            `${node.role} · ${node.rate}-rate` +
+            (node.args.length ? `\nargs: ${node.args.join(', ')}` : '') +
+            (node.dense ? '\nseveral stages written as one expression' : '');
+        group.appendChild(tip);
+
+        svg.appendChild(group);
+    });
+
+    const wrap = el('div', 'flow-wrap');
+    wrap.appendChild(svg);
+    host.appendChild(wrap);
+}
+
+function renderGraphs(host, graphs, played) {
+    if (!graphs || !graphs.length) {
+        host.appendChild(el('div', 'tl-static',
+            'This personality defines no SynthDef — it plays instruments ' +
+            'declared elsewhere, so there is no signal flow to draw.'));
+        return;
+    }
+    // The Pbind's \instrument names the one actually played; lead with it.
+    const ordered = graphs.slice().sort((a, b) =>
+        (b.name === played ? 1 : 0) - (a.name === played ? 1 : 0));
+    ordered.forEach(graph => {
+        const head = el('div', 'flow-head');
+        head.appendChild(el('span', 'flow-name', '\\' + graph.name));
+        if (graph.name === played) head.appendChild(el('span', 'flow-played', 'played'));
+        head.appendChild(el('span', 'flow-count',
+            `${graph.nodes.length} stages`));
+        host.appendChild(head);
+        renderGraph(host, graph);
+    });
+}
+
+/* -------------------------------------------------------------- timeline */
+
+// Stops are the moments the file actually changed, not every commit: a file
+// with 37 commits and one mapping has one stop, and scrubbing through 36
+// identical frames to discover that would be worse than useless.
+function renderTimeline(host, entry) {
+    const stops = entry.timeline || [];
+    if (stops.length < 2) {
+        if (stops.length === 1) {
+            host.appendChild(el('div', 'tl-static',
+                'Nothing the timeline tracks ever changed in this file — one state, ' +
+                `from ${stops[0].date} to now.`));
+        }
+        return;
+    }
+
+    // `#melbb1@6` opens straight at a state, so a particular moment can be
+    // linked to rather than described.
+    const requested = parseInt((location.hash.split('@')[1] || ''), 10);
+    let index = (Number.isInteger(requested) && requested >= 1
+                 && requested <= stops.length)
+        ? requested - 1
+        : stops.length - 1;                     // otherwise the current state
+
+    // The control lives in the sticky footer, not here: it has to stay
+    // reachable from anywhere on a long page, since what it drives - the
+    // curves, the flow graph, the chart playhead, the commit row - is spread
+    // down the whole of it.
+    const bar = document.getElementById('timebar');
+    const back = document.getElementById('tb-back');
+    const forward = document.getElementById('tb-forward');
+    const slider = document.getElementById('tb-slider');
+    const footCaption = document.getElementById('tb-caption');
+    const nowButton = document.getElementById('tb-now');
+    bar.hidden = false;
+    slider.max = stops.length - 1;
+
+    const caption = el('div', 'tl-caption');
+    host.appendChild(caption);
+    const changes = el('div', 'tl-changes');
+    host.appendChild(changes);
+    const cards = el('div', 'curves');
+    host.appendChild(cards);
+    const extra = el('div', 'tl-state');
+    host.appendChild(extra);
+
+    function paint() {
+        const stop = stops[index];
+        const previous = index > 0 ? stops[index - 1] : null;
+        const atNow = index === stops.length - 1;
+        slider.value = index;
+        back.disabled = index === 0;
+        forward.disabled = atNow;
+
+        bar.classList.toggle('past', !atNow);
+        footCaption.textContent =
+            `${stop.date}  ${stop.subject}  ·  state ${index + 1} of ${stops.length}` +
+            (atNow ? '  ·  current' : '');
+        host.classList.toggle('at-past', !atNow);
+
+        highlightCommit(stop.short);
+
+        caption.innerHTML = '';
+        caption.appendChild(el('span', 'tl-date', stop.date));
+        caption.appendChild(el('span', 'tl-subject', stop.subject));
+        caption.appendChild(el('span', 'tl-count',
+            `state ${index + 1} of ${stops.length}` +
+            (index === stops.length - 1 ? ' · current' : '') + ` · ${stop.short}`));
+
+        changes.innerHTML = '';
+        const c = stop.changes;
+        const chipRow = (items, cls) => items.forEach(t =>
+            changes.appendChild(el('span', 'tl-chip ' + cls, t)));
+        if (c.first) {
+            changes.appendChild(el('span', 'tl-chip tl-first', 'first state in the window'));
+        }
+        chipRow(c.added, 'tl-add');
+        chipRow(c.removed, 'tl-remove');
+        chipRow((c.reshaped || []).map(r => r.label + ' reshaped'), 'tl-reshape');
+        chipRow(c.sound || [], 'tl-sound');
+        chipRow(c.notes || [], 'tl-note');
+        if (!changes.childNodes.length) {
+            changes.appendChild(el('span', 'tl-chip', 'no tracked change'));
+        }
+
+        // Curves for this state. A binding flagged reshaped is drawn over a
+        // ghost of its previous shape.
+        cards.innerHTML = '';
+        const reshaped = new Map(
+            (c.reshaped || []).map(r => [r.sensor + '|' + r.param, r.from]));
+        const previousBindings = new Map(
+            (previous ? previous.state.bindings : [])
+                .map(b => [b.sensor + '|' + b.param, b]));
+        stop.state.bindings.forEach(b => {
+            const key = b.sensor + '|' + b.param;
+            const ghost = reshaped.has(key) ? reshaped.get(key) : null;
+            const card = bindingCard(b, ghost);
+            if (reshaped.has(key)) card.classList.add('reshaped');
+            if (!previousBindings.has(key) && previous) card.classList.add('fresh');
+            cards.appendChild(card);
+        });
+        if (!stop.state.bindings.length) {
+            cards.appendChild(el('div', 'tl-static',
+                'No sensor bound directly to a parameter at this point.'));
+        }
+
+        // The signal flow as it stood at this commit. A diagram that changes
+        // shape is legible as changed at a glance, where three sentences
+        // identical to the last four stops are not.
+        const s = stop.state;
+        extra.innerHTML = '';
+        const pool = entry.graph_pool || [];
+        renderGraphs(extra, pool[s.graph], s.played);
+
+        const facts = [];
+        if (s.voicing) facts.push('voicing ' + s.voicing);
+        if (s.vdefs.length) facts.push('visual ' + s.vdefs.map(x => '\\' + x).join(', '));
+        else if (s.uses_visuals) facts.push('visual (library shapes)');
+        if (s.triggers.length) facts.push('triggers ' + s.triggers.length);
+        facts.push(s.lines + ' lines');
+        extra.appendChild(el('div', 'tl-facts', facts.join('  ·  ')));
+    }
+
+    slider.oninput = () => { index = +slider.value; paint(); };
+    back.onclick = () => { if (index > 0) { index--; paint(); } };
+    forward.onclick = () => { if (index < stops.length - 1) { index++; paint(); } };
+    nowButton.onclick = () => { index = stops.length - 1; paint(); };
+    TIMELINE_PAINT = paint;
+    paint();
+}
+
+let TIMELINE_PAINT = null;
+
+// The chart bar and the commit row for the stop being shown, so the scrubber
+// reads as one time control over the whole page rather than a widget inside
+// one section.
+let COMMIT_ROWS = {};
+let CHART_MARKS = {};
+
+function highlightCommit(short) {
+    Object.entries(COMMIT_ROWS).forEach(([hash, row]) =>
+        row.classList.toggle('at-stop', hash === short));
+    Object.entries(CHART_MARKS).forEach(([hash, mark]) =>
+        mark.setAttribute('opacity', hash === short ? '1' : '0'));
+}
+
+/* ----------------------------------------------------------------- chart */
+
+function drawChart(entry, holder) {
+    // Commits on an ordinal axis rather than a time axis: work on these files
+    // is episodic, and a true time axis renders five years of nothing between
+    // two clusters of bars a pixel wide. The dates are on the x labels and in
+    // the table below; this chart is about the shape of the work.
+    const commits = entry.commits.slice().reverse();
+    const margin = { top: 8, right: 10, bottom: 46, left: 40 };
+    const width = Math.max(360, holder.clientWidth) - margin.left - margin.right;
+    const height = 170;
+
+    const kinds = Object.keys(KIND_COLOR);
+    const stacked = d3.stack().keys(kinds)
+        .value((d, key) => d.added[key] || 0)(commits);
+
+    const x = d3.scaleBand()
+        .domain(commits.map((_, i) => i))
+        .range([0, width])
+        .padding(commits.length > 40 ? 0.1 : 0.3);
+
+    const maxTotal = d3.max(commits, c =>
+        kinds.reduce((sum, k) => sum + (c.added[k] || 0), 0)) || 1;
+    const y = d3.scaleLinear().domain([0, maxTotal]).nice().range([height, 0]);
+
+    const svg = d3.select(holder).append('svg')
+        .attr('width', width + margin.left + margin.right)
+        .attr('height', height + margin.top + margin.bottom)
+        .append('g')
+        .attr('transform', `translate(${margin.left},${margin.top})`);
+
+    svg.append('g')
+        .call(d3.axisLeft(y).ticks(4).tickSize(-width))
+        .call(g => g.select('.domain').remove())
+        .call(g => g.selectAll('.tick line').attr('stroke', '#1e1e1e'))
+        .call(g => g.selectAll('text').attr('fill', '#666').style('font-size', '10px'));
+
+    // Label a handful of commits rather than all of them; the rest are in the
+    // table. Which ones: evenly spaced, always including first and last.
+    const step = Math.max(1, Math.ceil(commits.length / 8));
+    svg.append('g')
+        .attr('transform', `translate(0,${height})`)
+        .call(d3.axisBottom(x)
+            .tickValues(commits.map((_, i) => i).filter(i =>
+                i % step === 0 || i === commits.length - 1))
+            .tickFormat(i => commits[i].date))
+        .call(g => g.select('.domain').attr('stroke', '#2a2a2a'))
+        .call(g => g.selectAll('.tick line').attr('stroke', '#2a2a2a'))
+        .call(g => g.selectAll('text')
+            .attr('fill', '#666')
+            .style('font-size', '10px')
+            .attr('transform', 'rotate(-40)')
+            .style('text-anchor', 'end'));
+
+    svg.append('g').selectAll('g')
+        .data(stacked)
+        .join('g')
+        .attr('fill', d => KIND_COLOR[d.key])
+        .selectAll('rect')
+        .data(d => d.map(v => ({ ...v, key: d.key })))
+        .join('rect')
+        .attr('x', (_, i) => x(i))
+        .attr('y', d => y(d[1]))
+        .attr('height', d => Math.max(0, y(d[0]) - y(d[1])))
+        .attr('width', x.bandwidth())
+        .append('title')
+        .text(d => `${d.data.date}  ${d.data.short}\n${d.data.subject}\n` +
+                   `+${d.data.added[d.key] || 0} ${KIND_LABEL[d.key]} lines`);
+
+    // A playhead per commit, hidden until the scrubber lands on it.
+    svg.append('g').selectAll('rect')
+        .data(commits.map((c, i) => ({ c, i })))
+        .join('rect')
+        .attr('x', d => x(d.i) - 1)
+        .attr('y', -4)
+        .attr('width', d => x.bandwidth() + 2)
+        .attr('height', height + 8)
+        .attr('fill', 'none')
+        .attr('stroke', '#d8c27f')
+        .attr('stroke-width', 1.2)
+        .attr('opacity', 0)
+        .each(function (d) { CHART_MARKS[d.c.short] = this; });
+
+    // A commit that changed nothing classifiable still happened; without this
+    // it silently vanishes from the chart and the history looks sparser than
+    // it was.
+    svg.append('g').selectAll('rect')
+        .data(commits.map((c, i) => ({ c, i }))
+            .filter(d => kinds.every(k => !(d.c.added[k]))))
+        .join('rect')
+        .attr('x', d => x(d.i))
+        .attr('y', height - 2)
+        .attr('height', 2)
+        .attr('width', x.bandwidth())
+        .attr('fill', '#3a3a3a')
+        .append('title')
+        .text(d => `${d.c.date}  ${d.c.short}\n${d.c.subject}\nno classifiable code change`);
+}
+
+/* ------------------------------------------------------------------ boot */
+
+d3.json('output/personality_history.json').then(data => {
+    DATA = data;
+    NAMES = Object.keys(data.personalities).sort((a, b) =>
+        a.toLowerCase().localeCompare(b.toLowerCase()));
+
+    document.getElementById('search').addEventListener('input', e =>
+        renderList(e.target.value));
+    window.addEventListener('hashchange', () => {
+        const name = decodeURIComponent(location.hash.slice(1)).split('@')[0];
+        if (name && name !== current && known(name)) select(name, true);
+    });
+
+    renderList('');
+    const initial = decodeURIComponent(location.hash.slice(1)).split('@')[0];
+    if (initial && known(initial)) {
+        select(initial, true);
+    } else {
+        document.getElementById('empty').textContent =
+            `${NAMES.length} personalities, ${data.metadata.commit_count} commits in scope ` +
+            `(${data.metadata.git_scope}). Pick one from the left.`;
+    }
+}).catch(error => {
+    document.getElementById('empty').textContent =
+        'Could not load output/personality_history.json. Run  python3 analyze_personality_history.py  ' +
+        'and serve this directory over http (the page fetches its data by XHR, which file:// blocks). ' +
+        error;
+});
+</script>
+</body>
+</html>

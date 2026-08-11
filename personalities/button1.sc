@@ -91,7 +91,7 @@ SynthDef(\versatilePerc, {
       \duration, 2.0,
 			\fill, false,
       \startWidth, 1,
-      \endWidth, 30,
+      \endWidth, 3,
       
 
 			\func, Pfunc({|e| ~onEvent.(e)}),

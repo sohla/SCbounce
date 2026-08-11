@@ -1,0 +1,58 @@
+class:: AVbind
+summary:: Pbind that plays an audio note AND a synchronised visual
+categories:: Libraries>VisualServer
+related:: Classes/Vbind, Classes/Pbind, Guides/VisualServer, Reference/VisualParameters
+
+description::
+
+Factory returning a link::Classes/Pbind:: pre-seeded with code::(type: \audioVisual, dur: 1, instrument: \default, view: \default)::. Each event first plays the audio note (using code::\instrument::, code::\freq::, code::\amp::, code::\dur:: ... as a normal code::\note::), then builds and plays a separate visual event routed to the correct visual sub-type by code::\vinstrument::.
+
+strong::One rule:: in code::AVbind:: strong::every visual key is code::v::-prefixed::; the audio side keeps the plain SC note keys (code::\instrument \freq \amp \dur \legato \sustain ...::). This removes all collisions (any visual name could otherwise clash with a SynthDef arg). link::Classes/Vbind:: is visual-only so it uses plain keys — the prefix is only needed where audio and visual share one event.
+
+table::
+## strong::AVbind key:: || strong::sets visual:: || strong::default
+## code::\vinstrument:: || the visual def (shape) || code::\circle::
+## code::\vview:: || code::\view:: || code::\default::
+## code::\vdur:: || visual node base lifetime || audio code::\dur::
+## code::\vx \vy:: || position || 0, 0
+## code::\vsize:: || size || code::(~amp ? 0.5) * 100::
+## code::\vcolor:: || colour || hue of code::~freq::
+## code::\vfill:: || fill vs stroke || code::true::
+## code::\vstartSize \vendSize \vcurve:: || pulse sweep || 10 / code::amp*200:: / code::\exp::
+## code::\vx1 \vy1 \vx2 \vy2 \vwidth:: || line || -0.5 / 0 / 0.5 / 0 / 1
+## code::\vrotation:: || rotation (radians) about shape centre || 0 (pass a link::Classes/Function:: for animated spin)
+## code::\vattack \vrelease \vlegato \vsustain \vstretch:: || envelope (link::Reference/VisualParameters::) || 0 / whole life / 1 / code::\vdur:: / 1
+## code::\vtimeDelay:: || delay the visual by N seconds before it appears || the audio server's code::latency:: (so audio + visual coincide)
+::
+
+note:: code::\legato::/code::\sustain:: WITHOUT the code::v:: are the AUDIO note's; the visual envelope is code::\vlegato::/code::\vsustain:: etc. ::
+
+note::
+The audio note is sent at code::logicalTime + s.latency:: (~0.2 s) but the visual is language-side. So code::\vtimeDelay:: defaults to the audio server's code::latency::, making them line up automatically. Set code::\vtimeDelay, (s.latency + 0.05):: to also compensate projector/display lag, or code::\vtimeDelay, 0:: for the old visual-leads-audio behaviour.
+::
+
+CLASSMETHODS::
+
+method:: new
+argument:: ... pairs
+Audio + code::v::-prefixed visual pairs.
+returns:: a link::Classes/Pbind::.
+
+EXAMPLES::
+
+code::
+s.boot;
+AVbind(
+    \instrument, \default,
+    \freq, Pseq([440,550,660,880], inf),
+    \amp, 0.2, \dur, 0.5,
+    \vinstrument, \pulse,
+    \vx, Pkey(\freq).linlin(440, 880, -0.7, 0.7),
+    \vendSize, Pkey(\amp) * 600,
+    \vdur, 1.2,
+    \vattack, 0.1,
+    \vview, \demo
+).play;
+::
+
+note:: code::AVbind:: is played with code::.play:: (it drives audio + visual via the event system), not code::.vplay::. ::

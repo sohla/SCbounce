@@ -1,0 +1,25 @@
+class:: Vlive
+summary:: Pbind that produces persistent live-input visual events
+categories:: Libraries>VisualServer
+related:: Classes/Vbind, Classes/LiveParam, Classes/VisualSynthDef, Guides/VisualServer, Reference/VisualParameters
+
+description::
+
+Factory returning a link::Classes/Pbind:: pre-seeded with code::(type: \vlive, dur: inf, view: \default)::. Targets the code::\live:: link::Classes/VisualSynthDef::. Because code::dur:: defaults to code::inf::, nodes are strong::persistent:: (never auto-freed) and their function-valued params are evaluated every frame — ideal for sensor/data-driven visuals. See link::Classes/Vbind:: for the playback model and link::Classes/LiveParam:: for streaming a value per event.
+
+CLASSMETHODS::
+
+method:: new
+argument:: ... pairs
+Common keys: code::x y size color fill view::. Values are typically link::Classes/Function::s.
+returns:: a link::Classes/Pbind::.
+
+EXAMPLES::
+
+code::
+~imu = (x: 0, y: 0);
+Routine({ loop { ~imu.x = sin(thisThread.seconds); ~imu.y = cos(thisThread.seconds); 0.05.wait } }).play;
+
+Vlive(\x, { ~imu.x }, \y, { ~imu.y }, \size, 60,
+    \color, { Color.hsv(~imu.x.abs, 0.8, 1) }, \view, \demo).vplay;
+::

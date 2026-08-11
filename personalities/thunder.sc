@@ -40,25 +40,26 @@ SynthDef(\thunderSampler, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0,
 
 ~deinit = ~deinit <> {
 
-	if(synth.notNil, {
-		synth.onFree({
-			"all synths on free".postln;
-			buffers.do({|buf|
-				{
-					postf("buffer dealloc [%] \n", buf);
-					buf.free;
-					s.sync;
-				}.fork;
-			});
-		});
-		synth.set(\gate, 0);	
-	});
-	// synth.sendMsg(\gate, 0);
-	// buffers.do({|buf|
-	// 	buf.free;
-	// 	s.sync;
-	// 	postf("buffer dealloc [%] \n", buf);
+	// if(synth.notNil, {
+	// 	synth.onFree({
+	// 		"all synths on free".postln;
+	// 		buffers.do({|buf|
+	// 			{
+	// 				postf("buffer dealloc [%] \n", buf);
+	// 				buf.free;
+	// 				s.sync;
+	// 			}.fork;
+	// 		});
+	// 	});
+	// 	synth.set(\gate, 0);	
 	// });
+	// synth.sendMsg(\gate, 0);
+	synth.free;
+	buffers.do({|buf|
+		buf.free;
+		s.sync;
+		postf("buffer dealloc [%] \n", buf);
+	});
 
 };
 

@@ -84,7 +84,7 @@ SynthDef(\drumkitNN, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 	var attack = m.accelMassFiltered.lincurve(0.0,1.5,0.1,0.002,-1);
 	var release = m.accelMassFiltered.lincurve(0.0,1.5,4.3,0.001,-1);
 
-	dur = m.accelMassFiltered.lincurve(0,1.5,0.2,0.06, -1);
+	dur = m.accelMassFiltered.lincurve(0,0.6,0.2,0.06, -1);
 
 	Pdef(m.ptn).set(\amp, amp * amps[index]);
 	Pdef(m.ptn).set(\rate, (notes[index]).midiratio );
@@ -107,6 +107,8 @@ SynthDef(\drumkitNN, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 ~plotMin = -1;
 ~plotMax = 1;
 ~plot = { |d,p|
-	[m.gyroXFiltered.fold(-0.5,0.5).linlin(-0.5,0.5,-10,10).lcurve];
+	// [m.gyroXFiltered.fold(-0.5,0.5).linlin(-0.5,0.5,-10,10).lcurve];
+
+	[m.accelMassFiltered];
 
 };

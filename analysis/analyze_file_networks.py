@@ -3,7 +3,13 @@ import subprocess
 import json
 from collections import defaultdict, Counter
 from datetime import datetime
+from pathlib import Path
 import itertools
+
+# Generated data lands here and is gitignored - the scripts are the source of
+# truth, not their output. Anchored to this file rather than the working
+# directory so it does not matter where the script is invoked from.
+OUTPUT_DIR = Path(__file__).resolve().parent / 'output'
 
 def get_commit_files():
     """Extract all commits with their changed files."""
@@ -183,7 +189,9 @@ def main():
     network_data = generate_network_json(file_pairs, file_commit_count, file_to_commits)
     
     # Save to file
-    with open('file_networks.json', 'w') as f:
+    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+    output_file = OUTPUT_DIR / 'file_networks.json'
+    with open(output_file, 'w') as f:
         json.dump(network_data, f, indent=2)
     
     print(f"Generated network with {len(network_data['nodes'])} nodes and {len(network_data['edges'])} edges")
@@ -191,7 +199,7 @@ def main():
     for file_path, connections in network_data['statistics']['most_connected_files'][:5]:
         print(f"  {file_path}: {connections} connections")
     
-    print("Saved to file_networks.json")
+    print(f"Wrote {output_file}")
 
 if __name__ == '__main__':
     main()
