@@ -71,15 +71,15 @@ SynthDef(\miniMoog, {
 			\fill, true,
 			\duration, Pkey(\release),
 			\sx, 0,
-			\ex, 0,
+			\ex, 0.0 - (Pkey(\release) * 0.5),
 			\sy, (Pkey(\note) + (Pkey(\octave) * 12)).linlin(36, 69, 0.55, -0.55),
 			\ey, (Pkey(\note) + (Pkey(\octave) * 12)).linlin(36, 69, 0.55, -0.55),
-			\startSize, Pkey(\amp).lincurve(0.018, 0.89, 8, 80, -3),
-			\endSize, Pkey(\amp).lincurve(0.018, 0.89, 1, 60, -1),
+			\startSize, Pkey(\amp).lincurve(0.018, 0.89, 8, 30, -1),
+			\endSize, Pkey(\amp).lincurve(0.018, 0.89, 1, 20, -1),
 			\startWidth, 2,
 			\endWidth, 0.5,
-			\startColor, Color.hsv(0.0, 0.7, 1.0, 1.0),
-			\endColor, Color.hsv(0.2, 0.8, 0.6, 0.0),
+			\startColor, Color.hsv(0.8, 0.7, 1.0, 1.0),
+			\endColor, Color.hsv(0.4, 0.8, 0.6, 0.0),
 			\modulation, Pfunc({ (
 				type: \normal,
 				freq: m.accelMassFiltered.lincurve(0, 2.0, 1, 12, -1),
@@ -113,12 +113,12 @@ SynthDef(\miniMoog, {
 //------------------------------------------------------------
 ~next = {|d|
 
-	var dur = 0.3;
+	var dur = 0.2;
 	
 	// var ff = (d.sensors.gyroEvent.x/pi).linexp(-0.5,0.5,300,10000); 
 	// var oct = (d.sensors.gyroEvent.y/pi).linlin(-0.4,0.4,3.0,8.0); //left right
 
-	var amp = m.accelMassFiltered.lincurve(0,2.5,-35,-1,-3);
+	var amp = m.accelMassFiltered.lincurve(0,2.5,-15,-1,-1);
 	var atk = m.accelMassFiltered.lincurve(0,1.5,0.1,0.0001,-3);
 	var rel = m.accelMassFiltered.lincurve(0,2.5,0.01,1.0,-1);
 	// var ff = m.accelMassFiltered.linexp(0,0.5,60,18000);

@@ -155,7 +155,7 @@ SynthDef(\sheet2, { |out, frq=111, gate=0, amp = 0, pchx=0|
 	~vdef.(\sheetFrame, { |ev, c|
 		var mod = ev[\modulation] ? ();
 		var atk = mod[\attack] ? 0.007;
-		var rel = mod[\release] ? 0.007;
+		var rel = mod[\release] ? 0.7;
 		var fade = mod[\fade] ? -8;
 		var drive = m.accelMass * 0.5;
 		var amp, size, col;
@@ -201,14 +201,14 @@ SynthDef(\sheet2, { |out, frq=111, gate=0, amp = 0, pchx=0|
 		startWidth: 180,
 		endWidth: 10,
 		rotation: pi.half,
-		startColor: Color.hsv(0.45, 0.95, 1.0, 0.2),
+		startColor: Color.hsv(0.45, 0.95, 1.0, 0.4),
 		endColor: Color.hsv(0.55, 0.25, 1.0, 0.1),
 		sx: 0, sy: 0, ex: 0, ey: 0,
 		duration: inf,
 		modulation: (
-			attack: 0.007,
-			release: 0.007,
-			fade: -8,
+			attack: 0.01,
+			release: 0.015,
+			fade: -5,
 		),
 	).play;
 

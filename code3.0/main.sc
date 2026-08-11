@@ -15,7 +15,7 @@ var z;
 // is no visual tab. Without one, the visual tab holds the same surface.
 var stack = {
 	var deviceView = Require("deviceView.scd");
-	var controlView = Require("controlView.scd");
+	// var controlView = Require("controlView.scd");
 	var systemView = Require("systemView.scd");
 	var pages = [deviceView.()];
 
@@ -27,8 +27,8 @@ var stack = {
 		labels = labels.add("visual");
 	});
 
-	pages = pages ++ [controlView.(), systemView.()];
-	labels = labels ++ ["control", "system"];
+	pages = pages ++ [systemView.()];
+	labels = labels ++ ["system"];
 
 	View().layout_(staker = StackLayout(*pages));
 };

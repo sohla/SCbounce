@@ -213,10 +213,10 @@ SynthDef(\bambooComplex, {
 				dur: 0.05,
 				viewID: d.port,
 				shape: \shards,
-				startSize: 150 + (50 * amp),
+				startSize: 200 + (50 * amp),
 				endSize: 10 + (50 * amp),
-				startWidth: 80.3,
-				endWidth: 0.3,
+				startWidth: 3.3,
+				endWidth: 30.3,
 				sx: rrand(-0.02, 0.02),
 				sy: 0+ rrand(-0.01,0.01),
 				ex: rrand(-0.1, 0.1),
@@ -225,13 +225,13 @@ SynthDef(\bambooComplex, {
 				startColor: Color.hsv(noteIndex / notes.size, 0.45, 1.0, 0.5),
 				endColor: Color.hsv(noteIndex / notes.size, 0.9, 0.6, 0.0),
 				rotation: 2pi.rand,
-				duration: m.accelMassFiltered.lincurve(0,2.5,0.3,3,-3),
+				duration: m.accelMassFiltered.lincurve(0,2.5,1.0,3,-1),
 				modulation: (
-					spread: rrand(7.0, 7.0) * 0.2,
+					spread: rrand(7.0, 7.0) * 0.3,
 					spin: rrand(0.5, 2.0) * 0.1,
 					phase: 2pi.rand,
 					amp: 0,
-					hold: 2
+					hold: 0.3
 				)
 			).play;
 		});

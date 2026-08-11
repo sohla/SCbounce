@@ -13,7 +13,7 @@ var personalityDir = "~/Develop/SuperCollider/Projects/AirKit/personalities/";//
 // var list = "list_yourDNA25.sc";
 // var list = "list_workshop1.sc";
 
-var list = "list_yourDNA26.sc";
+var list = "list_alon26.sc";
 var defaultLists = list!5;
 
 
