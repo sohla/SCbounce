@@ -62,7 +62,7 @@ SynthDef(\pluck1, { |out=0, amp=0, pch=30, frq=30, gate=0 |
 		var frq = 110 + (m.accelMassFiltered * 100);
 		var pluckRate = pch.linlin(30, 300, 1, 30);
 		var modes = pch.linlin(40, 190, modeMin, modeMax).round.asInteger.clip(1, 16);
-		var gate = m.accelMassFiltered * 0.5;//if(m.accelMass < 0.01, 0, 1);
+		var gate = m.accelMassFiltered * 1.3;
 		var a = c[\posStart];
 		var b = c[\posEnd];
 		var normal = Polar(1, (b - a).theta + 0.5pi).asPoint;

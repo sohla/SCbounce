@@ -62,13 +62,13 @@ SynthDef(\funBass, {
       \tension, 0.1,
 
 			\type, \customVisualEvent,
-			\sx, Pn(Pseries(-0.85,2/bassLines[0].size,bassLines[0].size), inf),
-			\sy, Pn(Pseries(-0.85,2/bassLines[0].size,bassLines[0].size), inf).neg,
+			\sx, Pn(Pseries(-0.7,1.4/bassLines[0].size,bassLines[0].size), inf),
+			\sy, Pn(Pseries(-0.7,1.4/bassLines[0].size,bassLines[0].size), inf).neg,
 			\ex, Pkey(\sx),
 			\ey, Pkey(\sy),
       \startSize, 50,
-			\endSize, 10,
-      \duration, 0.5,
+			\endSize, 0,
+      \duration, 0.3,
 			\fill, true,
 			\func, Pfunc({|e| ~onEvent.(e)}),
 			\args, #[]
@@ -126,7 +126,7 @@ SynthDef(\funBass, {
 
 	Pdef(m.ptn).set(\viewID, d.port);
 	Pdef(m.ptn).set(\startColor, Color.hsv((frame/30.0).mod(1.0),1,1.0, 0.5 + level));
-	Pdef(m.ptn).set(\endColor, Color.hsv((frame/30.0).mod(1.0),1,1.0,0.0));
+	Pdef(m.ptn).set(\endColor, Color.hsv((frame/30.0).mod(1.0),1,1.0,0.9));
 	Pdef(m.ptn).set(\rotation, (pi/60) * frame);
 	Pdef(m.ptn).set(\modulation, (
 			type: \radial,
