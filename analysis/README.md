@@ -1,7 +1,11 @@
 # analysis/
 
 Eight Python scripts mine this repo's git history and its personality files,
-write JSON into `output/`, and eleven standalone D3 pages render it.
+write JSON into `output/`, and eleven standalone D3 pages render it. Two
+further modules support the archive page: `synthdef_graph.py` (a SuperCollider
+signal-flow parser, imported by the history analyzer) and
+`validate_synthdef_graph.py` (a development check for it — not part of the
+pipeline).
 
 This file is how to *run* it. For what the analyses mean, see
 `description.md`.
@@ -108,6 +112,65 @@ Two things it knows that no other analyzer here does:
   worst deviation 2×10⁻¹². If you change it, re-check it the same way rather
   than by eye.
 
+### Signal flow graphs
+
+`synthdef_graph.py` parses each SynthDef out of the source and draws it as a
+signal flow chart — sources on the left, `Out` on the right, control-rate
+inputs dashed, stages coloured by role.
+
+**A node is one variable assignment, not one UGen.** `bongo1` comes out as
+eight stages rather than sixty, which is the level a flow chart is read at, and
+it is also what makes the parse robust: at assignment granularity, multichannel
+expansion, nested expression trees and array arithmetic all stop mattering.
+Reassignment (`sig = FreeVerb.ar(sig, …)`) becomes a new node, so the chain
+stays visible. Median across the corpus is 7 nodes.
+
+**The layout is deterministic** — layered by dependency depth, ordered by
+declaration within a layer. That is deliberate: a force simulation would settle
+differently at every timeline stop and make the diagrams impossible to compare,
+which is the entire reason for drawing them over time. Identical topology
+renders identically, so a change is unmissable.
+
+**Why parse instead of asking SuperCollider.** sclang can dump a SynthDef's
+true graph and `sc3-dot` renders it, but only for a SynthDef it can compile
+*now*. The archive needs topology at every historical revision — 2024 files
+referencing samples that are gone, against a core since refactored. Parsing
+never runs anything, so it works uniformly across history. Supriya and
+hsc3-dot were considered and do not fit at all: they graph SynthDefs *defined
+in* Python or Haskell, and cannot read a `.sc` file.
+
+#### Validating the parser
+
+A parser can be confidently wrong, so `validate_synthdef_graph.py` checks it
+against the authority:
+
+```sh
+python3 validate_synthdef_graph.py     # needs SuperCollider; ~1 min
+```
+
+It compiles all 207 SynthDef literals in a throwaway sclang, reads their real
+UGen lists from `SynthDescLib`, and compares. **Currently 206 of 206 clean.**
+
+The comparison is coarse because the parser is coarse — a flow chart at
+assignment granularity has no counterpart for ten `BinaryOpUGen`s. What it does
+check is that no *stage* was missed. Three exemption classes, and the middle
+one matters:
+
+- **plumbing** — arithmetic, controls, output proxies: never drawn.
+- **expansions** — `DynKlank` compiles into `Ringz`, `Splay` into `Pan2`,
+  `SoundIn` into `In`. A primitive is excused **only when the parser found a
+  composite that produces it**, rather than being ignored outright, so a
+  genuinely missed stage cannot hide behind the exemption.
+- **operators** — `.lag`, `.clip`, `.blend` become UGens but modify a signal
+  rather than forming a stage.
+
+Running it caught four real parser bugs that would otherwise have shipped:
+`Splay.arFill` (the rate suffix has a CamelCase tail), `Env.perc(…).ar`
+(envelope as a method, so no `Class.ar` to match), demand UGens like `Dseq`
+(constructed with no rate suffix at all), and `SelectX` expanding to `Select`.
+
+Nothing in `update.py` depends on sclang; this is a development check only.
+
 ### The timeline scrubber
 
 Under *step through the changes* the page reconstructs the file at each point
@@ -124,7 +187,19 @@ Each stop shows what changed, colour-coded: green added, red removed, amber
 reshaped, blue synthesis, purple comments. A binding that survived but whose
 numbers moved is drawn **over a dashed ghost of its previous shape on the same
 axes**, so a reshape reads as a movement rather than as two charts to compare
-by eye.
+by eye. The signal flow graph is redrawn at each stop too — a diagram that
+changes shape is legible as changed at a glance, where prose repeated across
+four identical stops is not. 77 files change their topology at least once.
+
+The control is a **sticky footer**, not a widget inside one section, because
+what it drives is spread down the whole page: the curves, the flow graph, a
+playhead on the change-over-time chart, and the matching row in the commit
+table. It turns amber the moment it leaves the present and offers *return to
+now*, and anything showing a past state is outlined to match — a control that
+silently changes things above it is how a 2024 state gets read as current.
+
+The sections at the top of the page — lineage, the narratives, the current
+curves — deliberately do **not** move. They are always "this file today".
 
 `melbb1` is the example worth opening. Over two days in October 2025 it moves
 from raw `d.sensors.gyroEvent` to the smoothed `gyroXFiltered`/`gyroYFiltered`,

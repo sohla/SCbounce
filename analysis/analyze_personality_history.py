@@ -70,6 +70,8 @@ COMMIT_MARK = '@@COMMIT@@'
 
 sys.path.insert(0, str(HERE))
 from analyze_personality_code import SYNTHDEF_PATTERNS, MAPPING_PATTERNS  # noqa: E402
+import synthdef_graph as sg  # noqa: E402
+from synthdef_graph import strip_comments  # noqa: E402
 
 VISUAL_PATTERNS = [
     r'customVisualEvent',
@@ -509,58 +511,6 @@ def read_text(path):
         return path.read_text(encoding='latin-1')
 
 
-def strip_comments(content):
-    """Source with comments blanked out, newlines preserved.
-
-    This is not cosmetic. These p-files keep long shelves of commented-out
-    alternatives - `~plot` in particular is usually five or six dead sensor
-    lines under one live one - and counting those makes every personality look
-    as though it reads every sensor the system has. The gesture description is
-    worthless if it cannot tell live code from a parked experiment.
-
-    Character scanner rather than a regex because `//` inside a string literal
-    (a sample path) is not a comment, and a regex cannot see that.
-    """
-    out = []
-    i, n = 0, len(content)
-    in_string = False
-    in_block = False
-    while i < n:
-        char = content[i]
-        nxt = content[i + 1] if i + 1 < n else ''
-        if in_block:
-            if char == '*' and nxt == '/':
-                in_block = False
-                out.append('  ')
-                i += 2
-                continue
-            out.append('\n' if char == '\n' else ' ')
-        elif in_string:
-            out.append(char)
-            if char == '\\':
-                out.append(nxt)
-                i += 2
-                continue
-            if char == '"':
-                in_string = False
-        elif char == '"':
-            in_string = True
-            out.append(char)
-        elif char == '/' and nxt == '/':
-            while i < n and content[i] != '\n':
-                i += 1
-            continue
-        elif char == '/' and nxt == '*':
-            in_block = True
-            out.append('  ')
-            i += 2
-            continue
-        else:
-            out.append(char)
-        i += 1
-    return ''.join(out)
-
-
 def leading_comment(content):
     """The p-file's own header comment, if it wrote one.
 
@@ -952,6 +902,8 @@ def state_at(text):
         # to show that documentation appeared or changed.
         'comment_digest': [b['text'][:140] for b in authored],
         'lines': len(text.splitlines()),
+        'graphs': sg.graphs_for(text),
+        'played': sg.played_instrument(text),
     }
 
 
@@ -1009,6 +961,8 @@ def diff_states(previous, current):
             sound_changes.append(f"+trigger: {item.split(' (')[0]}")
     if previous['smoothing'] != current['smoothing']:
         sound_changes.append('filter smoothing retuned')
+    if previous.get('graph') != current.get('graph'):
+        sound_changes.append('signal flow changed')
 
     note_changes = []
     if previous['notes'] != current['notes']:
@@ -1045,11 +999,32 @@ def build_timelines(personalities, cache):
     for entry in personalities.values():
         timeline = []
         previous = None
+        # Signal-flow graphs are far bulkier than the rest of a state and
+        # change far less often, so each distinct one is stored once per file
+        # and referenced by index. A file with 37 commits and one topology
+        # stores that topology once.
+        pool = []
+        pool_index = {}
+
+        def intern(graphs):
+            key = json.dumps(
+                [[g['name'], [n['label'] for n in g['nodes']],
+                  [(e['from'], e['to']) for e in g['edges']]] for g in graphs],
+                sort_keys=True)
+            if key not in pool_index:
+                pool_index[key] = len(pool)
+                pool.append(graphs)
+            return pool_index[key]
+
         for commit in sorted(entry['commits'], key=lambda c: c['datetime']):
             sha = trees.get(commit['hash'], {}).get(entry['path'])
             if not sha or sha not in contents:
                 continue
             state = state_at(contents[sha])
+            # Intern before comparing, so both states carry the same keys and
+            # a topology change shows up as a changed index rather than as a
+            # difference in shape between the two dicts.
+            state['graph'] = intern(state.pop('graphs'))
             if previous is not None and \
                     state_signature(state) == state_signature(previous):
                 continue
@@ -1062,6 +1037,7 @@ def build_timelines(personalities, cache):
             })
             previous = state
         entry['timeline'] = timeline
+        entry['graph_pool'] = pool
 
 
 def fetch_blobs(shas):
@@ -1725,6 +1701,8 @@ def build():
                 'authored_header': leading_comment(content),
                 'authored_blocks': authored,
                 'notes': notes,
+                'graphs': sg.graphs_for(content),
+                'played': sg.played_instrument(content),
             },
         }
         entry['narrative'] = {
