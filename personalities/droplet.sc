@@ -91,7 +91,7 @@ SynthDef(\raindrop, {
     Pbind(
       \instrument, \raindrop,
       \octave, 4,
-      \note, Pwhite(2,40,inf),
+      \note, Pwhite(2,40,inf),//Pseq([13,20,29], inf),//Pwhite(2,40,inf),
       \attack, 0.001,
       \filterFreq, Pexprand(90, 2000, inf) * 2,
       \filterRQ, Pwhite(0.5, 1.5, inf),
