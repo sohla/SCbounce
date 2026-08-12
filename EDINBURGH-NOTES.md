@@ -4,6 +4,22 @@ Append-only observations from the Fringe run — things noticed live that may (o
 want a patch-side look. Distinct from COTF-CHANGELOG.md (which records changes we made).
 Newest first.
 
+## 2026-08-12 (day 6) — evening addendum
+- **Seat 2 (JUPITERSHARP) intermittent load failure — staff reset ×4 today** (4 of its 5
+  all-time resets; genuine outlier vs other seats). M1's cotf-airkit-room3 log shows
+  `FAILURE IN SERVER /n_set Node <id> not found` bursts (~47 failed sets per bad reload,
+  57/202 = 28% of its reloads) landing right at JUPITERSHARP's `~init`, i.e. immediately
+  after a reload/reset — same failure *class* as the 08-10 SOPRANOVOICE "level-0
+  mid-piece" sighting, and structurally present (lower rates) in other sampler
+  personalities too (ALTOSYNTH second-highest). Hypothesis: `~deinit`'s async
+  `fork { group.freeAll; ... }` teardown is still in flight when the next `~init`'s
+  `Pdef(...).play` + `.set(\amp, ...)` fires on the new instance, targeting node IDs
+  from the just-torn-down group — the burst of failed/silent notes reads to staff as
+  "didn't load" and they reset again. Worth checking whether deinit→init is
+  serialized/awaited per device, or should be. (Secondary: harp sample coverage has
+  gaps — missing C#/D#/F/A pitch classes — occasional wrong/silent notes independent
+  of reload.) Diagnosis was a read-only log pass; nothing was changed on M1.
+
 ## 2026-08-12 (day 6)
 - **Seat 5 struggles to cut through** — performers feel like they're not playing. (We
   live-trimmed the Room 3 seat 5 monitor +5 dB today via `/airkit/seatTrim 5 1.7783`,
