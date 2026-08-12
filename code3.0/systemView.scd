@@ -109,6 +109,14 @@ var quitButton = Button()
 				});
 		});
 
+var restartButton = Button()
+		.font_(Font(size:18, bold:false))
+		.maxHeight_(bh)
+		.states_([["Restart",Color.black,Color.white.alpha_(0.75)]])
+		.action_({
+			// "sudo reboot".unixCmd;
+		});
+
 
 var oscThruButton = Button()
 		.font_(Font(size:18, bold:false))
@@ -178,6 +186,27 @@ var sceneSync = OSCFunc({ |msg|
 	{ sceneButton.value_(if(msg[1].asSymbol == \grid, 1, 0)) }.defer;
 },'/airkit/visualScene');
 
+
+// which screen the visual surface lives on : this panel, or the second
+// screen. With no HDMI attached main.sc resolves the request back to
+// \tab and echoes that, so the button simply snaps back and nothing
+// happens - it needs no knowledge of screens itself.
+var displayButton = Button()
+	.font_(Font(size:18, bold:false))
+	.maxHeight_(bh)
+	.states_([
+		["Panel",Color.black,Color.gray(0.5)],
+		["HDMI",Color.white(),Color.blue(0.5)]
+		])
+	.action_({|b|
+		NetAddr.new("127.0.0.1", 57120).sendMsg("/airkit/visualTarget",
+			if(b.value == 0, "tab", "hdmi"));
+	});
+
+var displaySync = OSCFunc({ |msg|
+	{ displayButton.value_(if(msg[1].asSymbol == \hdmi, 1, 0)) }.defer;
+},'/airkit/visualTargetIs');
+
 var systemView = {
 	View().layout_(VLayout(
 		HLayout(View().maxWidth_(140), cpuView),
@@ -186,13 +215,14 @@ var systemView = {
 		HLayout(
 			versionView,
 			sceneButton,
-			networkReset,
+			displayButton,
+			Platform.case(\linux, {networkReset},{View()}),
 			oscThruButton,
 			freeAllBuffers,
 			freeAllNodes,
-			quitButton,
+			Platform.case(\linux, {quitButton},{View().maxHeight_(bh)}),
 			View(),
-			turnOffButton,
+			Platform.case(\linux, {turnOffButton},{View().maxHeight_(bh)}),
 		)
 	))
 };

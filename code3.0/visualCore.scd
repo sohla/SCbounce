@@ -298,6 +298,18 @@ core.makeCanvas = { |self, name, frameRate = 60, action|
 //------------------------------------------------------------
 // scenes : routing-table swaps
 //------------------------------------------------------------
+// push a set of in-flight events back through the current routing table.
+// Shared by applyScene and moveSurface : both throw the canvases away and
+// have to put whatever was mid-flight back where it now belongs.
+core.routeEvents = { |self, live|
+	live.do { |e|
+		(core.routes[e[\src]] ? []).do { |cn|
+			var c = core.canvases[cn];
+			if(c.notNil, { c[\events] = c[\events].add(e) });
+		};
+	};
+};
+
 core.applyScene = { |self, name|
 	// Events already in flight are re-routed with the scene, not stranded.
 	// A held event (duration: inf) was routed once when it was fired, so
@@ -325,12 +337,7 @@ core.applyScene = { |self, name|
 
 	// NB an event that named an explicit \canvas is re-routed by \src like
 	// any other - nothing uses \canvas today.
-	live.do { |e|
-		(core.routes[e[\src]] ? []).do { |cn|
-			var c = core.canvases[cn];
-			if(c.notNil, { c[\events] = c[\events].add(e) });
-		};
-	};
+	core.routeEvents(live);
 };
 
 //------------------------------------------------------------
@@ -388,6 +395,46 @@ core.makeSurface = { |self|
 
 	core.startCull();
 	view
+};
+
+//------------------------------------------------------------
+// move the ONE surface into another host view.
+//
+// There is only ever one. core.canvases is keyed by name and makeCanvas
+// OVERWRITES, so building a second surface would evict the first from the
+// registry while leaving its UserViews alive and animating - drawCanvas
+// resolves events by NAME, so those orphans would go on rendering the new
+// canvas's events into the old window, with no error and no way to stop
+// them. Hence: tear the old one down first, always.
+//
+// addDevice is a no-op when a canvas of that name already exists, so the
+// registry has to be emptied or the rebuilt grid comes up blank.
+//
+// In-flight events are carried across exactly as applyScene carries them
+// across a scene change - held (duration: inf) events included, which
+// would otherwise be stranded on a canvas that no longer exists.
+//------------------------------------------------------------
+core.moveSurface = { |self, host|
+	var live = IdentitySet.new;
+
+	core.canvases.values.do { |c| c[\events].do { |e| live.add(e) } };
+	core.canvases.values.do { |c|
+		if(c[\view].notNil, { c[\view].animate_(false) });
+	};
+	core.canvases.clear;
+	core.gridView = nil;
+	core.stack = nil;
+
+	if(core.surfaceHost.notNil and: { core.surfaceHost != host }, {
+		core.surfaceHost.removeAll;
+	});
+
+	core.surfaceHost = host;
+	host.removeAll;
+	host.layout_(VLayout(core.makeSurface()).margins_(0).spacing_(0));
+
+	core.routeEvents(live);
+	host
 };
 
 //------------------------------------------------------------

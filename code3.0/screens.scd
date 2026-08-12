@@ -1,7 +1,7 @@
 //------------------------------------------------------------
 // screens.scd
 //
-// Second-screen detection.
+// Second-screen detection. One-shot, on demand - there is no timer.
 //
 // Two independent signals, because neither alone is enough:
 //
@@ -15,6 +15,13 @@
 // NOTE: feed that Rect to Window:setTopLeftBounds(rect, 0), NOT to
 // .bounds_ - the latter runs Window.flipY against the PRIMARY screen
 // height and lands the window in the wrong place.
+//
+// Called at boot and again whenever the HDMI button is pressed - that
+// press IS the re-detect. Nothing here runs on a timer: xrandr is a
+// subprocess and unixCmdGetStdOut BLOCKS the language thread, the same
+// thread running ~next at 33Hz, so it only ever runs when asked.
+//
+// Returns the probe function.
 //------------------------------------------------------------
 
 var parseMonitorLine = { |line|
@@ -45,11 +52,18 @@ var parseMonitorLine = { |line|
 	result
 };
 
+// in-process : glob + file read, no shell.
 var hdmiConnected = {
-	var out = "cat /sys/class/drm/card*-HDMI-A-*/status 2>/dev/null".unixCmdGetStdOut;
-	out.split($\n).any({ |l| l.stripWhiteSpace == "connected" });
+	var paths = "/sys/class/drm/card*-HDMI-A-*/status".pathMatch;
+	var found = false;
+	paths.do { |p|
+		var txt = try { File.readAllString(p) } { nil };
+		if(txt.notNil and: { txt.stripWhiteSpace == "connected" }, { found = true });
+	};
+	found
 };
 
+// subprocess : only ever called when a cable is actually present.
 var secondScreen = {
 	var out = "DISPLAY=${DISPLAY:-:0} xrandr --listmonitors 2>/dev/null".unixCmdGetStdOut;
 	var found = nil;
@@ -60,8 +74,7 @@ var secondScreen = {
 	found
 };
 
-//------------------------------------------------------------
-{
+var probe = {
 	var rect = nil;
 	if(hdmiConnected.(), {
 		rect = secondScreen.();
@@ -75,3 +88,6 @@ var secondScreen = {
 	});
 	rect
 };
+
+//------------------------------------------------------------
+probe;
