@@ -4,6 +4,23 @@ Append-only observations from the Fringe run — things noticed live that may (o
 want a patch-side look. Distinct from COTF-CHANGELOG.md (which records changes we made).
 Newest first.
 
+## 2026-08-12 (day 6)
+- **Seat 5 struggles to cut through** — performers feel like they're not playing. (We
+  live-trimmed the Room 3 seat 5 monitor +5 dB today via `/airkit/seatTrim 5 1.7783`,
+  not yet baked into `~cotfSeatTrims` — but the underlying feel may be patch-side too.)
+- **Seat 5 sliding notes maybe too jittery/subtle:** it sounds mostly out of tune —
+  which is nice! — but perhaps too subtle to read as "me playing."
+- **Sensitivity as a per-patch variable?** Could sensitivity be exposed per patch — or
+  even just a toggle: `normal` (loads as today) vs `boost` (super sensitive) for
+  performers who barely move the stick? Would give Room 2/3 staff a live lever for
+  low-energy players (pairs with the 08-10 ALTOSYNTH dynamic-range note: squeeze both
+  ends of the curve).
+- **Seat 3 direction idea:** could really be a glistening, rapid patch — even *higher*
+  than it is now?
+- **Tuning state could be slightly softer overall:** people are hilariously moving too
+  much during tuning and miss the actual oboe-then-orchestra tuning moment. (Extends the
+  08-10 note about Jupiter sharp/altosynth/soprano tuning levels.)
+
 ## 2026-08-10 (day 5)
 - **Balance vs group energy:** a lot of the time we want the instruments louder and are
   tempted to boost them — but then a REALLY active group comes in and it feels like
