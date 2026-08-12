@@ -43,9 +43,6 @@ SynthDef(\drumkit, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 			postf("buffer alloc [%] \n", buf);
 			if(folder.entries.size - 1 == i,{
 				"samples loaded".postln;
-
-
-				
 			});
 		});
 	});
@@ -119,14 +116,14 @@ SynthDef(\drumkit, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 			harmonics: 2
 	));
 
-	bi = (d.sensors.gyroEvent.y / pi.half).linlin(-1.0,1.0,0,4);
+	bi = (d.sensors.gyroEvent.y / pi.half).linlin(-1.0,1.0,0,buffers.size-1);
 	bi = bi.asInteger;
 
 	Pdef(m.ptn).set(\startColor, Color.hsv(bi/buffers.size,1,1.0,0.5));
 	Pdef(m.ptn).set(\endColor, Color.hsv(bi/buffers.size,1,1.0,0.1));
 
 	if(TempoClock.beats >= (lastTime + 0.1),{
-		if(m.accelMassFiltered > 1,{
+		if(m.accelMassFiltered > 0.7,{
 			lastTime = TempoClock.beats;
 			dur = 0.1;
 		},{
