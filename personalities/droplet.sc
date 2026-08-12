@@ -96,6 +96,7 @@ SynthDef(\raindrop, {
       \filterFreq, Pexprand(90, 2000, inf) * 2,
       \filterRQ, Pwhite(0.5, 1.5, inf),
       \pan, Pwhite(-1.0, 1.0, inf),
+			\args, #[],
 
       \type, \customVisualEvent,
       \shape, \ripple,
@@ -108,7 +109,7 @@ SynthDef(\raindrop, {
       \sy, Pwhite(-0.75, 0.75),
       \ey, Pkey(\sy),
 
-      \startSize, Pfunc({ |e| (e[\amp] ? 0.5).linlin(0, 1, 45, 200) }),
+      \startSize, Pfunc({ |e| (e[\amp] ? 0.5).linlin(0, 1, 0, 200) }),
       \endSize, Pkey(\startSize),
 
       \startWidth, 3.0,
@@ -125,11 +126,11 @@ SynthDef(\raindrop, {
       }),
       \endColor, Pkey(\startColor),
 
-      \duration, Pfunc({ |e| (((e[\decay] ? 0.05) * 1.6) + 0.5).clip(0.5, 2.6) }),
+      \duration, Pfunc({ |e| (((e[\reverbRoom] ? 0.05) * 1.6) + 0.5) }),
 
       \modulation, Pfunc({ |e| (
-        rings: (((e[\reverbRoom] ? 0.83) * 4).round).clip(2, 5),
-        stagger: 0.16,
+        rings: 3,//(((e[\reverbRoom] ? 0.83) * 4).round).clip(2, 5),
+        stagger: rrand(0.01,0.03),
         wob: (e[\wobble] ? 100).max(1).explin(1, 14000, 0.015, 0.075),
         harm: [2, 3, 4].choose,
         spin: rrand(0.7, 1.6),
@@ -151,11 +152,11 @@ SynthDef(\raindrop, {
 ~next = {|d|
 
   var dur = m.gyroYFiltered.lincurve(-1.0,1.0,0.5,0.075);
-  var amp = m.gyroYFiltered.lincurve(-1.0,1.0,0.0,1,-2);
   var wob = ((d.sensors.gyroEvent.x / pi).fold(-0.5,0.5) * 2).lincurve(-1.0,1.0,0.01,14000.0,-2);
   var side  = ((d.sensors.accelEvent.y.abs + d.sensors.accelEvent.z.abs) * 0.1).lincurve(0,1.0,1.0,wob,-2);
   var dcy  = ((d.sensors.accelEvent.y.abs + d.sensors.accelEvent.z.abs) * 0.1).lincurve(0,1.0,0.05,3.0,-1);
   var verb = m.accelMassFiltered.lincurve(0,2.5,0.53,10.0,2);
+  var amp = m.gyroYFiltered.lincurve(-1.0,1.0,0.0,1,-2);
 
   if(amp < 0.21, {amp = 0});
 
@@ -167,6 +168,8 @@ SynthDef(\raindrop, {
   Pdef(m.ptn).set(\wobble, side);
   Pdef(m.ptn).set(\decay, dcy);
   Pdef(m.ptn).set(\reverbRoom, verb);
+
+  // Pdef(m.ptn).set(\startSize, amp.linlin(0, 1, 45, 200));
 
 };
 //------------------------------------------------------------
