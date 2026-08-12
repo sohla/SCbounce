@@ -1,0 +1,1440 @@
+{
+  "timeline": [
+    {
+      "date": "2024-03",
+      "categories": {
+        "Performance": {
+          "total": 0,
+          "subcategories": {}
+        },
+        "Implementation": {
+          "total": 19,
+          "subcategories": {
+            "Communications": 6,
+            "Core System": 13
+          }
+        },
+        "Other": {
+          "total": 0,
+          "subcategories": {}
+        },
+        "Visual": {
+          "total": 1,
+          "subcategories": {
+            "System": 1
+          }
+        },
+        "Infrastructure": {
+          "total": 3,
+          "subcategories": {
+            "Documentation": 3
+          }
+        },
+        "Personalities": {
+          "total": 7,
+          "subcategories": {
+            "Synth Design": 7
+          }
+        },
+        "Analysis": {
+          "total": 0,
+          "subcategories": {}
+        },
+        "Experimentation": {
+          "total": 0,
+          "subcategories": {}
+        }
+      }
+    },
+    {
+      "date": "2024-04",
+      "categories": {
+        "Performance": {
+          "total": 0,
+          "subcategories": {}
+        },
+        "Implementation": {
+          "total": 4,
+          "subcategories": {
+            "Core System": 2,
+            "Communications": 2
+          }
+        },
+        "Other": {
+          "total": 2,
+          "subcategories": {
+            "Uncategorized": 2
+          }
+        },
+        "Visual": {
+          "total": 1,
+          "subcategories": {
+            "System": 1
+          }
+        },
+        "Infrastructure": {
+          "total": 0,
+          "subcategories": {}
+        },
+        "Personalities": {
+          "total": 1,
+          "subcategories": {
+            "Synth Design": 1
+          }
+        },
+        "Analysis": {
+          "total": 0,
+          "subcategories": {}
+        },
+        "Experimentation": {
+          "total": 0,
+          "subcategories": {}
+        }
+      }
+    },
+    {
+      "date": "2024-05",
+      "categories": {
+        "Performance": {
+          "total": 20,
+          "subcategories": {
+            "Live Session": 20
+          }
+        },
+        "Implementation": {
+          "total": 8,
+          "subcategories": {
+            "Communications": 8
+          }
+        },
+        "Other": {
+          "total": 13,
+          "subcategories": {
+            "Uncategorized": 13
+          }
+        },
+        "Visual": {
+          "total": 0,
+          "subcategories": {}
+        },
+        "Infrastructure": {
+          "total": 1,
+          "subcategories": {
+            "Version Control": 1
+          }
+        },
+        "Personalities": {
+          "total": 15,
+          "subcategories": {
+            "Synth Design": 15
+          }
+        },
+        "Analysis": {
+          "total": 0,
+          "subcategories": {}
+        },
+        "Experimentation": {
+          "total": 0,
+          "subcategories": {}
+        }
+      }
+    },
+    {
+      "date": "2024-06",
+      "categories": {
+        "Performance": {
+          "total": 0,
+          "subcategories": {}
+        },
+        "Implementation": {
+          "total": 18,
+          "subcategories": {
+            "Communications": 18
+          }
+        },
+        "Other": {
+          "total": 5,
+          "subcategories": {
+            "Uncategorized": 5
+          }
+        },
+        "Visual": {
+          "total": 0,
+          "subcategories": {}
+        },
+        "Infrastructure": {
+          "total": 2,
+          "subcategories": {
+            "Version Control": 2
+          }
+        },
+        "Personalities": {
+          "total": 35,
+          "subcategories": {
+            "Synth Design": 35
+          }
+        },
+        "Analysis": {
+          "total": 0,
+          "subcategories": {}
+        },
+        "Experimentation": {
+          "total": 2,
+          "subcategories": {
+            "Legacy Code": 2
+          }
+        }
+      }
+    },
+    {
+      "date": "2024-07",
+      "categories": {
+        "Performance": {
+          "total": 0,
+          "subcategories": {}
+        },
+        "Implementation": {
+          "total": 16,
+          "subcategories": {
+            "Communications": 16
+          }
+        },
+        "Other": {
+          "total": 6,
+          "subcategories": {
+            "Uncategorized": 6
+          }
+        },
+        "Visual": {
+          "total": 0,
+          "subcategories": {}
+        },
+        "Infrastructure": {
+          "total": 6,
+          "subcategories": {
+            "Version Control": 6
+          }
+        },
+        "Personalities": {
+          "total": 61,
+          "subcategories": {
+            "Synth Design": 61
+          }
+        },
+        "Analysis": {
+          "total": 0,
+          "subcategories": {}
+        },
+        "Experimentation": {
+          "total": 1,
+          "subcategories": {
+            "Legacy Code": 1
+          }
+        }
+      }
+    },
+    {
+      "date": "2024-08",
+      "categories": {
+        "Performance": {
+          "total": 1,
+          "subcategories": {
+            "Live Session": 1
+          }
+        },
+        "Implementation": {
+          "total": 42,
+          "subcategories": {
+            "Communications": 38,
+            "Core System": 4
+          }
+        },
+        "Other": {
+          "total": 13,
+          "subcategories": {
+            "Uncategorized": 13
+          }
+        },
+        "Visual": {
+          "total": 0,
+          "subcategories": {}
+        },
+        "Infrastructure": {
+          "total": 2,
+          "subcategories": {
+            "Version Control": 2
+          }
+        },
+        "Personalities": {
+          "total": 144,
+          "subcategories": {
+            "Synth Design": 144
+          }
+        },
+        "Analysis": {
+          "total": 0,
+          "subcategories": {}
+        },
+        "Experimentation": {
+          "total": 0,
+          "subcategories": {}
+        }
+      }
+    },
+    {
+      "date": "2024-09",
+      "categories": {
+        "Performance": {
+          "total": 0,
+          "subcategories": {}
+        },
+        "Implementation": {
+          "total": 3,
+          "subcategories": {
+            "Communications": 3
+          }
+        },
+        "Other": {
+          "total": 1,
+          "subcategories": {
+            "Uncategorized": 1
+          }
+        },
+        "Visual": {
+          "total": 0,
+          "subcategories": {}
+        },
+        "Infrastructure": {
+          "total": 0,
+          "subcategories": {}
+        },
+        "Personalities": {
+          "total": 15,
+          "subcategories": {
+            "Synth Design": 15
+          }
+        },
+        "Analysis": {
+          "total": 0,
+          "subcategories": {}
+        },
+        "Experimentation": {
+          "total": 0,
+          "subcategories": {}
+        }
+      }
+    },
+    {
+      "date": "2024-10",
+      "categories": {
+        "Performance": {
+          "total": 0,
+          "subcategories": {}
+        },
+        "Implementation": {
+          "total": 13,
+          "subcategories": {
+            "Communications": 12,
+            "Core System": 1
+          }
+        },
+        "Other": {
+          "total": 4,
+          "subcategories": {
+            "Uncategorized": 4
+          }
+        },
+        "Visual": {
+          "total": 0,
+          "subcategories": {}
+        },
+        "Infrastructure": {
+          "total": 3,
+          "subcategories": {
+            "Documentation": 1,
+            "Version Control": 2
+          }
+        },
+        "Personalities": {
+          "total": 52,
+          "subcategories": {
+            "Synth Design": 52
+          }
+        },
+        "Analysis": {
+          "total": 0,
+          "subcategories": {}
+        },
+        "Experimentation": {
+          "total": 0,
+          "subcategories": {}
+        }
+      }
+    },
+    {
+      "date": "2024-11",
+      "categories": {
+        "Performance": {
+          "total": 0,
+          "subcategories": {}
+        },
+        "Implementation": {
+          "total": 35,
+          "subcategories": {
+            "Communications": 35
+          }
+        },
+        "Other": {
+          "total": 10,
+          "subcategories": {
+            "Uncategorized": 10
+          }
+        },
+        "Visual": {
+          "total": 0,
+          "subcategories": {}
+        },
+        "Infrastructure": {
+          "total": 13,
+          "subcategories": {
+            "Documentation": 8,
+            "Version Control": 5
+          }
+        },
+        "Personalities": {
+          "total": 319,
+          "subcategories": {
+            "Synth Design": 319
+          }
+        },
+        "Analysis": {
+          "total": 0,
+          "subcategories": {}
+        },
+        "Experimentation": {
+          "total": 0,
+          "subcategories": {}
+        }
+      }
+    },
+    {
+      "date": "2024-12",
+      "categories": {
+        "Performance": {
+          "total": 0,
+          "subcategories": {}
+        },
+        "Implementation": {
+          "total": 16,
+          "subcategories": {
+            "Communications": 16
+          }
+        },
+        "Other": {
+          "total": 0,
+          "subcategories": {}
+        },
+        "Visual": {
+          "total": 0,
+          "subcategories": {}
+        },
+        "Infrastructure": {
+          "total": 0,
+          "subcategories": {}
+        },
+        "Personalities": {
+          "total": 86,
+          "subcategories": {
+            "Synth Design": 86
+          }
+        },
+        "Analysis": {
+          "total": 0,
+          "subcategories": {}
+        },
+        "Experimentation": {
+          "total": 0,
+          "subcategories": {}
+        }
+      }
+    },
+    {
+      "date": "2025-01",
+      "categories": {
+        "Performance": {
+          "total": 0,
+          "subcategories": {}
+        },
+        "Implementation": {
+          "total": 2,
+          "subcategories": {
+            "Communications": 2
+          }
+        },
+        "Other": {
+          "total": 0,
+          "subcategories": {}
+        },
+        "Visual": {
+          "total": 0,
+          "subcategories": {}
+        },
+        "Infrastructure": {
+          "total": 0,
+          "subcategories": {}
+        },
+        "Personalities": {
+          "total": 39,
+          "subcategories": {
+            "Synth Design": 39
+          }
+        },
+        "Analysis": {
+          "total": 0,
+          "subcategories": {}
+        },
+        "Experimentation": {
+          "total": 1,
+          "subcategories": {
+            "Legacy Code": 1
+          }
+        }
+      }
+    },
+    {
+      "date": "2025-02",
+      "categories": {
+        "Performance": {
+          "total": 0,
+          "subcategories": {}
+        },
+        "Implementation": {
+          "total": 7,
+          "subcategories": {
+            "Core System": 7
+          }
+        },
+        "Other": {
+          "total": 1,
+          "subcategories": {
+            "Uncategorized": 1
+          }
+        },
+        "Visual": {
+          "total": 3,
+          "subcategories": {
+            "System": 1,
+            "Code": 2
+          }
+        },
+        "Infrastructure": {
+          "total": 1,
+          "subcategories": {
+            "Version Control": 1
+          }
+        },
+        "Personalities": {
+          "total": 6,
+          "subcategories": {
+            "Synth Design": 6
+          }
+        },
+        "Analysis": {
+          "total": 0,
+          "subcategories": {}
+        },
+        "Experimentation": {
+          "total": 0,
+          "subcategories": {}
+        }
+      }
+    },
+    {
+      "date": "2025-03",
+      "categories": {
+        "Performance": {
+          "total": 0,
+          "subcategories": {}
+        },
+        "Implementation": {
+          "total": 14,
+          "subcategories": {
+            "Core System": 9,
+            "Communications": 5
+          }
+        },
+        "Other": {
+          "total": 2,
+          "subcategories": {
+            "Uncategorized": 2
+          }
+        },
+        "Visual": {
+          "total": 20,
+          "subcategories": {
+            "Code": 20
+          }
+        },
+        "Infrastructure": {
+          "total": 3,
+          "subcategories": {
+            "Version Control": 3
+          }
+        },
+        "Personalities": {
+          "total": 34,
+          "subcategories": {
+            "Synth Design": 34
+          }
+        },
+        "Analysis": {
+          "total": 0,
+          "subcategories": {}
+        },
+        "Experimentation": {
+          "total": 0,
+          "subcategories": {}
+        }
+      }
+    },
+    {
+      "date": "2025-04",
+      "categories": {
+        "Performance": {
+          "total": 0,
+          "subcategories": {}
+        },
+        "Implementation": {
+          "total": 28,
+          "subcategories": {
+            "Core System": 10,
+            "Communications": 13,
+            "Logic": 5
+          }
+        },
+        "Other": {
+          "total": 3,
+          "subcategories": {
+            "Uncategorized": 3
+          }
+        },
+        "Visual": {
+          "total": 6,
+          "subcategories": {
+            "Code": 6
+          }
+        },
+        "Infrastructure": {
+          "total": 2,
+          "subcategories": {
+            "Documentation": 1,
+            "Version Control": 1
+          }
+        },
+        "Personalities": {
+          "total": 24,
+          "subcategories": {
+            "Synth Design": 24
+          }
+        },
+        "Analysis": {
+          "total": 0,
+          "subcategories": {}
+        },
+        "Experimentation": {
+          "total": 0,
+          "subcategories": {}
+        }
+      }
+    },
+    {
+      "date": "2025-05",
+      "categories": {
+        "Performance": {
+          "total": 0,
+          "subcategories": {}
+        },
+        "Implementation": {
+          "total": 38,
+          "subcategories": {
+            "Communications": 9,
+            "Core System": 18,
+            "Logic": 11
+          }
+        },
+        "Other": {
+          "total": 2,
+          "subcategories": {
+            "Uncategorized": 2
+          }
+        },
+        "Visual": {
+          "total": 17,
+          "subcategories": {
+            "System": 15,
+            "Code": 2
+          }
+        },
+        "Infrastructure": {
+          "total": 3,
+          "subcategories": {
+            "Documentation": 2,
+            "Version Control": 1
+          }
+        },
+        "Personalities": {
+          "total": 52,
+          "subcategories": {
+            "Synth Design": 52
+          }
+        },
+        "Analysis": {
+          "total": 0,
+          "subcategories": {}
+        },
+        "Experimentation": {
+          "total": 0,
+          "subcategories": {}
+        }
+      }
+    },
+    {
+      "date": "2025-06",
+      "categories": {
+        "Performance": {
+          "total": 3,
+          "subcategories": {
+            "Live Session": 3
+          }
+        },
+        "Implementation": {
+          "total": 11,
+          "subcategories": {
+            "Communications": 4,
+            "Logic": 5,
+            "Core System": 2
+          }
+        },
+        "Other": {
+          "total": 2,
+          "subcategories": {
+            "Uncategorized": 2
+          }
+        },
+        "Visual": {
+          "total": 3,
+          "subcategories": {
+            "System": 3
+          }
+        },
+        "Infrastructure": {
+          "total": 3,
+          "subcategories": {
+            "Version Control": 3
+          }
+        },
+        "Personalities": {
+          "total": 43,
+          "subcategories": {
+            "Synth Design": 43
+          }
+        },
+        "Analysis": {
+          "total": 0,
+          "subcategories": {}
+        },
+        "Experimentation": {
+          "total": 0,
+          "subcategories": {}
+        }
+      }
+    },
+    {
+      "date": "2025-08",
+      "categories": {
+        "Performance": {
+          "total": 1,
+          "subcategories": {
+            "Live Session": 1
+          }
+        },
+        "Implementation": {
+          "total": 56,
+          "subcategories": {
+            "Communications": 19,
+            "Core System": 14,
+            "Logic": 23
+          }
+        },
+        "Other": {
+          "total": 0,
+          "subcategories": {}
+        },
+        "Visual": {
+          "total": 49,
+          "subcategories": {
+            "System": 49
+          }
+        },
+        "Infrastructure": {
+          "total": 3,
+          "subcategories": {
+            "Version Control": 2,
+            "Documentation": 1
+          }
+        },
+        "Personalities": {
+          "total": 26,
+          "subcategories": {
+            "Synth Design": 26
+          }
+        },
+        "Analysis": {
+          "total": 0,
+          "subcategories": {}
+        },
+        "Experimentation": {
+          "total": 0,
+          "subcategories": {}
+        }
+      }
+    },
+    {
+      "date": "2025-09",
+      "categories": {
+        "Performance": {
+          "total": 0,
+          "subcategories": {}
+        },
+        "Implementation": {
+          "total": 8,
+          "subcategories": {
+            "Communications": 2,
+            "Logic": 6
+          }
+        },
+        "Other": {
+          "total": 0,
+          "subcategories": {}
+        },
+        "Visual": {
+          "total": 3,
+          "subcategories": {
+            "System": 3
+          }
+        },
+        "Infrastructure": {
+          "total": 0,
+          "subcategories": {}
+        },
+        "Personalities": {
+          "total": 35,
+          "subcategories": {
+            "Synth Design": 34,
+            "Data Analysis": 1
+          }
+        },
+        "Analysis": {
+          "total": 0,
+          "subcategories": {}
+        },
+        "Experimentation": {
+          "total": 0,
+          "subcategories": {}
+        }
+      }
+    },
+    {
+      "date": "2025-10",
+      "categories": {
+        "Performance": {
+          "total": 1,
+          "subcategories": {
+            "Live Session": 1
+          }
+        },
+        "Implementation": {
+          "total": 53,
+          "subcategories": {
+            "Mapping": 26,
+            "Logic": 14,
+            "Core System": 9,
+            "Communications": 4
+          }
+        },
+        "Other": {
+          "total": 4,
+          "subcategories": {
+            "Uncategorized": 4
+          }
+        },
+        "Visual": {
+          "total": 21,
+          "subcategories": {
+            "System": 21
+          }
+        },
+        "Infrastructure": {
+          "total": 11,
+          "subcategories": {
+            "Version Control": 6,
+            "Documentation": 5
+          }
+        },
+        "Personalities": {
+          "total": 214,
+          "subcategories": {
+            "Synth Design": 214
+          }
+        },
+        "Analysis": {
+          "total": 0,
+          "subcategories": {}
+        },
+        "Experimentation": {
+          "total": 0,
+          "subcategories": {}
+        }
+      }
+    },
+    {
+      "date": "2025-11",
+      "categories": {
+        "Performance": {
+          "total": 0,
+          "subcategories": {}
+        },
+        "Implementation": {
+          "total": 67,
+          "subcategories": {
+            "Mapping": 48,
+            "Logic": 15,
+            "Communications": 4
+          }
+        },
+        "Other": {
+          "total": 1,
+          "subcategories": {
+            "Uncategorized": 1
+          }
+        },
+        "Visual": {
+          "total": 19,
+          "subcategories": {
+            "System": 14,
+            "Code": 5
+          }
+        },
+        "Infrastructure": {
+          "total": 3,
+          "subcategories": {
+            "Version Control": 2,
+            "Documentation": 1
+          }
+        },
+        "Personalities": {
+          "total": 220,
+          "subcategories": {
+            "Synth Design": 219,
+            "Data Analysis": 1
+          }
+        },
+        "Analysis": {
+          "total": 0,
+          "subcategories": {}
+        },
+        "Experimentation": {
+          "total": 0,
+          "subcategories": {}
+        }
+      }
+    },
+    {
+      "date": "2025-12",
+      "categories": {
+        "Performance": {
+          "total": 0,
+          "subcategories": {}
+        },
+        "Implementation": {
+          "total": 26,
+          "subcategories": {
+            "Logic": 8,
+            "Communications": 1,
+            "Mapping": 15,
+            "Core System": 2
+          }
+        },
+        "Other": {
+          "total": 0,
+          "subcategories": {}
+        },
+        "Visual": {
+          "total": 3,
+          "subcategories": {
+            "System": 3
+          }
+        },
+        "Infrastructure": {
+          "total": 0,
+          "subcategories": {}
+        },
+        "Personalities": {
+          "total": 103,
+          "subcategories": {
+            "Synth Design": 102,
+            "Data Analysis": 1
+          }
+        },
+        "Analysis": {
+          "total": 0,
+          "subcategories": {}
+        },
+        "Experimentation": {
+          "total": 0,
+          "subcategories": {}
+        }
+      }
+    },
+    {
+      "date": "2026-01",
+      "categories": {
+        "Performance": {
+          "total": 0,
+          "subcategories": {}
+        },
+        "Implementation": {
+          "total": 2,
+          "subcategories": {
+            "Logic": 1,
+            "Mapping": 1
+          }
+        },
+        "Other": {
+          "total": 4,
+          "subcategories": {
+            "Uncategorized": 4
+          }
+        },
+        "Visual": {
+          "total": 2,
+          "subcategories": {
+            "System": 2
+          }
+        },
+        "Infrastructure": {
+          "total": 9,
+          "subcategories": {
+            "Version Control": 8,
+            "Documentation": 1
+          }
+        },
+        "Personalities": {
+          "total": 10,
+          "subcategories": {
+            "Synth Design": 10
+          }
+        },
+        "Analysis": {
+          "total": 40,
+          "subcategories": {
+            "Scripts": 6,
+            "Data": 12,
+            "Visualization": 20,
+            "Other": 2
+          }
+        },
+        "Experimentation": {
+          "total": 0,
+          "subcategories": {}
+        }
+      }
+    },
+    {
+      "date": "2026-03",
+      "categories": {
+        "Performance": {
+          "total": 0,
+          "subcategories": {}
+        },
+        "Implementation": {
+          "total": 14,
+          "subcategories": {
+            "Logic": 4,
+            "Mapping": 9,
+            "Communications": 1
+          }
+        },
+        "Other": {
+          "total": 0,
+          "subcategories": {}
+        },
+        "Visual": {
+          "total": 7,
+          "subcategories": {
+            "System": 6,
+            "Code": 1
+          }
+        },
+        "Infrastructure": {
+          "total": 4,
+          "subcategories": {
+            "Version Control": 4
+          }
+        },
+        "Personalities": {
+          "total": 52,
+          "subcategories": {
+            "Synth Design": 51,
+            "Documentation": 1
+          }
+        },
+        "Analysis": {
+          "total": 0,
+          "subcategories": {}
+        },
+        "Experimentation": {
+          "total": 0,
+          "subcategories": {}
+        }
+      }
+    },
+    {
+      "date": "2026-04",
+      "categories": {
+        "Performance": {
+          "total": 0,
+          "subcategories": {}
+        },
+        "Implementation": {
+          "total": 1,
+          "subcategories": {
+            "Logic": 1
+          }
+        },
+        "Other": {
+          "total": 0,
+          "subcategories": {}
+        },
+        "Visual": {
+          "total": 3,
+          "subcategories": {
+            "Code": 3
+          }
+        },
+        "Infrastructure": {
+          "total": 1,
+          "subcategories": {
+            "Version Control": 1
+          }
+        },
+        "Personalities": {
+          "total": 1,
+          "subcategories": {
+            "Synth Design": 1
+          }
+        },
+        "Analysis": {
+          "total": 36,
+          "subcategories": {
+            "Visualization": 21,
+            "Data": 10,
+            "Scripts": 4,
+            "Other": 1
+          }
+        },
+        "Experimentation": {
+          "total": 0,
+          "subcategories": {}
+        }
+      }
+    },
+    {
+      "date": "2026-05",
+      "categories": {
+        "Performance": {
+          "total": 69,
+          "subcategories": {
+            "Live Session": 69
+          }
+        },
+        "Implementation": {
+          "total": 54,
+          "subcategories": {
+            "Mapping": 11,
+            "Logic": 14,
+            "Core System": 24,
+            "Communications": 5
+          }
+        },
+        "Other": {
+          "total": 881,
+          "subcategories": {
+            "Uncategorized": 881
+          }
+        },
+        "Visual": {
+          "total": 88,
+          "subcategories": {
+            "System": 6,
+            "Code": 82
+          }
+        },
+        "Infrastructure": {
+          "total": 68,
+          "subcategories": {
+            "Version Control": 4,
+            "Documentation": 64
+          }
+        },
+        "Personalities": {
+          "total": 68,
+          "subcategories": {
+            "Synth Design": 68
+          }
+        },
+        "Analysis": {
+          "total": 0,
+          "subcategories": {}
+        },
+        "Experimentation": {
+          "total": 61,
+          "subcategories": {
+            "Legacy Code": 61
+          }
+        }
+      }
+    },
+    {
+      "date": "2026-06",
+      "categories": {
+        "Performance": {
+          "total": 0,
+          "subcategories": {}
+        },
+        "Implementation": {
+          "total": 12,
+          "subcategories": {
+            "Communications": 3,
+            "Mapping": 5,
+            "Logic": 4
+          }
+        },
+        "Other": {
+          "total": 6,
+          "subcategories": {
+            "Uncategorized": 6
+          }
+        },
+        "Visual": {
+          "total": 1,
+          "subcategories": {
+            "System": 1
+          }
+        },
+        "Infrastructure": {
+          "total": 0,
+          "subcategories": {}
+        },
+        "Personalities": {
+          "total": 29,
+          "subcategories": {
+            "Synth Design": 29
+          }
+        },
+        "Analysis": {
+          "total": 0,
+          "subcategories": {}
+        },
+        "Experimentation": {
+          "total": 0,
+          "subcategories": {}
+        }
+      }
+    },
+    {
+      "date": "2026-07",
+      "categories": {
+        "Performance": {
+          "total": 66,
+          "subcategories": {
+            "Live Session": 66
+          }
+        },
+        "Implementation": {
+          "total": 193,
+          "subcategories": {
+            "Mapping": 45,
+            "Core System": 52,
+            "Communications": 35,
+            "Logic": 61
+          }
+        },
+        "Other": {
+          "total": 478,
+          "subcategories": {
+            "Uncategorized": 478
+          }
+        },
+        "Visual": {
+          "total": 36,
+          "subcategories": {
+            "System": 20,
+            "Code": 16
+          }
+        },
+        "Infrastructure": {
+          "total": 55,
+          "subcategories": {
+            "Version Control": 11,
+            "Documentation": 44
+          }
+        },
+        "Personalities": {
+          "total": 439,
+          "subcategories": {
+            "Synth Design": 433,
+            "Data Analysis": 6
+          }
+        },
+        "Analysis": {
+          "total": 0,
+          "subcategories": {}
+        },
+        "Experimentation": {
+          "total": 61,
+          "subcategories": {
+            "Legacy Code": 61
+          }
+        }
+      }
+    },
+    {
+      "date": "2026-08",
+      "categories": {
+        "Performance": {
+          "total": 4,
+          "subcategories": {
+            "Live Session": 4
+          }
+        },
+        "Implementation": {
+          "total": 20,
+          "subcategories": {
+            "Logic": 12,
+            "Core System": 3,
+            "Communications": 4,
+            "Mapping": 1
+          }
+        },
+        "Other": {
+          "total": 1,
+          "subcategories": {
+            "Uncategorized": 1
+          }
+        },
+        "Visual": {
+          "total": 13,
+          "subcategories": {
+            "System": 13
+          }
+        },
+        "Infrastructure": {
+          "total": 16,
+          "subcategories": {
+            "Documentation": 14,
+            "Version Control": 2
+          }
+        },
+        "Personalities": {
+          "total": 58,
+          "subcategories": {
+            "Synth Design": 58
+          }
+        },
+        "Analysis": {
+          "total": 33,
+          "subcategories": {
+            "Other": 2,
+            "Scripts": 10,
+            "Visualization": 11,
+            "Data": 10
+          }
+        },
+        "Experimentation": {
+          "total": 0,
+          "subcategories": {}
+        }
+      }
+    }
+  ],
+  "summary": {
+    "categories": {
+      "Infrastructure": 212,
+      "Analysis": 109,
+      "Implementation": 780,
+      "Visual": 296,
+      "Performance": 165,
+      "Personalities": 2188,
+      "Other": 1439,
+      "Experimentation": 126
+    },
+    "subcategories": {
+      "Infrastructure::Documentation": 145,
+      "Infrastructure::Version Control": 67,
+      "Analysis::Other": 5,
+      "Analysis::Scripts": 20,
+      "Analysis::Visualization": 52,
+      "Analysis::Data": 32,
+      "Implementation::Logic": 184,
+      "Implementation::Core System": 170,
+      "Implementation::Communications": 265,
+      "Implementation::Mapping": 161,
+      "Visual::System": 159,
+      "Performance::Live Session": 165,
+      "Personalities::Synth Design": 2178,
+      "Other::Uncategorized": 1439,
+      "Personalities::Data Analysis": 9,
+      "Visual::Code": 137,
+      "Experimentation::Legacy Code": 126,
+      "Personalities::Documentation": 1
+    },
+    "total_commits": 5315,
+    "time_range": {
+      "start": "2024-03",
+      "end": "2026-08"
+    }
+  },
+  "metadata": {
+    "generated": "2026-08-11T10:00:49.424436",
+    "categories": [
+      "Performance",
+      "Implementation",
+      "Other",
+      "Visual",
+      "Infrastructure",
+      "Personalities",
+      "Analysis",
+      "Experimentation"
+    ],
+    "subcategories": [
+      "Code",
+      "System",
+      "Legacy Code",
+      "Scripts",
+      "Logic",
+      "Other",
+      "Documentation",
+      "Communications",
+      "Data Analysis",
+      "Uncategorized",
+      "Synth Design",
+      "Mapping",
+      "Live Session",
+      "Version Control",
+      "Data",
+      "Visualization",
+      "Core System"
+    ]
+  }
+}
