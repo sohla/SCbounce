@@ -97,8 +97,11 @@ s.waitForBoot({
     // it, so seat3 +3dB / seat4 -5dB earlier that day; seat1 +2dB / seat2 +2dB added that
     // evening. Room 2: seat3 +5dB (Ciaran, Edinburgh day 1), on top of the -10dB
     // ~cotfMonitorTrim room pad. Live-tunable via /airkit/seatTrim; bake here to persist.
+    // Room 3 seat 5 +5dB (1.7783) baked 2026-08-13 — live-trimmed 08-12 via
+    // /airkit/seatTrim ("struggles to cut through"), confirmed by ear over a
+    // show day (Ciaran: "worked well").
     ~cotfSeatTrims = if(~cotfRoom == 3,
-        { [1.2589, 1.2589, 1.4125, 0.5623, 1] },
+        { [1.2589, 1.2589, 1.4125, 0.5623, 1.7783] },
         { [1, 1, 1.7783, 1, 1] }
     );
 

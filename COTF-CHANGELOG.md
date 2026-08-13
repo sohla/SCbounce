@@ -4,6 +4,15 @@ One entry per push batch from the Concerts of the Future side, newest first: wha
 why, and what (if anything) behaves differently on your machine. The intent is that nothing
 here ever changes how AirKit behaves for you — if it does, that's a bug, tell us.
 
+## 2026-08-13 — Room 3 seat 5 trim +5 dB baked (cotf)
+
+**Nothing changes on your machine.** Room 3 seat 5 performers kept reporting they
+couldn't hear themselves ("struggles to cut through"); we live-trimmed the seat-5
+monitor +5 dB via `/airkit/seatTrim 5 1.7783` on 08-12 and it held up well over a full
+show day, so it's now baked into `~cotfSeatTrims` (Room 3 array) and documented in
+`API.md`. Restarts re-assert it. The underlying feel question (is the patch itself too
+subtle at low input?) is separate and lives in `EDINBURGH-NOTES.md`'s day-6 notes.
+
 ## 2026-08-06 — seat trims made room-aware + `EDINBURGH-NOTES.md` (cotf)
 
 **Nothing changes on your machine.** Edinburgh day 1 balance notes: Room 3 seats 1+2
