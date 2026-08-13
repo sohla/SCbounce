@@ -4,6 +4,14 @@ Append-only observations from the Fringe run — things noticed live that may (o
 want a patch-side look. Distinct from COTF-CHANGELOG.md (which records changes we made).
 Newest first.
 
+## 2026-08-13 (day 7)
+- **Seat 5 maybe not responding as much as we thought** — even after today's +5 dB
+  monitor trim bake (33e820a), the feel is that there's maybe a slight delay, and that
+  it takes a *lot* of movement to get a response. So the 08-12 "struggles to cut
+  through" note may not just be level — response/sensitivity itself may be low on this
+  patch. Pairs directly with the 08-12 per-patch sensitivity idea (a `boost` toggle
+  would be a good test lever here).
+
 ## 2026-08-12 (day 6) — evening addendum
 - **Seat 2 (JUPITERSHARP) intermittent load failure — staff reset ×4 today** (4 of its 5
   all-time resets; genuine outlier vs other seats). M1's cotf-airkit-room3 log shows
