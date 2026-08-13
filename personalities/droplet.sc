@@ -129,9 +129,9 @@ SynthDef(\raindrop, {
       \duration, Pfunc({ |e| (((e[\reverbRoom] ? 0.05) * 1.6) + 0.5) }),
 
       \modulation, Pfunc({ |e| (
-        rings: 3,//(((e[\reverbRoom] ? 0.83) * 4).round).clip(2, 5),
+        rings: (e[\wobble] ? 100).max(1).explin(1, 14000, 1, 3),//3,//(((e[\reverbRoom] ? 0.83) * 4).round).clip(2, 5),
         stagger: rrand(0.01,0.03),
-        wob: (e[\wobble] ? 100).max(1).explin(1, 14000, 0.015, 0.075),
+        wob: (e[\wobble] ? 100).max(1).explin(1, 14000, 0.015, 0.575),
         harm: [2, 3, 4].choose,
         spin: rrand(0.7, 1.6),
         ease: 0.6,
