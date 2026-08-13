@@ -2,6 +2,11 @@
 	[
 		"silence",
 
+		"melbb1",
+		"melbb2",
+
+
+		"nicTwoNote",
 		"droplet",
 		"cymbals1",
 
