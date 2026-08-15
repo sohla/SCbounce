@@ -4,6 +4,15 @@ Append-only observations from the Fringe run — things noticed live that may (o
 want a patch-side look. Distinct from COTF-CHANGELOG.md (which records changes we made).
 Newest first.
 
+## 2026-08-15 (day 9) — morning
+- **cotf: Harp sometimes not loading, clustered around entry to (or just after) the
+  `piece` state** — Ciaran's observation from the last day or two. Presumed same
+  deinit/init race class as the 08-12 JUPITERSHARP finding (async `~deinit` teardown
+  still in flight when the next `~init` fires), with the piece-state transition as the
+  trigger moment this time rather than a staff reset. No new log pass yet; staff
+  remedy remains reset-seat. Flagging so the piece-entry path is included when the
+  deinit→init serialization gets its look.
+
 ## 2026-08-13 (day 7)
 - **Seat 5 maybe not responding as much as we thought** — even after today's +5 dB
   monitor trim bake (33e820a), the feel is that there's maybe a slight delay, and that
