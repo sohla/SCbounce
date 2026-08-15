@@ -84,11 +84,11 @@ SynthDef(\looper, {|bufnum=0, out=0, amp=1.0, rate=1, start=0, pan=0, freq=440,
 
 	bgWaveBuffer1 = Buffer.read(s, bgWave1.fullPath, action:{ |buf|
 		postf("buffer alloc [%] \n", buf);
-		bgWaveSynth1 = Synth(\looper, [\bufnum, buf, \amp, 0.5]);
+		bgWaveSynth1 = Synth(\looper, [\bufnum, buf, \amp, 0.3]);
 	});
 	bgWaveBuffer2 = Buffer.read(s, bgWave2.fullPath, action:{ |buf|
 		postf("buffer alloc [%] \n", buf);
-		bgWaveSynth2 = Synth(\looper, [\bufnum, buf, \amp, 0.4]);
+		bgWaveSynth2 = Synth(\looper, [\bufnum, buf, \amp, 0.2]);
 	});
 
 };
@@ -159,7 +159,7 @@ SynthDef(\looper, {|bufnum=0, out=0, amp=1.0, rate=1, start=0, pan=0, freq=440,
 		duration: duration,
 		startColor: oceanColor,
 		endColor: oceanColor.lighten(0.2).alpha_(0),
-		startWidth: 0.5,
+		startWidth: 10.5,
 		endWidth: 1,
 		sx: (baseY * 0.5),//xPos * 0.1,
 		sy: (baseY * 0.5),//baseY * 0.1, // Start at base y position
@@ -177,7 +177,7 @@ SynthDef(\looper, {|bufnum=0, out=0, amp=1.0, rate=1, start=0, pan=0, freq=440,
 
 	if(TempoClock.beats > (lastTime + rrand(0.1,0.2)),{
 		lastTime = TempoClock.beats;
-		if(m.accelMass>0.1,{
+		if(m.accelMass>0.05,{
 	    ev.play;
 			synth = Synth(\waveSampler, [\bufnum, bi, \amp, amp * 0.2]);
 			bi = bi + 1;
