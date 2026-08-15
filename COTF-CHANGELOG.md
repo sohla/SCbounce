@@ -404,3 +404,7 @@ noted this session.
 - JUPITERSHARP: amp -1→-3, tt 15→20
 - PERCUSSION: amp range tightened, rest floor 0.3→0.2, activity curve -4→-3
 - SOPRANOVOICE: amp -28→-24, RLPF lag 0.1→0.04
+
+## 2026-08-15 — cotf: SUPER-SEATS.md added (docs only)
+
+- New working doc SUPER-SEATS.md: the super-seats feature — performer-bound sound assignment from the personality pool. Proposes new OPTIONAL header keys (seats/affinity/register/family), the roster-name=filename rule, and a seat character table to fill in together. No code changes; nothing behavioural. Please read + push back in the doc itself.
