@@ -1,5 +1,14 @@
 var m = ~model;
 var dur = 0.22/2;
+
+// SHARED ACROSS THE QUARTET. trainBass2 writes m.com.root; this voice
+// reads it, so a harmony change turns every hue in the ensemble together.
+// This voice is held near-white, so the root only tints it.
+var rootHue = { (m.com.root ? 0).linlin(-2, 3, -0.06, 0.06) };
+
+// the note loop is 5 long, and that length is the additive cell.
+var cell = 5;
+
 m.accelMassFilteredAttack = 0.99;
 m.accelMassFilteredDecay = 0.99;
 m.rrateMassFilteredAttack = 0.7;
@@ -39,7 +48,50 @@ SynthDef(\chooka, {
 }).add;
 
 //------------------------------------------------------------
+// visual : the additive cell. Nothing here depicts steam — the pulse is
+// drawn as process, not as weather.
+//
+// The note loop is 5 long, so each pass lays five hard-edged bars, all
+// pivoting off one fixed left margin, each one unit longer than the last:
+// 1 2 3 4 5, then back to 1. That is the figure Glass builds Einstein
+// out of, and it was already in this file as Pseq([12,14,10,7,0]-1) —
+// the bar length simply counts the position in that cell. The fifth bar
+// fills solid, so the cycle closes with an accent and the traversal is
+// legible (atlas §3.4) without a cursor.
+//
+// The strangeness is that the rank is not level and never settles.
+// Every completed cell adds 0.045 rad, so the whole fan pivots about its
+// margin at about one turn every 77 seconds — far too slow to watch,
+// impossible to miss after a minute. Rigid geometry quietly off-axis.
+// Rotation is derived from the step count, so it is exact and needs no
+// stored state.
+//
+// Lineage: block / register-band, atlas grammar G3-G4 — flat rectangles,
+// bandwidth as height, no modelling, no taper, hard edges. Wilson's light
+// bars by way of the atlas's data / test-pattern palette (§0.5): white on
+// black, one accent, no gradient, modulation amp pinned to 0 so nothing
+// wobbles.
+//
+//   position in cell -> bar length          (\vstep -> \startSize)
+//   note             -> which row it sits on (\sy)
+//   filtFreq         -> bar thickness, i.e. the filter's band
+//   cells elapsed    -> pivot angle          (\rotation)
+//   last of cell     -> solid fill, the accent
+//   silence          -> length 0, nothing drawn
 ~init = ~init <> {
+
+	// a bar anchored at its LEFT end, so length grows rightward and
+	// \rotation pivots the rank about a shared margin rather than
+	// spinning each bar on its centre.
+	~vdef.(\cell, { |ev, c|
+		var mod   = ev[\modulation] ? ();
+		var len   = c[\size] * 2;
+		var thick = mod[\thick] ? 7;
+		var p     = c[\pos];
+		[ p + (0 @ thick.neg), p + (len @ thick.neg),
+		  p + (len @ thick),   p + (0 @ thick) ]
+	});
+
 	Pdef(m.ptn,
 		Pbind(
 			\instrument, \chooka,
@@ -53,6 +105,32 @@ SynthDef(\chooka, {
     		// \amp, Pkey(\octave).reciprocal * 0.13,
 			\pan, Pseq([-0.3,0.3], inf),
     		\filtRes, 0.8,
+
+			\type, \customVisualEvent,
+			\shape, \cell,
+			\vstep, Pseries(0, 1, inf),
+			\sx, -0.55,
+			\ex, -0.55,
+			\sy, Pfunc({ |e| (e[\note] ? 0).linlin(-1, 13, -0.30, -0.80) }),
+			\ey, Pkey(\sy),
+			\rotation, (Pkey(\vstep) / cell).floor * 0.045,
+			\startSize, Pfunc({ |e|
+				if((e[\amp] ? 0) < 0.02, { 0 }, { (((e[\vstep] ? 0) % cell) + 1) * 22 })
+			}),
+			\endSize, Pkey(\startSize),
+			\startWidth, 2.5,
+			\endWidth, 2.5,
+			\fill, Pfunc({ |e| ((e[\vstep] ? 0) % cell) == (cell - 1) }),
+			\startColor, Pfunc({ |e|
+				Color.hsv((0.55 + rootHue.()).wrap(0, 1), 0.06, 1.0,
+					if(((e[\vstep] ? 0) % cell) == (cell - 1), { 0.90 }, { 0.50 }))
+			}),
+			\endColor, Pfunc({ |e| Color.hsv((0.55 + rootHue.()).wrap(0, 1), 0.06, 1.0, 0.0) }),
+			\duration, 0.8,
+			\modulation, Pfunc({ |e|
+				(amp: 0, thick: (e[\filtFreq] ? 2000).explin(80, 14000, 3.5, 15))
+			}),
+
 			\func, Pfunc({|e| ~onEvent.(e)}),
 			\args, #[],
 		)
@@ -102,6 +180,7 @@ SynthDef(\chooka, {
 		}); 
 	});
 
+	Pdef(m.ptn).set(\viewID, d.port);
 	Pdef(m.ptn).set(\dur, dur);
 	Pdef(m.ptn).set(\amp, amp);
 	Pdef(m.ptn).set(\octave,oct);

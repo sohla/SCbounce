@@ -3,6 +3,17 @@ var synth;
 var note = 60;
 var dur = 0.22;
 
+// SHARED ACROSS THE QUARTET. All four voices read m.com.root, so a
+// harmony change turns every hue together — this file is the one that
+// WRITES it (see ~onEvent), the other three follow. Each voice keeps its
+// own base hue; the root only nudges it, so the ensemble shifts as one
+// without losing channel identity.
+var rootHue = { (m.com.root ? 0).linlin(-2, 3, -0.06, 0.06) };
+
+// one full turn of the wheel = 32 events = one root hold
+// (16 riff notes .stutter(2)), so the riff and the harmony close together.
+var turn = 32;
+
 //------------------------------------------------------------
 m.accelMassFilteredAttack = 0.1;
 m.accelMassFilteredDecay = 0.99;
@@ -117,6 +128,36 @@ SynthDef(\versatilePerc, {
 //------------------------------------------------------------
 ~init = ~init <> {
 
+	// visual : the drive wheel, and the hub the whole quartet turns on.
+	// This voice owns the harmony, so it owns the rotation — one full
+	// revolution is one root hold (32 events), which is also exactly one
+	// pass of the 16-note riff. Each event lays a spoke from hub to rim
+	// with a head at the rim; marks linger and fade behind the current
+	// one, so the accumulating arc IS the wheel going round. The Rest in
+	// the dur cycle draws nothing, so the gap in the rim is the rest.
+	//
+	// Lineage: the cyclic/radial notations in the atlas (G8) — time as
+	// angle, loopable with no seam — over register bands (G4) for the
+	// shared vertical layout. Palette from atlas §0.5, saturated
+	// primaries on black.
+	//
+	//   riff step   -> angle round the wheel   (\vstep -> \rotation)
+	//   octave      -> rim radius              (\startSize)
+	//   amp         -> head size + weight      (\modulation, \startWidth)
+	//   m.com.root  -> hue, shared with all four voices
+	//   Rest        -> nothing drawn           (\modulation rest)
+	~vdef.(\driveSpoke, { |ev, c|
+		var mod  = ev[\modulation] ? ();
+		var hub  = c[\pos];
+		var rim  = hub + (c[\size] @ 0);
+		var head = mod[\head] ? 16;
+		if((mod[\rest] ? false).not, {
+			c[\render].(Array.fill(12, { |j| hub.blend(rim, j / 11) }), 0.45, 0.30, false);
+			c[\draw].(\circle, (pos: rim, size: head), 1, 1);
+		});
+		nil
+	});
+
 	Pdef(m.ptn,
 		Pbind(
 			\instrument, \versatilePerc,
@@ -127,6 +168,23 @@ SynthDef(\versatilePerc, {
 			\decay,Pkey(\octave).squared * 0.05,
    			\pan, Pxrand([-0.5,0.5], inf),
    			\filtRes, 1.0,//Pwhite(0.4,0.7),
+
+			\type, \customVisualEvent,
+			\shape, \driveSpoke,
+			\vstep, Pseries(0, 1, inf),
+			\rotation, ((Pkey(\vstep) % turn) / turn * 2pi) - 0.5pi,
+			\startSize, Pfunc({ |e| (e[\octave] ? 3).linlin(3, 4, 150, 235) }),
+			\endSize, Pkey(\startSize),
+			\startWidth, Pfunc({ |e| (e[\amp] ? 0.3).linlin(0, 1, 2, 7) }),
+			\endWidth, 0.5,
+			\startColor, Pfunc({ |e| Color.hsv((0.03 + rootHue.()).wrap(0, 1), 0.88, 1.0, 1.0) }),
+			\endColor, Pfunc({ |e| Color.hsv((0.03 + rootHue.()).wrap(0, 1), 1.0, 0.35, 0.0) }),
+			\duration, 0.95,
+			\modulation, Pfunc({ |e|
+				(rest: e.isRest, amp: 0,
+					head: (e[\amp] ? 0.3).linlin(0, 1, 7, 22))
+			}),
+
 			\func, Pfunc({|e| ~onEvent.(e)}),
 			\args, #[],
 		)
@@ -170,6 +228,7 @@ SynthDef(\versatilePerc, {
 
 	// Pdef(m.ptn).set(\filtFreq, filtFreq);
 	// Pdef(m.ptn).set(\dur, dur);
+	Pdef(m.ptn).set(\viewID, d.port);
 	Pdef(m.ptn).set(\amp, a * 1);
 	
 	// if(m.accelMassFiltered > 0.1,{

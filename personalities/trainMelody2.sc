@@ -1,5 +1,13 @@
 var m = ~model;
 var dur = 0.22/2;
+
+// SHARED ACROSS THE QUARTET. trainBass2 writes m.com.root; this voice
+// reads it, so a harmony change turns every hue in the ensemble together.
+var rootHue = { (m.com.root ? 0).linlin(-2, 3, -0.06, 0.06) };
+
+// the arpeggio is a 5 note loop, so the ring has 5 stations.
+var loop = 5;
+
 m.accelMassFilteredAttack = 0.99;
 m.accelMassFilteredDecay = 0.5;
 m.rrateMassFilteredAttack = 0.7;
@@ -25,6 +33,32 @@ SynthDef(\funMelody, {
 
 //------------------------------------------------------------
 ~init = ~init <> {
+
+	// visual : the arpeggio as a ring of five stations, inside the bass
+	// wheel and on the same hub, so the two lock concentrically — the
+	// harmony turns slowly on the outside, the arpeggio spins five times
+	// faster inside it. That difference of rate is the piece: you can see
+	// the melody lapping the harmony. Each note is a small triangle at
+	// its own station; they linger and fade, so the ring is drawn by its
+	// own repetition rather than by an outline.
+	//
+	// Lineage: cyclic/radial notation, atlas grammar G8 — time as angle,
+	// loops with no seam. Concentric rates are the orrery verb from the
+	// same section. Palette from atlas §0.5, saturated primaries on black.
+	//
+	//   loop step  -> angle round the ring   (\vstep -> \rotation)
+	//   octave     -> ring radius            (\startSize)
+	//   filtFreq   -> triangle size          (\modulation head)
+	//   amp        -> stroke weight
+	//   m.com.root -> hue, shared with all four voices
+	~vdef.(\arpMark, { |ev, c|
+		var mod = ev[\modulation] ? ();
+		var at  = c[\pos] + (c[\size] @ 0);
+		var r   = mod[\head] ? 14;
+		var n   = ev[\numPoints] ? 3;
+		Array.fill(n, { |i| at + Polar(r, (i / n * 2pi) - 0.5pi).asPoint })
+	});
+
 	Pdef(m.ptn,
 		Pbind(
 			\instrument, \funMelody,
@@ -35,6 +69,23 @@ SynthDef(\funMelody, {
 			\envSus, 0.0,
 			\pan, Pseq([-0.3,0.3], inf),
     		// \filtRes, 0.9,
+
+			\type, \customVisualEvent,
+			\shape, \arpMark,
+			\numPoints, 3,
+			\vstep, Pseries(0, 1, inf),
+			\rotation, ((Pkey(\vstep) % loop) / loop * 2pi) - 0.5pi,
+			\startSize, Pfunc({ |e| (e[\octave] ? 5).linlin(3, 6, 122, 62) }),
+			\endSize, Pkey(\startSize),
+			\startWidth, Pfunc({ |e| (e[\amp] ? 0.2).linlin(0, 0.8, 1.5, 5) }),
+			\endWidth, 0.4,
+			\startColor, Pfunc({ |e| Color.hsv((0.13 + rootHue.()).wrap(0, 1), 0.80, 1.0, 1.0) }),
+			\endColor, Pfunc({ |e| Color.hsv((0.13 + rootHue.()).wrap(0, 1), 0.95, 0.45, 0.0) }),
+			\duration, 0.7,
+			\modulation, Pfunc({ |e|
+				(amp: 0, head: (e[\filtFreq] ? 2000).explin(50, 14000, 8, 26))
+			}),
+
 			\func, Pfunc({|e| ~onEvent.(e)}),
 			\args, #[],
 		)
@@ -68,6 +119,7 @@ SynthDef(\funMelody, {
 	if(oamp<0.05,{oamp=0.0;});
 	if(amp<0.05,{amp=0.0;});
 	
+	Pdef(m.ptn).set(\viewID, d.port);
 	Pdef(m.ptn).set(\dur, dur);
 	Pdef(m.ptn).set(\filtFreq, ff);
 	Pdef(m.ptn).set(\filtRes, rf);

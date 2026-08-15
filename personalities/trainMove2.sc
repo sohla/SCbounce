@@ -3,6 +3,15 @@ var synth;
 var bsynth;
 var note = 48 + 4;
 var lastTime = 0;
+
+// SHARED ACROSS THE QUARTET. trainBass2 writes m.com.root; this voice
+// reads it, so a harmony change turns every hue in the ensemble together.
+var rootHue = { (m.com.root ? 0).linlin(-2, 3, -0.06, 0.06) };
+
+// visual only : when the last ground layer was laid. This is a genuine
+// accumulator over frames — it cannot be recomputed from m or the event.
+var vizTime = 0;
+
 m.accelMassFilteredAttack = 0.99;
 m.accelMassFilteredDecay = 0.8;
 
@@ -70,6 +79,48 @@ SynthDef(\warmPadMove2, {
 //------------------------------------------------------------
 ~init = ~init <> {
 
+	// visual : the ground. This voice is one long-lived pad, not a
+	// pattern, so it gets the only continuous mark in the quartet — a low
+	// contour the other three sit above. It has no events of its own, so
+	// ~next lays a fresh layer every 0.4s and each fades over 1.6s; the
+	// four or so live layers drift apart slightly as they age, and that
+	// separation is the motion — the ground sliding past, drawn by its
+	// own history rather than by an animation.
+	//
+	// Nothing here is relayed: the contour recomputes a, lfoFreq and
+	// filtSpeed from m with the same expressions ~next feeds the synth,
+	// so the line is provably the drone rather than a decoration beside
+	// it. The slow wave is the pad's LFO; the fine ripple on top is its
+	// filter sweep.
+	//
+	// Lineage: topographic contour, atlas grammar G7, laid as a register
+	// band (G4) under the G8 hub the other three turn on. Palette from
+	// atlas §0.5, saturated primaries on black — this voice takes the
+	// darkest, coolest end so it reads as ground, never as figure.
+	//
+	//   accel      -> how far the ground heaves   (a -> lift)
+	//   lfoFreq    -> wave travel rate
+	//   filtSpeed  -> fine ripple rate
+	//   m.com.root -> hue, shared with all four voices
+	~vdef.(\groundBand, { |ev, c|
+		var mod       = ev[\modulation] ? ();
+		var a         = m.accelMassFiltered.lincurve(0, 1.5, 0, 1, -6);
+		var lfoFreq   = m.accelMassFiltered.lincurve(0, 2.5, 0.1, 8, -1);
+		var filtSpeed = m.accelMassFiltered.lincurve(0, 2.5, 0.1, 20, 3);
+		var t         = c[\now];
+		var half      = c[\size];
+		var lift      = (mod[\lift] ? 70) * a;
+		var waves     = mod[\waves] ? 3;
+		var n         = 72;
+		Array.fill(n, { |i|
+			var u = i / (n - 1);
+			var x = (u - 0.5) * 2 * half;
+			var y = sin((u * waves * 2pi) + (t * lfoFreq)) * lift;
+			var ripple = sin((u * waves * 5 * 2pi) - (t * filtSpeed * 0.25)) * lift * 0.18;
+			c[\pos] + (x @ (y + ripple))
+		})
+	});
+
 	synth = Synth(\warmPadMove2, [
 		\freq, note.midicps, 
 		\amp, 0,
@@ -130,6 +181,22 @@ SynthDef(\warmPadMove2, {
 	synth.set(\amp, a * 0.4);
 	synth.set(\filtSpeed, filtSpeed);
 	synth.set(\lfoFreq, lfoFreq);
+
+	if(TempoClock.beats > (vizTime + 0.4), {
+		vizTime = TempoClock.beats;
+		(type: \customVisualEvent, amp: 0, dur: 0.01, viewID: d.port,
+			shape: \groundBand,
+			sx: 0.06, ex: -0.06,
+			sy: 0.55, ey: 0.55,
+			startSize: 560, endSize: 560,
+			startWidth: 3.5, endWidth: 0.8,
+			startColor: Color.hsv((0.62 + rootHue.()).wrap(0, 1), 0.75, 0.85, 0.5),
+			endColor: Color.hsv((0.62 + rootHue.()).wrap(0, 1), 0.9, 0.5, 0.0),
+			closed: false,
+			duration: 1.6,
+			modulation: (amp: 0, lift: 70, waves: 3)
+		).play;
+	});
 
 
 	// if(d.sensors.accelEvent.y > 1.6, {

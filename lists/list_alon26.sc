@@ -2,6 +2,13 @@
 	[
 		"silence",
 
+		"multiBeat1",
+		"multiBeat2",
+
+		"cotf_marimba1",
+		"cotf_simple1",
+		"cotf_simple3",
+
 	    "trainChooka2",
 	    "trainMelody2",
 		"trainMove2",
