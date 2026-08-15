@@ -118,7 +118,7 @@ SynthDef(\miniMoog, {
 	// var ff = (d.sensors.gyroEvent.x/pi).linexp(-0.5,0.5,300,10000); 
 	// var oct = (d.sensors.gyroEvent.y/pi).linlin(-0.4,0.4,3.0,8.0); //left right
 
-	var amp = m.accelMassFiltered.lincurve(0,2.5,-15,-1,-1);
+	var amp = m.accelMassFiltered.lincurve(0,1.5,-15,-1,-1);
 	var atk = m.accelMassFiltered.lincurve(0,1.5,0.1,0.0001,-3);
 	var rel = m.accelMassFiltered.lincurve(0,2.5,0.01,1.0,-1);
 	// var ff = m.accelMassFiltered.linexp(0,0.5,60,18000);
@@ -133,7 +133,7 @@ SynthDef(\miniMoog, {
 	Pdef(m.ptn).set(\rel, rel);
     Pdef(m.ptn).set(\filterFreq, ff);
 
-	if(m.accelMassFiltered > 0.1,{
+	if(m.accelMassFiltered > 0.02,{
 		if( Pdef(m.ptn).isPlaying.not,{
 			Pdef(m.ptn).resume(quant:dur);
 		});

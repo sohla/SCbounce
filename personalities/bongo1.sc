@@ -200,12 +200,12 @@ SynthDef(\bongo1, {
 //------------------------------------------------------------
 ~next = {|d|
 
-	var amp = m.accelMassFiltered.lincurve(0,1.0,0.02,3,3);
+	var amp = m.accelMassFiltered.lincurve(0,0.3,0.02,3,3);
 	var damp = m.accelMassFiltered.lincurve(0,1.0,0.001,14,5);
 	// tells the visual router which device these shapes came from
 	Pdef(m.ptn).set(\viewID, d.port);
 
-	Pdef(m.ptn).set(\amp, amp);
+	Pdef(m.ptn).set(\amp, amp*2);
 	Pdef(m.ptn).set(\damp, damp);
 
 	if(m.accelMassFiltered > 0.004,{

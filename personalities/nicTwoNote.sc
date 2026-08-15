@@ -53,9 +53,10 @@ var firstNoteOf = { |stem|
 
 var folder = PathName("~/Downloads/nicSamples/twoNote");
 
-var cellBase = 63;					// D#4, the bottom of the cell
-var cell = [2,0,-2];		// up and back down through it
-var octaves = [0,-2];			// three registers
+var cellBase = 63;					
+var cell = [2,0,-2,-12,-24];
+var octaves = [0,-1];			
+
 
 //------------------------------------------------------------
 // harp1's filter tuning, unchanged
@@ -73,9 +74,11 @@ SynthDef(\nicTwoNoteSampler, {|bufnum=0, out=0, amp=1, rate=1, start=0, pan=0, f
 	var env = EnvGen.kr(Env.adsr(attack, decay, sustain, release), gate,doneAction: 2);
 	var sig = PlayBuf.ar(2, bufnum, rate: [lr, lr * 1.0017], startPos: start * BufFrames.kr(bufnum), loop: 0);
 	var penv = EnvGen.kr(Env.new([0, 2], [0.27], '\hold'), gate);
-	var tone = LFTri.ar((freq.cpsmidi+penv).midicps * 0.5, 0, 0.1);
+	var li = LocalIn.ar(2);
+	var tone = LFTri.ar((freq.cpsmidi+penv).midicps + 0.5, 0, 0.1) + li;
 	var fil = RLPF.ar(sig, freq, 0.1) + tone; 
-	var verb = FreeVerb.ar(fil + sig, mix: 0.5, room: 0.9, damp: 0.2);
+	var verb = FreeVerb.ar(fil + sig, mix: 0.4, room: 0.9, damp: 0.2);
+	LocalOut.ar(PitchShift.ar(verb,0.3,7.midiratio,0,0.3,1));
 
 	Out.ar(out, verb * amp * env);
 }).add;
@@ -137,10 +140,10 @@ SynthDef(\nicTwoNoteSampler, {|bufnum=0, out=0, amp=1, rate=1, start=0, pan=0, f
 			// than left to the default note/root/octave chain, so it can
 			// never drift from the midi note pickSample was handed.
 			\freq, Pfunc({ |e| midiOf.(e).midicps }),
-			\start, 0.0,
+			// \start, 0.0,
 			\dur, 0.25,
 			\pan, Pwhite(-0.5, 0.5),
-			\attack, 0.04,
+			\attack, 0.02,
 			\decay, 0.1,
 			\sustain, 0.01,
 			\release, 1.8,
@@ -206,12 +209,14 @@ SynthDef(\nicTwoNoteSampler, {|bufnum=0, out=0, amp=1, rate=1, start=0, pan=0, f
 	var move = m.accelMassFiltered.lincurve(0, 0.7, 1, cell.size, 1);
 	var amp = m.accelMassFiltered.lincurve(0, 0.5, -60, -2, -1);
 	var step = m.gyroXFiltered.linlin(-0.8, 0.8, 0, octaves.size - 0.001).floor;
+	var start = m.accelMassFiltered.lincurve(0, 2.5, 0.0, 0.1,0);
 
 	if(amp < -58, { amp = -90; });
 
-	Pdef(m.ptn).set(\range, 5);
+	Pdef(m.ptn).set(\range, move.asInteger);
 	Pdef(m.ptn).set(\amp, amp.dbamp);
 	Pdef(m.ptn).set(\octave, octaves[step.asInteger]);
+	Pdef(m.ptn).set(\start, start);
 	
 	Pdef(m.ptn).set(\viewID, d.port);
 	Pdef(m.ptn).set(\startColor, Color.hsv(0.55, 0.85, 1.0, amp.linlin(-60, 1, 0.0, 0.8)));

@@ -7,9 +7,9 @@ var synth;
 var sincePluck = 0;
 var lastNow = 0;
 
-m.rrateMassFilteredAttack = 0.3;
-m.rrateMassFilteredDecay = 0.1;
-m.accelMassFilteredAttack = 0.2;
+m.rrateMassFilteredAttack = 0.8;
+m.accelMassFilteredAttack = 0.8;
+m.rrateMassFilteredDecay = 0.6;
 m.accelMassFilteredDecay = 0.04;
 
 
@@ -133,7 +133,7 @@ SynthDef(\pluck1, { |out=0, amp=0, pch=30, frq=30, gate=0 |
 	synth.set(\pch,pch);
 	synth.set(\frq,frq);
 
-	if(m.accelMass < 0.01,{
+	if(m.accelMass < 0.06,{
 		synth.set(\amp,0);
 	},{
 		synth.set(\amp,0.35);

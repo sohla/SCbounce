@@ -29,13 +29,9 @@ SynthDef(\funMelody, {
 		Pbind(
 			\instrument, \funMelody,
 			\note, Pseq([12,14,10,7,0]-1, inf),
-			// \octave,Pseq([5,6].stutter(2),inf),
-			// \root, Pseq([0].stutter(32), inf),
 			\envAtk, Pwhite(0.002,0.04, inf),
 			\envDec, Pwhite(0.2, 0.1, inf),
 			\envSus, 0.0,
-			// \envRel,Pkey(\octave) * 0.4,
-    		// \amp, Pkey(\octave).reciprocal * 0.13,
 			\pan, Pseq([-0.3,0.3], inf),
     		\filtRes, 0.8,
 			\func, Pfunc({|e| ~onEvent.(e)}),
@@ -59,19 +55,22 @@ SynthDef(\funMelody, {
 //------------------------------------------------------------
 ~next = {|d|
 
-	// var dur = 0.5 * 2.pow(m.accelMassFiltered.linexp(0,3,0,5).floor).reciprocal;
-	// var dur = 0.5 * 2.pow(m.accelMassFiltered.lincurve(0,2.5,0,3,-1).floor).reciprocal;
 	var oct = m.gyroYFiltered.linlin(-1,1,6,3).floor;
   	var envRel = m.accelMassFiltered.lincurve(0,1,0.5,0.6,2);
 	var amp = m.accelMassFiltered.lincurve(0,2,0.001,0.5,-2);
-
+  	var oamp = m.gyroYFiltered.lincurve(-1.0,1.0,0.0,0.7,-2);
+	var ff = ((d.sensors.gyroEvent.x / pi).fold(-0.5,0.5) * 2).linexp(-1,1,50,14000);
+	
+	if(oamp<0.05,{oamp=0.0;});
+	if(amp<0.05,{amp=0.0;});
+	
 	Pdef(m.ptn).set(\dur, dur);
-	Pdef(m.ptn).set(\filtFreq, m.accelMassFiltered.linexp(0,1.5,180,800));
-	Pdef(m.ptn).set(\amp, amp*0.7));
+	Pdef(m.ptn).set(\filtFreq, ff);
+	Pdef(m.ptn).set(\amp, (amp*0.7) + oamp);
 	Pdef(m.ptn).set(\octave,oct);
 	Pdef(m.ptn).set(\envRel,envRel);
 
-	if(m.accelMass > 0.12,{
+	if((amp + oamp) > 0.02,{
 		if( Pdef(~model.ptn).isPlaying.not,{
 			Pdef(~model.ptn).resume(quant:dur);
 		});
@@ -80,6 +79,7 @@ SynthDef(\funMelody, {
 			Pdef(~model.ptn).pause();
 		});
 	});
+
 };
 
 ~nextMidiOut = {|d|
@@ -91,7 +91,9 @@ SynthDef(\funMelody, {
 
 ~plot = { |d,p|
 	// [d.sensors.rrateEvent.x, m.rrateMass * 0.1, m.accelMassFiltered * 0.5];
-	[m.accelMass * 0.1, m.accelMassFiltered * 0.1];
+	// [m.accelMass * 0.1, m.accelMassFiltered * 0.1];
+			[((d.sensors.gyroEvent.x / pi).fold(-0.5,0.5) * 2) ];
+
 	// [m.rrateMassFiltered, m.rrateMassThreshold];
 	// [m.rrateMassFiltered, m.rrateMassThreshold, m.accelMassAmp];
 	// [d.sensors.gyroEvent.x, d.sensors.gyroEvent.y, d.sensors.gyroEvent.z];
