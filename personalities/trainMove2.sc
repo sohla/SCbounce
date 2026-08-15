@@ -1,6 +1,8 @@
 var m = ~model;
 var synth;
+var bsynth;
 var note = 48 + 4;
+var lastTime = 0;
 m.accelMassFilteredAttack = 0.99;
 m.accelMassFilteredDecay = 0.8;
 
@@ -9,11 +11,14 @@ m.accelMassFilteredDecay = 0.8;
 
 SynthDef(\warmPadMove2, {
 	|out=0, gate=1, freq=440, amp=0.1,atk=0.03, dec=0.2, sus=0.8, rel=1.0,filtMin=500, filtMax=5000, filtSpeed=0.5,
-	detuneAmount = 1.001,chorusRate=0.5, chorusDepth=0.01,pan=0, spread=0.2, lfoFreq=1|
+	detuneAmount = 1.001,chorusRate=0.5, chorusDepth=0.01,pan=0, spread=0.2, lfoFreq=1, excAttack=0.01, excRelease=0.1, trig=1|
 
     var sig, env, filt, chorus, numVoices=8, sub;
 		var pulse = LFCub.ar(lfoFreq,pi,0.5,0.5);
+		var exciter = EnvGen.kr(Env.perc(excAttack, excRelease), trig)+1;
 		freq = freq.lag(3);
+
+
     // Main envelope
     env = EnvGen.kr(
         Env.adsr(atk, dec, sus, rel),
@@ -56,7 +61,7 @@ SynthDef(\warmPadMove2, {
     // Output with stereo spread
     sig = Splay.ar(sig, spread);
 		sig = GVerb.ar(sig.tanh * 0.2,4,0.1);
-	Out.ar(out, (sig + sub) * Amplitude.kr(amp,0.03,0.8) * env );
+	Out.ar(out, (sig + sub) * Amplitude.kr(amp,0.03,0.8) * env * exciter);
 }).add;
 
 
@@ -88,6 +93,10 @@ SynthDef(\warmPadMove2, {
 	// Pdef(m.ptn).remove;
 	// synth.free;
     synth.set(\gate, 0);
+    bsynth.set(\gate, 0);
+
+	synth.free;
+	bsynth.free;
 
 };
 
@@ -122,17 +131,49 @@ SynthDef(\warmPadMove2, {
 	synth.set(\filtSpeed, filtSpeed);
 	synth.set(\lfoFreq, lfoFreq);
 
-	// Pdef(m.ptn).set(\filtFreq, m.accelMassFiltered.linexp(0,4,380,4000));
-	// Pdef(m.ptn).set(\dur, dur);
-	
-	// if(m.accelMassFiltered > 0.1,{
-	// 	if( Pdef(m.ptn).isPlaying.not,{
-	// 		Pdef(m.ptn).resume(quant:0.125);
+
+	// if(d.sensors.accelEvent.y > 1.6, {
+	// // if(m.accelMassFiltered > 1.0, {
+
+	// 	if(TempoClock.beats > (lastTime + 0.11),{
+	// 		lastTime = TempoClock.beats;
+
+	// 		bsynth = Synth(\warmPadMove2, [
+	// 			\freq, (note + m.com.root+ [0,-2,-5].choose).midicps * 4 , 
+	// 			\amp, 0.2,
+	// 			\gate, 1,
+	// 			\atk, 0.1,
+	// 			\rel, 3.1,
+	// 			\filtMin, 800,
+	// 			\filtMax, 8000,
+	// 			\filtSpeed, 0.1,
+	// 			\chorusRate, 0.01,
+	// 			\chorusDepth, 0.0001,
+	// 			\detuneAmount, 0.0004
+	// 		]);
+
+	// 		{
+	// 			bsynth.set(\gate, 0);
+	// 		}.defer(0.1);
+	// 		// NodeWatcher.register(bsynth);
+
+	// 	},{
 	// 	});
-	// },{
-	// 	if( Pdef(m.ptn).isPlaying,{
-	// 		Pdef(m.ptn).pause();
+	// 	// event.play;
+	// });
+
+
+	// if(m.accelMassFiltered > 0.5,{
+
+	// 		synth.set(\trig, 1);
+	// 	if( (TempoClock.beats-oldTime) > 0.11, {
+	// 		"t".postln;
+	// 		oldTime = TempoClock.beats;
+	// 		synth.set(\trig, 0);
+
+	// 	},{
 	// 	});
+
 	// });
 
 };
@@ -149,7 +190,8 @@ SynthDef(\warmPadMove2, {
 ~plot = { |d,p|
 	// [d.sensors.rrateEvent.x, m.rrateMass * 0.1, m.accelMassFiltered * 0.5];
 	// [m.accelMass * 0.1, m.accelMassFiltered * 0.1];
-	[m.rrateMassFiltered];
+	// [m.rrateMassFiltered];
+	[d.sensors.accelEvent.x.abs];
 	// [m.rrateMassFiltered, m.accelMassAmp];
 	// [d.sensors.gyroEvent.x, d.sensors.gyroEvent.y, d.sensors.gyroEvent.z];
 	// [d.sensors.rrateEvent.x, d.sensors.rrateEvent.y, d.sensors.rrateEvent.z];
