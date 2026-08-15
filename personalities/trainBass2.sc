@@ -96,13 +96,14 @@ SynthDef(\versatilePerc, {
     |out=0, freq=50, tension=0.1, decay=0.5, clickLevel=0.5, amp=0.5, dist = 5, filtFreq = 20, filtRes = 0.8,pan =0|
     var pitch_contour, drum_osc, click_osc, drum_env, click_env, sig, pch;
 
+	var sub = SinOsc.ar(freq * 0.5, pi, 1) * 1;
     // Pitch envelope
     pitch_contour = Line.kr(1, 0, 0.02);
 
     // Drum oscillator
 
 	pch = freq * (1 + (pitch_contour * tension));
-	drum_osc = SinOsc.ar([pch,pch*1.007], LFNoise2.ar([4,5],10,-10),0.5);
+	drum_osc = SinOsc.ar([pch,pch*1.007], LFNoise2.ar([4,5],10,-10),0.8);
 
     // Click oscillator
     click_osc = LPF.ar(WhiteNoise.ar(1), 1500);
@@ -120,7 +121,7 @@ SynthDef(\versatilePerc, {
     );
 	sig = (drum_osc * drum_env) + (click_osc * click_env);
 	sig = (sig * dist).tanh.distort;
-	sig = HPF.ar(sig, filtFreq);
+	sig = HPF.ar(sig, filtFreq)+ (sub * drum_env);
     // Mix and output
     Out.ar(out, Balance2.ar(sig[0], sig[1],pan,amp))
 }).add;
@@ -164,7 +165,7 @@ SynthDef(\versatilePerc, {
 			\note, Pseq([0,10,5,4,7,7,2,5,4,4,-2,2,0,0,0,0].stutter(2) + 4, inf),
     		\dur, Pseq([0.22,0.22,Rest(0.22),0.22,0.22,0.22], inf),
 			\octave,Pseq([3,4].stutter(1),inf),
-			\root, Pseq([0,-2,0,3].stutter(32), inf),
+			\root, Pseq([0,0,-2,0,0,3].stutter(32), inf),
 			\decay,Pkey(\octave).squared * 0.05,
    			\pan, Pxrand([-0.5,0.5], inf),
    			\filtRes, 1.0,//Pwhite(0.4,0.7),
@@ -175,7 +176,7 @@ SynthDef(\versatilePerc, {
 			\rotation, ((Pkey(\vstep) % turn) / turn * 2pi) - 0.5pi,
 			\startSize, Pfunc({ |e| (e[\octave] ? 3).linlin(3, 4, 150, 235) }),
 			\endSize, Pkey(\startSize),
-			\startWidth, Pfunc({ |e| (e[\amp] ? 0.3).linlin(0, 1, 2, 7) }),
+			\startWidth, Pfunc({ |e| (e[\amp] ? 0.3).linlin(0, 1, 0, 7) }),
 			\endWidth, 0.5,
 			\startColor, Pfunc({ |e| Color.hsv((0.03 + rootHue.()).wrap(0, 1), 0.88, 1.0, 1.0) }),
 			\endColor, Pfunc({ |e| Color.hsv((0.03 + rootHue.()).wrap(0, 1), 1.0, 0.35, 0.0) }),
@@ -214,13 +215,12 @@ SynthDef(\versatilePerc, {
 ~next = {|d|
 
 	// var dur = 0.5 * 2.pow(m.accelMassFiltered.lincurve(0,2,0,3,-1).floor).reciprocal;
-	var a = m.accelMassFiltered.lincurve(0,3,0,1,-3);
+	var a = m.accelMassFiltered.lincurve(0,2,0,1,-3);
 	var filtSpeed = m.accelMassFiltered.lincurve(0,2.5,0.1,20,3);
 	var lfoFreq = m.accelMassFiltered.lincurve(0,2.5,0.1,18,-1);
 	var filtFreq = m.accelMassFiltered.lincurve(0,2.5,10,1000,-3);//d.sensors.gyroEvent.z.abs.linlin(0.3,0.7,30,200);
 
 	if(a<0.03,{a=0});
-	if(a>0.9,{a=0.9});
 
 	// synth.set(\amp, a * 0.4);
 	synth.set(\filtSpeed, filtSpeed);

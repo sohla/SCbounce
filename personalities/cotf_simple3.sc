@@ -67,7 +67,7 @@ SynthDef(\simple, {|out=0, amp=0.0, freq=440, attack=0.001, decay=0.03, sustain=
 		);
 	);
 
-	Pdef(m.ptn).play(quant: 4);
+	Pdef(m.ptn).play(quant: 0);
 	Pdef(m.ptn).set(\amp, 0);
 	Pdef(m.ptn).set(\dur, 1);
 	Pdef(m.ptn).set(\freq, 60.midicps);
@@ -91,10 +91,10 @@ SynthDef(\simple, {|out=0, amp=0.0, freq=440, attack=0.001, decay=0.03, sustain=
 
 //------------------------------------------------------------
 ~next = {|d|
-	var amp = (m.accelMassFiltered + m.rrateMassFiltered).half.lincurve(0, 1.5, -70, -20, -1);
-	var oct = (d.sensors.gyroEvent.y / pi.half).lincurve(-1, 1, 7, 10, 1).asInteger;
+	var amp = m.accelMassFiltered.lincurve(0, 2.5, -70, -8, -1);
+	var oct = (d.sensors.gyroEvent.y / pi.half).lincurve(-1, 1, 4, 8, 1).asInteger;
 	var pitch = voicePool.choose.asInteger.wrap(0, 11);
-	var durs = [2,1];
+	var durs = [2,1,1,2] * 0.125;
 	var dur = m.accelMassFiltered.lincurve(0, 2.0, 0, durs.size-1, 1).asInteger;
 	var ffreq = ((d.sensors.gyroEvent.x / pi).fold(-0.5,0.5) * 2).lincurve(-1.0, 1.0, 400, 8000, 3);
 

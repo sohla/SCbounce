@@ -17,8 +17,8 @@ var group;
 //
 // The source is a Pswitch over the family's durs, read fresh per event,
 // so accel is felt on the very next note rather than at the next beat.
-var binDurs  = [1, 1/2, 1/4, 1/8];
-var tripDurs = [1/3, 1/6];
+var binDurs  = [1, 1/2, 1/4, 1/8] * 0.8;
+var tripDurs = [1/3, 1/6] * 0.8;
 
 var binBeat  = Pconst(1, Pswitch(binDurs,  Pkey(\binIdx)));
 var tripBeat = Pconst(1, Pswitch(tripDurs, Pkey(\tripIdx)));
@@ -121,8 +121,8 @@ SynthDef(\multiBeatVoice2, {|out=0, freq=440, amp=0.2, pan=0,
 // latched always has a sensible dur waiting for it — even while accel
 // is sitting on the other family's band.
 ~next = {|d|
-	var dens = m.accelMassFiltered.lincurve(0, 1.0, 0, 1, 1).clip(0, 1);
-	var amp = m.accelMassFiltered.lincurve(0, 2.0, -30, -12, -1);
+	var dens = m.accelMassFiltered.lincurve(0, 2.5, 0, 1, 1).clip(0, 1);
+	var amp = m.accelMassFiltered.lincurve(0, 2.0, -70, -12, -1);
 	var ffreq = m.accelMassFiltered.lincurve(0, 2.0, 700, 6000, 2);
 
 	Pdef(m.ptn).set(\viewID, d.port);

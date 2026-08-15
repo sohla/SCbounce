@@ -72,18 +72,22 @@ SynthDef(\funMelody, {
 
 			\type, \customVisualEvent,
 			\shape, \arpMark,
+			\sx,0.1,
+			\ex, Pwhite(-0.2,0.0, inf),
+			\sy, Pfunc({ |e| (e[\octave] ? 5).linlin(3, 6, 0.6, -1.1) }),
+			\ey, Pkey(\sy),
 			\numPoints, 3,
 			\vstep, Pseries(0, 1, inf),
 			\rotation, ((Pkey(\vstep) % loop) / loop * 2pi) - 0.5pi,
-			\startSize, Pfunc({ |e| (e[\octave] ? 5).linlin(3, 6, 122, 62) }),
+			\startSize, Pfunc({ |e| (e[\octave] ? 5).linlin(3, 6, 80, 30) }),
 			\endSize, Pkey(\startSize),
-			\startWidth, Pfunc({ |e| (e[\amp] ? 0.2).linlin(0, 0.8, 1.5, 5) }),
+			\startWidth, Pfunc({ |e| (e[\amp] ? 0.2).linlin(0, 0.8, 0, 5) }),
 			\endWidth, 0.4,
 			\startColor, Pfunc({ |e| Color.hsv((0.13 + rootHue.()).wrap(0, 1), 0.80, 1.0, 1.0) }),
 			\endColor, Pfunc({ |e| Color.hsv((0.13 + rootHue.()).wrap(0, 1), 0.95, 0.45, 0.0) }),
-			\duration, 0.7,
+			\duration, Pkey(\envRel),
 			\modulation, Pfunc({ |e|
-				(amp: 0, head: (e[\filtFreq] ? 2000).explin(50, 14000, 8, 26))
+				(amp: 0, head: (e[\filtFreq] ? 2000).explin(50, 14000, 2, 100))
 			}),
 
 			\func, Pfunc({|e| ~onEvent.(e)}),
@@ -111,8 +115,8 @@ SynthDef(\funMelody, {
   	var envRel = m.accelMassFiltered.lincurve(0,1,0.1,2.6,2);
 	var envDec = m.accelMassFiltered.lincurve(0,1,0.05,0.2,-2);
 
-	var amp = m.accelMassFiltered.lincurve(0,2,0.001,0.5,-2);
-  	var oamp = m.gyroYFiltered.lincurve(-1.0,1.0,0.0,0.5,-2);
+	var amp = m.accelMassFiltered.lincurve(0,2,0.001,0.2,-2);
+  	var oamp = m.gyroYFiltered.lincurve(-1.0,1.0,0.0,0.3,-2);
 	var ff = ((d.sensors.gyroEvent.x / pi).fold(-0.5,0.5) * 2).linexp(-1,1,50,14000);
 	var rf = ((d.sensors.gyroEvent.x / pi).fold(-0.5,0.5) * 2).linexp(-1,1,0.9,0.2);
 
@@ -123,20 +127,10 @@ SynthDef(\funMelody, {
 	Pdef(m.ptn).set(\dur, dur);
 	Pdef(m.ptn).set(\filtFreq, ff);
 	Pdef(m.ptn).set(\filtRes, rf);
-	Pdef(m.ptn).set(\amp, (amp*0.7) + oamp);
+	Pdef(m.ptn).set(\amp, (amp*0.3) + oamp);
 	Pdef(m.ptn).set(\octave,oct);
 	Pdef(m.ptn).set(\envRel,envRel);
 	Pdef(m.ptn).set(\envDec,envDec);
-
-	// if((amp + oamp) > 0.02,{
-	// 	if( Pdef(~model.ptn).isPlaying.not,{
-	// 		Pdef(~model.ptn).resume(quant:dur);
-	// 	});
-	// },{
-	// 	if( Pdef(~model.ptn).isPlaying,{
-	// 		Pdef(~model.ptn).pause();
-	// 	});
-	// });
 
 };
 

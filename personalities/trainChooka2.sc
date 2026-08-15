@@ -109,26 +109,26 @@ SynthDef(\chooka, {
 			\type, \customVisualEvent,
 			\shape, \cell,
 			\vstep, Pseries(0, 1, inf),
-			\sx, -0.55,
-			\ex, -0.55,
-			\sy, Pfunc({ |e| (e[\note] ? 0).linlin(-1, 13, -0.30, -0.80) }),
-			\ey, Pkey(\sy),
+			\sy, 0.02,
+			\ey, -0.02,
+			\sx, Pfunc({ |e| (e[\note] ? 0).linlin(-1, 13, 0.40, -0.40) }),
+			\ex, Pkey(\sx),
 			\rotation, (Pkey(\vstep) / cell).floor * 0.045,
 			\startSize, Pfunc({ |e|
 				if((e[\amp] ? 0) < 0.02, { 0 }, { (((e[\vstep] ? 0) % cell) + 1) * 22 })
 			}),
 			\endSize, Pkey(\startSize),
-			\startWidth, 2.5,
-			\endWidth, 2.5,
+			\startWidth, Pfunc({ |e| (e[\amp]).linlin(0, 1, 0, 2.5) }),
+			\endWidth, Pkey(\startWidth),
 			\fill, Pfunc({ |e| ((e[\vstep] ? 0) % cell) == (cell - 1) }),
 			\startColor, Pfunc({ |e|
 				Color.hsv((0.55 + rootHue.()).wrap(0, 1), 0.06, 1.0,
 					if(((e[\vstep] ? 0) % cell) == (cell - 1), { 0.90 }, { 0.50 }))
 			}),
 			\endColor, Pfunc({ |e| Color.hsv((0.55 + rootHue.()).wrap(0, 1), 0.06, 1.0, 0.0) }),
-			\duration, 0.8,
+			\duration, Pkey(\envRel),
 			\modulation, Pfunc({ |e|
-				(amp: 0, thick: (e[\filtFreq] ? 2000).explin(80, 14000, 3.5, 15))
+				(amp: 0, thick: (e[\amp]).linlin(0, 1, 3.5, 15))
 			}),
 
 			\func, Pfunc({|e| ~onEvent.(e)}),
@@ -154,7 +154,7 @@ SynthDef(\chooka, {
 
 	var oct = m.gyroYFiltered.linlin(-1,1,8,4).floor;
   	var envRel = m.accelMassFiltered.lincurve(0,2.5,0.4,1.1,1);
-	var amp = m.accelMassFiltered.lincurve(0,2.5,0.001,0.8,-1);
+	var amp = m.accelMassFiltered.lincurve(0,2.5,0.001,1.0,-1);
 	var ff = (d.sensors.gyroEvent.y / pi.half).lincurve(-1,1,80,14000,-2);
 	var atk = m.accelMassFiltered.lincurve(0,2.5,0.02,0.001,-1);
 	var dcy = ((d.sensors.gyroEvent.x / pi).fold(-0.5,0.5) * 2).lincurve(-1,1,0.001,0.4,-2);
@@ -165,11 +165,11 @@ SynthDef(\chooka, {
 
 	if(m.gyroYFiltered > -0.1, {
 		if(m.gyroYFiltered < 0.1, {
-				amp = rrand(0.2, 0.3);
+				amp = rrand(0.2, 0.35);
 				Pdef(m.ptn).set(\filtFreq, rrand(lff, hff));
 				Pdef(m.ptn).set(\envAtk, rrand(0.04, 0.05));
-				Pdef(m.ptn).set(\envRel,rrand(0.5,0.7));
-				Pdef(m.ptn).set(\envDec, rrand(0.2,0.3));
+				Pdef(m.ptn).set(\envRel,rrand(0.2,0.5));
+				Pdef(m.ptn).set(\envDec, rrand(0.1,0.3));
 
 		},{
 			Pdef(m.ptn).set(\filtFreq, ff);

@@ -43,9 +43,6 @@ SynthDef(\warmPadMove2, {
         Pan2.ar(oscillator, pan + detune)
     }).sum;
 
-    // Filter sweep
-    filt = SinOsc.kr(filtSpeed.lag(1.5)).range(filtMin, filtMax);
-    sig = RLPF.ar(sig, filt, 0.5);
 
     // Chorus effect
     // Anti-aliased chorus using all-pass filter
@@ -63,14 +60,19 @@ SynthDef(\warmPadMove2, {
             0.1  // Shorter decay time for cleaner sound
         )
     });    // Final processing
-	sub = LFTri.ar(freq * (3/2), pi, 13).tanh * 0.02;
-	sig = Mix([sig, chorus.sum]) / (numVoices + 2);
+	sub = LFTri.ar(freq * (3/2), pi, 13).tanh * 0.2;
+	sig = Mix([sig, chorus.sum, sub]) / (numVoices + 3);
+
+	    // Filter sweep
+    filt = SinOsc.kr(filtSpeed.lag(1.5)).range(filtMin, filtMax);
+    sig = RLPF.ar(sig, filt, 0.5);
+
   // sig = sig * env * amp;
 
     // Output with stereo spread
     sig = Splay.ar(sig, spread);
 		sig = GVerb.ar(sig.tanh * 0.2,4,0.1);
-	Out.ar(out, (sig + sub) * Amplitude.kr(amp,0.03,0.8) * env * exciter);
+	Out.ar(out, sig * Amplitude.kr(amp,0.1,0.8) * env * exciter);
 }).add;
 
 
@@ -111,13 +113,13 @@ SynthDef(\warmPadMove2, {
 		var half      = c[\size];
 		var lift      = (mod[\lift] ? 70) * a;
 		var waves     = mod[\waves] ? 3;
-		var n         = 72;
+		var n         = 32 * a;
 		Array.fill(n, { |i|
 			var u = i / (n - 1);
 			var x = (u - 0.5) * 2 * half;
 			var y = sin((u * waves * 2pi) + (t * lfoFreq)) * lift;
 			var ripple = sin((u * waves * 5 * 2pi) - (t * filtSpeed * 0.25)) * lift * 0.18;
-			c[\pos] + (x @ (y + ripple))
+			c[\pos] + (y @ (x + ripple))
 		})
 	});
 
@@ -127,8 +129,8 @@ SynthDef(\warmPadMove2, {
 		\gate, 1,
     \atk, 1.02,
     \rel, 1.8,
-    \filtMin, 800,
-    \filtMax, 8000,
+    // \filtMin, 800,
+    // \filtMax, 8000,
     \filtSpeed, 0.1,
     \chorusRate, 0.001,
     \chorusDepth, 0.0001,
@@ -173,14 +175,18 @@ SynthDef(\warmPadMove2, {
 	var a = m.accelMassFiltered.lincurve(0,1.5,0,1,-6);
 	var filtSpeed = m.accelMassFiltered.lincurve(0,2.5,0.1,20,3);
 	var lfoFreq = m.accelMassFiltered.lincurve(0,2.5,0.1,8,-1);
+	var fmin = m.gyroYFiltered.linexp(-1.0,1.0,10,800);
+	var fmax = m.gyroYFiltered.linexp(-1.0,1.0,100,8000);
 
 	if(a<0.03,{a=0});
 	if(a>0.9,{a=0.9});
     
     synth.set(\freq, (note + m.com.root).midicps);
-	synth.set(\amp, a * 0.4);
+	synth.set(\amp, a * 0.5);
 	synth.set(\filtSpeed, filtSpeed);
 	synth.set(\lfoFreq, lfoFreq);
+	synth.set(\filtMin, fmin);
+	synth.set(\filtMax, fmax);
 
 	if(TempoClock.beats > (vizTime + 0.4), {
 		vizTime = TempoClock.beats;
@@ -199,49 +205,32 @@ SynthDef(\warmPadMove2, {
 	});
 
 
-	// if(d.sensors.accelEvent.y > 1.6, {
-	// // if(m.accelMassFiltered > 1.0, {
+	if(d.sensors.accelEvent.x > 2.0, {
+	// if(m.accelMassFiltered > 1.0, {
 
-	// 	if(TempoClock.beats > (lastTime + 0.11),{
-	// 		lastTime = TempoClock.beats;
+		if(TempoClock.beats > (lastTime + 0.055),{
+			lastTime = TempoClock.beats;
 
-	// 		bsynth = Synth(\warmPadMove2, [
-	// 			\freq, (note + m.com.root+ [0,-2,-5].choose).midicps * 4 , 
-	// 			\amp, 0.2,
-	// 			\gate, 1,
-	// 			\atk, 0.1,
-	// 			\rel, 3.1,
-	// 			\filtMin, 800,
-	// 			\filtMax, 8000,
-	// 			\filtSpeed, 0.1,
-	// 			\chorusRate, 0.01,
-	// 			\chorusDepth, 0.0001,
-	// 			\detuneAmount, 0.0004
-	// 		]);
-
-	// 		{
-	// 			bsynth.set(\gate, 0);
-	// 		}.defer(0.1);
-	// 		// NodeWatcher.register(bsynth);
-
-	// 	},{
-	// 	});
-	// 	// event.play;
-	// });
+			bsynth = Synth(\warmPadMove2, [
+				\freq, (note + m.com.root+ [0,-2,-5,7].choose).midicps * 4, 
+				\amp, m.accelMassFiltered.lincurve(1,2.5,0.1,0.5,-2),
+				\gate, 1,
+				\atk, 0.3,
+				\rel, 3.1,
+				\filtMin, 8000,
+				\filtMax, 12000,
+				\filtSpeed, 0.1,
+				\chorusRate, 0.1,
+				\chorusDepth, 0.01,
+				\detuneAmount, 0.0004
+			]);
 
 
-	// if(m.accelMassFiltered > 0.5,{
+			s.bind { bsynth.set(\gate, 0) };
 
-	// 		synth.set(\trig, 1);
-	// 	if( (TempoClock.beats-oldTime) > 0.11, {
-	// 		"t".postln;
-	// 		oldTime = TempoClock.beats;
-	// 		synth.set(\trig, 0);
-
-	// 	},{
-	// 	});
-
-	// });
+		},{
+		});
+	});
 
 };
 
@@ -258,7 +247,9 @@ SynthDef(\warmPadMove2, {
 	// [d.sensors.rrateEvent.x, m.rrateMass * 0.1, m.accelMassFiltered * 0.5];
 	// [m.accelMass * 0.1, m.accelMassFiltered * 0.1];
 	// [m.rrateMassFiltered];
-	[d.sensors.accelEvent.x.abs];
+	// [d.sensors.accelEvent.x.abs];
+		[m.gyroYFiltered.lincurve(-1.0,1.0,0.0,1.0,-2)];
+
 	// [m.rrateMassFiltered, m.accelMassAmp];
 	// [d.sensors.gyroEvent.x, d.sensors.gyroEvent.y, d.sensors.gyroEvent.z];
 	// [d.sensors.rrateEvent.x, d.sensors.rrateEvent.y, d.sensors.rrateEvent.z];

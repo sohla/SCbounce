@@ -5,7 +5,6 @@
 		"multiBeat1",
 		"multiBeat2",
 
-		"cotf_marimba1",
 		"cotf_simple1",
 		"cotf_simple3",
 

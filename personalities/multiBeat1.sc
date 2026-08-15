@@ -25,7 +25,7 @@ var group;
 // count and the dur can disagree.
 //
 // Take 3 and 6 out of divs for a binary-only ladder.
-var divs = [2, 4, 8];
+var divs = [2, 4, 6];
 var pool = [0, 4, 7, 11, 12, 11, 7, 2];   // needs at least divs.last entries
 
 var divPat  = Pswitch(divs.collect({ |n| Pn(n, n) }),              Pkey(\divIdx));
@@ -68,6 +68,7 @@ SynthDef(\multiBeatVoice, {|out=0, freq=440, amp=0.2, pan=0,
 			\div,  divPat,
 			\step, stepPat,
 			\note, notePat,
+			\octave, Prand([4,5,6], inf),
 			\dur,  Pkey(\div).reciprocal * 0.5,
 			// \release, Pkey(\dur) * 1.8,
 			\pan, Pwhite(-0.2, 0.2),
@@ -115,7 +116,7 @@ SynthDef(\multiBeatVoice, {|out=0, freq=440, amp=0.2, pan=0,
 // is deliberately NOT a Pbind key, because a Pbind key would override
 // the envir and defeat this .set.
 ~next = {|d|
-	var idx = m.accelMassFiltered.lincurve(0, 2.0, 0, divs.size - 1, 1)
+	var idx = m.accelMassFiltered.lincurve(0, 2.5, 0, divs.size - 1, 1)
 		.round.asInteger.clip(0, divs.size - 1);
 	var amp = m.accelMassFiltered.lincurve(0, 2.0, -60, -12, -1);
 	var ffreq = m.accelMassFiltered.lincurve(0, 2.0, 700, 6000, 2);
