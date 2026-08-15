@@ -159,7 +159,7 @@ SynthDef(\versatilePerc, {
 	var a = m.accelMassFiltered.lincurve(0,3,0,1,-3);
 	var filtSpeed = m.accelMassFiltered.lincurve(0,2.5,0.1,20,3);
 	var lfoFreq = m.accelMassFiltered.lincurve(0,2.5,0.1,18,-1);
-	var filtFreq = m.accelMassFiltered.lincurve(0,2.5,3,1000,-3);//d.sensors.gyroEvent.z.abs.linlin(0.3,0.7,30,200);
+	var filtFreq = m.accelMassFiltered.lincurve(0,2.5,10,1000,-3);//d.sensors.gyroEvent.z.abs.linlin(0.3,0.7,30,200);
 
 	if(a<0.03,{a=0});
 	if(a>0.9,{a=0.9});
@@ -168,7 +168,7 @@ SynthDef(\versatilePerc, {
 	synth.set(\filtSpeed, filtSpeed);
 	synth.set(\lfoFreq, lfoFreq);
 
-	Pdef(m.ptn).set(\filtFreq, filtFreq);
+	// Pdef(m.ptn).set(\filtFreq, filtFreq);
 	// Pdef(m.ptn).set(\dur, dur);
 	Pdef(m.ptn).set(\amp, a * 1);
 	

@@ -76,18 +76,35 @@ SynthDef(\chooka, {
 
 	var oct = m.gyroYFiltered.linlin(-1,1,8,4).floor;
   	var envRel = m.accelMassFiltered.lincurve(0,2.5,0.4,1.1,1);
-	var amp = m.accelMassFiltered.lincurve(0,2.5,0.001,0.5,-1);
-	var ff = (d.sensors.gyroEvent.y / pi.half).lincurve(-1,1,800,14000,-2);
+	var amp = m.accelMassFiltered.lincurve(0,2.5,0.001,0.8,-1);
+	var ff = (d.sensors.gyroEvent.y / pi.half).lincurve(-1,1,80,14000,-2);
 	var atk = m.accelMassFiltered.lincurve(0,2.5,0.02,0.001,-1);
 	var dcy = ((d.sensors.gyroEvent.x / pi).fold(-0.5,0.5) * 2).lincurve(-1,1,0.001,0.4,-2);
+	var lff = (m.gyroZFiltered.fold(-0.5,0.5) * 2).linlin(-1,1,110.0,800);
+	var hff = (m.gyroZFiltered.fold(-0.5,0.5) * 2).linexp(-1,1,250.0,8000);
 	
+	if(amp < 0.02) { amp = 0.0 };
+
+	if(m.gyroYFiltered > -0.1, {
+		if(m.gyroYFiltered < 0.1, {
+				amp = rrand(0.2, 0.3);
+				Pdef(m.ptn).set(\filtFreq, rrand(lff, hff));
+				Pdef(m.ptn).set(\envAtk, rrand(0.04, 0.05));
+				Pdef(m.ptn).set(\envRel,rrand(0.5,0.7));
+				Pdef(m.ptn).set(\envDec, rrand(0.2,0.3));
+
+		},{
+			Pdef(m.ptn).set(\filtFreq, ff);
+			Pdef(m.ptn).set(\envAtk,atk);
+			Pdef(m.ptn).set(\envRel,envRel);
+			Pdef(m.ptn).set(\envDec, dcy);
+			
+		}); 
+	});
+
 	Pdef(m.ptn).set(\dur, dur);
-	Pdef(m.ptn).set(\filtFreq, ff);
 	Pdef(m.ptn).set(\amp, amp);
 	Pdef(m.ptn).set(\octave,oct);
-	Pdef(m.ptn).set(\envAtk,atk);
-	Pdef(m.ptn).set(\envRel,envRel);
-	Pdef(m.ptn).set(\envDec, dcy);
 
 };
 
@@ -102,8 +119,10 @@ SynthDef(\chooka, {
 ~plot = { |d,p|
 	// [d.sensors.rrateEvent.x, m.rrateMass * 0.1, m.accelMassFiltered * 0.5];
 	// [m.accelMass * 0.1, m.accelMassFiltered * 0.1];
-		[((d.sensors.gyroEvent.x / pi).fold(-0.5,0.5) * 2) ];
-
+		// [((d.sensors.gyroEvent.x / pi).fold(-0.5,0.5) * 2) ];
+	// [m.gyroZFiltered.lincurve(-1.0,1.0,0.0,1.0,-2)];
+	// [(m.gyroZFiltered/pi.half).linlin(-1.0,1.0,0.0,1.0)];
+	[(m.gyroZFiltered.fold(-0.5,0.5) * 2)];
 	// [m.rrateMassFiltered, m.rrateMassThreshold];
 	// [m.rrateMassFiltered, m.rrateMassThreshold, m.accelMassAmp];
 	// [d.sensors.gyroEvent.x, d.sensors.gyroEvent.y, d.sensors.gyroEvent.z];

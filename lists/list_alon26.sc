@@ -2,15 +2,16 @@
 	[
 		"silence",
 
+	    "trainChooka2",
+	    "trainMelody2",
+		"trainMove2",
+		"trainBass2",
+
 		"melbb1",
 		"melbb2",
 
 
 		"nicTwoNote",
-	    "trainChooka2",
-	    "trainMelody2",
-		"trainMove2",
-		"trainBass2",
 
 		"droplet",
 		"cymbals1",

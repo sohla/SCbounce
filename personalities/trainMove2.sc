@@ -1,8 +1,11 @@
 var m = ~model;
 var synth;
 var note = 48 + 4;
-m.accelMassFilteredAttack = 0.8;
-m.accelMassFilteredDecay = 0.2;
+m.accelMassFilteredAttack = 0.99;
+m.accelMassFilteredDecay = 0.8;
+
+
+// add another trigger that adds impulse to the synth, with offset freq's
 
 SynthDef(\warmPadMove2, {
 	|out=0, gate=1, freq=440, amp=0.1,atk=0.03, dec=0.2, sus=0.8, rel=1.0,filtMin=500, filtMax=5000, filtSpeed=0.5,
@@ -53,7 +56,7 @@ SynthDef(\warmPadMove2, {
     // Output with stereo spread
     sig = Splay.ar(sig, spread);
 		sig = GVerb.ar(sig.tanh * 0.2,4,0.1);
-	Out.ar(out, (sig + sub) * Amplitude.kr(amp,0.2,0.7) * env );
+	Out.ar(out, (sig + sub) * Amplitude.kr(amp,0.03,0.8) * env );
 }).add;
 
 

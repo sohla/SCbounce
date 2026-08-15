@@ -9,7 +9,7 @@ m.gyroFilteredDecay = 0.7;
 
 //------------------------------------------------------------
 SynthDef(\funMelody, {
-    |out=0, freq = 440, gate = 1, amp = 0.8, filtFreq = 2000, filtRes = 0.5, envAtk = 0.01, envDec = 0.1, envSus = 0.7, envRel = 0.2, pan = 0.0|
+    |out=0, freq = 440, gate = 1, amp = 0.8, filtFreq = 2000, filtRes = 0.3, envAtk = 0.01, envDec = 0.1, envSus = 0.7, envRel = 0.2, pan = 0.0|
     var osc1, osc2, osc3, env, filter, output;
     env = EnvGen.ar(Env.adsr(envAtk, envDec, envSus, envRel), gate, doneAction: Done.freeSelf);
     osc1 = Saw.ar(freq, 1.0);
@@ -31,9 +31,10 @@ SynthDef(\funMelody, {
 			\note, Pseq([12,14,10,7,0]-1, inf),
 			\envAtk, Pwhite(0.002,0.04, inf),
 			\envDec, Pwhite(0.2, 0.1, inf),
+			// \root, Pseq([0].stutter(16), inf),
 			\envSus, 0.0,
 			\pan, Pseq([-0.3,0.3], inf),
-    		\filtRes, 0.8,
+    		// \filtRes, 0.9,
 			\func, Pfunc({|e| ~onEvent.(e)}),
 			\args, #[],
 		)
@@ -58,27 +59,29 @@ SynthDef(\funMelody, {
 	var oct = m.gyroYFiltered.linlin(-1,1,6,3).floor;
   	var envRel = m.accelMassFiltered.lincurve(0,1,0.5,0.6,2);
 	var amp = m.accelMassFiltered.lincurve(0,2,0.001,0.5,-2);
-  	var oamp = m.gyroYFiltered.lincurve(-1.0,1.0,0.0,0.7,-2);
+  	var oamp = m.gyroYFiltered.lincurve(-1.0,1.0,0.0,0.5,-2);
 	var ff = ((d.sensors.gyroEvent.x / pi).fold(-0.5,0.5) * 2).linexp(-1,1,50,14000);
+	var rf = ((d.sensors.gyroEvent.x / pi).fold(-0.5,0.5) * 2).linexp(-1,1,0.9,0.2);
 	
 	if(oamp<0.05,{oamp=0.0;});
 	if(amp<0.05,{amp=0.0;});
 	
 	Pdef(m.ptn).set(\dur, dur);
 	Pdef(m.ptn).set(\filtFreq, ff);
+	Pdef(m.ptn).set(\filtRes, rf);
 	Pdef(m.ptn).set(\amp, (amp*0.7) + oamp);
 	Pdef(m.ptn).set(\octave,oct);
 	Pdef(m.ptn).set(\envRel,envRel);
 
-	if((amp + oamp) > 0.02,{
-		if( Pdef(~model.ptn).isPlaying.not,{
-			Pdef(~model.ptn).resume(quant:dur);
-		});
-	},{
-		if( Pdef(~model.ptn).isPlaying,{
-			Pdef(~model.ptn).pause();
-		});
-	});
+	// if((amp + oamp) > 0.02,{
+	// 	if( Pdef(~model.ptn).isPlaying.not,{
+	// 		Pdef(~model.ptn).resume(quant:dur);
+	// 	});
+	// },{
+	// 	if( Pdef(~model.ptn).isPlaying,{
+	// 		Pdef(~model.ptn).pause();
+	// 	});
+	// });
 
 };
 
@@ -92,8 +95,8 @@ SynthDef(\funMelody, {
 ~plot = { |d,p|
 	// [d.sensors.rrateEvent.x, m.rrateMass * 0.1, m.accelMassFiltered * 0.5];
 	// [m.accelMass * 0.1, m.accelMassFiltered * 0.1];
-			[((d.sensors.gyroEvent.x / pi).fold(-0.5,0.5) * 2) ];
-
+			// [((d.sensors.gyroEvent.x / pi).fold(-0.5,0.5) * 2) ];
+	[m.gyroYFiltered.lincurve(-1.0,1.0,0.0,1.0,-2)];
 	// [m.rrateMassFiltered, m.rrateMassThreshold];
 	// [m.rrateMassFiltered, m.rrateMassThreshold, m.accelMassAmp];
 	// [d.sensors.gyroEvent.x, d.sensors.gyroEvent.y, d.sensors.gyroEvent.z];
