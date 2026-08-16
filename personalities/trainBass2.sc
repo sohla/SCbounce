@@ -200,13 +200,29 @@ SynthDef(\versatilePerc, {
 
 			\type, \customVisualEvent,
 			\shape, \driveSpoke,
-			\rotation, //Pfunc({ |e| (e[\octave].linlin(3, 4, 0, pi) ) + rrand(-0.45, 0.45) }),
+			\rotation,
+			// Pfunc({ |e|
+			// 	(((e[\note] ? 4) % 12) / 12 * pi.half) - 0.525
+			// 		+ if((e[\octave] ? 3) > 3.5, { pi }, { 0 })
+			// }),
+
 			Pfunc({ |e|
-				(((e[\note] ? 4) % 12) / 12 * pi.half) - 0.525
-					+ if((e[\octave] ? 3) > 3.5, { pi }, { 0 })
+				var midi = (e[\note] ? 6) + (e[\root] ? 0) + (12 * (e[\octave] ? 5));
+				var a = midi.linlin(36, 96, 0, 2pi);
+
+				if((e[\octave] ? 3) > 3.5, { 
+					a + 0.95// (((e[\note] ? 4) % 12) / 12 * pi.half) - 0.525
+				}, { 
+					a.neg + 0.95// (((e[\note] ? 4) % 12) / 12 * pi.half) - 0.525
+				})
+
 			}),
-			\startSize, 100,
-			\endSize, 400,
+
+			\startSize, Pfunc({ |e| 
+				var a = e[\amp];
+				if(a<0.03,{a=0});(a ? 0.3).linlin(0, 1, 0, 400) 
+				}),
+			\endSize, Pkey(\startSize) * 2,
 			\sizeEnv, Pfunc({ Env([0, 1], [1], 3) }),
 			\startWidth, 1,
 			\endWidth, Pfunc({ |e| (e[\amp] ? 0.3).linlin(0, 1, 3, 11) }),
@@ -255,7 +271,7 @@ SynthDef(\versatilePerc, {
 
 	if(a<0.03,{a=0});
 
-	// synth.set(\amp, a * 0.4);
+	synth.set(\amp, a * 0.4);
 	synth.set(\filtSpeed, filtSpeed);
 	synth.set(\lfoFreq, lfoFreq);
 

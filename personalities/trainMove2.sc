@@ -8,9 +8,6 @@ var lastTime = 0;
 // reads it, so a harmony change turns every hue in the ensemble together.
 var rootHue = { (m.com.root ? 0).linlin(-2, 3, -0.06, 0.06) };
 
-// visual only : when the last ground layer was laid. This is a genuine
-// accumulator over frames — it cannot be recomputed from m or the event.
-var vizTime = 0;
 
 m.accelMassFilteredAttack = 0.99;
 m.accelMassFilteredDecay = 0.8;
@@ -79,7 +76,7 @@ SynthDef(\warmPadMove2, {
 //------------------------------------------------------------
 // intial state
 //------------------------------------------------------------
-~init = ~init <> {
+~init = ~init <> {|d|
 
 	// visual : the tunnel itself.
 	//
@@ -91,18 +88,24 @@ SynthDef(\warmPadMove2, {
 	// IS a tunnel and where its centre is. Without it the other voices
 	// are just marks flying outward; with it they are inside something.
 	//
-	// It does not move, it breathes. Each ray's length is pushed in and
-	// out by the pad's own LFO, phase-offset a little per ray so the
-	// shimmer travels round the tunnel rather than pulsing all at once,
-	// with a finer wobble on top from the filter sweep. Nothing is
-	// relayed: a, lfoFreq and filtSpeed are recomputed here from m with
-	// the same expressions ~next feeds the synth, so the walls are
-	// provably the drone. When the player is still, a falls to 0, the
-	// breathing stops and the tunnel goes rigid and dim.
+	// ONE held event, fired here, never re-laid. duration: inf means the
+	// cull never expires it, so there is no pulse of its own to beat
+	// against the music — the walls simply exist. It also means normTime
+	// stays pinned at 0, so the core's start->end blending never advances:
+	// every end* and *Env key would be inert, and they are left off rather
+	// than written and quietly ignored. What you set below is what you
+	// see, which is what makes it adjustable in one place.
 	//
-	// ~next lays a fresh set every 0.6s over 1.4s, so two are usually
-	// alive and the walls stay continuous while still picking up each
-	// new root as it changes.
+	// All the motion therefore has to come from this draw func reading
+	// live state each frame, which is the metal1 \sheetFrame idiom.
+	// Nothing is relayed: lfoFreq is recomputed from m.gyroYFiltered here,
+	// so tilting sets how fast the shimmer travels round the tunnel. Every
+	// other tunable is a ? fallback on \modulation, so the single event is
+	// the one place to adjust the whole thing.
+	//
+	// clearEvents in personalityController removes it on unload — without
+	// that a held event would outlive its vdef and degrade into a stray
+	// fallback circle.
 	//
 	// Lineage: circuit / apparatus, atlas grammar G12 — the score as a
 	// diagram of the space rather than of the sounds — crossed with the
@@ -110,29 +113,56 @@ SynthDef(\warmPadMove2, {
 	// saturated primaries on black; this voice takes the coolest, darkest
 	// end so it reads as architecture, never as an event.
 	//
-	//   accel      -> depth of the breathing (a)
-	//   lfoFreq    -> rate the shimmer travels round
-	//   filtSpeed  -> fine wobble on each ray
-	//   m.com.root -> hue, shared with all four voices
+	//   gyro y     -> lfoFreq, the rate the shimmer travels round
+	//   \modulation -> everything else: ray count, breath depth, wobble,
+	//                  per-ray phase spread, alpha
 	~vdef.(\tunnelWalls, { |ev, c|
 		var mod       = ev[\modulation] ? ();
-		var a         = m.accelMassFiltered.lincurve(0, 1.5, 0, 1, -6);
-		var lfoFreq   = m.accelMassFiltered.lincurve(0, 2.5, 0.1, 8, -1);
-		var filtSpeed = m.accelMassFiltered.lincurve(0, 2.5, 0.1, 20, 3);
+		var a         = m.accelMassFiltered.lincurve(0, 1.5, 0, 5, -6);
+		var lfoMin    = mod[\lfoMin] ? 0.1;
+		var lfoMax    = mod[\lfoMax] ? 0.4;
+		var lfoFreq   = m.gyroYFiltered.linlin(-1.0, 1.0, lfoMin, lfoMax);
+		var filtSpeed = m.accelMassFiltered.lincurve(0, 2.5, 0.1, 1, 3);
 		var t         = c[\now];
 		var rays      = mod[\rays] ? 10;
 		var near      = mod[\near] ? 26;
 		var far       = c[\size];
+		var breath    = mod[\breath] ? 0.14;
+		var wob       = mod[\wobble] ? 0.05;
+		var spread    = mod[\spread] ? 0.7;
+		var alpha     = mod[\alpha] ? 0.45;
 		rays.do({ |i|
 			var ang     = (i / rays) * 2pi;
-			var breathe = 1 + (sin((t * lfoFreq) + (i * 0.7)) * 0.14 * a);
-			var wobble  = 1 + (sin((t * filtSpeed * 0.2) + (i * 1.9)) * 0.05 * a);
+			var breathe = 1 + (sin((t * lfoFreq) + (i * spread)) * breath * a);
+			var wobble  = 1 + (sin((t * filtSpeed * 0.2) + (i * 1.9)) * wob * a);
 			var p0      = c[\pos] + Polar(near, ang).asPoint;
 			var p1      = c[\pos] + Polar(far * breathe * wobble, ang).asPoint;
-			c[\render].(Array.fill(10, { |j| p0.blend(p1, j / 9) }), 1, 0.45, false);
+			c[\render].(Array.fill(10, { |j| p0.blend(p1, j / 9) }), 1, alpha, false);
 		});
 		nil
 	});
+
+	// THE single event. Adjust the tunnel here and nowhere else.
+	(type: \customVisualEvent, amp: 0, dur: 0.01, viewID: d.port,
+		shape: \tunnelWalls,
+		sx: 0, sy: 0, ex: 0, ey: 0,
+		startSize: 620,
+		startWidth: 2.6,
+		startColor: Color.hsv(0.82, 0.90, 0.55, 1.0),
+		closed: false,
+		duration: inf,
+		modulation: (
+			amp: 0,
+			rays: 10,
+			near: 26,
+			lfoMin: 0.1,
+			lfoMax: 0.4,
+			breath: 0.14,
+			wobble: 0.05,
+			spread: 0.7,
+			alpha: 0.45
+		)
+	).play;
 
 	synth = Synth(\warmPadMove2, [
 		\freq, note.midicps, 
@@ -196,29 +226,15 @@ SynthDef(\warmPadMove2, {
 	synth.set(\filtMin, fmin);
 	synth.set(\filtMax, fmax);
 
-	if(TempoClock.beats > (vizTime + 0.6), {
-		vizTime = TempoClock.beats;
-		(type: \customVisualEvent, amp: 0, dur: 0.01, viewID: d.port,
-			shape: \tunnelWalls,
-			sx: 0.0, ex: 0.0,
-			sy: 0.0, ey: 0.0,
-			startSize: 620, endSize: 780,
-			sizeEnv: Env([0, 1], [1], 3),
-			startWidth: 2.6, endWidth: 0.7,
-			startColor: Color.hsv((0.62 + rootHue.()).wrap(0, 1), 0.90, 0.30, 0.55),
-			endColor: Color.hsv((0.62 + rootHue.()).wrap(0, 1), 0.65, 0.95, 0.0),
-			colorEnv: Env([0, 1], [1], 3),
-			closed: false,
-			duration: 1.4,
-			modulation: (amp: 0, rays: 10, near: 26)
-		).play;
-	});
-
 
 	if(d.sensors.accelEvent.x > 2.0, {
 	// if(m.accelMassFiltered > 1.0, {
 
 		if(TempoClock.beats > (lastTime + 0.055),{
+			// same expression the bsynth below takes for its \amp, so the
+			// ring is the strength of this hit rather than a guess at it.
+			var hitAmp = m.accelMassFiltered.lincurve(1,2.5,0.1,0.5,-2);
+
 			lastTime = TempoClock.beats;
 
 			bsynth = Synth(\warmPadMove2, [
@@ -237,6 +253,36 @@ SynthDef(\warmPadMove2, {
 
 
 			s.bind { bsynth.set(\gate, 0) };
+
+			// visual : the hit. One bright ring at the vanishing point.
+			//
+			// It is the only mark in the quartet that starts big and bright
+			// instead of creeping in from far away, and the only one whose
+			// size curve is NEGATIVE (-3): it snaps open and then decelerates.
+			// Everything else here accelerates toward you on a +3 because it
+			// is approaching. A hit has no approach — it has already happened
+			// — so it wants the opposite curve, and that difference is what
+			// stops it reading as just another lamp coming down the tunnel.
+			//
+			// The ring thins as it opens, so it dissipates rather than
+			// hanging as a hoop. Outline, never filled: a filled disc this
+			// size would white out the whole tunnel on every hit.
+			//
+			//   accel -> ring size, stroke weight, and how bright it starts
+			(type: \customVisualEvent, amp: 0, dur: 0.01, viewID: d.port,
+				shape: \circle,
+				numPoints: 48,
+				sx: 0, sy: 0, ex: 0, ey: 0,
+				startSize: hitAmp.linlin(0.1, 0.5, 40, 90),
+				endSize: hitAmp.linlin(0.1, 0.5, 260, 480),
+				sizeEnv: Env([0, 1], [1], -3),
+				startWidth: hitAmp.linlin(0.1, 0.5, 4, 9),
+				endWidth: 0.5,
+				widthEnv: Env([0, 1], [1], -3),
+				startColor: Color.hsv(0.82, 0.25, 1.0, 0.95),
+				endColor: Color.hsv(0.82, 0.60, 1.0, 0.0),
+				duration: 0.8
+			).play;
 
 		},{
 		});

@@ -180,10 +180,10 @@ SynthDef(\chooka, {
 			// }),
 			\sizeEnv, Pfunc({ Env([0, 1], [1], 0) }),
 			\startWidth, Pfunc({ |e| (e[\amp] ? 0).lincurve(0, 1, 0.5, 4, -2) }),
-			\endWidth, Pkey(\startWidth) * 4,
+			\endWidth, Pkey(\startWidth) * 8,
 			\startColor, Pfunc({ |e|
 				Color.hsv((0.55 + rootHue.()).wrap(0, 1), 0.96,
-					(e[\amp] ? 0).linexp(0, 1, 0.1, 1.0), 1.0)
+					(e[\amp] ? 0).linexp(0, 1, 0.3, 1.0), 1.0)
 			}),
 			\endColor, Pfunc({ |e|
 				Color.hsv((0.55 + rootHue.()).wrap(0, 1), 0.96,
