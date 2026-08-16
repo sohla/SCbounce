@@ -9,6 +9,8 @@ var rootHue = { (m.com.root ? 0).linlin(-2, 3, -0.06, 0.06) };
 // the note loop is 5 long, and that length is the additive cell.
 var cell = 5;
 
+//------------------------------------------------------------
+
 m.accelMassFilteredAttack = 0.99;
 m.accelMassFilteredDecay = 0.99;
 m.rrateMassFilteredAttack = 0.7;
@@ -72,24 +74,73 @@ SynthDef(\chooka, {
 // black, one accent, no gradient, modulation amp pinned to 0 so nothing
 // wobbles.
 //
-//   position in cell -> bar length          (\vstep -> \startSize)
-//   note             -> which row it sits on (\sy)
-//   filtFreq         -> bar thickness, i.e. the filter's band
-//   cells elapsed    -> pivot angle          (\rotation)
-//   last of cell     -> solid fill, the accent
-//   silence          -> length 0, nothing drawn
+// REDONE. This voice fires about nine times a second, so anything that
+// is large or bright by default becomes a wall — the bars did. The rule
+// here now is that the mark is TINY unless the player does something,
+// and the only two things that make it grow are the two gestures ~next
+// actually reads: accel and the y axis.
+//
+// So: circles, all the same size, streaming out through the tunnel. The
+// ONE thing that varies between them is how white each one is. At rest a
+// dot is dark grey and the screen reads as fine drifting texture; on an
+// accel accent it comes in white. accel drives amp on a -1 curve in
+// ~next, which rises fast off zero, so the accents are already sharp
+// before the visual sees them.
+//
+// Size deliberately says nothing now. When both size and brightness
+// carried the accent the two channels doubled up and every hit became a
+// big bright shape — which is what made this voice a wall. One variable,
+// one meaning: a field of identical circles, some of them lit.
+//
+// Whiteness sits in \startColor, not \endColor, because \colorEnv runs a
+// +3 curve — a dot spends most of its life near its start colour and only
+// blends to the end as it leaves. So it is born at its accent brightness
+// and fades out; the accent is legible the moment it appears rather than
+// arriving just as the dot goes transparent.
+//
+// The y axis gets two cues, because it does two things to the sound.
+// It sets \octave (8..4), which here lifts or drops the point the whole
+// stream pours out of — tilt and the tunnel tips. It also sets filtFreq
+// (80..14000), which here sets how FAR each speck travels, so opening
+// the filter throws the grain further and faster past you. Tilting
+// therefore moves the source and changes the speed at once, which is
+// what it does to the noise.
+//
+// The note picks one of five directions round the tunnel, jittered so
+// the streams read as spread rather than as five spokes — the loop is
+// still in there, it is just texture now, not architecture.
+//
+// Lineage: field / constellation, atlas grammar G1 — accreting, drifting
+// grain, meaning carried by density rather than by any one mark — set in
+// the shared radial tunnel. Palette still the atlas §0.5 data / test
+// pattern row: near-white on black, brightness doing the work, no hue
+// drama, modulation amp pinned to 0 so nothing wobbles.
+//
+//   accel      -> how WHITE the circle is      (the accent, and only this)
+//   y axis     -> origin height (\octave) and travel distance (filtFreq)
+//   note       -> which of five directions, jittered
+//   distance   -> \startSize -> \endSize through a +3 curve
+//   silence    -> size 0, nothing drawn
 ~init = ~init <> {
 
-	// a bar anchored at its LEFT end, so length grows rightward and
-	// \rotation pivots the rank about a shared margin rather than
-	// spinning each bar on its centre.
-	~vdef.(\cell, { |ev, c|
-		var mod   = ev[\modulation] ? ();
-		var len   = c[\size] * 2;
-		var thick = mod[\thick] ? 7;
-		var p     = c[\pos];
-		[ p + (0 @ thick.neg), p + (len @ thick.neg),
-		  p + (len @ thick),   p + (0 @ thick) ]
+	// a dot: a small circle riding at the rim. Its radius is a RATIO of
+	// how far out it has travelled, so it grows with perspective like
+	// everything else in the tunnel — but the ratio is now a CONSTANT, so
+	// every dot is the same size at the same depth. Size is no longer
+	// saying anything; whiteness is.
+	//
+	// It needs to be a vdef rather than the library \circle because the
+	// travel is polar: \startSize -> \endSize is the distance out along
+	// \rotation, and the library circle would read that as its own radius
+	// and draw one expanding ring centred on the canvas. \sx/\sy cannot
+	// place it either — they normalise against half-width and half-height
+	// separately, so they cannot describe a circle.
+	~vdef.(\dot, { |ev, c|
+		var mod = ev[\modulation] ? ();
+		var at  = c[\pos] + (c[\size] @ 0);
+		var r   = c[\size] * (mod[\dotRatio] ? 0.10);
+		var n   = ev[\numPoints] ? 16;
+		Array.fill(n, { |i| at + Polar(r, i / n * 2pi).asPoint })
 	});
 
 	Pdef(m.ptn,
@@ -107,29 +158,40 @@ SynthDef(\chooka, {
     		\filtRes, 0.8,
 
 			\type, \customVisualEvent,
-			\shape, \cell,
-			\vstep, Pseries(0, 1, inf),
-			\sy, 0.02,
-			\ey, -0.02,
-			\sx, Pfunc({ |e| (e[\note] ? 0).linlin(-1, 13, 0.40, -0.40) }),
-			\ex, Pkey(\sx),
-			\rotation, (Pkey(\vstep) / cell).floor * 0.045,
-			\startSize, Pfunc({ |e|
-				if((e[\amp] ? 0) < 0.02, { 0 }, { (((e[\vstep] ? 0) % cell) + 1) * 22 })
-			}),
-			\endSize, Pkey(\startSize),
-			\startWidth, Pfunc({ |e| (e[\amp]).linlin(0, 1, 0, 2.5) }),
-			\endWidth, Pkey(\startWidth),
-			\fill, Pfunc({ |e| ((e[\vstep] ? 0) % cell) == (cell - 1) }),
+			\shape, \line,
+			\numPoints, Pfunc({ |e| (e[\note] ? 0).linlin(-1, 13, 3, 7) }),
+			\fill, true,
+			\vstep, Pseries(0, 0.0, inf),
+			\sx, 0,
+			\ex, 0,
+			\sy, 0,//Pfunc({ |e| (e[\octave] ? 6).linlin(4, 8, 0.18, -0.18) }),
+			\ey, 1.0,//Pkey(\sy),
+			\rotation, 0,//Pfunc({|e| TempoClock.beats / 2}),//0,
+			// Pfunc({ |e|
+			// 	(e[\note] ? 0).linlin(-1, 13, 0, 2pi) + rrand(-0.45, 0.45)
+			// }),
+			\startSize, 1,
+			// Pfunc({ |e| if((e[\amp] ? 0) < 0.02, { 0 }, { 8 }) }),
+			\endSize, 200,
+			// Pfunc({ |e|
+			// 	if((e[\amp] ? 0) < 0.02,
+			// 		{ 0 },
+			// 		{ (e[\filtFreq] ? 2000).explin(80, 14000, 520, 1900)*0.2 })
+			// }),
+			\sizeEnv, Pfunc({ Env([0, 1], [1], 0) }),
+			\startWidth, Pfunc({ |e| (e[\amp] ? 0).lincurve(0, 1, 0.5, 4, -2) }),
+			\endWidth, Pkey(\startWidth) * 4,
 			\startColor, Pfunc({ |e|
-				Color.hsv((0.55 + rootHue.()).wrap(0, 1), 0.06, 1.0,
-					if(((e[\vstep] ? 0) % cell) == (cell - 1), { 0.90 }, { 0.50 }))
+				Color.hsv((0.55 + rootHue.()).wrap(0, 1), 0.96,
+					(e[\amp] ? 0).linexp(0, 1, 0.1, 1.0), 1.0)
 			}),
-			\endColor, Pfunc({ |e| Color.hsv((0.55 + rootHue.()).wrap(0, 1), 0.06, 1.0, 0.0) }),
-			\duration, Pkey(\envRel),
-			\modulation, Pfunc({ |e|
-				(amp: 0, thick: (e[\amp]).linlin(0, 1, 3.5, 15))
+			\endColor, Pfunc({ |e|
+				Color.hsv((0.55 + rootHue.()).wrap(0, 1), 0.96,
+					(e[\amp] ? 0).linexp(0, 1, 0.05, 1.0) * 0.4, 0.0)
 			}),
+			\colorEnv, Pfunc({ Env([0, 1], [1], 3) }),
+			\duration, 0.3,//Pfunc({ |e| (e[\envRel] ? 1.2).clip(0.8, 1.4) }),
+			\modulation, Pfunc({ |e| (amp: 0, dotRatio: 0.3) }),
 
 			\func, Pfunc({|e| ~onEvent.(e)}),
 			\args, #[],
@@ -187,9 +249,6 @@ SynthDef(\chooka, {
 
 };
 
-
-~nextMidiOut = {|d|
-};
 
 //------------------------------------------------------------
 ~plotMin = -1;

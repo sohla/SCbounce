@@ -81,46 +81,57 @@ SynthDef(\warmPadMove2, {
 //------------------------------------------------------------
 ~init = ~init <> {
 
-	// visual : the ground. This voice is one long-lived pad, not a
-	// pattern, so it gets the only continuous mark in the quartet — a low
-	// contour the other three sit above. It has no events of its own, so
-	// ~next lays a fresh layer every 0.4s and each fades over 1.6s; the
-	// four or so live layers drift apart slightly as they age, and that
-	// separation is the motion — the ground sliding past, drawn by its
-	// own history rather than by an animation.
+	// visual : the tunnel itself.
 	//
-	// Nothing here is relayed: the contour recomputes a, lfoFreq and
-	// filtSpeed from m with the same expressions ~next feeds the synth,
-	// so the line is provably the drone rather than a decoration beside
-	// it. The slow wave is the pad's LFO; the fine ripple on top is its
-	// filter sweep.
+	// This voice is one long-lived pad, not a pattern, so it is the only
+	// thing here that does not travel. That is the right job for a drone:
+	// the other three are traffic, this is the structure they move
+	// through. It draws the perspective lines running from the vanishing
+	// point out to the edges — the walls, the thing that tells you there
+	// IS a tunnel and where its centre is. Without it the other voices
+	// are just marks flying outward; with it they are inside something.
 	//
-	// Lineage: topographic contour, atlas grammar G7, laid as a register
-	// band (G4) under the G8 hub the other three turn on. Palette from
-	// atlas §0.5, saturated primaries on black — this voice takes the
-	// darkest, coolest end so it reads as ground, never as figure.
+	// It does not move, it breathes. Each ray's length is pushed in and
+	// out by the pad's own LFO, phase-offset a little per ray so the
+	// shimmer travels round the tunnel rather than pulsing all at once,
+	// with a finer wobble on top from the filter sweep. Nothing is
+	// relayed: a, lfoFreq and filtSpeed are recomputed here from m with
+	// the same expressions ~next feeds the synth, so the walls are
+	// provably the drone. When the player is still, a falls to 0, the
+	// breathing stops and the tunnel goes rigid and dim.
 	//
-	//   accel      -> how far the ground heaves   (a -> lift)
-	//   lfoFreq    -> wave travel rate
-	//   filtSpeed  -> fine ripple rate
+	// ~next lays a fresh set every 0.6s over 1.4s, so two are usually
+	// alive and the walls stay continuous while still picking up each
+	// new root as it changes.
+	//
+	// Lineage: circuit / apparatus, atlas grammar G12 — the score as a
+	// diagram of the space rather than of the sounds — crossed with the
+	// radial G8 the other three fly along. Palette from atlas §0.5,
+	// saturated primaries on black; this voice takes the coolest, darkest
+	// end so it reads as architecture, never as an event.
+	//
+	//   accel      -> depth of the breathing (a)
+	//   lfoFreq    -> rate the shimmer travels round
+	//   filtSpeed  -> fine wobble on each ray
 	//   m.com.root -> hue, shared with all four voices
-	~vdef.(\groundBand, { |ev, c|
+	~vdef.(\tunnelWalls, { |ev, c|
 		var mod       = ev[\modulation] ? ();
 		var a         = m.accelMassFiltered.lincurve(0, 1.5, 0, 1, -6);
 		var lfoFreq   = m.accelMassFiltered.lincurve(0, 2.5, 0.1, 8, -1);
 		var filtSpeed = m.accelMassFiltered.lincurve(0, 2.5, 0.1, 20, 3);
 		var t         = c[\now];
-		var half      = c[\size];
-		var lift      = (mod[\lift] ? 70) * a;
-		var waves     = mod[\waves] ? 3;
-		var n         = 32 * a;
-		Array.fill(n, { |i|
-			var u = i / (n - 1);
-			var x = (u - 0.5) * 2 * half;
-			var y = sin((u * waves * 2pi) + (t * lfoFreq)) * lift;
-			var ripple = sin((u * waves * 5 * 2pi) - (t * filtSpeed * 0.25)) * lift * 0.18;
-			c[\pos] + (y @ (x + ripple))
-		})
+		var rays      = mod[\rays] ? 10;
+		var near      = mod[\near] ? 26;
+		var far       = c[\size];
+		rays.do({ |i|
+			var ang     = (i / rays) * 2pi;
+			var breathe = 1 + (sin((t * lfoFreq) + (i * 0.7)) * 0.14 * a);
+			var wobble  = 1 + (sin((t * filtSpeed * 0.2) + (i * 1.9)) * 0.05 * a);
+			var p0      = c[\pos] + Polar(near, ang).asPoint;
+			var p1      = c[\pos] + Polar(far * breathe * wobble, ang).asPoint;
+			c[\render].(Array.fill(10, { |j| p0.blend(p1, j / 9) }), 1, 0.45, false);
+		});
+		nil
 	});
 
 	synth = Synth(\warmPadMove2, [
@@ -163,9 +174,6 @@ SynthDef(\warmPadMove2, {
 	m.com.dur = e.dur;
 };
 
-~onHit = {|state|
-};
-
 //------------------------------------------------------------
 // do all the work(logic) taking data in and playing pattern/synth
 //------------------------------------------------------------
@@ -188,19 +196,21 @@ SynthDef(\warmPadMove2, {
 	synth.set(\filtMin, fmin);
 	synth.set(\filtMax, fmax);
 
-	if(TempoClock.beats > (vizTime + 0.4), {
+	if(TempoClock.beats > (vizTime + 0.6), {
 		vizTime = TempoClock.beats;
 		(type: \customVisualEvent, amp: 0, dur: 0.01, viewID: d.port,
-			shape: \groundBand,
-			sx: 0.06, ex: -0.06,
-			sy: 0.55, ey: 0.55,
-			startSize: 560, endSize: 560,
-			startWidth: 3.5, endWidth: 0.8,
-			startColor: Color.hsv((0.62 + rootHue.()).wrap(0, 1), 0.75, 0.85, 0.5),
-			endColor: Color.hsv((0.62 + rootHue.()).wrap(0, 1), 0.9, 0.5, 0.0),
+			shape: \tunnelWalls,
+			sx: 0.0, ex: 0.0,
+			sy: 0.0, ey: 0.0,
+			startSize: 620, endSize: 780,
+			sizeEnv: Env([0, 1], [1], 3),
+			startWidth: 2.6, endWidth: 0.7,
+			startColor: Color.hsv((0.62 + rootHue.()).wrap(0, 1), 0.90, 0.30, 0.55),
+			endColor: Color.hsv((0.62 + rootHue.()).wrap(0, 1), 0.65, 0.95, 0.0),
+			colorEnv: Env([0, 1], [1], 3),
 			closed: false,
-			duration: 1.6,
-			modulation: (amp: 0, lift: 70, waves: 3)
+			duration: 1.4,
+			modulation: (amp: 0, rays: 10, near: 26)
 		).play;
 	});
 
@@ -232,9 +242,6 @@ SynthDef(\warmPadMove2, {
 		});
 	});
 
-};
-
-~nextMidiOut = {|d|
 };
 
 //------------------------------------------------------------

@@ -5,8 +5,7 @@ var dur = 0.22/2;
 // reads it, so a harmony change turns every hue in the ensemble together.
 var rootHue = { (m.com.root ? 0).linlin(-2, 3, -0.06, 0.06) };
 
-// the arpeggio is a 5 note loop, so the ring has 5 stations.
-var loop = 5;
+// Nothing sweeps any more — bearing is read off the sounding pitch.
 
 m.accelMassFilteredAttack = 0.99;
 m.accelMassFilteredDecay = 0.5;
@@ -34,29 +33,84 @@ SynthDef(\funMelody, {
 //------------------------------------------------------------
 ~init = ~init <> {
 
-	// visual : the arpeggio as a ring of five stations, inside the bass
-	// wheel and on the same hub, so the two lock concentrically — the
-	// harmony turns slowly on the outside, the arpeggio spins five times
-	// faster inside it. That difference of rate is the piece: you can see
-	// the melody lapping the harmony. Each note is a small triangle at
-	// its own station; they linger and fade, so the ring is drawn by its
-	// own repetition rather than by an outline.
+	// visual : the near lights, the ones that arrive quickest.
 	//
-	// Lineage: cyclic/radial notation, atlas grammar G8 — time as angle,
-	// loops with no seam. Concentric rates are the orrery verb from the
-	// same section. Palette from atlas §0.5, saturated primaries on black.
+	// Same tunnel as trainBass2 and the same vanishing point at the canvas
+	// centre — this voice just runs the near lane. The arpeggio is a 5
+	// note loop, so a mark is mounted at one of five angles round the
+	// tunnel and flies out along it, growing through a +3 curve so it
+	// creeps while distant and rushes as it passes.
 	//
-	//   loop step  -> angle round the ring   (\vstep -> \rotation)
-	//   octave     -> ring radius            (\startSize)
-	//   filtFreq   -> triangle size          (\modulation head)
-	//   amp        -> stroke weight
+	// The concentric relationship survives the change of viewpoint: the
+	// bass turns its ring once per root hold while this turns five times
+	// faster and travels quicker, so the melody still visibly laps the
+	// harmony — but now as two rates of traffic down one tunnel rather
+	// than two rings on a disc.
+	//
+	// Lineage: cyclic/radial notation, atlas grammar G8, read down the
+	// axis. Concentric rates are the orrery verb from the same section.
+	// Palette from atlas §0.5, saturated primaries on black.
+	//
+	// The mark is a small arc lying ON the ring, tangent to it, not a
+	// blob sitting at a point on it.
+	//
+	// Bearing is the SOUNDING PITCH, read as a clock face. Screen y runs
+	// DOWNWARD, so 12 o'clock is -pi/2 and 6 o'clock is +pi/2, and midi
+	// 36..96 maps across that half circle — high at the top, low at the
+	// bottom.
+	//
+	// It has to be the midi note, not \note. The pitch here is
+	// note + root + 12*octave, and \octave is live off gyro y (6..3) while
+	// \root moves with the harmony. \note alone is only the innermost of
+	// those three, so using it threw away the whole vertical gesture and
+	// pinned the fan in place. Now the 5 note figure sits as a compact fan
+	// about an hour and a half wide, and tilting slides that whole fan
+	// round the clock — a bar and a half of travel from octave 3 to
+	// octave 6. The harmony nudges it too, since root is in the sum.
+	//
+	// Recomputed here rather than read from \midinote: that key is a
+	// Function in the parent event and is not resolved until the event
+	// plays, so at Pbind-evaluation time it is not a number yet.
+	//
+	// Which HALF of the clock is gyro x. The transform is a reflection
+	// through the vertical axis, pi - a, and that is the only one that
+	// keeps a note at the same HEIGHT on both sides — a rotation would
+	// send the high note to 6 o'clock. So tilting throws the whole fan
+	// left or right while 12 stays 12 and 6 stays 6.
+	//
+	// The flip is on the sign of m.gyroXFiltered, so it is a switch, not
+	// a slide. That is deliberate: any continuous version has to pass
+	// through the vertical axis, where every note would collapse onto 12
+	// and 6 and the pitch spread would vanish. Because an arc keeps the
+	// bearing it was fired with, crossing over migrates the fan across as
+	// old arcs fade rather than snapping the picture.
+	//
+	// filtFreq sets the arc's ANGULAR span, so opening the filter closes
+	// the ring up: narrow arcs read as separate dashes, wide ones fuse
+	// into a continuous band. That is the filter doing something
+	// structural to the drawing rather than just resizing a dot.
+	//
+	//   midi note  -> bearing, high at 12 o'clock, low at 6 (\rotation)
+	//                 = \note + \root + 12*\octave, so gyro y (octave) and
+	//                   the harmony (root) both move the fan
+	//   gyro x     -> which half of the clock, by reflection
+	//                 (currently commented out in the Pfunc)
+	//   distance   -> \startSize -> \endSize through a +3 curve
+	//   filtFreq   -> angular span of the arc  (\modulation span)
+	//   envRel     -> how long it stays in the tunnel, clipped so the
+	//                 perspective stays coherent
 	//   m.com.root -> hue, shared with all four voices
+	//
+	// NB \closed must be false on the event — a points func gets the
+	// event's \closed, which defaults to true, and that would draw a
+	// chord straight back across the arc.
 	~vdef.(\arpMark, { |ev, c|
-		var mod = ev[\modulation] ? ();
-		var at  = c[\pos] + (c[\size] @ 0);
-		var r   = mod[\head] ? 14;
-		var n   = ev[\numPoints] ? 3;
-		Array.fill(n, { |i| at + Polar(r, (i / n * 2pi) - 0.5pi).asPoint })
+		var mod  = ev[\modulation] ? ();
+		var span = mod[\span] ? 0.3;
+		var n    = ev[\numPoints] ? 16;
+		Array.fill(n, { |i|
+			c[\pos] + Polar(c[\size], ((i / (n - 1)) - 0.5) * span).asPoint
+		})
 	});
 
 	Pdef(m.ptn,
@@ -72,22 +126,30 @@ SynthDef(\funMelody, {
 
 			\type, \customVisualEvent,
 			\shape, \arpMark,
-			\sx,0.1,
-			\ex, Pwhite(-0.2,0.0, inf),
-			\sy, Pfunc({ |e| (e[\octave] ? 5).linlin(3, 6, 0.6, -1.1) }),
+			\numPoints, 16,
+			\closed, false,
+			\sx, Pwhite(-0.0, 0.0, inf),
+			\ex, Pkey(\sx),
+			\sy, Pwhite(-0.0, 0.0, inf),
 			\ey, Pkey(\sy),
-			\numPoints, 3,
-			\vstep, Pseries(0, 1, inf),
-			\rotation, ((Pkey(\vstep) % loop) / loop * 2pi) - 0.5pi,
-			\startSize, Pfunc({ |e| (e[\octave] ? 5).linlin(3, 6, 80, 30) }),
-			\endSize, Pkey(\startSize),
-			\startWidth, Pfunc({ |e| (e[\amp] ? 0.2).linlin(0, 0.8, 0, 5) }),
-			\endWidth, 0.4,
-			\startColor, Pfunc({ |e| Color.hsv((0.13 + rootHue.()).wrap(0, 1), 0.80, 1.0, 1.0) }),
-			\endColor, Pfunc({ |e| Color.hsv((0.13 + rootHue.()).wrap(0, 1), 0.95, 0.45, 0.0) }),
-			\duration, Pkey(\envRel),
+			\rotation, Pfunc({ |e|
+				var midi = (e[\note] ? 6) + (e[\root] ? 0) + (12 * (e[\octave] ? 5));
+				var a = midi.linlin(36, 96, 0.5pi, -0.5pi);
+				if(m.gyroXFiltered < 0, { pi - a }, { a })
+				// a - pi.half
+			}),
+			\startSize, 40,
+			\endSize, 250,//Pfunc({ |e| (e[\octave] ? 5).linlin(3, 6, 920, 640) }),
+			\sizeEnv, Pfunc({ Env([0, 1], [1], 3) }),
+			\startWidth, 2,
+			\endWidth, 220,//Pfunc({ |e| (e[\amp] ? 0.2).linlin(0, 0.8, 12, 26) }),
+			\widthEnv, Pfunc({ Env([0, 1], [1], 3) }),
+			\startColor, Pfunc({ |e| Color.hsv((0.13 + rootHue.()).wrap(0, 1), 1.0, 0.72, 0.95) }),
+			\endColor, Pfunc({ |e| Color.hsv((0.13 + rootHue.()).wrap(0, 1), 0.72, 0.2, 0.35) }),
+			\colorEnv, Pfunc({ Env([0, 1], [1], 3) }),
+			\duration, Pfunc({ |e| (e[\envRel] ? 1.2).clip(0.8, 1.8) }),
 			\modulation, Pfunc({ |e|
-				(amp: 0, head: (e[\filtFreq] ? 2000).explin(50, 14000, 2, 100))
+				(amp: 0, span: (e[\filtFreq] ? 2000).explin(50, 14000, 0.3, 0.5))
 			}),
 
 			\func, Pfunc({|e| ~onEvent.(e)}),
@@ -134,9 +196,6 @@ SynthDef(\funMelody, {
 
 };
 
-~nextMidiOut = {|d|
-};
-
 //------------------------------------------------------------
 ~plotMin = -1;
 ~plotMax = 1;
@@ -144,7 +203,7 @@ SynthDef(\funMelody, {
 ~plot = { |d,p|
 	// [d.sensors.rrateEvent.x, m.rrateMass * 0.1, m.accelMassFiltered * 0.5];
 	// [m.accelMass * 0.1, m.accelMassFiltered * 0.1];
-			// [((d.sensors.gyroEvent.x / pi).fold(-0.5,0.5) * 2) ];
+	// [((d.sensors.gyroEvent.x / pi).fold(-0.5,0.5) * 2) ];
 	[m.gyroYFiltered.lincurve(-1.0,1.0,0.0,1.0,-2)];
 	// [m.rrateMassFiltered, m.rrateMassThreshold];
 	// [m.rrateMassFiltered, m.rrateMassThreshold, m.accelMassAmp];
