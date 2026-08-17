@@ -1,7 +1,7 @@
 var m = ~model;
 var synth;
 var bsynth;
-var note = 48 + 4;
+var note = 48 + 4 + 7;
 var lastTime = 0;
 
 // SHARED ACROSS THE QUARTET. trainBass2 writes m.com.root; this voice
@@ -276,7 +276,7 @@ SynthDef(\warmPadMove2, {
 			(type: \customVisualEvent, amp: 0, dur: 0.01, viewID: d.port,
 				shape: \circle,
 				numPoints: 48,
-				sx: -0.5, sy: 0, ex: 0, ey: 0,
+				sx: 0.5, sy: 0, ex: 0, ey: 0,
 				startSize: hitAmp.linlin(0.1, 0.5, 40, 90) * 0.5,
 				endSize: hitAmp.linlin(0.1, 0.5, 260, 480) * 0.5,
 				sizeEnv: Env([0, 1], [1], -3),

@@ -138,8 +138,8 @@ SynthDef(\funMelody, {
 				if(m.gyroXFiltered < 0, { pi - a }, { a })
 				// a - pi.half
 			}),
-			\startSize, 40,
-			\endSize, 250,//Pfunc({ |e| (e[\octave] ? 5).linlin(3, 6, 920, 640) }),
+			\startSize, Pfunc({ |e| (e[\amp] ? 0.2).linlin(0, 1.0, 0, 40) }) * 5,
+			\endSize, Pkey(\startSize) * 10,//250,//Pfunc({ |e| (e[\octave] ? 5).linlin(3, 6, 920, 640) }),
 			\sizeEnv, Pfunc({ Env([0, 1], [1], 3) }),
 			\startWidth, 2,
 			\endWidth, 220,//Pfunc({ |e| (e[\amp] ? 0.2).linlin(0, 0.8, 12, 26) }),
@@ -178,18 +178,16 @@ SynthDef(\funMelody, {
 	var envDec = m.accelMassFiltered.lincurve(0,1,0.05,0.2,-2);
 
 	var amp = m.accelMassFiltered.lincurve(0,2,0.001,0.2,-2);
-  	var oamp = m.gyroYFiltered.lincurve(-1.0,1.0,0.0,0.1,-2);
 	var ff = ((d.sensors.gyroEvent.x / pi).fold(-0.5,0.5) * 2).linexp(-1,1,50,14000);
 	var rf = ((d.sensors.gyroEvent.x / pi).fold(-0.5,0.5) * 2).linexp(-1,1,0.9,0.2);
 
-	if(oamp<0.05,{oamp=0.0;});
 	if(amp<0.05,{amp=0.0;});
 	
 	Pdef(m.ptn).set(\viewID, d.port);
 	Pdef(m.ptn).set(\dur, dur);
 	Pdef(m.ptn).set(\filtFreq, ff);
 	Pdef(m.ptn).set(\filtRes, rf);
-	Pdef(m.ptn).set(\amp, (amp*0.3) + oamp);
+	Pdef(m.ptn).set(\amp, amp);
 	Pdef(m.ptn).set(\octave,oct);
 	Pdef(m.ptn).set(\envRel,envRel);
 	Pdef(m.ptn).set(\envDec,envDec);

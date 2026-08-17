@@ -5,6 +5,7 @@
 	    "trainChooka2",
 	    "trainMelody2",
 		"trainMove2",
+		"trainMove3",
 		"trainBass2",
 
 		"multiBeat1",

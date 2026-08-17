@@ -20,7 +20,7 @@ m.gyroFilteredDecay = 0.7;
 
 //------------------------------------------------------------
 SynthDef(\funMelody, {
-    |out=0, freq = 440, gate = 1, amp = 0.8, filtFreq = 2000, filtRes = 0.5, envAtk = 0.01, envDec = 0.1, envSus = 0.7, envRel = 0.2, pan = 0.0|
+    |out=0, freq = 440, gate = 1, amp = 0.8, filtFreq = 2000, filtRes = 0.05, envAtk = 0.01, envDec = 0.1, envSus = 0.7, envRel = 0.2, pan = 0.0|
     var osc1, osc2, osc3, env, filter, output;
     env = EnvGen.ar(Env.adsr(envAtk, envDec, envSus, envRel), gate, doneAction: Done.freeSelf);
     osc1 = Saw.ar(freq, 1.5);
@@ -217,7 +217,7 @@ SynthDef(\chooka, {
 	var oct = m.gyroYFiltered.linlin(-1,1,8,4).floor;
   	var envRel = m.accelMassFiltered.lincurve(0,2.5,0.4,1.1,1);
 	var amp = m.accelMassFiltered.lincurve(0,2.5,0.001,1.0,-1);
-	var ff = (d.sensors.gyroEvent.y / pi.half).lincurve(-1,1,80,14000,-2);
+	var ff = (d.sensors.gyroEvent.y / pi.half).linexp(-1,1,80,14000,-2);
 	var atk = m.accelMassFiltered.lincurve(0,2.5,0.02,0.001,-1);
 	var dcy = ((d.sensors.gyroEvent.x / pi).fold(-0.5,0.5) * 2).lincurve(-1,1,0.001,0.4,-2);
 	var lff = (m.gyroZFiltered.fold(-0.5,0.5) * 2).linlin(-1,1,110.0,800);
@@ -227,11 +227,11 @@ SynthDef(\chooka, {
 
 	if(m.gyroYFiltered > -0.1, {
 		if(m.gyroYFiltered < 0.1, {
-				amp = rrand(0.2, 0.35);
-				Pdef(m.ptn).set(\filtFreq, rrand(lff, hff));
-				Pdef(m.ptn).set(\envAtk, rrand(0.04, 0.05));
-				Pdef(m.ptn).set(\envRel,rrand(0.2,0.5));
-				Pdef(m.ptn).set(\envDec, rrand(0.1,0.3));
+				// amp = rrand(0.2, 0.35);
+				// Pdef(m.ptn).set(\filtFreq, rrand(lff, hff));
+				// Pdef(m.ptn).set(\envAtk, rrand(0.04, 0.05));
+				// Pdef(m.ptn).set(\envRel,rrand(0.2,0.5));
+				// Pdef(m.ptn).set(\envDec, rrand(0.1,0.3));
 
 		},{
 			Pdef(m.ptn).set(\filtFreq, ff);
@@ -260,7 +260,8 @@ SynthDef(\chooka, {
 		// [((d.sensors.gyroEvent.x / pi).fold(-0.5,0.5) * 2) ];
 	// [m.gyroZFiltered.lincurve(-1.0,1.0,0.0,1.0,-2)];
 	// [(m.gyroZFiltered/pi.half).linlin(-1.0,1.0,0.0,1.0)];
-	[(m.gyroZFiltered.fold(-0.5,0.5) * 2)];
+	// [(m.gyroZFiltered.fold(-0.5,0.5) * 2)];
+	[(d.sensors.gyroEvent.y / pi.half)];
 	// [m.rrateMassFiltered, m.rrateMassThreshold];
 	// [m.rrateMassFiltered, m.rrateMassThreshold, m.accelMassAmp];
 	// [d.sensors.gyroEvent.x, d.sensors.gyroEvent.y, d.sensors.gyroEvent.z];
