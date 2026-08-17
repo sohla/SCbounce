@@ -12,6 +12,10 @@ var lastTime = 0;
 // dev.sensors is live at frame rate.
 var dev;
 
+// visual only : the eased alpha of the airstick. An accumulator over
+// frames — see the slew in the ~vdef for why it exists.
+var stickA = 0;
+
 // SHARED ACROSS THE QUARTET. trainBass2 writes m.com.root; this voice
 // reads it, so a harmony change turns every hue in the ensemble together.
 var rootHue = { (m.com.root ? 0).linlin(-2, 3, -0.06, 0.06) };
@@ -158,11 +162,32 @@ SynthDef(\warmPadMove2, {
 		var dist  = mod[\dist] ? 3.5;
 		var persp = mod[\persp] ? 0.75;
 		var seg   = (mod[\seg] ? 8).max(2);
-		var edgeA = (mod[\edgeAlpha] ? 1.0) * if (m.accelMassFiltered > 0.01 , {1},{0});
-		var rayA  = (mod[\rayAlpha] ? 0.45) * if (m.accelMassFiltered > 0.01 , {1},{0});
+		var edgeA, rayA;
+		var lit   = m.accelMassFiltered.linlin(0, mod[\litFull] ? 1.2, 0, 1);
+		var rise  = mod[\rise] ? 0.15;
+		var fall  = mod[\fall] ? 0.02;
 		var reach = (mod[\reach] ? 0.0)
 			* m.accelMassFiltered.linlin(0, 2.0, 0, 1);
 		var rot, proj, verts, edges;
+
+		// The alpha was a comparator — if(accel > 0.01, {1}, {0}) — which
+		// can only ever be 1 or 0, so it could not do anything but snap.
+		// Now it is a continuous 0..1 from accel, eased by a one-pole slew
+		// run once per frame (the canvas animates at 60fps).
+		//
+		// The slew has to live here rather than in the model:
+		// m.accelMassFiltered is deliberately fast (attack 0.99 / decay 0.8)
+		// because it drives the synth, and those are model filter
+		// coefficients — not ours to retune for a picture. stickA is a
+		// genuine accumulator over frames, which cannot be recomputed from
+		// m, and that is the one case a file-level var is justified.
+		//
+		// Asymmetric on purpose: rise 0.15 lights it in about 110 ms so it
+		// still catches a gesture, fall 0.02 lets it die over about 800 ms
+		// so it settles instead of flickering between gestures.
+		stickA = stickA + ((lit - stickA) * if(lit > stickA, { rise }, { fall }));
+		edgeA  = (mod[\edgeAlpha] ? 1.0) * stickA;
+		rayA   = (mod[\rayAlpha] ? 0.45) * stickA;
 
 		rot = { |v|
 			var x = v[0], y = v[1], z = v[2], t;
@@ -294,6 +319,9 @@ SynthDef(\warmPadMove2, {
 			dist: 3.5, persp: 0.75,
 			seg: 8,
 			reach: 2.5,
+			litFull: 1.2,     // accel that counts as fully lit
+			rise: 0.15,       // ~110 ms to light
+			fall: 0.02,       // ~800 ms to fade
 			edgeAlpha: 1.0,
 			rayAlpha: 0.45
 		)

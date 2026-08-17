@@ -132,13 +132,7 @@ SynthDef(\chooka, {
 		Pbind(
 			\instrument, \chooka,
 			\note, Pseq([12,14,10,7,0]-1, inf),
-			// \octave,Pseq([5,6].stutter(2),inf),
-			// \root, Pseq([0].stutter(32), inf),
-			// \envAtk, Pwhite(0.02,0.04, inf),
-			// \envDec, Pwhite(0.2, 0.1, inf),
 			\envSus, 0.0,
-			// \envRel,Pkey(\octave) * 0.4,
-    		// \amp, Pkey(\octave).reciprocal * 0.13,
 			\pan, Pseq([-0.3,0.3], inf),
     		\filtRes, 0.8,
 
@@ -149,20 +143,11 @@ SynthDef(\chooka, {
 			\vstep, Pseries(0, 0.0, inf),
 			\sx, 0,
 			\ex, 0,
-			\sy, 0,//Pfunc({ |e| (e[\octave] ? 6).linlin(4, 8, 0.18, -0.18) }),
-			\ey, 1.0,//Pkey(\sy),
-			\rotation, 0,//Pfunc({|e| TempoClock.beats / 2}),//0,
-			// Pfunc({ |e|
-			// 	(e[\note] ? 0).linlin(-1, 13, 0, 2pi) + rrand(-0.45, 0.45)
-			// }),
+			\sy, 0,
+			\ey, 1.0,
+			\rotation, 0,
 			\startSize, 1,
-			// Pfunc({ |e| if((e[\amp] ? 0) < 0.02, { 0 }, { 8 }) }),
 			\endSize, 200,
-			// Pfunc({ |e|
-			// 	if((e[\amp] ? 0) < 0.02,
-			// 		{ 0 },
-			// 		{ (e[\filtFreq] ? 2000).explin(80, 14000, 520, 1900)*0.2 })
-			// }),
 			\sizeEnv, Pfunc({ Env([0, 1], [1], 0) }),
 			\startWidth, Pfunc({ |e| 
 				var a = (e[\amp] ? 0);
@@ -170,16 +155,8 @@ SynthDef(\chooka, {
 				a.lincurve(0, 1, 0, 9, 1);
 			 }),
 			\endWidth, Pkey(\startWidth) * 8,
-			// \startColor, Pfunc({ |e|
-			// 	Color.hsv((0.55 + rootHue.()).wrap(0, 1), 0.96,
-			// 		(e[\amp] ? 0).linexp(0, 1, 0.3, 1.0), 1.0)
-			// }),
-			// \endColor, Pfunc({ |e|
-			// 	Color.hsv((0.55 + rootHue.()).wrap(0, 1), 0.96,
-			// 		(e[\amp] ? 0).linexp(0, 1, 0.05, 1.0) * 0.4, 0.0)
-			// }),
 			\colorEnv, Pfunc({ Env([0, 1], [1], 3) }),
-			\duration, 0.3,//Pfunc({ |e| (e[\envRel] ? 1.2).clip(0.8, 1.4) }),
+			\duration, 0.3,
 			\modulation, Pfunc({ |e| (amp: 0, dotRatio: 0.3) }),
 
 			\func, Pfunc({|e| ~onEvent.(e)}),
@@ -215,6 +192,7 @@ SynthDef(\chooka, {
 	var notes = [28,35,40,47,52,59,64] + 12 + m.com.root;
 	var ni = (d.sensors.gyroEvent.y / pi.half).lincurve(-0.8,0.8,0,notes.size-1,-2).floor;
 	var kd = (d.sensors.gyroEvent.y / pi.half).lincurve(-0.8,0.8,0.1,2,-2);
+	var ca = m.accelMassFiltered.lincurve(0,2.5,0.0,1.0,-12);
 
 	if(amp < 0.02) { amp = 0.0 };
 	if(amp > 0.85, { 
@@ -259,11 +237,13 @@ SynthDef(\chooka, {
 					(e[\amp] ? 0).linexp(0, 1, 0.05, 1.0) * 0.4, 0.0)
 			}),
 */
+
+	
 	Pdef(m.ptn).set(\startColor, Color.hsv((hh + rootHue.()).wrap(0, 1), 0.96,
-					amp.linexp(0, 1, 0.3, 1.0), 1.0));
+					ca, 1.0));
 
 	Pdef(m.ptn).set(\endColor, Color.hsv((hh + rootHue.()).wrap(0, 1), 0.96,
-					amp.linexp(0, 1, 0.05, 1.0) * 0.4, 0.0));	
+					ca, 0.0));	
 
 
 };
