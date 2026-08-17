@@ -24,8 +24,8 @@ SynthDef(\chooka, {
 	pan = 0.0, subFreq = 90, subDecay = 0.5, trig = 1, seq = 1|
 
     var env = EnvGen.ar(Env.adsr(envAtk, envDec, envSus, envRel), gate, doneAction: Done.freeSelf);
-    var osc1 = WhiteNoise.ar(0.2);
-    var osc2 = BrownNoise.ar(0.2);
+    var osc1 = WhiteNoise.ar(0.1);
+    var osc2 = BrownNoise.ar(0.1);
 	var kick = SinOsc.ar(XLine.kr(subFreq*2, subFreq, 0.01)) *
            EnvGen.ar(Env.perc(0.01, subDecay), gate) * seq;
     var osc3 = Pulse.ar(freq * 0.25, LFCub.ar(10,0,1,1), 0.5) * 0.8;
@@ -164,7 +164,11 @@ SynthDef(\chooka, {
 			// 		{ (e[\filtFreq] ? 2000).explin(80, 14000, 520, 1900)*0.2 })
 			// }),
 			\sizeEnv, Pfunc({ Env([0, 1], [1], 0) }),
-			\startWidth, Pfunc({ |e| (e[\amp] ? 0).lincurve(0, 1, 0.5, 9, 1) }),
+			\startWidth, Pfunc({ |e| 
+				var a = (e[\amp] ? 0);
+				if(a < 0.1, { 0 }, { a });
+				a.lincurve(0, 1, 0, 9, 1);
+			 }),
 			\endWidth, Pkey(\startWidth) * 8,
 			// \startColor, Pfunc({ |e|
 			// 	Color.hsv((0.55 + rootHue.()).wrap(0, 1), 0.96,
@@ -210,8 +214,8 @@ SynthDef(\chooka, {
 	var hh = m.accelMassFiltered.lincurve(0,1.5,0,1.0,1);
 
 	if(amp < 0.02) { amp = 0.0 };
-	if(amp > 0.1, { 
-		Pdef(m.ptn).set(\subFreq, m.accelMassFiltered.lincurve(0,0.5,1,2,1).asInteger * 60);
+	if(amp > 0.85, { 
+		Pdef(m.ptn).set(\subFreq, (d.sensors.gyroEvent.y / pi.half).linexp(-1,1,40,200,-2));
 		Pdef(m.ptn).set(\seq, 1);
 	}, { 
 		Pdef(m.ptn).set(\seq, 0) ;

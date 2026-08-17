@@ -1,7 +1,7 @@
 var m = ~model;
 var synth;
 var bsynth;
-var note = 48 + 4 + 7;
+var note = 48 + 4 + -5;
 var lastTime = 0;
 
 // The device, captured lexically in ~init. It CANNOT be read as ~device
@@ -76,7 +76,7 @@ SynthDef(\warmPadMove2, {
 
     // Output with stereo spread
     sig = Splay.ar(sig, spread);
-		sig = GVerb.ar(sig.tanh * 0.2,4,0.1);
+		// sig = GVerb.ar(sig.tanh * 0.2,4,0.1);
 	Out.ar(out, sig * Amplitude.kr(amp,0.1,0.8) * env * exciter);
 }).add;
 
@@ -151,7 +151,7 @@ SynthDef(\warmPadMove2, {
 		var g     = dev.sensors.gyroEvent;
 		var rx    = (g.x + pi.half).wrap(-pi, pi);
 		var ry    = (g.y).wrap(-pi.half, pi.half).neg;
-		var rz    = (g.z - pi.half).wrap(-pi, pi).neg;
+		var rz    = pi + (g.z - pi.half).wrap(-pi, pi).neg;
 		var bw    = mod[\bw] ? 1.0;
 		var bh    = mod[\bh] ? 0.4;
 		var bd    = mod[\bd] ? 0.5;
@@ -281,10 +281,10 @@ SynthDef(\warmPadMove2, {
 	// THE single event. Adjust the stick here and nowhere else.
 	(type: \customVisualEvent, amp: 0, dur: 0.01, viewID: d.port,
 		shape: \airstick,
-		sx: 0, sy: 0, ex: 0, ey: 0,
-		startSize: 600,
+		sx: 0.0, sy: -0.5, ex: 0.0, ey: -0.5,
+		startSize: 300,
 		startWidth: 2.6,
-		startColor: Color.hsv(0.82, 0.90, 0.55, 1.0),
+		startColor: d.color,
 		closed: false,
 		duration: inf,
 		modulation: (
@@ -357,20 +357,19 @@ SynthDef(\warmPadMove2, {
 	if(a>0.9,{a=0.9});
     
     synth.set(\freq, (note + m.com.root).midicps);
-	synth.set(\amp, a * 0.5);
+	synth.set(\amp, a * 0.3);
 	synth.set(\filtSpeed, filtSpeed);
 	synth.set(\lfoFreq, lfoFreq);
 	synth.set(\filtMin, fmin);
 	synth.set(\filtMax, fmax);
 
 
-	if(d.sensors.accelEvent.x > 2.1, {
+	if(d.sensors.accelEvent.x > 0.7, {
 	// if(m.accelMassFiltered > 1.0, {
 
 		if(TempoClock.beats > (lastTime + 0.055),{
 			// same expression the bsynth below takes for its \amp, so the
 			// ring is the strength of this hit rather than a guess at it.
-			var hitAmp = m.accelMassFiltered.lincurve(1,2.5,0.1,0.5,-2);
 			var chorus = m.accelMassFiltered.lincurve(0,2.5,1.0,0.2,-1);
 
 			// The stick's attitude SAMPLED NOW, at the strike, and handed to
@@ -388,7 +387,7 @@ SynthDef(\warmPadMove2, {
 
 			bsynth = Synth(\warmPadMove2, [
 				\freq, (note + m.com.root+ notes[idx]).midicps * 4, 
-				\amp, m.accelMassFiltered.lincurve(1,2.5,0.1,0.2,-1),
+				\amp, m.accelMassFiltered.lincurve(1,2.5,0.01,0.1,-1),
 				\gate, 1,
 				\atk, m.accelMassFiltered.lincurve(1,2.5,0.2,0.03,1),
 				\rel, m.accelMassFiltered.lincurve(1,2.5,3.2,1.03,1),
@@ -422,26 +421,26 @@ SynthDef(\warmPadMove2, {
 				// MUST match the \airstick event's sx/sy above: these lines
 				// are the stick's own rails, so if the stick is offset they
 				// are offset with it, or they start where it is not.
-				sx: 0, sy: 0, ex: 0, ey: 0,
+				sx: 0.0, sy: -0.5, ex: 0.0, ey: -0.5,
 				// A RADIAL MULTIPLIER, not a distance. 1 = exactly on the
 				// rails, 2 = twice as far off the axis. So the lines start
 				// as the stick's own edges and move apart from there.
 				startSize: 1.0,
-				endSize: hitAmp.linlin(0.1, 0.5, 2.0, 6.0),
+				endSize: m.accelMassFiltered.lincurve(0.0,2.5,1.0,4.0,-2),
 				sizeEnv: Env([0, 1], [1], -3),
-				startWidth: hitAmp.linlin(0.1, 0.5, 4, 9),
-				endWidth: 0.5,
+				startWidth: 1,
+				endWidth: m.accelMassFiltered.lincurve(0.0,2.5,1,0,-2),
 				widthEnv: Env([0, 1], [1], -3),
 				startColor: Color.hsv(hue, 0.85, 1.0, 0.95),
 				endColor: Color.hsv(hue, 0.60, 1.0, 0.0),
 				closed: true,
-				duration: 3.1,
+				duration: 3.2,
 				modulation: (
 					amp: 0,
 					rx: hrx, ry: hry, rz: hrz,
 					bw: 1.0, bh: 0.4, bd: 0.5,
 					dist: 3.5, persp: 0.75,
-					proj: 600,   // = the \airstick event's startSize
+					proj: 500,   // = the \airstick event's startSize
 					seg: 12
 				)
 			).play;

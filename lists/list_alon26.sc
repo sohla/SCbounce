@@ -2,11 +2,10 @@
 	[
 		"silence",
 
-	    "trainChooka2",
-	    "trainMelody2",
 		"trainMove2",
 		"trainMove3",
-		"trainBass2",
+	    "trainChooka2",
+	    "trainMelody2",
 		"trainBass3",
 
 		"multiBeat1",

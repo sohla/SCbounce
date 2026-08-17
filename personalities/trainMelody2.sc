@@ -177,11 +177,11 @@ SynthDef(\funMelody, {
   	var envRel = m.accelMassFiltered.lincurve(0,1,0.1,2.6,2);
 	var envDec = m.accelMassFiltered.lincurve(0,1,0.05,0.2,-2);
 
-	var amp = m.accelMassFiltered.lincurve(0,2,0.001,0.2,-2);
+	var amp = m.accelMassFiltered.lincurve(0,2,0.001,0.1,-2);
 	var ff = ((d.sensors.gyroEvent.x / pi).fold(-0.5,0.5) * 2).linexp(-1,1,50,14000);
 	var rf = ((d.sensors.gyroEvent.x / pi).fold(-0.5,0.5) * 2).linexp(-1,1,0.9,0.2);
 
-	if(amp<0.05,{amp=0.0;});
+	if(amp<0.02,{amp=0.0;});
 	
 	Pdef(m.ptn).set(\viewID, d.port);
 	Pdef(m.ptn).set(\dur, dur);
