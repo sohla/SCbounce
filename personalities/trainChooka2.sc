@@ -212,10 +212,13 @@ SynthDef(\chooka, {
 	var lff = (m.gyroZFiltered.fold(-0.5,0.5) * 2).linlin(-1,1,110.0,800);
 	var hff = (m.gyroZFiltered.fold(-0.5,0.5) * 2).linexp(-1,1,250.0,8000);
 	var hh = m.accelMassFiltered.lincurve(0,1.5,0,1.0,1);
+	var notes = [28,35,40,47] + m.com.root;
+	var ni = (d.sensors.gyroEvent.y / pi.half).lincurve(-0.8,0.8,0,notes.size-1,-2).floor;
 
 	if(amp < 0.02) { amp = 0.0 };
 	if(amp > 0.85, { 
-		Pdef(m.ptn).set(\subFreq, (d.sensors.gyroEvent.y / pi.half).linexp(-1,1,40,200,-2));
+		// Pdef(m.ptn).set(\subFreq, notes[0].midicps);
+		Pdef(m.ptn).set(\subFreq, notes[ni].midicps);
 		Pdef(m.ptn).set(\seq, 1);
 	}, { 
 		Pdef(m.ptn).set(\seq, 0) ;

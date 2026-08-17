@@ -350,7 +350,9 @@ var addDevice = { |ip,port,index|
 
     var configPattern = "/%/Config".format(index);
     var configListener = OSCFunc({ |msg2, time2, addr2, recvPort2|
-        d.color = Color.fromArray(msg2.at([15,16,17])++[1.0]);
+        var a = msg2.keep(-4)/255;
+        a = (a.keep(3) * (255 / a.keep(3).maxItem)).round ++ a.drop(3);
+        d.color = Color.fromArray(a/255);
         postf("Device connected [%]: % : %\n", index, ip, port);
         // "CONFIG % %".format(index,d.color).postln;
         {
