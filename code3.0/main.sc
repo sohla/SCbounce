@@ -130,7 +130,7 @@ s.options.blockSize = 128;
 s.options.numBuffers = 2048;  // more buffers
 s.options.memSize = 65536;    // more memory
 s.options.numOutputBusChannels = 2; // for quad output
-s.latency = 0.2; // in seconds
+s.latency = 0.1; // in seconds
 
 MIDIIn.connectAll;
 

@@ -69,7 +69,7 @@ SynthDef(\versatilePerc, {
     // Drum oscillator
 
 	pch = freq * (1 + (pitch_contour * tension));
-	drum_osc = SinOsc.ar([pch,pch*1.007], LFNoise2.ar([4,5],10,-10),0.8);
+	drum_osc = SinOsc.ar([pch,pch*1.007], LFNoise2.ar([4,5],10,-10),1.8);
 
     // Click oscillator
     click_osc = LPF.ar(WhiteNoise.ar(1), 1500);
@@ -244,7 +244,7 @@ SynthDef(\versatilePerc, {
 
 	var a = m.accelMass.lincurve(0,2.5,0.0,1,-1);
 	var filtSpeed = m.accelMassFiltered.lincurve(0,2.5,0.1,20,3);
-	var ff = ((d.sensors.gyroEvent.x / pi).fold(-0.5,0.5) * 2).linexp(-1.0,1.0,1000,300.2);
+	var ff = ((d.sensors.gyroEvent.x / pi).fold(-0.5,0.5) * 2).linexp(-1.0,1.0,700,1000);
 	var dist = m.accelMassFiltered.lincurve(0,2.5,1,2,1);
 	var tension = ((d.sensors.gyroEvent.x / pi).fold(-0.5,0.5) * 2).lincurve(-1.0,1.0,0.01,1,2);
 

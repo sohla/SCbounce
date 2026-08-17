@@ -21,12 +21,12 @@ m.gyroFilteredDecay = 0.7;
 //------------------------------------------------------------
 SynthDef(\chooka, {
     |out=0, freq = 440, gate = 1, amp = 0.8, filtFreq = 2000, filtRes = 0.5, envAtk = 0.01, envDec = 0.1, envSus = 0.7, envRel = 0.2, 
-	pan = 0.0, subFreq = 90, subDecay = 0.5, trig = 1, seq = 1|
+	pan = 0.0, subFreq = 90, subDecay = 0.2, trig = 1, seq = 1|
 
     var env = EnvGen.ar(Env.adsr(envAtk, envDec, envSus, envRel), gate, doneAction: Done.freeSelf);
-    var osc1 = WhiteNoise.ar(0.05);
-    var osc2 = BrownNoise.ar(0.05);
-	var kick = SinOsc.ar(XLine.kr(subFreq*2, subFreq, 0.01)) *
+    var osc1 = WhiteNoise.ar(0.1);
+    var osc2 = BrownNoise.ar(0.2);
+	var kick = SinOsc.ar(XLine.kr(subFreq*2, subFreq, 0.3)) *
            EnvGen.ar(Env.perc(0.01, subDecay), gate) * seq;
     var osc3 = Pulse.ar(freq * 0.25, LFCub.ar(10,0,1,1), 0.5) * 0.8;
     var output = Mix([osc1, osc2, kick]) * env * amp;
@@ -212,14 +212,16 @@ SynthDef(\chooka, {
 	var lff = (m.gyroZFiltered.fold(-0.5,0.5) * 2).linlin(-1,1,110.0,800);
 	var hff = (m.gyroZFiltered.fold(-0.5,0.5) * 2).linexp(-1,1,250.0,8000);
 	var hh = m.accelMassFiltered.lincurve(0,1.5,0,1.0,1);
-	var notes = [28,35,40,47] + m.com.root;
+	var notes = [28,35,40,47,52,59,64] + 12 + m.com.root;
 	var ni = (d.sensors.gyroEvent.y / pi.half).lincurve(-0.8,0.8,0,notes.size-1,-2).floor;
+	var kd = (d.sensors.gyroEvent.y / pi.half).lincurve(-0.8,0.8,0.1,2,-2);
 
 	if(amp < 0.02) { amp = 0.0 };
 	if(amp > 0.85, { 
 		// Pdef(m.ptn).set(\subFreq, notes[0].midicps);
 		Pdef(m.ptn).set(\subFreq, notes[ni].midicps);
-		Pdef(m.ptn).set(\seq, 1);
+		Pdef(m.ptn).set(\seq, amp * 0.5);
+		Pdef(m.ptn).set(\subDecay, kd);
 	}, { 
 		Pdef(m.ptn).set(\seq, 0) ;
 	});
