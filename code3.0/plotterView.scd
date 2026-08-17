@@ -21,11 +21,9 @@ var plotterView = {|data, parentView|
 
 
 	Routine{
-
-
 		loop {
 			if(data.enabled.not, {
-				{plotter.value = [0]!50 }.defer;
+				{ plotter.value = [0]!50 }.defer;
 			},{
 				{
 				// pd = pd.addFirst([sin(Clock.beats),cos(Clock.beats),tan(Clock.beats).wrap2(1.0)]);
@@ -51,6 +49,5 @@ var plotterView = {|data, parentView|
 
 	plotter.interactionView
 };
-
 
 plotterView
