@@ -24,8 +24,8 @@ SynthDef(\chooka, {
 	pan = 0.0, subFreq = 90, subDecay = 0.5, trig = 1, seq = 1|
 
     var env = EnvGen.ar(Env.adsr(envAtk, envDec, envSus, envRel), gate, doneAction: Done.freeSelf);
-    var osc1 = WhiteNoise.ar(0.1);
-    var osc2 = BrownNoise.ar(0.1);
+    var osc1 = WhiteNoise.ar(0.05);
+    var osc2 = BrownNoise.ar(0.05);
 	var kick = SinOsc.ar(XLine.kr(subFreq*2, subFreq, 0.01)) *
            EnvGen.ar(Env.perc(0.01, subDecay), gate) * seq;
     var osc3 = Pulse.ar(freq * 0.25, LFCub.ar(10,0,1,1), 0.5) * 0.8;

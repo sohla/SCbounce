@@ -3,10 +3,11 @@
 		"silence",
 
 		"trainMove2",
+		"trainMoveOnly",
 		"trainMove3",
-	    "trainChooka2",
-	    "trainMelody2",
 		"trainBass3",
+	    "trainMelody2",
+	    "trainChooka2",
 
 		"multiBeat1",
 		"multiBeat2",

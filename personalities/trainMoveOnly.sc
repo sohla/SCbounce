@@ -1,9 +1,8 @@
 var m = ~model;
 var synth;
 var bsynth;
-var note = 48 + 4 - 12 + 7;
+var note = 48 + 4 - 12;
 var lastTime = 0;
-
 // The device, captured lexically in ~init. It CANNOT be read as ~device
 // from inside the vdef: a draw func runs in drawCanvas's context, not the
 // personality Environment, so ~device there resolves against the wrong
@@ -65,11 +64,11 @@ SynthDef(\warmPadMove2, {
             0.1  // Shorter decay time for cleaner sound
         )
     });    // Final processing
-	sub = LFTri.ar(freq * (3/2), pi, 13).tanh * 0.2;
+	sub = LFTri.ar(freq * (3/2), pi, 3).tanh * 0.8;
 	sig = Mix([sig, chorus.sum, sub]) / (numVoices + 3);
 
 	    // Filter sweep
-    filt = SinOsc.kr(filtSpeed.lag(1.5)).range(filtMin, filtMax);
+    filt = SinOsc.kr(filtSpeed.lag(1.0)).range(filtMin, filtMax);
     sig = RLPF.ar(sig, filt.lag(0.3), 0.5);
 
   // sig = sig * env * amp;
@@ -146,15 +145,21 @@ SynthDef(\warmPadMove2, {
 	// on the event for the stick alone. They are drawn as segmented
 	// polylines rather than 2-point spans so \modulation can bend them
 	// later — a 2-point path is all endpoints and never moves.
+
+	~curveAbove = { |in, thresh = 0.2, outMin = 0.3, outMax = 1.0, curve = -4|
+    if (in < thresh) { 0 } {
+        in.lincurve(thresh, 1.0, outMin, outMax, curve)
+    }
+};
 	~vdef.(\airstick, { |ev, c|
 		var mod   = ev[\modulation] ? ();
 		var g     = dev.sensors.gyroEvent;
 		var rx    = (g.x + pi.half).wrap(-pi, pi);
 		var ry    = (g.y).wrap(-pi.half, pi.half).neg;
 		var rz    = pi + (g.z - pi.half).wrap(-pi, pi).neg;
-		var bw    = mod[\bw] ? 1.0;
-		var bh    = mod[\bh] ? 0.4;
-		var bd    = mod[\bd] ? 0.5;
+		var bw    = (mod[\bw] ? 1.0);
+		var bh    = (mod[\bh] ? 0.4);
+		var bd    = (mod[\bd] ? 0.5);
 		var dist  = mod[\dist] ? 3.5;
 		var persp = mod[\persp] ? 0.75;
 		var seg   = (mod[\seg] ? 8).max(2);
@@ -282,8 +287,8 @@ SynthDef(\warmPadMove2, {
 	// THE single event. Adjust the stick here and nowhere else.
 	(type: \customVisualEvent, amp: 0, dur: 0.01, viewID: d.port,
 		shape: \airstick,
-		sx: -0.0, sy: -0.0, ex: 0, ey: 0,
-		startSize: 100,
+		sx: -0.0, sy: 0, ex: 0, ey: 0,
+		startSize: 500,
 		startWidth: 2.6,
 		startColor: d.color,
 		closed: false,
@@ -303,13 +308,13 @@ SynthDef(\warmPadMove2, {
 		\freq, note.midicps, 
 		\amp, 0,
 		\gate, 1,
-    \atk, 1.02,
-    \rel, 1.8,
-    // \filtMin, 800,
-    // \filtMax, 8000,
-    \filtSpeed, 0.1,
-    \chorusRate, 0.001,
-    \chorusDepth, 0.0001,
+		\atk, 1.02,
+		\rel, 1.8,
+		// \filtMin, 800,
+		// \filtMax, 8000,
+		\filtSpeed, 0.1,
+		\chorusRate, 0.001,
+		\chorusDepth, 0.0001,
 		\detuneAmount, 0.0004
 	]);
 };
@@ -346,108 +351,26 @@ SynthDef(\warmPadMove2, {
 
 	var dur = 0.5 * 2.pow(m.accelMassFiltered.linlin(0,3,0,2).floor).reciprocal;
 	var a = m.accelMassFiltered.lincurve(0,1.5,0,1,-2);
-	var filtSpeed = m.accelMassFiltered.lincurve(0,2.5,0.1,40,3);
+	var filtSpeed = m.accelMassFiltered.lincurve(0,2.5,0.1,30,3);
 	var lfoFreq = m.accelMassFiltered.lincurve(0,2.5,0.1,8,-1);
 	var fmin = (m.gyroZFiltered.fold(-0.5,0.5) * 2).linexp(-1.0,1.0,200,500);
 	var fmax = (m.gyroZFiltered.fold(-0.5,0.5) * 2).linexp(-1.0,1.0,200,8000);
-	var notes = [-5,-2,2,5,10,12]-7;
+	var notes = [-36,-12-5,-5,-2,7,10,12,14,16];
 	var idx = m.gyroYFiltered.lincurve(-0.4,0.4,0.0,notes.size-1,-2).asInteger;
 	var hue = (note + m.com.root+ notes[idx]).linlin(40, 66, 0, 1);
 
 	if(a<0.03,{a=0});
 	if(a>0.9,{a=0.9});
-    
+
+
+	// aa = a;
+
     synth.set(\freq, (note + m.com.root).midicps);
 	synth.set(\amp, a * 0.3);
 	synth.set(\filtSpeed, filtSpeed);
 	synth.set(\lfoFreq, lfoFreq);
 	synth.set(\filtMin, fmin);
 	synth.set(\filtMax, fmax);
-
-
-	if(d.sensors.accelEvent.x > 3.0, {
-
-		if(TempoClock.beats > (lastTime + 0.055),{
-			// same expression the bsynth below takes for its \amp, so the
-			// ring is the strength of this hit rather than a guess at it.
-			var chorus = m.accelMassFiltered.lincurve(0,2.5,0.02,0.2,-1);
-
-			// The stick's attitude SAMPLED NOW, at the strike, and handed to
-			// the visual on \modulation. \modulation is fixed at fire time,
-			// so the lines keep the angle they were struck at while the
-			// stick itself carries on turning underneath them. Reading the
-			// gyro live inside the vdef instead would drag every line in
-			// flight around with the wrist.
-			var hg = d.sensors.gyroEvent;
-			var hrx = (hg.x + pi.half).wrap(-pi, pi);
-			var hry = (hg.y).wrap(-pi.half, pi.half).neg;
-			var hrz = (hg.z - pi.half).wrap(-pi, pi).neg;
-
-			lastTime = TempoClock.beats;
-
-			bsynth = Synth(\warmPadMove2, [
-				\freq, (note + m.com.root+ notes[idx]).midicps * 4, 
-				\amp, m.accelMassFiltered.lincurve(0,2.5,0.003,0.1,1),
-				\gate, 1,
-				\atk, m.accelMassFiltered.lincurve(0,2.5,0.08,0.02,1),
-				\rel, m.accelMassFiltered.lincurve(0,2.5,0.8,3.03,1),
-				\filtMin, 8000,
-				\filtMax, 12000,
-				\filtSpeed, 0.1 * chorus,
-				\chorusRate, 0.1 * chorus,
-				\chorusDepth, 0.01 * chorus,
-				\detuneAmount, 0.0004 * chorus
-			]);
-			// mod 
-
-			s.bind { bsynth.set(\gate, 0) };
-
-			// visual : the hit. Four lines off the stick's four long rails.
-			//
-			// sx/sy MUST be 0 so this shares the stick's centre — the lines
-			// are drawn in the stick's own model space, so any offset here
-			// would start them somewhere the stick is not.
-			//
-			// startSize/endSize are a REACH in model units, not pixels: 0 is
-			// flush against the rail and endSize is how far out the line has
-			// grown. The -3 curve is the same one the ring used, and for the
-			// same reason — everything else in the tunnel accelerates toward
-			// you on +3 because it is approaching, but a hit has already
-			// happened, so it goes out fast and decelerates.
-			//
-			//   accel -> how far the lines reach, and their weight
-			(type: \customVisualEvent, amp: 0, dur: 0.01, viewID: d.port,
-				shape: \hitRays,
-				// MUST match the \airstick event's sx/sy above: these lines
-				// are the stick's own rails, so if the stick is offset they
-				// are offset with it, or they start where it is not.
-				sx: -0.0, sy: -0.0, ex: -0.0, ey: -0.0,
-				// A RADIAL MULTIPLIER, not a distance. 1 = exactly on the
-				// rails, 2 = twice as far off the axis. So the lines start
-				// as the stick's own edges and move apart from there.
-				startSize: 0.4,
-				endSize: m.accelMassFiltered.lincurve(0.0,2.5,1.0,1.0,-2),
-				sizeEnv: Env([0, 1], [1], -3),
-				startWidth: 10,
-				endWidth: m.accelMassFiltered.lincurve(0.0,2.5,1,0,-2),
-				widthEnv: Env([0, 1], [1], -3),
-				startColor: Color.hsv(hue, 0.85, 1.0, 0.95),
-				endColor: Color.hsv(hue, 0.60, 1.0, 0.0),
-				closed: true,
-				duration: 3.2,
-				modulation: (
-					amp: 0,
-					rx: hrx, ry: hry, rz: hrz,
-					bw: 0.1, bh: 0.4, bd: 0.5,
-					dist: 3.5, persp: 0.75,
-					proj: 500,   // = the \airstick event's startSize
-					seg: 12
-				)
-			).play;
-
-		},{
-		});
-	});
 
 };
 

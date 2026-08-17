@@ -23,8 +23,8 @@ var note = 60;
 // alternating [3,4], so in double time the note stutters 4 and the
 // octave 2, exactly the trainBass2 figure struck twice per position.
 // Rest(0.22) / 2 is Rest(0.11), so a subdivided rest stays a rest.
-var reps = [1, 2];
-var doubleThresh = 1.5;
+var reps = [1, 3];
+var doubleThresh = 1.0;
 
 // THE ONE SHOT. The pattern is defined in ~init but NOT played there.
 // The first time accel crosses startThresh the pattern starts, and the
@@ -51,7 +51,7 @@ var rootHue = { (m.com.root ? 0).linlin(-2, 3, -0.06, 0.06) };
 
 //------------------------------------------------------------
 m.accelMassFilteredAttack = 0.99;
-m.accelMassFilteredDecay = 0.49;
+m.accelMassFilteredDecay = 0.89;
 m.rrateMassFilteredAttack = 0.7;
 m.rrateMassFilteredDecay = 0.3;
 m.gyroFilteredAttack = 0.7;
@@ -170,7 +170,7 @@ SynthDef(\versatilePerc, {
 			\note, Pdup(Pkey(\rep), Pseq([0,10,5,4,7,7,2,5,4,4,-2,2,0,0,0,0].stutter(2) + 4, inf)),
     		\slotDur, Pdup(Pkey(\rep), Pseq([0.22,0.22,Rest(0.22),0.22,0.22,0.22], inf)),
 			\dur, Pkey(\slotDur) / Pkey(\rep),
-			\octave,Pdup(Pkey(\rep), Pseq([3,4],inf)),
+			\octave,Pdup(Pkey(\rep), Pseq([4,3],inf)),
 			\root, Pdup(Pkey(\rep), Pseq([0,0,-2,0,3].stutter(32), inf)),
 			\decay,Pkey(\octave).squared * 0.05,
    			\pan, Pxrand([-0.5,0.5], inf),
@@ -222,6 +222,7 @@ SynthDef(\versatilePerc, {
 	// event fires, so this is belt and braces — but a nil \rateIdx would
 	// reach Pswitch.wrapAt as nil.
 	Pdef(m.ptn).set(\rateIdx, 0);
+	// Pdef(m.ptn).play(quant: 0);
 
 };
 
@@ -241,11 +242,11 @@ SynthDef(\versatilePerc, {
 //------------------------------------------------------------
 ~next = {|d|
 
-	var a = m.accelMass.lincurve(0,2.5,0,1,-1);
+	var a = m.accelMass.lincurve(0,2.5,0.0,1,-1);
 	var filtSpeed = m.accelMassFiltered.lincurve(0,2.5,0.1,20,3);
-	var ff = ((d.sensors.gyroEvent.x / pi).fold(-0.5,0.5) * 2).linexp(-1.0,1.0,7000,800.2);
-	var dist = m.accelMassFiltered.lincurve(0,2.5,0,4,1);
-	var tension = ((d.sensors.gyroEvent.x / pi).fold(-0.5,0.5) * 2).lincurve(-1.0,1.0,0.01,2,2);
+	var ff = ((d.sensors.gyroEvent.x / pi).fold(-0.5,0.5) * 2).linexp(-1.0,1.0,1000,300.2);
+	var dist = m.accelMassFiltered.lincurve(0,2.5,1,2,1);
+	var tension = ((d.sensors.gyroEvent.x / pi).fold(-0.5,0.5) * 2).lincurve(-1.0,1.0,0.01,1,2);
 
 	if(a<0.08,{a=0});
 
@@ -258,11 +259,12 @@ SynthDef(\versatilePerc, {
 	// \rateIdx is deliberately NOT a Pbind key — a Pbind key would
 	// override the envir and defeat this .set. The slot decides when to
 	// read it, so this can flip as often as it likes.
-	Pdef(m.ptn).set(\rateIdx, if(m.accelMassFiltered > doubleThresh, 1, 0));
-
-	if(started.not and: { m.accelMass > startThresh }, {
+	// Pdef(m.ptn).set(\rateIdx, if(m.accelMassFiltered > doubleThresh, 2, 0));
+	// Pdef(m.ptn).set(\rateIdx,  ((d.sensors.gyroEvent.x / pi).fold(-0.5,0.5) * 2).lincurve(-1.0,1,0,3,-2).asInteger);
+	Pdef(m.ptn).set(\rateIdx, m.accelMassFiltered.lincurve(0.0,2.5,0,1,-1).asInteger);
+	if(started.not and: { m.accelMass > doubleThresh }, {
 		started = true;
-		Pdef(m.ptn).play(quant: 0);
+		Pdef(m.ptn).play(quant:0.22);
 	});
 
 };
