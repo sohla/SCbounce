@@ -4,6 +4,14 @@ var bsynth;
 var note = 48 + 4 + 7;
 var lastTime = 0;
 
+// The device, captured lexically in ~init. It CANNOT be read as ~device
+// from inside the vdef: a draw func runs in drawCanvas's context, not the
+// personality Environment, so ~device there resolves against the wrong
+// currentEnvironment and comes back nil. m works only because it is a
+// lexical var too. This is a reference, not a copied value, so
+// dev.sensors is live at frame rate.
+var dev;
+
 // SHARED ACROSS THE QUARTET. trainBass2 writes m.com.root; this voice
 // reads it, so a harmony change turns every hue in the ensemble together.
 var rootHue = { (m.com.root ? 0).linlin(-2, 3, -0.06, 0.06) };
@@ -113,54 +121,105 @@ SynthDef(\warmPadMove2, {
 	// saturated primaries on black; this voice takes the coolest, darkest
 	// end so it reads as architecture, never as an event.
 	//
-	//   gyro y     -> lfoFreq, the rate the shimmer travels round
-	//   \modulation -> everything else: ray count, breath depth, wobble,
-	//                  per-ray phase spread, alpha
-	~vdef.(\tunnelWalls, { |ev, c|
-		var mod       = ev[\modulation] ? ();
-		var a         = m.accelMassFiltered.lincurve(0, 1.5, 0, 5, -6);
-		var lfoMin    = mod[\lfoMin] ? 0.1;
-		var lfoMax    = mod[\lfoMax] ? 0.4;
-		var lfoFreq   = m.gyroYFiltered.linlin(-1.0, 1.0, lfoMin, lfoMax);
-		var filtSpeed = m.accelMassFiltered.lincurve(0, 2.5, 0.1, 1, 3);
-		var t         = c[\now];
-		var rays      = mod[\rays] ? 10;
-		var near      = mod[\near] ? 26;
-		var far       = c[\size];
-		var breath    = mod[\breath] ? 0.14;
-		var wob       = mod[\wobble] ? 0.05;
-		var spread    = mod[\spread] ? 0.7;
-		var alpha     = mod[\alpha] ? 0.45;
-		rays.do({ |i|
-			var ang     = (i / rays) * 2pi;
-			var breathe = 1 + (sin((t * lfoFreq) + (i * spread)) * breath * a);
-			var wobble  = 1 + (sin((t * filtSpeed * 0.2) + (i * 1.9)) * wob * a);
-			var p0      = c[\pos] + Polar(near, ang).asPoint;
-			var p1      = c[\pos] + Polar(far * breathe * wobble, ang).asPoint;
-			c[\render].(Array.fill(10, { |j| p0.blend(p1, j / 9) }), 1, alpha, false);
+	//   gyro x/y/z -> the stick's orientation, same angles as threeDeeView
+	//   accel      -> how far the whiskers reach out
+	//   \modulation -> box proportions, camera, segment count, reach, alphas
+	dev = d;
+
+	// The airstick itself, wireframed and projected by hand.
+	//
+	// This is threeDeeView's cube, rebuilt so it can live on the visual
+	// canvas: Canvas3D is a View class and cannot be used inside a draw
+	// func, so the rotation and the perspective divide are done here. The
+	// three Euler angles are lifted verbatim from threeDeeView so the
+	// stick on the canvas reads at the same attitude as the one on the
+	// device panel — same wraps, same negations, same X then Y then Z
+	// order. Body proportions are its mScale(1.0, 0.4, 0.5), and the
+	// camera is its distance 3.5 / perspective 0.75.
+	//
+	// dev is read here, not ~device — see the note at the top of the file.
+	//
+	// The whiskers are the part to play with. Every vertex can shoot a
+	// line on outward from the body along its own direction, length from
+	// \reach scaled by accel, so at rest you get a clean wireframe stick
+	// and on movement it throws lines out into the tunnel. Set reach to 0
+	// on the event for the stick alone. They are drawn as segmented
+	// polylines rather than 2-point spans so \modulation can bend them
+	// later — a 2-point path is all endpoints and never moves.
+	~vdef.(\airstick, { |ev, c|
+		var mod   = ev[\modulation] ? ();
+		var g     = dev.sensors.gyroEvent;
+		var rx    = (g.x + pi.half).wrap(-pi, pi);
+		var ry    = (g.y).wrap(-pi.half, pi.half).neg;
+		var rz    = (g.z - pi.half).wrap(-pi, pi).neg;
+		var bw    = mod[\bw] ? 1.0;
+		var bh    = mod[\bh] ? 0.4;
+		var bd    = mod[\bd] ? 0.5;
+		var dist  = mod[\dist] ? 3.5;
+		var persp = mod[\persp] ? 0.75;
+		var seg   = (mod[\seg] ? 8).max(2);
+		var edgeA = mod[\edgeAlpha] ? 1.0;
+		var rayA  = mod[\rayAlpha] ? 0.45;
+		var reach = (mod[\reach] ? 0.0)
+			* m.accelMassFiltered.linlin(0, 2.0, 0, 1);
+		var rot, proj, verts, edges;
+
+		rot = { |v|
+			var x = v[0], y = v[1], z = v[2], t;
+			t = y; y = (t * cos(rx)) - (z * sin(rx)); z = (t * sin(rx)) + (z * cos(rx));
+			t = x; x = (t * cos(ry)) + (z * sin(ry)); z = (t * sin(ry)).neg + (z * cos(ry));
+			t = x; x = (t * cos(rz)) - (y * sin(rz)); y = (t * sin(rz)) + (y * cos(rz));
+			[x, y, z]
+		};
+		proj = { |v|
+			var k = persp / (dist - v[2]).max(0.05) * c[\size];
+			c[\pos] + ((v[0] * k) @ (v[1] * k))
+		};
+
+		verts = [
+			[-1,-1,-1], [1,-1,-1], [1,1,-1], [-1,1,-1],
+			[-1,-1, 1], [1,-1, 1], [1,1, 1], [-1,1, 1]
+		].collect({ |v| rot.([v[0] * bw, v[1] * bh, v[2] * bd]) });
+
+		edges = [ [0,1],[1,2],[2,3],[3,0], [4,5],[5,6],[6,7],[7,4],
+		          [0,4],[1,5],[2,6],[3,7] ];
+
+		edges.do({ |e|
+			var p0 = verts[e[0]];
+			var p1 = verts[e[1]];
+			c[\render].(
+				Array.fill(seg, { |j| proj.(p0 + ((p1 - p0) * (j / (seg - 1)))) }),
+				1, edgeA, false);
+		});
+
+		if(reach > 0.001, {
+			verts.do({ |v|
+				var far = v * (1 + reach);
+				c[\render].(
+					Array.fill(seg, { |j| proj.(v + ((far - v) * (j / (seg - 1)))) }),
+					0.6, rayA, false);
+			});
 		});
 		nil
 	});
 
-	// THE single event. Adjust the tunnel here and nowhere else.
+	// THE single event. Adjust the stick here and nowhere else.
 	(type: \customVisualEvent, amp: 0, dur: 0.01, viewID: d.port,
-		shape: \tunnelWalls,
+		shape: \airstick,
 		sx: 0, sy: 0, ex: 0, ey: 0,
-		startSize: 620,
+		startSize: 600,
 		startWidth: 2.6,
 		startColor: Color.hsv(0.82, 0.90, 0.55, 1.0),
 		closed: false,
 		duration: inf,
 		modulation: (
 			amp: 0,
-			rays: 10,
-			near: 26,
-			lfoMin: 0.1,
-			lfoMax: 0.4,
-			breath: 0.14,
-			wobble: 0.05,
-			spread: 0.7,
-			alpha: 0.45
+			bw: 1.0, bh: 0.4, bd: 0.5,
+			dist: 3.5, persp: 0.75,
+			seg: 8,
+			reach: 2.5,
+			edgeAlpha: 1.0,
+			rayAlpha: 0.45
 		)
 	).play;
 

@@ -19,33 +19,18 @@ m.gyroFilteredAttack = 0.7;
 m.gyroFilteredDecay = 0.7;
 
 //------------------------------------------------------------
-SynthDef(\funMelody, {
-    |out=0, freq = 440, gate = 1, amp = 0.8, filtFreq = 2000, filtRes = 0.05, envAtk = 0.01, envDec = 0.1, envSus = 0.7, envRel = 0.2, pan = 0.0|
-    var osc1, osc2, osc3, env, filter, output;
-    env = EnvGen.ar(Env.adsr(envAtk, envDec, envSus, envRel), gate, doneAction: Done.freeSelf);
-    osc1 = Saw.ar(freq, 1.5);
-    osc2 = Pulse.ar(freq * 0.99, 0.5, 0.5);
-    osc3 = SinOsc.ar(freq * 1.01, 0, 1.5);
-    output = Mix([osc1, osc2, osc3]) * env * amp;
-    filter = RLPF.ar(output, filtFreq, filtRes);
-		// filter = ([filter, DelayN.ar(filter, 0.5, 0.5)+filter] * 2).tanh;
-
-    Out.ar(out, Pan2.ar(filter,pan));
-}).add;
-
-
 SynthDef(\chooka, {
-    |out=0, freq = 440, gate = 1, amp = 0.8, filtFreq = 2000, filtRes = 0.5, envAtk = 0.01, envDec = 0.1, envSus = 0.7, envRel = 0.2, pan = 0.0|
-    var osc1, osc2, osc3, env, filter, output;
-    env = EnvGen.ar(Env.adsr(envAtk, envDec, envSus, envRel), gate, doneAction: Done.freeSelf);
-    osc1 = WhiteNoise.ar(0.2);
-    osc2 = BrownNoise.ar(0.2);
-    osc3 = Pulse.ar(freq * 0.25, LFCub.ar(10,0,1,1), 0.5) * 0.8;
-    // osc3 = SinOsc.ar(freq * 1.01, 0, 1.5);
-    output = Mix([osc1, osc2]) * env * amp;
-    filter = RLPF.ar(output, filtFreq, filtRes);
-		// filter = ([filter, DelayN.ar(filter, 0.5, 0.5)+filter] * 2).tanh;
+    |out=0, freq = 440, gate = 1, amp = 0.8, filtFreq = 2000, filtRes = 0.5, envAtk = 0.01, envDec = 0.1, envSus = 0.7, envRel = 0.2, 
+	pan = 0.0, subFreq = 260, subDecay = 0.5, trig = 1, seq = 1|
 
+    var env = EnvGen.ar(Env.adsr(envAtk, envDec, envSus, envRel), gate, doneAction: Done.freeSelf);
+    var osc1 = WhiteNoise.ar(0.2);
+    var osc2 = BrownNoise.ar(0.2);
+	var kick = SinOsc.ar(XLine.kr(subFreq*2, subFreq, 0.07)) *
+           EnvGen.ar(Env.perc(0.01, subDecay), gate) * seq;
+    var osc3 = Pulse.ar(freq * 0.25, LFCub.ar(10,0,1,1), 0.5) * 0.8;
+    var output = Mix([osc1, osc2, kick]) * env * amp;
+    var filter = RLPF.ar(output, filtFreq, filtRes);
     Out.ar(out, Pan2.ar(filter,pan));
 }).add;
 
@@ -224,6 +209,7 @@ SynthDef(\chooka, {
 	var hff = (m.gyroZFiltered.fold(-0.5,0.5) * 2).linexp(-1,1,250.0,8000);
 	
 	if(amp < 0.02) { amp = 0.0 };
+	if(amp > 0.3, { Pdef(m.ptn).set(\seq, 1) }, { Pdef(m.ptn).set(\seq, 0) });
 
 	if(m.gyroYFiltered > -0.1, {
 		if(m.gyroYFiltered < 0.1, {
