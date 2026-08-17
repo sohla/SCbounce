@@ -203,6 +203,81 @@ SynthDef(\warmPadMove2, {
 		nil
 	});
 
+	// The hit, fired per strike from ~next. The stick's four LONG rails,
+	// drawn again and extended along their own axis.
+	//
+	// The box's long axis is bw, so the four edges running along it are
+	// [0,1] [2,3] [4,5] [6,7] — the rails, sitting at the four (±bh, ±bd)
+	// corners. Each line here spans its whole rail, from -bw to +bw, so it
+	// is COLLINEAR with the rail rather than crossing it.
+	//
+	// c[\size] is a RADIAL MULTIPLIER on how far each line sits off the
+	// stick's long axis. At 1 the four lines are exactly the four rails.
+	// At 2 they are twice as far out, so they move apart from each other
+	// while staying parallel — the stick opens up. They keep the rail's
+	// length throughout; only the separation grows.
+	//
+	// The angles come from \modulation, NOT from dev. \modulation is fixed
+	// when the event fires, so each set of lines keeps the attitude it was
+	// struck at and hangs there while the stick turns on underneath.
+	// Reading the gyro live here — as \airstick does, correctly, because it
+	// IS the stick — would drag every line in flight around with the wrist.
+	// That is the whole difference between the two vdefs.
+	//
+	// \proj MUST match the stick event's \startSize or the lines will not
+	// lie on the rails. That is the one coupling between the two events.
+	//
+	// Here c[\size] is not a projection scale, it is the REACH — how far
+	// past the tip the line has got, in model units. So \startSize ->
+	// \endSize is the extending, and the core drives it through the event's
+	// -3 curve: out fast, then decelerate, because a hit has already
+	// happened.
+	//
+	// The near clamp is 0.5 rather than the stick's 0.05: an extended rail
+	// can pass the camera plane, and a tighter clamp would send it to a
+	// huge coordinate as it crossed. At 0.5 it simply leaves the frame,
+	// which is what shooting past you should look like.
+	~vdef.(\hitRays, { |ev, c|
+		var mod   = ev[\modulation] ? ();
+		var rx    = mod[\rx] ? 0;
+		var ry    = mod[\ry] ? 0;
+		var rz    = mod[\rz] ? 0;
+		var bw    = mod[\bw] ? 1.0;
+		var bh    = mod[\bh] ? 0.4;
+		var bd    = mod[\bd] ? 0.5;
+		var dist  = mod[\dist] ? 3.5;
+		var persp = mod[\persp] ? 0.75;
+		var proj  = mod[\proj] ? 600;
+		var seg   = (mod[\seg] ? 12).max(2);
+		var spread = c[\size];
+		var rot, project, corners;
+
+		rot = { |v|
+			var x = v[0], y = v[1], z = v[2], t;
+			t = y; y = (t * cos(rx)) - (z * sin(rx)); z = (t * sin(rx)) + (z * cos(rx));
+			t = x; x = (t * cos(ry)) + (z * sin(ry)); z = (t * sin(ry)).neg + (z * cos(ry));
+			t = x; x = (t * cos(rz)) - (y * sin(rz)); y = (t * sin(rz)) + (y * cos(rz));
+			[x, y, z]
+		};
+		project = { |v|
+			var k = persp / (dist - v[2]).max(0.5) * proj;
+			c[\pos] + ((v[0] * k) @ (v[1] * k))
+		};
+
+		corners = [ [bh.neg, bd.neg], [bh, bd.neg],
+		            [bh.neg, bd],     [bh, bd] ];
+
+		corners.do({ |yz|
+			var off = [yz[0] * spread, yz[1] * spread];
+			var a = rot.([bw.neg, off[0], off[1]]);
+			var b = rot.([bw,     off[0], off[1]]);
+			c[\render].(
+				Array.fill(seg, { |j| project.(a + ((b - a) * (j / (seg - 1)))) }),
+				1, 1, false);
+		});
+		nil
+	});
+
 	// THE single event. Adjust the stick here and nowhere else.
 	(type: \customVisualEvent, amp: 0, dur: 0.01, viewID: d.port,
 		shape: \airstick,
@@ -298,6 +373,17 @@ SynthDef(\warmPadMove2, {
 			var hitAmp = m.accelMassFiltered.lincurve(1,2.5,0.1,0.5,-2);
 			var chorus = m.accelMassFiltered.lincurve(0,2.5,1.0,0.2,-1);
 
+			// The stick's attitude SAMPLED NOW, at the strike, and handed to
+			// the visual on \modulation. \modulation is fixed at fire time,
+			// so the lines keep the angle they were struck at while the
+			// stick itself carries on turning underneath them. Reading the
+			// gyro live inside the vdef instead would drag every line in
+			// flight around with the wrist.
+			var hg = d.sensors.gyroEvent;
+			var hrx = (hg.x + pi.half).wrap(-pi, pi);
+			var hry = (hg.y).wrap(-pi.half, pi.half).neg;
+			var hrz = (hg.z - pi.half).wrap(-pi, pi).neg;
+
 			lastTime = TempoClock.beats;
 
 			bsynth = Synth(\warmPadMove2, [
@@ -317,34 +403,47 @@ SynthDef(\warmPadMove2, {
 
 			s.bind { bsynth.set(\gate, 0) };
 
-			// visual : the hit. One bright ring at the vanishing point.
+			// visual : the hit. Four lines off the stick's four long rails.
 			//
-			// It is the only mark in the quartet that starts big and bright
-			// instead of creeping in from far away, and the only one whose
-			// size curve is NEGATIVE (-3): it snaps open and then decelerates.
-			// Everything else here accelerates toward you on a +3 because it
-			// is approaching. A hit has no approach — it has already happened
-			// — so it wants the opposite curve, and that difference is what
-			// stops it reading as just another lamp coming down the tunnel.
+			// sx/sy MUST be 0 so this shares the stick's centre — the lines
+			// are drawn in the stick's own model space, so any offset here
+			// would start them somewhere the stick is not.
 			//
-			// The ring thins as it opens, so it dissipates rather than
-			// hanging as a hoop. Outline, never filled: a filled disc this
-			// size would white out the whole tunnel on every hit.
+			// startSize/endSize are a REACH in model units, not pixels: 0 is
+			// flush against the rail and endSize is how far out the line has
+			// grown. The -3 curve is the same one the ring used, and for the
+			// same reason — everything else in the tunnel accelerates toward
+			// you on +3 because it is approaching, but a hit has already
+			// happened, so it goes out fast and decelerates.
 			//
-			//   accel -> ring size, stroke weight, and how bright it starts
+			//   accel -> how far the lines reach, and their weight
 			(type: \customVisualEvent, amp: 0, dur: 0.01, viewID: d.port,
-				shape: \circle,
-				numPoints: 48,
-				sx: 0.5, sy: 0, ex: 0, ey: 0,
-				startSize: hitAmp.linlin(0.1, 0.5, 40, 90) * 0.5,
-				endSize: hitAmp.linlin(0.1, 0.5, 260, 480) * 0.5,
+				shape: \hitRays,
+				// MUST match the \airstick event's sx/sy above: these lines
+				// are the stick's own rails, so if the stick is offset they
+				// are offset with it, or they start where it is not.
+				sx: 0, sy: 0, ex: 0, ey: 0,
+				// A RADIAL MULTIPLIER, not a distance. 1 = exactly on the
+				// rails, 2 = twice as far off the axis. So the lines start
+				// as the stick's own edges and move apart from there.
+				startSize: 1.0,
+				endSize: hitAmp.linlin(0.1, 0.5, 2.0, 6.0),
 				sizeEnv: Env([0, 1], [1], -3),
 				startWidth: hitAmp.linlin(0.1, 0.5, 4, 9),
 				endWidth: 0.5,
 				widthEnv: Env([0, 1], [1], -3),
 				startColor: Color.hsv(hue, 0.85, 1.0, 0.95),
 				endColor: Color.hsv(hue, 0.60, 1.0, 0.0),
-				duration: 3.1
+				closed: true,
+				duration: 3.1,
+				modulation: (
+					amp: 0,
+					rx: hrx, ry: hry, rz: hrz,
+					bw: 1.0, bh: 0.4, bd: 0.5,
+					dist: 3.5, persp: 0.75,
+					proj: 600,   // = the \airstick event's startSize
+					seg: 12
+				)
 			).play;
 
 		},{

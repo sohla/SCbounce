@@ -7,6 +7,7 @@
 		"trainMove2",
 		"trainMove3",
 		"trainBass2",
+		"trainBass3",
 
 		"multiBeat1",
 		"multiBeat2",
