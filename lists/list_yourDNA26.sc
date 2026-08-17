@@ -9,19 +9,20 @@
 		"frog2",		
 		"quackQuack",
 		"heatherLaugh1",
+		
+		"bees",
+		"westminsterChimes1",
+		"bells",
+		"magicWand",
+		"magicWand2",
+		"metal1",
+		"metal2",
 
 		"funBass",
 		"funMelody",
 
-
-		"magicWand",
-		"magicWand2",
-
 		"melodicPerc1",
 		"melodicPerc2",
-		
-		"metal1",
-		"metal2",
 
 		"miniMoog",
 
@@ -45,6 +46,9 @@
 		"harp1",
 		"cymbals1",
 
+		"tootHeather4Button",
+		"train4Button",
+		"tootHMix",
 
 
 		// "melbb1",
