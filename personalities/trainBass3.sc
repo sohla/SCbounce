@@ -23,7 +23,7 @@ var note = 60;
 // alternating [3,4], so in double time the note stutters 4 and the
 // octave 2, exactly the trainBass2 figure struck twice per position.
 // Rest(0.22) / 2 is Rest(0.11), so a subdivided rest stays a rest.
-var reps = [1, 3];
+var reps = [1, 2];
 var doubleThresh = 1.0;
 
 // THE ONE SHOT. The pattern is defined in ~init but NOT played there.
@@ -50,12 +50,12 @@ var rootHue = { (m.com.root ? 0).linlin(-2, 3, -0.06, 0.06) };
 // read straight off the note instead — see the ~vdef comment in ~init.
 
 //------------------------------------------------------------
-m.accelMassFilteredAttack = 0.99;
-m.accelMassFilteredDecay = 0.89;
+m.accelMassFilteredAttack = 0.9999;
+m.accelMassFilteredDecay = 0.9999;
 m.rrateMassFilteredAttack = 0.7;
-m.rrateMassFilteredDecay = 0.3;
-m.gyroFilteredAttack = 0.7;
-m.gyroFilteredDecay = 0.7;
+m.rrateMassFilteredDecay = 0.9;
+m.gyroFilteredAttack = 0.99;
+m.gyroFilteredDecay = 0.99;
 
 //------------------------------------------------------------
 SynthDef(\versatilePerc, {
@@ -242,13 +242,13 @@ SynthDef(\versatilePerc, {
 //------------------------------------------------------------
 ~next = {|d|
 
-	var a = m.accelMass.lincurve(0,2.5,0.0,1,-1);
+	var a = m.accelMassFiltered.lincurve(0,0.5,0.0,1,-1);
 	var filtSpeed = m.accelMassFiltered.lincurve(0,2.5,0.1,20,3);
 	var ff = ((d.sensors.gyroEvent.x / pi).fold(-0.5,0.5) * 2).linexp(-1.0,1.0,700,1000);
 	var dist = m.accelMassFiltered.lincurve(0,2.5,1,2,1);
 	var tension = ((d.sensors.gyroEvent.x / pi).fold(-0.5,0.5) * 2).lincurve(-1.0,1.0,0.01,1,2);
 
-	if(a<0.02,{a=0});
+	if(a<0.2,{a=0});
 
 	Pdef(m.ptn).set(\viewID, d.port);
 	Pdef(m.ptn).set(\amp, a * 1);
