@@ -151,9 +151,11 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, start=0, pan=0, freq=
 
 //------------------------------------------------------------
 ~deinit = ~deinit <> {
-	// Cancel any load still parked in ~init's s.sync — it checks this flag
-	// before building the event type / group / Pdef, so an unload that lands
-	// mid-load can't be followed by an orphan pattern from the old env.
+	
+	var t0 = Main.elapsedTime;
+	var tlog = topEnvironment[\airkitTraceLog];
+	var tport = ~device !? { |dev| dev.port };
+
 	loading = false;
 
 	Pdef(m.ptn).remove;
@@ -173,6 +175,10 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, start=0, pan=0, freq=
 				s.sync;
 			});
 			samplesLib = nil;
+		};
+		tlog !? { |f|
+			f.(tport, "deinit.done", "name=JUPITERSHARP ms=%".format(
+				((Main.elapsedTime - t0) * 1000).round.asInteger));
 		};
 	};
 };

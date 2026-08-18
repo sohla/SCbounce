@@ -42,6 +42,46 @@ var com = (
     \rrateMass: 0,
 );
 
+// --- [TRACE] step-0 load-path instrumentation (2026-08-19) ------------------
+// LOGGING ONLY. Nothing here changes behaviour, ordering or timing — every
+// call is a postf behind a flag that defaults to false, so the composer post
+// window is unchanged. The COTF profile turns it on (main_cotf.scd).
+//
+// Purpose: measure, over the run, how far the old personality's teardown
+// overlaps the new one's setup, and whether a seat is still mid-load when a
+// resync arrives. Evidence first — the load path is NOT being serialized yet.
+//
+//   [TRACE] HH:MM:SS.mmm port=<p> <phase> <k=v ...>
+//
+//   load.enter / reload.enter / unload.enter   seq= seat= from= idx=
+//   deinit.call  deinit.ret                    seq= name=   ret adds ms=
+//   init.call    init.ret                      seq= name=   ret adds ms=
+//   capture                                    seq= hook=<true|false>
+//   procrout                                   seq=
+//
+// seq= ties every line of one load together; the lines interleave across
+// ports, so grep by seq or by port.
+//
+// READ deinit.ret CAREFULLY: it is when ~deinit RETURNED, which for any
+// personality that forks its teardown (all the samplers) is NOT when teardown
+// finished. The gap between the two is exactly what we are trying to size, and
+// it needs one more trace line inside the p-file's fork to be visible.
+// topEnvironment[\airkitTrace], NOT ~airkitTrace: the deinit/init traces fire
+// inside `d.env.use`, and a personality Environment is built with
+// Environment.make (no parent), so a bare ~var resolves against the
+// personality env and comes back nil there. Reading topEnvironment explicitly
+// makes this callable from any environment.
+var traceSeq = 0;
+var trace = { |port, phase, extra|
+    if(topEnvironment[\airkitTrace] == true, {
+        var t = Date.localtime;
+        postf("[TRACE] %.% port=% % %\n",
+            t.format("%H:%M:%S"),
+            (t.rawSeconds.frac * 1000).asInteger.asString.padLeft(3, "0"),
+            port ? "-", phase, extra ? "");
+    });
+};
+
 //------------------------------------------------------------
 // 
 //------------------------------------------------------------
@@ -334,6 +374,12 @@ var loadPersonality = { |port, index|
 
     var d = ~devices.at(port);
     var devicePersonalityList = loadPersonalityList.(d.index-1);
+    var seq, fromName;
+
+    traceSeq = traceSeq + 1;
+    seq = traceSeq;
+    fromName = d.name;
+    trace.(port, "load.enter", "seq=% seat=% from=% idx=%".format(seq, d.index, fromName, index));
 
     // d.personality = index;
     // stop personality
@@ -342,8 +388,13 @@ var loadPersonality = { |port, index|
 
     if(d.env != nil,{ d.env.use{
         Routine{
+            var t0;
             s.sync;
+            t0 = Main.elapsedTime;
+            trace.(port, "deinit.call", "seq=% name=%".format(seq, fromName));
             ~deinit.();
+            trace.(port, "deinit.ret", "seq=% name=% ms=%".format(seq, fromName,
+                ((Main.elapsedTime - t0) * 1000).round.asInteger));
             s.sync;
             // ~group.free;
             s.sync;
@@ -360,15 +411,22 @@ var loadPersonality = { |port, index|
     // ["TODO",d.enabled].postln;
     d.env.use{
         Routine{
+            var t0;
             s.sync;
+            t0 = Main.elapsedTime;
+            trace.(port, "init.call", "seq=% name=%".format(seq, d.name));
             ~init.(d);
+            trace.(port, "init.ret", "seq=% name=% ms=%".format(seq, d.name,
+                ((Main.elapsedTime - t0) * 1000).round.asInteger));
             captureResyncHook.(d); // [COTF] no yield between install & capture
+            trace.(port, "capture", "seq=% hook=%".format(seq, d.env[\onResyncHook].notNil));
             s.sync;
         }.play;
     };
 
     d.procRout = createProcRout.(d, index);
     d.procRout.reset.play(AppClock);
+    trace.(port, "procrout", "seq=%".format(seq));
 
     ~devices.put(d.port,d);
 
@@ -383,6 +441,12 @@ var unLoadPersonality = { |port, index|
 
     var d = ~devices.at(port);
     var devicePersonalityList = loadPersonalityList.(d.index-1);
+    var seq, fromName;
+
+    traceSeq = traceSeq + 1;
+    seq = traceSeq;
+    fromName = d.name;
+    trace.(port, "unload.enter", "seq=% seat=% from=%".format(seq, d.index, fromName));
 
     // d.personality = index;
     // stop personality
@@ -391,8 +455,13 @@ var unLoadPersonality = { |port, index|
 
     if(d.env != nil,{ d.env.use{
         Routine{
+            var t0;
             s.sync;
+            t0 = Main.elapsedTime;
+            trace.(port, "deinit.call", "seq=% name=%".format(seq, fromName));
             ~deinit.();
+            trace.(port, "deinit.ret", "seq=% name=% ms=%".format(seq, fromName,
+                ((Main.elapsedTime - t0) * 1000).round.asInteger));
             s.sync;
             // ~group.free;
             // s.sync;
@@ -411,6 +480,7 @@ var unLoadPersonality = { |port, index|
 var reLoadPersonality = { |port, index|
 
     var d = ~devices.at(port);
+    var seq, fromName;
     // var devicePersonalityList = loadPersonalityList.(d.index-1);
 
     // change device to new personality
@@ -424,10 +494,20 @@ var reLoadPersonality = { |port, index|
     // fresh Pdef gets a new name and the old one keeps playing.
     // d.env.use captures the current env into the Routine's scope,
     // so replacing d.env below doesn't affect the pending deinit.
+    traceSeq = traceSeq + 1;
+    seq = traceSeq;
+    fromName = d.name;
+    trace.(port, "reload.enter", "seq=% seat=% from=% idx=%".format(seq, d.index, fromName, index));
+
     if(d.env != nil,{ d.env.use{
         Routine{
+            var t0;
             s.sync;
+            t0 = Main.elapsedTime;
+            trace.(port, "deinit.call", "seq=% name=%".format(seq, fromName));
             ~deinit.();
+            trace.(port, "deinit.ret", "seq=% name=% ms=%".format(seq, fromName,
+                ((Main.elapsedTime - t0) * 1000).round.asInteger));
             s.sync;
         }.play;
     }});
@@ -437,15 +517,22 @@ var reLoadPersonality = { |port, index|
     // ["TODO",d.enabled].postln;
     d.env.use{
         Routine{
+            var t0;
             s.sync;
+            t0 = Main.elapsedTime;
+            trace.(port, "init.call", "seq=% name=%".format(seq, d.name));
             ~init.(d);
+            trace.(port, "init.ret", "seq=% name=% ms=%".format(seq, d.name,
+                ((Main.elapsedTime - t0) * 1000).round.asInteger));
             captureResyncHook.(d); // [COTF] no yield between install & capture
+            trace.(port, "capture", "seq=% hook=%".format(seq, d.env[\onResyncHook].notNil));
             s.sync;
         }.play;
     };
 
     d.procRout = createProcRout.(d, index);
     d.procRout.reset.play(AppClock);
+    trace.(port, "procrout", "seq=%".format(seq));
 
     ~devices.put(d.port,d);
 
@@ -456,6 +543,13 @@ var reLoadPersonality = { |port, index|
 //------------------------------------------------------------
 // 
 //------------------------------------------------------------
+// [TRACE] see the block above. Default OFF, so nothing about the composer
+// profile changes; `?` so a profile loaded before this file can pre-set it.
+// ~airkitTraceLog is the same function the load path uses, exposed so the COTF
+// profile can trace resync fan-out on the same clock and in the same format.
+~airkitTrace = ~airkitTrace ? false;
+~airkitTraceLog = trace;
+
 ~devices = Dictionary();
 
 OSCFunc({ |msg, time, addr, recvPort|

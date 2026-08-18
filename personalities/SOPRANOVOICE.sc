@@ -127,6 +127,10 @@ SynthDef(\samplerVoice, { |out=0, bufnum=0, amp=0.5, freq=440, srcFreq=440,
 //------------------------------------------------------------
 // Refs captured + vars nil'd synchronously so a double-fire no-ops.
 ~deinit = ~deinit <> {
+
+	var t0 = Main.elapsedTime;
+	var tlog = topEnvironment[\airkitTraceLog];
+	var tport = ~device !? { |dev| dev.port };
 	var g = group;
 	var p = padSynth;
 	var b = sampleBuffer;
@@ -143,6 +147,10 @@ SynthDef(\samplerVoice, { |out=0, bufnum=0, amp=0.5, freq=440, srcFreq=440,
 		};
 		2.0.wait;                  // outlast padSynth's release before the free
 		if (b.notNil) { b.free };
+		tlog !? { |f|
+			f.(tport, "deinit.done", "name=SOPRANOVOICE ms=%".format(
+				((Main.elapsedTime - t0) * 1000).round.asInteger));
+		};
 	};
 };
 

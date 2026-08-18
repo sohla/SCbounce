@@ -13,6 +13,14 @@ thisProcess.interpreter.executeFile(codeRoot +/+ "personalityController.scd");
 thisProcess.interpreter.executeFile(codeRoot +/+ "oscController.scd");
 thisProcess.interpreter.executeFile(codeRoot +/+ "conductorController.scd");
 
+// [TRACE] step-0 load-path instrumentation ON for the show profile (2026-08-19).
+// Logging only — see the block in personalityController.scd for the line
+// format. Set to false here to silence it. The `?` fallback keeps this file
+// runnable against a controller checkout that predates the trace block, so a
+// nil call can never take down the resync dispatcher.
+~airkitTrace = true;
+~airkitTraceLog = ~airkitTraceLog ? { |port, phase, extra| };
+
 // [COTF] beat-clock anchor fix (2026-07-15 bench). ~beatClock is a boot-long
 // singleton; every seek re-anchors ~beatClock.beats — possibly far BACKWARD
 // (seek 0 sets beats=0 after the clock has free-run since boot). A Pdef
@@ -38,21 +46,42 @@ thisProcess.interpreter.executeFile(codeRoot +/+ "conductorController.scd");
     // (nil there; first version crashed on nil * nil).
     var clock = ~beatClock;
     var quant = ~scoreBeatsPerBar * ~scoreEventsPerBeat;
+    // [TRACE] captured here for the same reason as clock/quant above — the
+    // generic branch logs from inside d.env.use, where a bare ~airkitTraceLog
+    // resolves against the personality env and is nil.
+    var tlog = ~airkitTraceLog ? { |port, phase, extra| };
+    // [TRACE] step-0 only — see the block in personalityController.scd. The
+    // route= field is the A3 signal: a seat still mid-load when a resync
+    // arrives has no captured hook yet AND no playing Pdef yet, so it takes
+    // the generic branch, finds isPlaying false, and is silently left
+    // unanchored. That is `route=generic playing=false`, and today it is
+    // indistinguishable in the log from a seat that legitimately had nothing
+    // to re-anchor.
+    tlog.(nil, "resync.enter", "idx=%".format(idx));
     ~devices.do { |d|
         if (d.env.notNil) {
             if (d.env[\onResyncHook].notNil) {
                 // Run under topEnvironment: the hook's ~roomState/~beatClock/
                 // ~score* live there; its m/group/tuneTime are lexical
                 // captures so they survive the environment swap.
+                tlog.(d.port, "resync.dev",
+                    "idx=% seat=% name=% route=hook".format(idx, d.index, d.name));
                 topEnvironment.use { d.env[\onResyncHook].value(idx) };
             } {
                 if (d.enabled == true) {
                     d.env.use {
-                        if (~model.notNil and: { Pdef(~model.ptn).isPlaying }) {
+                        var playing = ~model.notNil and: { Pdef(~model.ptn).isPlaying };
+                        tlog.(d.port, "resync.dev",
+                            "idx=% seat=% name=% route=generic playing=%".format(
+                                idx, d.index, d.name, playing));
+                        if (playing) {
                             Pdef(~model.ptn).stop;
                             Pdef(~model.ptn).play(clock, quant: quant);
                         };
                     };
+                } {
+                    tlog.(d.port, "resync.dev",
+                        "idx=% seat=% name=% route=disabled".format(idx, d.index, d.name));
                 };
             };
         };
