@@ -92,18 +92,43 @@ s.waitForBoot({
     // atmosphere bed. Room 3 (headsets) is unchanged. 10^(-10/20) = 0.3162.
     ~cotfMonitorTrim = if(~cotfRoom == 2, 0.3162, 1.0);
 
-    // Seat trims (linear gain), all Room 3 values from Edinburgh day 1 (2026-08-06, Ciaran):
-    // seat4 (percussion) ran hot in the Room 3 chair-speaker mix, seat3 (altosynth) sat under
-    // it, so seat3 +3dB / seat4 -5dB earlier that day; seat1 +2dB / seat2 +2dB added that
-    // evening. Room 2: seat3 +5dB (Ciaran, Edinburgh day 1), on top of the -10dB
-    // ~cotfMonitorTrim room pad. Live-tunable via /airkit/seatTrim; bake here to persist.
-    // Room 3 seat 5 +5dB (1.7783) baked 2026-08-13 — live-trimmed 08-12 via
-    // /airkit/seatTrim ("struggles to cut through"), confirmed by ear over a
-    // show day (Ciaran: "worked well").
+    // Seat trims (linear gain). Room 3 went FLAT 2026-08-18 (Ciaran): its old
+    // baked values ([1.2589, 1.2589, 1.4125, 0.5623, 1.7783]) were patch trims
+    // in disguise — patches had never moved seats, so every "seat" trim was
+    // really balancing the patch that lived there. They migrated (plus
+    // Ciaran's MOTU fader offsets, now zeroed) into ~cotfPatchTrims below so
+    // the compensation travels with the SOUND once super-seats moves patches
+    // between chairs. Reintroduce a Room 3 chair trim only with evidence of a
+    // genuinely chair-shaped imbalance. Room 2 stays seat-keyed as-is (shared
+    // stereo pair, no per-seat MOTU path): seat 3 +5dB (Ciaran, Edinburgh
+    // day 1), on top of the -10dB ~cotfMonitorTrim room pad.
     ~cotfSeatTrims = if(~cotfRoom == 3,
-        { [1.2589, 1.2589, 1.4125, 0.5623, 1.7783] },
+        { [1, 1, 1, 1, 1] },
         { [1, 1, 1.7783, 1, 1] }
     );
+
+    // Per-PATCH trims (2026-08-18, Ciaran): loudness compensation keyed to the
+    // personality, applied to a seat's monitor whenever that personality loads
+    // there (via the local /airkit/personalityName broadcast — no new OSC
+    // surface). Values = old baked Room 3 seat trim (per today's patch<->seat
+    // identity) + Ciaran's MOTU 12-16 fader offsets, after which the MOTU
+    // faders are zeroed: BASSBUZZ +2+4.5=+6.5 dB, JUPITERSHARP +2+0=+2 dB,
+    // ALTOSYNTH +3+8=+11 dB, PERCUSSION -5+0=-5 dB, SOPRANOVOICE +5+11=+16 dB.
+    // Room 3 only — Room 2 keeps its seat-keyed trims (see above). An unknown
+    // personality gets 1 (no compensation).
+    ~cotfPatchTrims = if(~cotfRoom == 3, {
+        IdentityDictionary[
+            \BASSBUZZ -> 2.1135,       // +6.5 dB
+            \JUPITERSHARP -> 1.2589,   // +2 dB
+            \ALTOSYNTH -> 3.5481,      // +11 dB
+            \PERCUSSION -> 0.5623,     // -5 dB
+            \SOPRANOVOICE -> 6.3096    // +16 dB
+        ]
+    }, { IdentityDictionary.new });
+    // Current patch-trim factor per seat (1..5), updated on personality load;
+    // seatTrim's handler multiplies it back in so a live seat trim never
+    // stomps the loaded patch's compensation.
+    ~cotfSeatPatchTrim = Array.fill(5, 1.0);
 
     ~cotfSeatBus = Dictionary();   // seat (1..5) -> private Bus (personalities' ~outBus)
     ~cotfMonitors = Dictionary();  // seat (1..5) -> monitor Synth
@@ -276,10 +301,39 @@ s.waitForBoot({
         var fade = (msg[3] ? 0.5).asFloat.max(0.05);
         ~cotfSeatTrims[seat - 1] = level;
         ~cotfMonitors.at(seat) !? { |syn|
-            syn.set(\trimLagT, fade, \trim, ~cotfMonitorTrim * level);
+            // Compose with the loaded patch's trim (2026-08-18) so live seat
+            // tuning never strips the personality's baked compensation.
+            syn.set(\trimLagT, fade,
+                \trim, ~cotfMonitorTrim * level * ~cotfSeatPatchTrim[seat - 1]);
         };
         "[COTF] seatTrim: seat % -> % (fade %s)".format(seat, level.round(0.001), fade).postln;
     }, '/airkit/seatTrim');
+
+    // --- [COTF] per-patch trim apply (2026-08-18) ----------------------------
+    // Listens to the EXISTING local /airkit/personalityName broadcast that
+    // personalityController.scd sends on every load (port, name) and applies
+    // ~cotfPatchTrims for the loaded personality to that seat's monitor. Runs
+    // alongside the other listeners on this address (own OSCdef key, purely
+    // additive). "none" (resetSeat's torn-down label) and unknown names get 1.
+    OSCdef(\cotfPatchTrim, { |msg|
+        var port = msg[1].asInteger;
+        var name = msg[2].asString;
+        var d = ~devices.at(port);
+        d !? {
+            var seat = d.index;
+            if ((seat >= 1) and: { seat <= 5 }) {
+                var pTrim = ~cotfPatchTrims.at(name.asSymbol) ? 1.0;
+                ~cotfSeatPatchTrim[seat - 1] = pTrim;
+                ~cotfMonitors.at(seat) !? { |syn|
+                    syn.set(\trimLagT, 0.5,
+                        \trim, ~cotfMonitorTrim * ~cotfSeatTrims[seat - 1] * pTrim);
+                };
+                if (pTrim != 1.0) {
+                    "[COTF] patchTrim: seat % (%) -> %".format(seat, name, pTrim.round(0.001)).postln;
+                };
+            };
+        };
+    }, '/airkit/personalityName');
 
     // --- [COTF] /airkit/testTone <seat 1-5> [durSec=1.0] (API.md) -----------
     // Speaker-test burst through the seat's monitor chain (so it proves
