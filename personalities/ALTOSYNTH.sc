@@ -1,10 +1,16 @@
 /*
 gestures:    [beat, shake, tilt]
-description: One long-lived LFTri+Sine synth holding a continuous drone, with a SECOND retriggerable envelope inside the same SynthDef — the "exciter". A Pdef on ~beatClock ticks a [2,1,1] figure, but the event handler only pushes \trig through when accelMassFiltered exceeds excThreshold. The tone always sings; move harder and punctuating attacks blossom over it. Both go through one RLPF, so the exciter is coloured by the same filter as the drone.
+description: An electric tone that sings continuously and bursts on the beat when you push — and in the warm-up room, the rhythm itself speeds up with you
+internals:   One long-lived LFTri+Sine synth holding a continuous drone, with a SECOND retriggerable envelope inside the same SynthDef — the "exciter". A Pdef on ~beatClock ticks a [2,1,1] figure, but the event handler only pushes \trig through when accelMassFiltered exceeds excThreshold. The tone always sings; move harder and punctuating attacks blossom over it. Both go through one RLPF, so the exciter is coloured by the same filter as the drone.
 sound:       continuous filtered drone; harder motion adds noise + octave-up bursts on the beat. x tilt sweeps the cutoff.
 pitch:       ~onBeat sets the drone from ctx.voicePool.choose wrapped to pitch class + baseMidi 60 + octave (piece sets octave from y tilt, -24..+24). Idle/curtain pick from ideleNotes by y tilt, NOT a rotation. Tuning holds 52 after a 15 s ramp.
 rhythm:      drone is continuous. Exciter clock is Pseq([1,0.5,0.5] * 2) = [2,1,1] on ~beatClock; in idle accel scales the whole figure via \stretch (2x slower at rest, 2x faster moving), reset to 1 in the other states.
 instruments: [Template]
+prints:      [boneRod, shinyStick, bopIt, gymBro]
+seats:       [3, 4, 5]
+affinity:    [electric, synth, soft, laser, space, energy, siren]
+register:    [wild]
+family:      drone
 */
 
 /*

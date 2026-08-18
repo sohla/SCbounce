@@ -1,10 +1,16 @@
 /*
 gestures:    [beat, shake, tilt]
-description: One long-lived Saw + Sine synth through a resonant LP filter, running for the whole personality life. No pattern, no per-note synths — every state just re-shapes the same voice's amp, cutoff and lag character. Gesture maps to amp (accelMass + rrateMass) and cutoff (x tilt).
+description: One enormous bass note held for the whole piece — roll your wrist and sweep it from a felt rumble to a singing buzz
+internals:   One long-lived Saw + Sine synth through a resonant LP filter, running for the whole personality life. No pattern, no per-note synths — every state just re-shapes the same voice's amp, cutoff and lag character. Gesture maps to amp (accelMass + rrateMass) and cutoff (x tilt).
 sound:       warm low drone with a tilt-swept resonant filter; sits two octaves below the score, so it reads as bass
 pitch:       ~onHalf sets the drone from ctx.voicePool.first wrapped to pitch class + baseMidi 60 - 24 (two octaves down). In idle, y tilt selects from a fixed ideleNotes array. Tuning bends to 57 over 15 s, with the bend depth set by y tilt. Curtain pins 57.
 rhythm:      none — continuous drone. The idle note only changes when y tilt moves it, rate-limited to one change per 0.2 s.
 instruments: [gymBro]
+prints:      [gymBro, oliveBird, blackGlonker, brownBall, greenHolder]
+seats:       [1, 2, 3]
+affinity:    [bass, low, deep, rumble, thunder, whale, heartbeat, cave, ocean, underground, buzz]
+register:    [wild]
+family:      drone
 */
 
 

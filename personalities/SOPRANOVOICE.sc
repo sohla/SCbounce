@@ -1,10 +1,16 @@
 /*
 gestures:    [beat, shake, tilt]
-description: ONE mono vocal sample serves two engines at once — a long-lived GrainBuf pad (amp from accel) and a Pdef PlayBuf pattern (amp + dur from rrate). Both read the same buffer. Both engines are built inside the Buffer read's completion action, so nothing addresses the bufnum before the server has data behind it.
+description: A human voice, two ways at once — shake to swell a choir, twist to place sung notes in time
+internals:   ONE mono vocal sample serves two engines at once — a long-lived GrainBuf pad (amp from accel) and a Pdef PlayBuf pattern (amp + dur from rrate). Both read the same buffer. Both engines are built inside the Buffer read's completion action, so nothing addresses the bufnum before the server has data behind it.
 sound:       granular ambient pad with an LFTri sub under the grains, plus rhythmic per-note chops of the same voice over the top. Accel opens the pad, rotation drives the pattern.
 pitch:       Idle plays a melody from idleNotes — semitone offsets above the sample pitch, selected by y tilt, over a pad held two octaves down. Piece hands pitch to ~onHalf: pad from ctx.voicePool.first, pattern from ctx.voicePool.choose, both wrapped to pitch class + baseMidi 60, so the two engines diverge. Tuning rides the §16 ramp (0.7 → 1.0 over 15 s) onto \freq rather than a \ptch control, converging on A (MIDI 69). Each SynthDef derives rate from freq/srcFreq with a fixed 0.99 detune.
 rhythm:      Pad continuous; pattern per-note on ~beatClock with \dur from rrate (2.5 down to 0.5).
 instruments: [brownBall]
+prints:      [brownBall, blackShaker, brownShaker, boneRod, shinyStick]
+seats:       [3, 4, 5]
+affinity:    [voice, singing, choir, song, ghost, angels]
+register:    [traditional]
+family:      voice
 */
 
 /*

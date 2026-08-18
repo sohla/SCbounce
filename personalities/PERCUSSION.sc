@@ -1,10 +1,16 @@
 /*
 gestures:    [beat, shake, tilt]
-description: Rhythmic backbone. Activity (m.accelMassFiltered) → tier (\low pulse / \med groove / \high busy), with hysteresis so a value sitting on a boundary can't flip at tick rate. Below restFloor the stick is only reading gravity, so it is silent. Engagement (per-load integral of activity × tickDt, accumulated in idle/piece/curtain — NOT tuning/silent) shrinks the fill interval, so seasoned playing gets denser fills. ~onSection swaps kit voicing per section. IDLE IS AN AUDITION RIG: previewMode makes it audible, idleLayer/idleSection pin a voicing, and y tilt solos one role group — set previewMode = false before the show.
+description: The orchestra's percussion section — bass drum, timpani, cymbals and shakers; move more and the pattern gets bigger, play longer and the fills come faster
+internals:   Rhythmic backbone. Activity (m.accelMassFiltered) → tier (\low pulse / \med groove / \high busy), with hysteresis so a value sitting on a boundary can't flip at tick rate. Below restFloor the stick is only reading gravity, so it is silent. Engagement (per-load integral of activity × tickDt, accumulated in idle/piece/curtain — NOT tuning/silent) shrinks the fill interval, so seasoned playing gets denser fills. ~onSection swaps kit voicing per section. IDLE IS AN AUDITION RIG: previewMode makes it audible, idleLayer/idleSection pin a voicing, and y tilt solos one role group — set previewMode = false before the show.
 sound:       Orchestral drum kit voiced 6 roles deep (kick / snare / hat / tom / cymbal / perc) plus a pitched timpani on its own SynthDef. Silent at rest; motion opens the tier.
 pitch:       Percussive samples are unpitched. The timpani is not — \timpVoice plays two sources a fifth apart, each note picking the nearer one so the rate shift stays inside a minor third, tracking the chord root via ~onChord within one octave from timpRoot.
 rhythm:      16-slot grid = TWO score bars (a bar is 8 events: ~scoreBeatsPerBar 2 × ~scoreEventsPerBeat 4). Show patterns low/med/high/fill_snare picked by tier; a separate dense `idle` pattern is the audition bed. Layer picked by section, fill frequency by engagement.
 instruments: [brownShaker]
+prints:      [brownShaker, blackShaker, brownBall]
+seats:       [1, 2, 3, 4]
+affinity:    [drums, drumming, percussion, timpani, thunder, storm, battle, marching, heartbeat, rhythm, beat, loud, big, war]
+register:    [traditional]
+family:      percussion
 */
 
 // Uses recipes from concert_p_files.md:

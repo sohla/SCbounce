@@ -1,10 +1,16 @@
 /*
 gestures:    [beat, shake, tilt]
-description: Pdef pattern firing per-note harp sample synths on ~beatClock. \root comes from the score, everything else is state-driven: octave and dur per state, amp from gesture, and in idle a \ptch transposition picked by y tilt. Sparse sample set resampled via \ptch.
+description: A harp — soft rolling notes that come faster and thicker the more you play, and tilt to move up and down the strings
+internals:   Pdef pattern firing per-note harp sample synths on ~beatClock. \root comes from the score, everything else is state-driven: octave and dur per state, amp from gesture, and in idle a \ptch transposition picked by y tilt. Sparse sample set resampled via \ptch.
 sound:       harp sample library from ~/Music/cotf_samples/harp; soft rolling idle figure, sparse tuning strokes, active arpeggios during piece
 pitch:       \root from ~scoreVoicePool.choose wrapped to pitch class (0-11). \octave from y tilt — idle 5-7, piece 5-8; tuning pins octave 5 and root 0. Idle adds a \ptch transposition from the notes table [0,2,5,7,10,12,14,16] selected by m.gyroYFiltered. Tuning rides the §16 ramp on \ptch, 1.08 → 1.0 over 15 s.
 rhythm:      one note per \dur ~beatClock tick. Idle and piece pick dur 0.5 / 1.0 / 2 by amp threshold; tuning is sparse and random (3-5); curtain holds its last value.
 instruments: [greenHolder]
+prints:      [thinViolin, compactViolin, greenHolder, whiteWing, brownBall]
+seats:       [2, 3, 4, 5]
+affinity:    [harp, magic, angels, dreams, stars, sparkle, fairy, gentle, calm, sleep, clouds]
+register:    [traditional]
+family:      harp
 */
 
 /*
