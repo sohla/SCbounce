@@ -83,10 +83,6 @@ Event.addEventType(eventTypeName, {|e|
 			\excAmp,  1,
 		]);
 
-		// Exciter clock — one event per ~beatClock quarter. The event's
-		// handler (above) reads accel and either fires the synth's exciter
-		// or does nothing. Steady quarter grid; \dur can be changed for
-		// swing or subdivision variation.
 		Pdef(m.ptn,
 			Pbind(
 				\type, eventTypeName,
@@ -96,9 +92,6 @@ Event.addEventType(eventTypeName, {|e|
 		Pdef(m.ptn).play(~beatClock, quant: ~scoreBeatsPerBar * ~scoreEventsPerBeat);
 	};
 
-	// ~onResync in d.env (per-device dispatch). Body in topEnvironment.use
-	// so ~beatClock resolves. No synths in a group here — nothing to freeAll,
-	// the long-lived synth is unaffected by seek.
 	~onResync = { |idx|
 		topEnvironment.use {
 			Pdef(m.ptn).stop;

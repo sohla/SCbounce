@@ -41,6 +41,9 @@ var noteToMidi = { |noteName|
 // both libraries put the note token at the end of the underscore chain.
 var folder = PathName("~/Music/cotf_samples/Celesta_ES_mf");
 var samplesLib;
+var loading = false;   // true while ~init is waiting on the sample reads;
+                       // ~deinit clears it so a load in flight bails out
+                       // instead of building an unreachable Pdef. See ~init.
 
 // Unique per-env event type — see cotf_harp1.sc for rationale.
 // Shared \customEvent registrations clobber each other across devices.
@@ -87,6 +90,8 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, ptch=1, start=0, pan=
 	// load every file in the folder, parsing the note token and computing
 	// the target MIDI note. same shape as cotf_harp1 — the naming convention
 	// is identical between the two libraries, so no per-library special-casing.
+	loading = true;
+
 	samplesLib = folder.entries.collect({ |path|
 		var note = path.fileNameWithoutExtension.split($_).last;
 		var buffer = Buffer.read(s, path.fullPath, action:{ |buf|
@@ -96,80 +101,97 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, ptch=1, start=0, pan=
 		(name: path.fileNameWithoutExtension, buffer: buffer, midiNote: noteToMidi.(note))
 	});
 
-	// custom event handler — inherited from cotf_harp1 with no changes.
-	// odd-MIDI requests get resampled up a semitone from the nearest lower
-	// even-MIDI sample (rate = 1.midiratio). works here because celesta,
-	// like harp, is provided as a mostly-even-MIDI sample set.
-	// asInteger because SC's default ~octave is 5.0 (Float); the addition
-	// promotes ~note to Float and .odd is not defined on Float.
-	Event.addEventType(eventTypeName, {|e|
-		~note = (~note + ~root + (12 * ~octave)).asInteger;
-		if(~note.odd,{
-			~bufnum = findSampleBuffer.(~note-1);
-				~rate = 1.midiratio;
-		},{
-			~bufnum = findSampleBuffer.(~note);
-				~rate = 1;
+	s.sync;
+	postf("[celesta1] all buffers loaded (%) \n", samplesLib.size);
+
+	if(loading.not or: { samplesLib.isNil },{
+		postf("[celesta1] load cancelled — unloaded while samples were loading \n");
+	},{
+		// Name any file that didn't come back rather than failing silently.
+		// We still build: one bad sample costs its own notes, not the seat.
+		samplesLib.do({ |sample|
+			if(sample.buffer.numFrames.isNil or: { sample.buffer.numFrames == 0 },{
+				postf("[celesta1] sample failed to load : % \n", sample.name);
+			});
 		});
-			~type = \note;
-			currentEnvironment.play;
-	});
 
-	topEnvironment.use{
-		group = Group.new;
+		// custom event handler — inherited from cotf_harp1 with no changes.
+		// odd-MIDI requests get resampled up a semitone from the nearest lower
+		// even-MIDI sample (rate = 1.midiratio). works here because celesta,
+		// like harp, is provided as a mostly-even-MIDI sample set.
+		// asInteger because SC's default ~octave is 5.0 (Float); the addition
+		// promotes ~note to Float and .odd is not defined on Float.
+		Event.addEventType(eventTypeName, {|e|
+			~note = (~note + ~root + (12 * ~octave)).asInteger;
+			if(~note.odd,{
+				~bufnum = findSampleBuffer.(~note-1);
+					~rate = 1.midiratio;
+			},{
+				~bufnum = findSampleBuffer.(~note);
+					~rate = 1;
+			});
+				~type = \note;
+				currentEnvironment.play;
+		});
 
-		Pdef(m.ptn,
-			Pbind(
-				\instrument, \stereoSampler,
-				\out, ob,
-				\group, group,   // route every event's synth into our group
-				\type, eventTypeName,
-				\note, 0,
-				\root, Pfunc { ~scoreVoicePool.choose.wrap(0,11).asInteger},
+		topEnvironment.use{
+			group = Group.new;
+
+			Pdef(m.ptn,
+				Pbind(
+					\instrument, \stereoSampler,
+					\out, ob,
+					\group, group,   // route every event's synth into our group
+					\type, eventTypeName,
+					\note, 0,
+					\root, Pfunc { ~scoreVoicePool.choose.wrap(0,11).asInteger},
+				);
 			);
-		);
 
-		Pdef(m.ptn).play(~beatClock, quant: ~scoreBeatsPerBar * ~scoreEventsPerBeat);
-		// cotf: seed envir so a stickless seat is silent — SC's Event default
-		// amp is 0.1, and the ~*Next tick hooks (the only writers of \amp) run
-		// only while the seat's device is enabled. Envir .set, not a Pbind key:
-		// Pbind keys override the envir and would defeat the hooks' .set.
-		Pdef(m.ptn).set(\amp, 0);
-		// Default dur = 2 (8th-note grid, half rate of harp/marimba) — gives
-		// the celesta's bell tail room to bloom. State hooks override.
-		Pdef(m.ptn).set(\dur, 2);
+			Pdef(m.ptn).play(~beatClock, quant: ~scoreBeatsPerBar * ~scoreEventsPerBeat);
+			// cotf: seed envir so a stickless seat is silent — SC's Event default
+			// amp is 0.1, and the ~*Next tick hooks (the only writers of \amp) run
+			// only while the seat's device is enabled. Envir .set, not a Pbind key:
+			// Pbind keys override the envir and would defeat the hooks' .set.
+			Pdef(m.ptn).set(\amp, 0);
+			// Default dur = 2 (8th-note grid, half rate of harp/marimba) — gives
+			// the celesta's bell tail room to bloom. State hooks override.
+			Pdef(m.ptn).set(\dur, 2);
 
-		// Reload guard: ~onRoomState only fires on state *change*, so on
-		// a reload during \tuning nothing would pause the freshly-started
-		// Pdef and you'd get the pattern layered on top of ~tuningNext
-		// single hits. Mirror ~onRoomState's \tuning branch here — pause
-		// immediately (quant means no events fire in between) and capture
-		// tuneTime so the \ptch ramp resumes from now.
-		if (~roomState == \tuning) {
-			Pdef(m.ptn).pause;
-			tuneTime = TempoClock.beats;
+			// Reload guard: ~onRoomState only fires on state *change*, so on
+			// a reload during \tuning nothing would pause the freshly-started
+			// Pdef and you'd get the pattern layered on top of ~tuningNext
+			// single hits. Mirror ~onRoomState's \tuning branch here — pause
+			// immediately (quant means no events fire in between) and capture
+			// tuneTime so the \ptch ramp resumes from now.
+			if (~roomState == \tuning) {
+				Pdef(m.ptn).pause;
+				tuneTime = TempoClock.beats;
+			};
+
 		};
 
-	};
-
-	// ~onResync lives in d.env (per-device dispatch from conductor's
-	// beatSync OSCdef — no cross-device clobber). Body wraps in
-	// topEnvironment.use so ~beatClock / ~roomState / ~scoreBeatsPerBar
-	// resolve. On re-anchor: stop Pdef + freeAll; restart only outside
-	// \tuning (tuning uses single-hit ~tuningNext instead).
-	~onResync = { |idx|
-		topEnvironment.use {
-			Pdef(m.ptn).stop;
-			s.bind { group.freeAll };
-			if (~roomState != \tuning) {
-				Pdef(m.ptn).play(~beatClock, quant: ~scoreBeatsPerBar * ~scoreEventsPerBeat);
+		// ~onResync lives in d.env (per-device dispatch from conductor's
+		// beatSync OSCdef — no cross-device clobber). Body wraps in
+		// topEnvironment.use so ~beatClock / ~roomState / ~scoreBeatsPerBar
+		// resolve. On re-anchor: stop Pdef + freeAll; restart only outside
+		// \tuning (tuning uses single-hit ~tuningNext instead).
+		~onResync = { |idx|
+			topEnvironment.use {
+				Pdef(m.ptn).stop;
+				s.bind { group.freeAll };
+				if (~roomState != \tuning) {
+					Pdef(m.ptn).play(~beatClock, quant: ~scoreBeatsPerBar * ~scoreEventsPerBeat);
+				};
 			};
 		};
-	};
+	});
 };
 
 //------------------------------------------------------------
 ~deinit = ~deinit <> {
+	loading = false;
+
 	Pdef(m.ptn).remove;
 	// Remove our per-env event type from Event.eventTypes so reloads don't
 	// accumulate stale entries.

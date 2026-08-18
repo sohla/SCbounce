@@ -25,7 +25,9 @@ instruments: [Lumivox | Gravitone | Velaphone | Aetherharp | Cellaris]
 */
 
 var m = ~model;
-var ob = ~outBus ? 0; // capture NOW — ~init bodies run under topEnvironment.use
+var ob = ~outBus ? 0; // capture NOW — ~outBus lives in d.env (this env), and
+                      // the Pbind below is built inside topEnvironment.use{}
+                      // where a bare ~outBus would read nil
 var lastTime = 0;     // throttle anchor for one-shot triggers
 var tuneTime = 0;     // capture on \tuning entry for time-based envelopes
 var group;            // dedicated Group (Pdef personalities need this — §5)
@@ -58,6 +60,10 @@ var noteToMidi = { |noteName|
 //   marimba  → ~/Music/cotf_samples/... (see marimba1/2 for parser variant)
 var folder = PathName("~/Music/cotf_samples/harp");
 var samplesLib;
+var loading = false;   // load-cancel flag — see the s.sync barrier in ~init.
+                       // ~init sets it true before the reads; ~deinit clears it so
+                       // an unload landing mid-load makes ~init bail instead of
+                       // building a Pdef the next ~deinit can't reach.
 
 //------------------------------------------------------------
 // GOTCHA: Event.addEventType(\name, ...) registers the handler on a
@@ -113,6 +119,8 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, ptch=1, start=0, pan=
 		bufnum
 	};
 
+	loading = true;
+
 	samplesLib = folder.entries.collect({ |path|
 		var note = path.fileNameWithoutExtension.split($_).last;
 		var buffer = Buffer.read(s, path.fullPath, action:{ |buf|
@@ -122,79 +130,136 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, ptch=1, start=0, pan=
 		(name: path.fileNameWithoutExtension, buffer: buffer, midiNote: noteToMidi.(note))
 	});
 
-	// Custom event handler — resolves note → bufnum + rate. Standard
-	// even/odd fallback. Swap for findClosestSample variant on sparse
-	// libraries, or the array-aware form for chord voicings (§16).
-	// Registered under eventTypeName (per-env unique) — see comment
-	// on the var declaration above for why the name is not just
-	// \customEvent.
-	Event.addEventType(eventTypeName, {|e|
-		~note = (~note + ~root + (12 * ~octave)).asInteger;
-		if(~note.odd, {
-			~bufnum = findSampleBuffer.(~note - 1);
-			~rate = 1.midiratio;
-		}, {
-			~bufnum = findSampleBuffer.(~note);
-			~rate = 1;
+	// ---------------------------------------------------------------
+	// LOAD BARRIER (§27). Buffer.read is ASYNCHRONOUS: it returns a
+	// Buffer with its bufnum already allocated, but the server hasn't
+	// filled it yet. A note that fires against an unfilled buffer is not
+	// an error — it is silence — so a pattern built and played before
+	// the reads land can cost you the opening events with NOTHING in the
+	// post window to say why.
+	//
+	// One s.sync is the whole barrier. ~init is called from
+	// personalityController's load Routine, so s.sync yields that thread
+	// and resumes when every outstanding /b_allocRead has completed.
+	//
+	// TWO RULES, both learned the hard way:
+	//
+	//  1. Do NOT gate on a per-file completion counter (counting calls to
+	//     Buffer.read's `action:`). One unreadable file leaves the count
+	//     permanently short and the pattern is never built at all — a
+	//     silent seat with no error. Worse, the build then runs inside a
+	//     /done responder, i.e. OFF the load Routine and outside d.env,
+	//     so the ~onResync install below lands in the wrong environment
+	//     and arrives after the controller has moved on.
+	//
+	//  2. Keep s.sync OUTSIDE topEnvironment.use. s.sync yields, and a
+	//     Routine restores its OWN environment (d.env) when resumed, so
+	//     anything after a yield inside a use block runs outside that
+	//     block — ~beatClock / ~score* would read nil. If the reads must
+	//     happen inside a use block (because they assign an env var, as
+	//     cotf_drums* do with ~buffers), close that block first and open
+	//     a second one for the build.
+	// ---------------------------------------------------------------
+	s.sync;
+	postf("[%] all buffers loaded (%) \n", m.name, samplesLib.size);
+
+	// The load can be CANCELLED under us: ~deinit may have run while we
+	// were parked in s.sync (fast reload, or the COTF server reconciling
+	// a hand-loaded personality back within ~10 s). The next load gets a
+	// fresh env with a fresh m.ptn, so anything built now would be an
+	// orphan Group + Pdef that no later ~deinit can reach — it keeps
+	// firing synths at freed buffers until Server.killAll. Bail instead.
+	if(loading.not or: { samplesLib.isNil },{
+		postf("[%] load cancelled — unloaded while samples were loading \n", m.name);
+	},{
+		// Name any file that didn't come back rather than failing
+		// silently. Still build: one bad sample costs its own notes,
+		// not the whole seat.
+		samplesLib.do({ |sample|
+			if(sample.buffer.numFrames.isNil or: { sample.buffer.numFrames == 0 },{
+				postf("[%] sample failed to load : % \n", m.name, sample.name);
+			});
 		});
-		~type = \note;
-		currentEnvironment.play;
-	});
 
-	topEnvironment.use{
-		group = Group.new;
+		// Custom event handler — resolves note → bufnum + rate. Standard
+		// even/odd fallback. Swap for findClosestSample variant on sparse
+		// libraries, or the array-aware form for chord voicings (§16).
+		// Registered under eventTypeName (per-env unique) — see comment
+		// on the var declaration above for why the name is not just
+		// \customEvent.
+		Event.addEventType(eventTypeName, {|e|
+			~note = (~note + ~root + (12 * ~octave)).asInteger;
+			if(~note.odd, {
+				~bufnum = findSampleBuffer.(~note - 1);
+				~rate = 1.midiratio;
+			}, {
+				~bufnum = findSampleBuffer.(~note);
+				~rate = 1;
+			});
+			~type = \note;
+			currentEnvironment.play;
+		});
 
-		// TODO(pdef): fill in the pattern. Default: single-note melody
-		// from voice pool at baseMidi. Common variants:
-		//   - Fixed offset pattern (Pseq / Pfunc reading an array — see dulcimer1)
-		//   - Chord voicings (\note as an array — see marimba2)
-		Pdef(m.ptn,
-			Pbind(
-				\instrument, \stereoSampler,
-				\out, ob,
-				\group, group,   // route into personality's Group (§5)
-				\type, eventTypeName,
-				\note, 0,
-				\root, Pfunc { ~scoreVoicePool.choose.wrap(0, 11).asInteger },
+		topEnvironment.use{
+			group = Group.new;
+
+			// TODO(pdef): fill in the pattern. Default: single-note melody
+			// from voice pool at baseMidi. Common variants:
+			//   - Fixed offset pattern (Pseq / Pfunc reading an array — see dulcimer1)
+			//   - Chord voicings (\note as an array — see marimba2)
+			Pdef(m.ptn,
+				Pbind(
+					\instrument, \stereoSampler,
+					\out, ob,
+					\group, group,   // route into personality's Group (§5)
+					\type, eventTypeName,
+					\note, 0,
+					\root, Pfunc { ~scoreVoicePool.choose.wrap(0, 11).asInteger },
+				);
 			);
-		);
 
-		Pdef(m.ptn).play(~beatClock, quant: ~scoreBeatsPerBar * ~scoreEventsPerBeat);
-		// Sensible starting dur — state ticks override.
-		Pdef(m.ptn).set(\dur, 1);
-
-		// TODO(reload-guard): if any state pauses the Pdef (engine D or
-		// mixed), mirror that state's entry setup here. Standard idiom:
-		//
-		// if (~roomState == \tuning) {
-		//     Pdef(m.ptn).pause;
-		//     tuneTime = TempoClock.beats;
-		// };
-
-	};
-
-	// ~onResync MUST live in d.env (this personality env), NOT
-	// topEnvironment. Conductor's beatSync OSCdef iterates ~devices and
-	// dispatches per-env, so a global slot would let the last-loaded
-	// personality clobber every other device's handler → their Pdefs
-	// stay stranded on re-anchor (silent instrument after play/seek).
-	// Body wraps in topEnvironment.use so ~beatClock / ~roomState /
-	// ~scoreBeatsPerBar resolve.
-	// TODO(onResync): state-aware if any state pauses the Pdef — only
-	// restart if we're NOT in a paused-Pdef state (§6).
-	~onResync = { |idx|
-		topEnvironment.use {
-			Pdef(m.ptn).stop;
-			s.bind { group.freeAll };
 			Pdef(m.ptn).play(~beatClock, quant: ~scoreBeatsPerBar * ~scoreEventsPerBeat);
+			// Sensible starting dur — state ticks override.
+			Pdef(m.ptn).set(\dur, 1);
+
+			// TODO(reload-guard): if any state pauses the Pdef (engine D or
+			// mixed), mirror that state's entry setup here. Standard idiom:
+			//
+			// if (~roomState == \tuning) {
+			//     Pdef(m.ptn).pause;
+			//     tuneTime = TempoClock.beats;
+			// };
+
 		};
-	};
+
+		// ~onResync MUST live in d.env (this personality env), NOT
+		// topEnvironment. Conductor's beatSync OSCdef iterates ~devices and
+		// dispatches per-env, so a global slot would let the last-loaded
+		// personality clobber every other device's handler → their Pdefs
+		// stay stranded on re-anchor (silent instrument after play/seek).
+		// Body wraps in topEnvironment.use so ~beatClock / ~roomState /
+		// ~scoreBeatsPerBar resolve.
+		// TODO(onResync): state-aware if any state pauses the Pdef — only
+		// restart if we're NOT in a paused-Pdef state (§6).
+		~onResync = { |idx|
+			topEnvironment.use {
+				Pdef(m.ptn).stop;
+				s.bind { group.freeAll };
+				Pdef(m.ptn).play(~beatClock, quant: ~scoreBeatsPerBar * ~scoreEventsPerBeat);
+			};
+		};
+	});
 };
 
 //------------------------------------------------------------
 // Idempotent cleanup. notNil guards handle titleView off+on reload
 // firing ~deinit twice on the same env (§5).
 ~deinit = ~deinit <> {
+	// Cancel a load still parked in ~init's s.sync barrier — without this,
+	// an unload landing mid-load is followed by ~init building a Pdef and
+	// Group belonging to an env nothing will ever tear down again.
+	loading = false;
+
 	Pdef(m.ptn).remove;
 	// Remove our per-env event type so reloads don't accumulate stale
 	// entries in Event.eventTypes. See eventTypeName declaration.

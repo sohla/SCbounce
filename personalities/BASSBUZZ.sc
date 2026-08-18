@@ -42,17 +42,9 @@ SynthDef(\simple, {|out=0, amp=0.0, freq=440, attack=0.001, decay=0.03, sustain=
 }).add;
 
 //------------------------------------------------------------
-// One long-lived \simple runs from ~init to ~deinit. Amp is driven every
-// ~next tick (IMU rate) from accelMassFiltered; freq changes are driven
-// by ~onBeat, dispatched by the conductor's score Routine on every true
-// musical beat. No barAnchor walk, no beatOffset, no ~beatClock polling
-// — hook timing comes from the Routine's SystemClock sleep, so fires
-// land tight against the audio (offset only by s.latency in ~init).
+
 ~init = ~init <> {
 	topEnvironment.use{
-		// ~init runs before the score Routine ticks, so ctx doesn't exist
-		// yet — read ~scoreVoicePool from topEnvironment for the first
-		// note only. Later notes come from ctx.voicePool in ~onBeat.
 		synth = Synth(\simple, [
 			\out, ob,
 			\freq,    ((~scoreVoicePool.first.asInteger % 12) + baseMidi).midicps,
@@ -70,17 +62,6 @@ SynthDef(\simple, {|out=0, amp=0.0, freq=440, attack=0.001, decay=0.03, sustain=
 ~deinit = ~deinit <> {
 	synth.set(\gate, 0);
 };
-
-//------------------------------------------------------------
-// Gesture-driven amp. Runs at ~30 Hz on AppClock (IMU rate) — timing
-// is not critical, response should feel live, so no s.bind.
-// ~next = {|d|
-// 	// var amp = (m.accelMass + m.rrateMass).lincurve(0, 2.0, -90, -2, -1);
-// 	// synth.set(\amp, 0);
-// 	// 	var amp = (m.accelMass + m.rrateMass).lincurve(0, 2.0, -90, -2, -1);
-// 	// synth.set(\amp, 0);
-
-// };
 
 //------------------------------------------------------------
 // State-gated tick hooks. Each fires at IMU rate (~30 Hz) in addition to

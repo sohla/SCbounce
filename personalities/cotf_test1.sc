@@ -39,6 +39,9 @@ var noteToMidi = { |noteName|
 
 var folder = PathName("~/Music/cotf_samples/harp");
 var samplesLib;
+var loading = false;   // true while ~init is waiting on the sample reads;
+                       // ~deinit clears it so a load in flight bails out
+                       // instead of building an unreachable Pdef. See ~init.
 
 // Unique per-env event type — see cotf_harp1.sc for rationale.
 var eventTypeName = (\customEvent_ ++ m.ptn).asSymbol;
@@ -77,6 +80,8 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, freq=440, ptch=1, sta
 		bufnum
 	};
 
+	loading = true;
+
 	samplesLib = folder.entries.collect({ |path|
 		var note = path.fileNameWithoutExtension.split($_).last;
 		var buffer = Buffer.read(s, path.fullPath, action:{ |buf|
@@ -86,77 +91,94 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, freq=440, ptch=1, sta
 		(name: path.fileNameWithoutExtension, buffer: buffer, midiNote: noteToMidi.(note))
 	});
 
-	// Standard customEvent — odd/even fallback resample. Used both by
-	// the running Pdef (piece/curtain) and by the inline one-shot
-	// events in ~idleNext / ~tuningNext / ~pieceNext (§15 idiom).
-	Event.addEventType(eventTypeName, {|e|
-		~note = (~note + ~root + (12 * ~octave)).asInteger;
-		// Send the true playing pitch to the SynthDef (§22).
-		~freq = ~note.midicps;
-		if(~note.odd, {
-			~bufnum = findSampleBuffer.(~note - 1);
-			~rate = 1.midiratio;
-		}, {
-			~bufnum = findSampleBuffer.(~note);
-			~rate = 1;
-		});
-		~type = \note;
-		currentEnvironment.play;
-	});
+	s.sync;
+	postf("[test1] all buffers loaded (%) \n", samplesLib.size);
 
-	topEnvironment.use{
-		group = Group.new;
-
-		// Running-Pdef backbone for \piece and \curtain. Pbind holds ONLY
-		// static routing — every param (including \root from ctx.voicePool)
-		// is set inline from state ticks. See §22.
-		Pdef(m.ptn,
-			Pbind(
-				\instrument, \stereoSampler,
-				\out, ob,
-				\group, group,   // route into personality group — §5
-				\type, eventTypeName,
-				\note, 0,
-			);
-		);
-
-		Pdef(m.ptn).play(~beatClock, quant: ~scoreBeatsPerBar * ~scoreEventsPerBeat);
-		// cotf: seed envir so a stickless seat is silent — SC's Event default
-		// amp is 0.1, and the ~*Next tick hooks (the only writers of \amp) run
-		// only while the seat's device is enabled. Envir .set, not a Pbind key:
-		// Pbind keys override the envir and would defeat the hooks' .set.
-		Pdef(m.ptn).set(\amp, 0);
-		Pdef(m.ptn).set(\dur, 1);
-
-		// Reload guard (§15) — Pdef must be paused in \idle and \tuning
-		// because both use accel one-shots only. ~onRoomState fires only
-		// on state *change*, so a reload while already in one of those
-		// states would leave the Pdef running.
-		if ((~roomState == \idle) or: { ~roomState == \tuning }, {
-			Pdef(m.ptn).pause;
-			if (~roomState == \tuning, { tuneTime = TempoClock.beats });
-		});
-
-	};
-
-	// ~onResync in d.env (per-device dispatch — no cross-device clobber).
-	// Body in topEnvironment.use so ~beatClock / ~roomState resolve.
-	// State-aware: after freeAll, only restart the Pdef when we're in a
-	// state that uses the running pattern (§6).
-	~onResync = { |idx|
-		topEnvironment.use {
-			Pdef(m.ptn).stop;
-			s.bind { group.freeAll };
-			if ((~roomState != \idle) and: { ~roomState != \tuning }, {
-				Pdef(m.ptn).play(~beatClock, quant: ~scoreBeatsPerBar * ~scoreEventsPerBeat);
+	if(loading.not or: { samplesLib.isNil },{
+		postf("[test1] load cancelled — unloaded while samples were loading \n");
+	},{
+		// Name any file that didn't come back rather than failing silently.
+		// We still build: one bad sample costs its own notes, not the seat.
+		samplesLib.do({ |sample|
+			if(sample.buffer.numFrames.isNil or: { sample.buffer.numFrames == 0 },{
+				postf("[test1] sample failed to load : % \n", sample.name);
 			});
+		});
+
+		// Standard customEvent — odd/even fallback resample. Used both by
+		// the running Pdef (piece/curtain) and by the inline one-shot
+		// events in ~idleNext / ~tuningNext / ~pieceNext (§15 idiom).
+		Event.addEventType(eventTypeName, {|e|
+			~note = (~note + ~root + (12 * ~octave)).asInteger;
+			// Send the true playing pitch to the SynthDef (§22).
+			~freq = ~note.midicps;
+			if(~note.odd, {
+				~bufnum = findSampleBuffer.(~note - 1);
+				~rate = 1.midiratio;
+			}, {
+				~bufnum = findSampleBuffer.(~note);
+				~rate = 1;
+			});
+			~type = \note;
+			currentEnvironment.play;
+		});
+
+		topEnvironment.use{
+			group = Group.new;
+
+			// Running-Pdef backbone for \piece and \curtain. Pbind holds ONLY
+			// static routing — every param (including \root from ctx.voicePool)
+			// is set inline from state ticks. See §22.
+			Pdef(m.ptn,
+				Pbind(
+					\instrument, \stereoSampler,
+					\out, ob,
+					\group, group,   // route into personality group — §5
+					\type, eventTypeName,
+					\note, 0,
+				);
+			);
+
+			Pdef(m.ptn).play(~beatClock, quant: ~scoreBeatsPerBar * ~scoreEventsPerBeat);
+			// cotf: seed envir so a stickless seat is silent — SC's Event default
+			// amp is 0.1, and the ~*Next tick hooks (the only writers of \amp) run
+			// only while the seat's device is enabled. Envir .set, not a Pbind key:
+			// Pbind keys override the envir and would defeat the hooks' .set.
+			Pdef(m.ptn).set(\amp, 0);
+			Pdef(m.ptn).set(\dur, 1);
+
+			// Reload guard (§15) — Pdef must be paused in \idle and \tuning
+			// because both use accel one-shots only. ~onRoomState fires only
+			// on state *change*, so a reload while already in one of those
+			// states would leave the Pdef running.
+			if ((~roomState == \idle) or: { ~roomState == \tuning }, {
+				Pdef(m.ptn).pause;
+				if (~roomState == \tuning, { tuneTime = TempoClock.beats });
+			});
+
 		};
-	};
+
+		// ~onResync in d.env (per-device dispatch — no cross-device clobber).
+		// Body in topEnvironment.use so ~beatClock / ~roomState resolve.
+		// State-aware: after freeAll, only restart the Pdef when we're in a
+		// state that uses the running pattern (§6).
+		~onResync = { |idx|
+			topEnvironment.use {
+				Pdef(m.ptn).stop;
+				s.bind { group.freeAll };
+				if ((~roomState != \idle) and: { ~roomState != \tuning }, {
+					Pdef(m.ptn).play(~beatClock, quant: ~scoreBeatsPerBar * ~scoreEventsPerBeat);
+				});
+			};
+		};
+	});
 };
 
 //------------------------------------------------------------
 // Idempotent cleanup — notNil guards for double-~deinit safety (§5).
 ~deinit = ~deinit <> {
+	loading = false;
+
 	Pdef(m.ptn).remove;
 	Event.eventTypes.removeAt(eventTypeName);
 

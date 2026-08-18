@@ -12,6 +12,9 @@ var ob = ~outBus ? 0;
 var lastTime = 0;
 var bi = 0;
 var group;
+var loading = false;   // true while ~init is waiting on the sample reads;
+                       // ~deinit clears it so a load in flight bails out
+                       // instead of building an unreachable Pdef. See ~init.
 
 // piece-time cycle order
 var drums = [3,0,3,5,8,9,10,11];
@@ -46,8 +49,9 @@ SynthDef(\drumkitt, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 ~init = ~init <> {
 	var folder = PathName("~/Music/cotf_samples/drums");
 
+	loading = true;
+
 	topEnvironment.use{
-		group = Group.new;
 		postf("loading samples : % \n", folder);
 		~buffers = folder.entries.collect({|path,i|
 			Buffer.read(s, path.fullPath, action:{|buf|
@@ -55,57 +59,78 @@ SynthDef(\drumkitt, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 				if(folder.entries.size - 1 == i, { "samples loaded".postln });
 			});
 		});
-
-		Pdef(m.ptn,
-			Pbind(
-				\instrument, \drumkitt,
-				\out, ob,
-				\group, group,
-				\bufnum, Pfunc{|e|
-					bi = bi + 1;
-					if(bi >= (drums.size), { bi = 0 });
-					~buffers[drums[bi]]
-				},
-				\octave, Pseq([5].stutter(24), inf),
-				\start, 0,
-				\note, Pseq([40], inf),
-				\dur, Pseq([1,1,2,Rest(1),1,Rest(2)], inf),
-				\pan, Pwhite(-0.1, 0.1),
-				\attack, 0.02,
-				\decay, 1,
-				\args, #[],
-			)
-		);
-
-		// start playing then immediately pause — ~onRoomState \piece resumes.
-		// quant means no events fire before the pause lands.
-		Pdef(m.ptn).play(~beatClock, quant: ~scoreBeatsPerBar * ~scoreEventsPerBeat);
-		// cotf: seed envir so a stickless seat is silent — SC's Event default
-		// amp is 0.1, and the ~*Next tick hooks (the only writers of \amp) run
-		// only while the seat's device is enabled. Envir .set, not a Pbind key:
-		// Pbind keys override the envir and would defeat the hooks' .set.
-		Pdef(m.ptn).set(\amp, 0);
-		Pdef(m.ptn).set(\bufnum, ~buffers[0]);
-		Pdef(m.ptn).pause;
-
 	};
 
-	// ~onResync in d.env (per-device dispatch — no cross-device clobber).
-	// Body in topEnvironment.use so ~beatClock / ~roomState resolve.
-	// Seek: stop + freeAll; restart only if we're in \piece.
-	~onResync = { |idx|
-		topEnvironment.use {
-			Pdef(m.ptn).stop;
-			s.bind { group.freeAll };
-			if (~roomState == \piece) {
-				Pdef(m.ptn).play(~beatClock, quant: ~scoreBeatsPerBar * ~scoreEventsPerBeat);
+	s.sync;
+	postf("[drums1] all buffers loaded (%) \n", (topEnvironment[\buffers] ? []).size);
+
+	if(loading.not,{
+		postf("[drums1] load cancelled — unloaded while samples were loading \n");
+	},{
+		// Name any file that didn't come back rather than failing silently.
+		// We still build: one bad sample costs its own notes, not the seat.
+		(topEnvironment[\buffers] ? []).do({ |buf, i|
+			if(buf.numFrames.isNil or: { buf.numFrames == 0 },{
+				postf("[drums1] sample failed to load : index % \n", i);
+			});
+		});
+
+		topEnvironment.use{
+			group = Group.new;
+
+			Pdef(m.ptn,
+				Pbind(
+					\instrument, \drumkitt,
+					\out, ob,
+					\group, group,
+					\bufnum, Pfunc{|e|
+						bi = bi + 1;
+						if(bi >= (drums.size), { bi = 0 });
+						~buffers[drums[bi]]
+					},
+					\octave, Pseq([5].stutter(24), inf),
+					\start, 0,
+					\note, Pseq([40], inf),
+					\dur, Pseq([1,1,2,Rest(1),1,Rest(2)], inf),
+					\pan, Pwhite(-0.1, 0.1),
+					\attack, 0.02,
+					\decay, 1,
+					\args, #[],
+				)
+			);
+
+			// start playing then immediately pause — ~onRoomState \piece resumes.
+			// quant means no events fire before the pause lands.
+			Pdef(m.ptn).play(~beatClock, quant: ~scoreBeatsPerBar * ~scoreEventsPerBeat);
+			// cotf: seed envir so a stickless seat is silent — SC's Event default
+			// amp is 0.1, and the ~*Next tick hooks (the only writers of \amp) run
+			// only while the seat's device is enabled. Envir .set, not a Pbind key:
+			// Pbind keys override the envir and would defeat the hooks' .set.
+			Pdef(m.ptn).set(\amp, 0);
+			Pdef(m.ptn).set(\bufnum, ~buffers[0]);
+			Pdef(m.ptn).pause;
+
+		};
+
+		// ~onResync in d.env (per-device dispatch — no cross-device clobber).
+		// Body in topEnvironment.use so ~beatClock / ~roomState resolve.
+		// Seek: stop + freeAll; restart only if we're in \piece.
+		~onResync = { |idx|
+			topEnvironment.use {
+				Pdef(m.ptn).stop;
+				s.bind { group.freeAll };
+				if (~roomState == \piece) {
+					Pdef(m.ptn).play(~beatClock, quant: ~scoreBeatsPerBar * ~scoreEventsPerBeat);
+				};
 			};
 		};
-	};
+	});
 };
 
 //------------------------------------------------------------
 ~deinit = ~deinit <> {
+	loading = false;
+
 	Pdef(m.ptn).remove;
 	// idempotent: notNil guards let ~deinit fire twice safely (unload+load path).
 	fork {

@@ -42,6 +42,9 @@ var parseHarpsichordNote = { |fileStem|
 
 var folder = PathName("~/Music/cotf_samples/Harpsichord");
 var samplesLib;
+var loading = false;   // true while ~init is waiting on the sample reads;
+                       // ~deinit clears it so a load in flight bails out
+                       // instead of building an unreachable Pdef. See ~init.
 
 // Unique per-env event type — see cotf_harp1.sc for rationale.
 var eventTypeName = (\customEvent_ ++ m.ptn).asSymbol;
@@ -80,6 +83,8 @@ SynthDef(\stereoSamplerH, {|bufnum=0, out=0, amp=1, rate=1, ptch=1, start=0, pan
 		(buffer: closest.buffer, rate: semitoneDiff.midiratio)
 	};
 
+	loading = true;
+
 	samplesLib = folder.entries
 		.collect({ |path|
 			var midiNote = parseHarpsichordNote.(path.fileNameWithoutExtension);
@@ -90,73 +95,90 @@ SynthDef(\stereoSamplerH, {|bufnum=0, out=0, amp=1, rate=1, ptch=1, start=0, pan
 			(name: path.fileNameWithoutExtension, buffer: buffer, midiNote: midiNote)
 		});
 
-	// customEvent handler — scalar path only (harpsichord2 plays single
-	// notes, not chord arrays). If a piece-time chord variant is ever needed
-	// swap in cotf_harpsichord1's array-aware handler.
-	Event.addEventType(eventTypeName, {|e|
-		var target = ~note + ~root + (12 * ~octave);
-		var found = findClosestSample.(target);
-		~bufnum = found.buffer;
-		~rate = found.rate;
-		~type = \note;
-		currentEnvironment.play;
-	});
+	s.sync;
+	postf("[harpsichord2] all buffers loaded (%) \n", samplesLib.size);
 
-	topEnvironment.use{
-		group = Group.new;
+	if(loading.not or: { samplesLib.isNil },{
+		postf("[harpsichord2] load cancelled — unloaded while samples were loading \n");
+	},{
+		// Name any file that didn't come back rather than failing silently.
+		// We still build: one bad sample costs its own notes, not the seat.
+		samplesLib.do({ |sample|
+			if(sample.buffer.numFrames.isNil or: { sample.buffer.numFrames == 0 },{
+				postf("[harpsichord2] sample failed to load : % \n", sample.name);
+			});
+		});
 
-		Pdef(m.ptn,
-			Pbind(
-				\instrument, \stereoSamplerH,
-				\out, ob,
-				\group, group,
-				\type, eventTypeName,
+		// customEvent handler — scalar path only (harpsichord2 plays single
+		// notes, not chord arrays). If a piece-time chord variant is ever needed
+		// swap in cotf_harpsichord1's array-aware handler.
+		Event.addEventType(eventTypeName, {|e|
+			var target = ~note + ~root + (12 * ~octave);
+			var found = findClosestSample.(target);
+			~bufnum = found.buffer;
+			~rate = found.rate;
+			~type = \note;
+			currentEnvironment.play;
+		});
 
-				// harp2's Pslide idiom — dynamic \range windows a slice off
-				// the head of the index list. step=0 keeps the window anchored
-				// at index 0, so range=r cycles indices 0..r-1 repeatedly.
-				// range=1 is a single-note drone (top of pool); range=8 sweeps
-				// the top 8 pool slots.
-				\slideIdx, Pslide(Array.series(maxRange, 0, 1), inf, Pkey(\range), 0, 0),
+		topEnvironment.use{
+			group = Group.new;
 
-				// Look up the pool at slideIdx, reduce to pitch class. \root=0
-				// so the customEvent math becomes pc + 12*~octave — ~octave
-				// alone controls register. wrapAt handles pool.size < range
-				// gracefully (small pools just repeat).
-				\note, Pfunc { |e|
-					var pool = (~scoreVoicePool ? [69]).asArray;
-					var idx = (e[\slideIdx] ? 0).asInteger;
-					pool.wrapAt(idx).asInteger.mod(12)
-				},
+			Pdef(m.ptn,
+				Pbind(
+					\instrument, \stereoSamplerH,
+					\out, ob,
+					\group, group,
+					\type, eventTypeName,
 
-				\root, 0,
-				\args, #[]
+					// harp2's Pslide idiom — dynamic \range windows a slice off
+					// the head of the index list. step=0 keeps the window anchored
+					// at index 0, so range=r cycles indices 0..r-1 repeatedly.
+					// range=1 is a single-note drone (top of pool); range=8 sweeps
+					// the top 8 pool slots.
+					\slideIdx, Pslide(Array.series(maxRange, 0, 1), inf, Pkey(\range), 0, 0),
+
+					// Look up the pool at slideIdx, reduce to pitch class. \root=0
+					// so the customEvent math becomes pc + 12*~octave — ~octave
+					// alone controls register. wrapAt handles pool.size < range
+					// gracefully (small pools just repeat).
+					\note, Pfunc { |e|
+						var pool = (~scoreVoicePool ? [69]).asArray;
+						var idx = (e[\slideIdx] ? 0).asInteger;
+						pool.wrapAt(idx).asInteger.mod(12)
+					},
+
+					\root, 0,
+					\args, #[]
+				);
 			);
-		);
 
-		Pdef(m.ptn).play(~beatClock, quant: ~scoreBeatsPerBar * ~scoreEventsPerBeat);
-		// cotf: seed envir so a stickless seat is silent — SC's Event default
-		// amp is 0.1, and the ~*Next tick hooks (the only writers of \amp) run
-		// only while the seat's device is enabled. Envir .set, not a Pbind key:
-		// Pbind keys override the envir and would defeat the hooks' .set.
-		Pdef(m.ptn).set(\amp, 0);
-		Pdef(m.ptn).set(\dur, 1);
-		Pdef(m.ptn).set(\range, 1);   // conservative default; state ticks override
-	};
-
-	// ~onResync in d.env (per-device dispatch — no cross-device clobber).
-	// Body in topEnvironment.use so ~beatClock etc. resolve.
-	~onResync = { |idx|
-		topEnvironment.use {
-			Pdef(m.ptn).stop;
-			s.bind { group.freeAll };
 			Pdef(m.ptn).play(~beatClock, quant: ~scoreBeatsPerBar * ~scoreEventsPerBeat);
+			// cotf: seed envir so a stickless seat is silent — SC's Event default
+			// amp is 0.1, and the ~*Next tick hooks (the only writers of \amp) run
+			// only while the seat's device is enabled. Envir .set, not a Pbind key:
+			// Pbind keys override the envir and would defeat the hooks' .set.
+			Pdef(m.ptn).set(\amp, 0);
+			Pdef(m.ptn).set(\dur, 1);
+			Pdef(m.ptn).set(\range, 1);   // conservative default; state ticks override
 		};
-	};
+
+		// ~onResync in d.env (per-device dispatch — no cross-device clobber).
+		// Body in topEnvironment.use so ~beatClock etc. resolve.
+		~onResync = { |idx|
+			topEnvironment.use {
+				Pdef(m.ptn).stop;
+				s.bind { group.freeAll };
+				Pdef(m.ptn).play(~beatClock, quant: ~scoreBeatsPerBar * ~scoreEventsPerBeat);
+			};
+		};
+	});
 };
 
 //------------------------------------------------------------
 ~deinit = ~deinit <> {
+	loading = false;
+
 	Pdef(m.ptn).remove;
 	Event.eventTypes.removeAt(eventTypeName);
 

@@ -21,6 +21,9 @@ var m = ~model;
 var ob = ~outBus ? 0;
 var group;
 var samplesLib;
+var loading = false;   // true while ~init is waiting on the sample reads;
+                       // ~deinit clears it so a load in flight bails out
+                       // instead of building an unreachable Pdef. See ~init.
 var findSampleBuffer;
 
 // State needed by direction detection (unavoidable — requires memory
@@ -202,6 +205,8 @@ runCascadeStep = { |ampScale = 1.0, rootOverride = nil, countEngagement = true|
 		b
 	};
 
+	loading = true;
+
 	samplesLib = folder.entries.collect({ |path|
 		var note = path.fileNameWithoutExtension.split($_).last;
 		var buffer = Buffer.read(s, path.fullPath, action:{ |buf|
@@ -211,20 +216,34 @@ runCascadeStep = { |ampScale = 1.0, rootOverride = nil, countEngagement = true|
 		(name: path.fileNameWithoutExtension, buffer: buffer, midiNote: noteToMidi.(note))
 	});
 
-	topEnvironment.use {
-		group = Group.new;
-	};
+	s.sync;
+	postf("[cascade1] all buffers loaded (%) \n", samplesLib.size);
 
-	// Outside the use block — the conductor dispatches this as
-	// d.env.use { ~onResync.(idx) }, so it must live in the DEVICE env.
-	// No Pdef here; the clock re-anchor only strands scheduled notes.
-	~onResync = { |idx|
-		if (group.notNil, { s.bind { group.freeAll } });
-	};
+	if(loading.not or: { samplesLib.isNil },{
+		postf("[cascade1] load cancelled — unloaded while samples were loading \n");
+	},{
+		// Name any file that didn't come back rather than failing silently.
+		// We still build: one bad sample costs its own notes, not the seat.
+		samplesLib.do({ |sample|
+			if(sample.buffer.numFrames.isNil or: { sample.buffer.numFrames == 0 },{
+				postf("[cascade1] sample failed to load : % \n", sample.name);
+			});
+		});
+
+		topEnvironment.use {
+			group = Group.new;
+		};
+
+		~onResync = { |idx|
+			if (group.notNil, { s.bind { group.freeAll } });
+		};
+	});
 };
 
 // ============================================================
 ~deinit = ~deinit <> {
+	loading = false;
+
 	fork {
 		if (group.notNil) {
 			s.bind { group.freeAll };

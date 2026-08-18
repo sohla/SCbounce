@@ -61,6 +61,9 @@ var parseMarimbaNote = { |fileStem|
 var sampleFilter = "Marimba ln mf l1x";
 var folder = PathName("~/Music/cotf_samples/African Marimba");
 var samplesLib;
+var loading = false;   // true while ~init is waiting on the sample reads;
+                       // ~deinit clears it so a load in flight bails out
+                       // instead of building an unreachable Pdef. See ~init.
 
 // Unique per-env event type — see cotf_harp1.sc for rationale.
 var eventTypeName = (\customEvent_ ++ m.ptn).asSymbol;
@@ -104,6 +107,8 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, ptch=1, start=0, pan=
 	};
 
 	// scan folder, filter to the chosen dynamic+layer, parse each name.
+	loading = true;
+
 	samplesLib = folder.entries
 		.select({|path| path.fileName.contains(sampleFilter) })
 		.collect({ |path|
@@ -115,57 +120,74 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, ptch=1, start=0, pan=
 			(name: path.fileNameWithoutExtension, buffer: buffer, midiNote: midiNote)
 		});
 
-	// custom event handler — same idea as harp/celesta but the ~bufnum /
-	// ~rate assignment goes through findClosestSample instead of the
-	// odd/even branch. otherwise identical: compute the target MIDI note,
-	// set the buffer and rate, switch \type back to \note and re-dispatch.
-	Event.addEventType(eventTypeName, {|e|
-		var found;
-		~note = ~note + ~root + (12 * ~octave);
-		found = findClosestSample.(~note);
-		~bufnum = found.buffer;
-		~rate = found.rate;
-		~type = \note;
-		currentEnvironment.play;
-	});
+	s.sync;
+	postf("[marimba1] all buffers loaded (%) \n", samplesLib.size);
 
-	topEnvironment.use{
-		group = Group.new;
+	if(loading.not or: { samplesLib.isNil },{
+		postf("[marimba1] load cancelled — unloaded while samples were loading \n");
+	},{
+		// Name any file that didn't come back rather than failing silently.
+		// We still build: one bad sample costs its own notes, not the seat.
+		samplesLib.do({ |sample|
+			if(sample.buffer.numFrames.isNil or: { sample.buffer.numFrames == 0 },{
+				postf("[marimba1] sample failed to load : % \n", sample.name);
+			});
+		});
 
-		Pdef(m.ptn,
-			Pbind(
-				\instrument, \stereoSampler,
-				\out, ob,
-				\group, group,   // route every event's synth into our group
-				\type, eventTypeName,
-				\note, 0,
-				\root, Pfunc { ~scoreVoicePool.choose.wrap(0,11).asInteger - 24 },
+		// custom event handler — same idea as harp/celesta but the ~bufnum /
+		// ~rate assignment goes through findClosestSample instead of the
+		// odd/even branch. otherwise identical: compute the target MIDI note,
+		// set the buffer and rate, switch \type back to \note and re-dispatch.
+		Event.addEventType(eventTypeName, {|e|
+			var found;
+			~note = ~note + ~root + (12 * ~octave);
+			found = findClosestSample.(~note);
+			~bufnum = found.buffer;
+			~rate = found.rate;
+			~type = \note;
+			currentEnvironment.play;
+		});
+
+		topEnvironment.use{
+			group = Group.new;
+
+			Pdef(m.ptn,
+				Pbind(
+					\instrument, \stereoSampler,
+					\out, ob,
+					\group, group,   // route every event's synth into our group
+					\type, eventTypeName,
+					\note, 0,
+					\root, Pfunc { ~scoreVoicePool.choose.wrap(0,11).asInteger - 24 },
+				);
 			);
-		);
 
-		Pdef(m.ptn).play(~beatClock, quant: ~scoreBeatsPerBar * ~scoreEventsPerBeat);
-		// cotf: seed envir so a stickless seat is silent — SC's Event default
-		// amp is 0.1, and the ~*Next tick hooks (the only writers of \amp) run
-		// only while the seat's device is enabled. Envir .set, not a Pbind key:
-		// Pbind keys override the envir and would defeat the hooks' .set.
-		Pdef(m.ptn).set(\amp, 0);
-		Pdef(m.ptn).set(\dur, 1);   // default 16th grid; state hooks override
-
-	};
-
-	// ~onResync in d.env (per-device dispatch — no cross-device clobber).
-	// Body in topEnvironment.use so ~beatClock etc. resolve.
-	~onResync = { |idx|
-		topEnvironment.use {
-			Pdef(m.ptn).stop;
-			s.bind { group.freeAll };
 			Pdef(m.ptn).play(~beatClock, quant: ~scoreBeatsPerBar * ~scoreEventsPerBeat);
+			// cotf: seed envir so a stickless seat is silent — SC's Event default
+			// amp is 0.1, and the ~*Next tick hooks (the only writers of \amp) run
+			// only while the seat's device is enabled. Envir .set, not a Pbind key:
+			// Pbind keys override the envir and would defeat the hooks' .set.
+			Pdef(m.ptn).set(\amp, 0);
+			Pdef(m.ptn).set(\dur, 1);   // default 16th grid; state hooks override
+
 		};
-	};
+
+		// ~onResync in d.env (per-device dispatch — no cross-device clobber).
+		// Body in topEnvironment.use so ~beatClock etc. resolve.
+		~onResync = { |idx|
+			topEnvironment.use {
+				Pdef(m.ptn).stop;
+				s.bind { group.freeAll };
+				Pdef(m.ptn).play(~beatClock, quant: ~scoreBeatsPerBar * ~scoreEventsPerBeat);
+			};
+		};
+	});
 };
 
 //------------------------------------------------------------
 ~deinit = ~deinit <> {
+	loading = false;
+
 	Pdef(m.ptn).remove;
 	Event.eventTypes.removeAt(eventTypeName);
 
