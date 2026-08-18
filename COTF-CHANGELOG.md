@@ -4,6 +4,36 @@ One entry per push batch from the Concerts of the Future side, newest first: wha
 why, and what (if anything) behaves differently on your machine. The intent is that nothing
 here ever changes how AirKit behaves for you — if it does, that's a bug, tell us.
 
+## 2026-08-18 — Ciaran added super-seats headers to the five live sounds (cotf)
+
+**Nothing changes on your machine — comment-block-only edits, zero code touched.**
+The five live personalities ({BASSBUZZ, JUPITERSHARP, ALTOSYNTH, PERCUSSION,
+SOPRANOVOICE}.sc) now carry the SUPER-SEATS.md header keys (`prints:`, `seats:`,
+`affinity:`, `register:`, `family:`) so the matcher can pick who gets which sound.
+`description:` was rewritten audience-legible (it feeds staff surfaces and the corridor
+call-sheet hints); your original technical description is preserved verbatim on a new
+`internals:` line right under it (unparsed, documentation-only). Seat pools are
+deliberate: BASSBUZZ [1,2,3] · JUPITERSHARP [2,3,4,5] · ALTOSYNTH [3,4,5] ·
+PERCUSSION [1,2,3,4] · SOPRANOVOICE [3,4,5] — seat 1 is bass-or-drums only on purpose.
+Sent without pre-review to make tomorrow's dry run (Ciaran's call) — please review after;
+everything here is your call to amend.
+
+## 2026-08-18 — Room 3 trims moved from seats onto patches (cotf)
+
+**Nothing changes on your machine** (`~cotfRoom` isn't 3, so both structures are inert
+for you). For super-seats (sounds soon move between chairs), Room 3's loudness
+compensation now belongs to the personality, not the chair: new `~cotfPatchTrims`
+(main_cotf.scd, IdentityDictionary keyed by personality name) is applied to a seat's
+monitor whenever that personality loads there, via a new listener on the existing local
+`/airkit/personalityName` broadcast — no OSC surface change. Values are the old baked
+Room 3 seat trims (which were really patch trims in disguise — patches had never moved)
+plus Ciaran's MOTU fader offsets, now zeroed at the desk: BASSBUZZ +6.5 dB,
+JUPITERSHARP +2 dB, ALTOSYNTH +11 dB, PERCUSSION −5 dB, SOPRANOVOICE +16 dB. Room 3's
+`~cotfSeatTrims` goes flat; Room 2's stays exactly as it was (seat 3 +5 dB).
+`/airkit/seatTrim` still works and now composes with the patch trim instead of stomping
+it. Net Room 3 output tonight is identical to how Ciaran left it (same total gain per
+today's patch↔seat identity).
+
 ## 2026-08-13 — Room 3 seat 5 trim +5 dB baked (cotf)
 
 **Nothing changes on your machine.** Room 3 seat 5 performers kept reporting they
