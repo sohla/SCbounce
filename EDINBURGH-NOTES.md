@@ -4,6 +4,29 @@ Append-only observations from the Fringe run — things noticed live that may (o
 want a patch-side look. Distinct from COTF-CHANGELOG.md (which records changes we made).
 Newest first.
 
+## 2026-08-18 (day 11) — evening: super-seats goes live at tomorrow's pre-doors dry run
+
+- **cotf: heads-up — the deinit/init race is about to matter 5–10× more.** Ciaran has
+  approved flipping super-seats to LIVE at tomorrow's pre-doors dry run: from then on,
+  **every group loads five personalities** (today it's ~5 loads per DAY; live makes it
+  5 loads per GROUP, 8–10 groups a day). That multiplies traffic on exactly the reload
+  path behind the 08-12 JUPITERSHARP finding (28% bad reloads) and the 08-15 piece-entry
+  harp cluster. We've planned around it rather than waiting on a fix: M0's monitor
+  reconcile self-heals a raced load within ~15s (it compares per-room BOUND names since
+  ec4c576f), loads only ever fire pre-piece, and the staff remedy stays reset-seat. But
+  the deinit→init serialization look from the 08-12 note is now the highest-value
+  patch-side fix on the board — whenever you have the window, no show-blocker tonight.
+- **cotf: the bird patch would be the single highest-impact new sound.** From the
+  super-seats shadow replay over today's real groups: **birdsong-family words showed up
+  in 5 of 6 real groups, and nothing in the pool answers them.** Your 08-10 "super
+  tweety, high and fast twinkling lines" idea is exactly the gap — once it lands with a
+  header (`affinity: [birdsong, birds, ...]`), super-seats picks it up with zero code.
+- **cotf: two batches landed on AirConcert tonight (see COTF-CHANGELOG.md):** per-patch
+  trims (Room 3 loudness compensation now travels with the sound; Room 3 seat trims
+  flat, Room 2 untouched, net output identical) and your five live files gained
+  super-seats headers (comment-block-only; your technical description is preserved on
+  an `internals:` line). Both are yours to amend — review whenever suits.
+
 ## 2026-08-15 (day 9) — morning
 - **cotf: Harp sometimes not loading, clustered around entry to (or just after) the
   `piece` state** — Ciaran's observation from the last day or two. Presumed same
