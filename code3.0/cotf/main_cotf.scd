@@ -142,7 +142,10 @@ s.waitForBoot({
     // surface). Values = old baked Room 3 seat trim (per today's patch<->seat
     // identity) + Ciaran's MOTU 12-16 fader offsets, after which the MOTU
     // faders are zeroed: BASSBUZZ +2+4.5=+6.5 dB, JUPITERSHARP +2+0=+2 dB,
-    // ALTOSYNTH +3+8=+11 dB, PERCUSSION -5+0=-5 dB, SOPRANOVOICE +5+11=+16 dB.
+    // ALTOSYNTH +3+8=+11 dB, PERCUSSION -5+0=-5 dB, SOPRANOVOICE +5+11=+16 dB
+    // (SOPRANOVOICE pulled back to +5 dB 2026-08-19 morning, Ciaran: Steph's
+    // overnight dynamics rework may make it much more sensitive — re-raise by
+    // ear at the dry run if it disappears again).
     // Room 3 only — Room 2 keeps its seat-keyed trims (see above). An unknown
     // personality gets 1 (no compensation).
     ~cotfPatchTrims = if(~cotfRoom == 3, {
@@ -151,7 +154,7 @@ s.waitForBoot({
             \JUPITERSHARP -> 1.2589,   // +2 dB
             \ALTOSYNTH -> 3.5481,      // +11 dB
             \PERCUSSION -> 0.5623,     // -5 dB
-            \SOPRANOVOICE -> 6.3096    // +16 dB
+            \SOPRANOVOICE -> 1.7783    // +5 dB (see note above; was 6.3096 = +16 dB)
         ]
     }, { IdentityDictionary.new });
     // Current patch-trim factor per seat (1..5), updated on personality load;

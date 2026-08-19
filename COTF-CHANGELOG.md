@@ -4,6 +4,15 @@ One entry per push batch from the Concerts of the Future side, newest first: wha
 why, and what (if anything) behaves differently on your machine. The intent is that nothing
 here ever changes how AirKit behaves for you — if it does, that's a bug, tell us.
 
+## 2026-08-19 — SOPRANOVOICE patch trim +16 → +5 dB (cotf)
+
+**Nothing changes on your machine.** Precaution ahead of this morning's dry run: your
+overnight SOPRANO dynamics rework may make the patch much more responsive, and +16 dB of
+compensation on top of that could be a blast. Pulled its `~cotfPatchTrims` entry back to
++5 dB (1.7783 — the old SC-side seat-5 trim alone, i.e. 11 dB below how the chair ran
+with the now-zeroed MOTU fader); will re-raise by ear at the dry run if it still
+struggles to cut through. The other four patch trims are unchanged.
+
 ## 2026-08-18 — Ciaran added super-seats headers to the five live sounds (cotf)
 
 **Nothing changes on your machine — comment-block-only edits, zero code touched.**
