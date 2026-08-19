@@ -27,8 +27,8 @@ var ideleNotes = [45,47,50,52,57,59,62,64];  // idle/tuning/curtain — rotates 
 // Unique per-env event type — see cotf_harp1.sc for the scope-leak rationale.
 var eventTypeName = (\exciterTick_ ++ m.ptn).asSymbol;
 
-m.accelMassFilteredAttack = 0.98;
-m.accelMassFilteredDecay = 0.3;
+m.accelMassFilteredAttack = 0.99;
+m.accelMassFilteredDecay = 0.5;
 m.rrateMassFilteredAttack = 0.95;
 m.rrateMassFilteredDecay = 0.5;
 m.gyroFilteredAttack = 0.7;
@@ -46,15 +46,16 @@ m.gyroFilteredDecay = 0.7;
 //              by the same RLPF that shapes the drone.
 SynthDef(\simple, {|out=0, amp=0.0, freq=440,
 	attack=0.5, decay=0.03, sustain=0.8, release=1.0, gate=1,
-	lagAttack=0.02, lagRelease=1.9, ffreq=440,
-	excAttack=0.003, excRelease=0.18, excAmp=1|
+	lagAttack=0.02, lagRelease=0.3, ffreq=10000,
+	excAttack=0.03, excRelease=0.8, excAmp=1|
 	var lifetime = EnvGen.kr(Env.adsr(attack, decay, sustain, release), gate, doneAction: Done.freeSelf);
 	var trig = \trig.tr(0);
 	var exciter = EnvGen.kr(Env.perc(excAttack, excRelease), trig);
-	var tone = LFTri.ar(freq, 0.2, 0.1) + SinOsc.ar(freq, 0, 1);
-	var burst = (WhiteNoise.ar(0.2) + SinOsc.ar(freq * 2, 0, 0.9)) * exciter * excAmp;
-	var filter = RLPF.ar(tone + burst, ffreq, 0.2).tanh * 0.3;
-	Out.ar(out, filter!2 * lifetime * amp.lagud(lagAttack, lagRelease));
+	var burst = LFSaw.ar(freq, 0, 0.1) * exciter * excAmp;
+	var tone = LFTri.ar(freq.lagud(lagAttack, lagRelease) * [1.003,1.008], 0, 0.1) + SinOsc.ar(freq.lagud(lagAttack, lagRelease), LFNoise2.ar(3,20,15), 0.2);
+	var filter = BMoog.ar(tone + burst, ffreq.lag(0.1), 0.5, 2, 0.4, 0.9);
+	var verb = DelayC.ar(filter, 0.1, 0.1) + filter;
+	Out.ar(out, verb.tanh * lifetime * amp.lagud(lagAttack, lagRelease));
 }).add;
 
 //------------------------------------------------------------
@@ -75,11 +76,11 @@ Event.addEventType(eventTypeName, {|e|
 			\out,     ob,
 			\freq,    ((~scoreVoicePool.first.asInteger % 12) + baseMidi).midicps,
 			\amp,     0,
-			\attack,  0.5,
+			\attack,  0.05,
 			\decay,   0.1,
 			\sustain, 1.0,
 			\release, 1.0,
-			\ffreq,   440,
+			\ffreq,   4000,
 			\excAmp,  1,
 		]);
 
@@ -112,64 +113,71 @@ Event.addEventType(eventTypeName, {|e|
 // amp/filter/lag/pitch. \excAmp can be modulated per state too — piece
 // gets a louder exciter, curtain a quieter one.
 ~idleNext = {|d, ctx|
-	var amp = (m.accelMass + m.rrateMass).lincurve(0, 1.0, -90, -15, 4);
-	var ffreq = ((d.sensors.gyroEvent.x / pi).fold(-0.5,0.5) * 2).lincurve(-1.0, 1.0, 200, 600, 3);
+	var amp = m.accelMassFiltered.lincurve(0, 0.3, -90, -8, -1);
+	var ea = m.accelMassFiltered.lincurve(0, 0.1, 0.2, 1, -2);
+	var ffreq = ((d.sensors.gyroEvent.x / pi).fold(-0.5,0.5) * 2).lincurve(-1.0, 1.0, 1000, 6000, 1);
 	var idx = (d.sensors.gyroEvent.y / pi.half).linlin(-1, 1, 0, ideleNotes.size, 1).asInteger;
 	var la = (m.accelMassFiltered).lincurve(0, 2.0, 0.9, 0.02, -1);
 
 
 	synth.set(\amp, amp.dbamp);
-	synth.set(\lagAttack, la);
-	synth.set(\lagRelease, 0.8);
-	synth.set(\ffreq, ffreq);
-	synth.set(\excAmp, 0.9);   // quieter exciter in idle
+	synth.set(\lagAttack, 0.2);
+	synth.set(\lagRelease, 0.3);
+	synth.set(\ffreq, 3000);
+	synth.set(\excAmp, ea);   
+
+	octave = ((d.sensors.gyroEvent.y / pi.half).linlin(-1.0,5.0,0,2).asInteger * 12) + 24;
+
 
 	// Accel drives the pattern speed. \stretch scales \dur (delta = dur *
 	// stretch), so the [2,1,1] shape survives and just runs faster. 0.3 is
 	// where accelMass sits at rest — gravity, not motion.
-	Pdef(m.ptn).set(\stretch, m.accelMassFiltered.lincurve(0.3, 2.0, 5.0, 0.5, -2));
+	// Pdef(m.ptn).set(\stretch, m.accelMassFiltered.lincurve(0.3, 2.0, 5.0, 0.5, -2));
 
-	if(TempoClock.beats > (lastTime + 0.6),{
-		{synth.set(\freq, (ideleNotes[idx] + 24).midicps)}.defer(0.4);
+	if(TempoClock.beats > (lastTime + 0.4),{
+		{synth.set(\freq, (ideleNotes[idx] + octave).midicps)}.defer(0.4);
 		lastTime = TempoClock.beats;
+
 	});
 };
 
 ~tuningNext = {|d, ctx|
-	var amp = (m.accelMass + m.rrateMass).lincurve(0, 1.0, -70, -8, 4);
-	var ffreq = ((d.sensors.gyroEvent.x / pi).fold(-0.5,0.5) * 2).lincurve(-1.0, 1.0, 200, 800, 3);
+	var amp = m.accelMassFiltered.lincurve(0, 0.3, -90, -8, -1);
+	var ea = m.accelMassFiltered.lincurve(0, 0.1, 0.2, 1, -2);
+	var ffreq = ((d.sensors.gyroEvent.x / pi).fold(-0.5,0.5) * 2).lincurve(-1.0, 1.0, 1000, 6000, 1);
 	var fmod = ((d.sensors.gyroEvent.y / pi.half).lincurve(-1.0,1.0,-3.0,3.0,1));
 	var tt = 15.0;
 	var la = (m.accelMassFiltered).lincurve(0, 2.0, 0.9, 0.02, -1);
 
 	if( (TempoClock.beats-tuneTime) < tt, {
 		var val = (TempoClock.beats-tuneTime) / tt;
-		tuneTime = TempoClock.beats;
-		synth.set(\freq, (64 + (val.lincurve(0, 1, 1, 0.0001,-2) * 7)).midicps);
+		synth.set(\freq, (64 + (val.lincurve(0, 1, 7, 0,-2))).midicps);
 	},{
 		synth.set(\freq, 64.midicps);
 	});
+
+
 
 	synth.set(\amp, amp.dbamp);
 	synth.set(\lagAttack, la);
 	synth.set(\lagRelease, 2.1);
 	synth.set(\ffreq, ffreq);
-	synth.set(\excAmp, 0.3);
+	synth.set(\excAmp, ea);
 	Pdef(m.ptn).set(\stretch, 1);   // clear idle's speed
 };
 
 ~pieceNext = {|d, ctx|
-	var amp = (m.accelMassFiltered).lincurve(0, 1.1, -90, -6, -1);
-	var ffreq = ((d.sensors.gyroEvent.x / pi).fold(-0.5,0.5) * 2).lincurve(-1.0, 1.0, 500, 8000, 1);
-	var la = (m.accelMassFiltered).lincurve(0, 2.0, 0.9, 0.02, -1);
+	var amp = m.accelMassFiltered.lincurve(0, 0.3, -90, -4, -1);
+	var ea = m.accelMassFiltered.lincurve(0, 0.1, 0.2, 1, -2);
+	var ffreq = ((d.sensors.gyroEvent.x / pi).fold(-0.5,0.5) * 2).lincurve(-1.0, 1.0, 1000, 6000, 1);
 
-	octave = ((d.sensors.gyroEvent.y / pi.half).linlin(-1.0,1.0,0,2).asInteger * 12) ;
+	octave = ((d.sensors.gyroEvent.y / pi.half).linlin(-1.0,1.0,0,2).asInteger * 12);
 	
 	synth.set(\amp, amp.dbamp);
-	synth.set(\lagAttack, la);
-	synth.set(\lagRelease, 1.9);
+	synth.set(\lagAttack, 0.2);
+	synth.set(\lagRelease, 0.3);
 	synth.set(\ffreq, ffreq);
-	synth.set(\excAmp, 1.0);   // full exciter in piece
+	synth.set(\excAmp, ea);   // full exciter in piece
 	Pdef(m.ptn).set(\stretch, 1);   // clear idle's speed
 };
 
@@ -219,4 +227,4 @@ Event.addEventType(eventTypeName, {|e|
 //------------------------------------------------------------
 ~plotMin = -1;
 ~plotMax = 1;
-~plot = {|d,p| [(d.sensors.gyroEvent.y / pi.half)] };
+~plot = {|d,p| [m.accelMassFiltered] };

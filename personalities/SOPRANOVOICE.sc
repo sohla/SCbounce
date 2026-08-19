@@ -30,7 +30,7 @@ var samplePitchMidi = 68;   // intrinsic pitch of the file (G#4)
 
 // Idle melody — semitone offsets from the sample pitch, stepped one per
 // pattern note. Score pitch takes over in \piece via ~onHalf.
-var idleNotes = [0, 4, 5, 7, 11, 7, 5, 4];
+var idleNotes = [0, 4, 5, 7, 11, 7, 5, 4] - 12;
 var idleStep = 0;
 var lastNoteTime = 0;
 
@@ -51,7 +51,7 @@ SynthDef(\grainPad, { |out=0, bufnum=0, amp=0, freq=440, srcFreq=440, gate=1,
 	var trig = Impulse.kr(grainDensity);
 	var pos  = grainPos + WhiteNoise.kr(grainPosSpread);
 	var sig  = GrainBuf.ar(2, trig, grainDur, bufnum, rate, pos, 2, 0);
-	var sub = LFTri.ar(freq, 0, 0.03);
+	var sub = SinOsc.ar(freq * [1,1.003], 0, 0.1);
 	var filt = RLPF.ar(sig, ffreq.lag(0.04), 0.4) + sub;
 	Out.ar(out, filt * env * amp.lagud(lagAttack, lagRelease));
 }).add;
@@ -62,7 +62,7 @@ SynthDef(\samplerVoice, { |out=0, bufnum=0, amp=0.5, freq=440, srcFreq=440,
     gate=1, pan=0, attack=0.01, decay=0.1, release=0.3|
 	var env = EnvGen.kr(Env.adsr(attack, decay, 0.07, release), gate, doneAction: Done.freeSelf);
 	var lr  = (freq.lag(0.4) / srcFreq) * BufRateScale.kr(bufnum) * 0.99;
-	var sig = PlayBuf.ar(1, bufnum, rate: lr, loop: 0);
+	var sig = PlayBuf.ar(1, bufnum, rate: lr * [1,1.003], loop: 0);
 	Out.ar(out, Pan2.ar(sig, pan, amp * env));
 }).add;
 
@@ -86,7 +86,7 @@ SynthDef(\samplerVoice, { |out=0, bufnum=0, amp=0.5, freq=440, srcFreq=440,
 						\out,     ob,
 						\bufnum,  buf.bufnum,
 						\srcFreq, samplePitchMidi.midicps,
-						\freq,    (samplePitchMidi - 11).midicps,   // rate = 1 at rest
+						\freq,    (samplePitchMidi - 11 + 12).midicps,   // rate = 1 at rest
 						\amp,     0,
 						\attack,  0.5,
 						\release, 1.5,
@@ -189,18 +189,18 @@ SynthDef(\samplerVoice, { |out=0, bufnum=0, amp=0.5, freq=440, srcFreq=440,
 	var samp = ~curveAbove.(m.accelMassFiltered, 0.2, 2.0, 0.3, 1.0, -4) ;
 	var idx = (d.sensors.gyroEvent.y / pi.half).linlin(-1, 1, 0, idleNotes.size, 1).asInteger;
 
-	var rel = m.accelMassFiltered.lincurve(0.0, 3.5, 0.005, 1.02);
+	var rel = m.accelMassFiltered.lincurve(0.0, 2.5, 0.1, 3.02,1);
 
-	padSynth.set(\amp,          samp * 0.3);
+	padSynth.set(\amp,          amp * 0.3);
 	padSynth.set(\ffreq,        1800);
 	padSynth.set(\grainDur,     0.1);
 	padSynth.set(\grainDensity, 50);
 	padSynth.set(\lagAttack,    0.2);
 	padSynth.set(\lagRelease,   1.7);
 
-	Pdef(m.ptn).set(\amp,   amp * ampa * 0.4);
+	Pdef(m.ptn).set(\amp,   ampa * 2.0);
 	Pdef(m.ptn).set(\dur,   dur);
-	Pdef(m.ptn).set(\attack,  0.1);
+	Pdef(m.ptn).set(\attack,  0.01);
 	Pdef(m.ptn).set(\release,  rel);
 
 	if(TempoClock.beats > (lastTime + 5),{
@@ -244,17 +244,17 @@ SynthDef(\samplerVoice, { |out=0, bufnum=0, amp=0.5, freq=440, srcFreq=440,
 
 ~pieceNext = { |d, ctx|
 
-	// var under = m.accelMassFiltered.lincurve(0, 1, m.rrateMassFiltered.neg, 0, -1).neg.lincurve(0, 0.4, 0, 1, -1	);
-	var amp = m.rrateMassFiltered.lincurve(0.2, 0.4, -60, -8, -1).dbamp;
+	var amp = m.rrateMassFiltered.lincurve(0.0, 0.2, -60, -6, -1).dbamp;
 	var dur = m.rrateMassFiltered.lincurve(0, 1.8, 2.5, 0.8, -3);
 
-	padSynth.set(\amp,          amp * 0.5);
-	padSynth.set(\ffreq,        (d.sensors.gyroEvent.x / pi).fold(-0.5, 0.5).lincurve(-0.5, 0.5, 100, 3000, -2));
-	// padSynth.set(\grainDur,     m.accelMassFiltered.lincurve(0, 2.0, 0.3, 0.05, 1));
-	// padSynth.set(\grainDensity, m.accelMassFiltered.lincurve(0, 2.0, 15, 50, 1));
-	padSynth.set(\grainPos,    rrand(0.1,0.1));// (d.sensors.gyroEvent.y / pi.half).lincurve(-1, 1, 0.1, 0.9, 1));
+	padSynth.set(\amp,          amp);
+	padSynth.set(\ffreq,        (d.sensors.gyroEvent.x / pi).fold(-0.5, 0.5).lincurve(-0.5, 0.5, 1000, 13000, -2));
+	padSynth.set(\grainPos,    rrand(0.05,0.09));
+	padSynth.set(\grainDur,     0.2);
+	padSynth.set(\grainDensity, 80);
+
 	Pdef(m.ptn).set(\amp, amp * 3);
-	Pdef(m.ptn).set(\dur, dur);//m.rrateMassFiltered.lincurve(0, 1.0, 2, 0.25, -1));
+	Pdef(m.ptn).set(\dur, dur);
 };
 
 
