@@ -4,6 +4,13 @@ One entry per push batch from the Concerts of the Future side, newest first: wha
 why, and what (if anything) behaves differently on your machine. The intent is that nothing
 here ever changes how AirKit behaves for you — if it does, that's a bug, tell us.
 
+## 2026-08-19 — patch trims ear-tuned at the dry run (cotf)
+
+**Nothing changes on your machine.** With sc3-plugins in, your reworked sounds live, and
+super-seats live, Ciaran re-balanced the per-patch trims by ear: BASSBUZZ +7.5 dB,
+JUPITERSHARP +3, ALTOSYNTH +8, PERCUSSION −3, SOPRANOVOICE +3 (all in `~cotfPatchTrims`,
+Room 3 only; MOTU faders stay zeroed).
+
 ## 2026-08-19 — two show-fixes to last night's rework, found at the live-flip dry run (cotf)
 
 Both found with real testers this morning; minimal edits so we could go live at 1pm —
