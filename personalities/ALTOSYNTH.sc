@@ -59,7 +59,14 @@ SynthDef(\simple, {|out=0, amp=0.0, freq=440,
 	var exciter = EnvGen.kr(Env.perc(excAttack, excRelease), trig);
 	var burst = LFSaw.ar(freq, 0, 0.1) * exciter * excAmp;
 	var tone = LFTri.ar(freq.lagud(lagAttack, lagRelease) * [1.003,1.008], 0, 0.1) + SinOsc.ar(freq.lagud(lagAttack, lagRelease), LFNoise2.ar(3,20,15), 0.2);
-	var filter = BMoog.ar(tone + burst, ffreq.lag(0.1), 0.5, 2, 0.4, 0.9);
+	// [COTF 2026-08-19] BMoog is sc3-plugins, which M1 doesn't have — the class
+	// error broke EVERY ALTOSYNTH load (zero sound on the seat, caught at the
+	// live-flip dry run). Nearest-core stand-in for mode 2 (bandpass, q 0.5,
+	// mul 0.4); the original line is kept below — restore it once sc3-plugins
+	// is installed on M1 and re-tune by ear. (The 0.9 add fed DC into tanh —
+	// dropped here; shout if that bias was deliberate colour.)
+	// var filter = BMoog.ar(tone + burst, ffreq.lag(0.1), 0.5, 2, 0.4, 0.9);
+	var filter = BPF.ar(tone + burst, ffreq.lag(0.1), 0.5, 0.4);
 	var verb = DelayC.ar(filter, 0.1, 0.1) + filter;
 	Out.ar(out, verb.tanh * lifetime * amp.lagud(lagAttack, lagRelease));
 }).add;

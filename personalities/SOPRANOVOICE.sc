@@ -204,7 +204,13 @@ SynthDef(\samplerVoice, { |out=0, bufnum=0, amp=0.5, freq=440, srcFreq=440,
 	padSynth.set(\lagAttack,    0.2);
 	padSynth.set(\lagRelease,   1.7);
 
-	Pdef(m.ptn).set(\amp,   ampa * 2.0);
+	// [COTF 2026-08-19] restore the rrate gate on the idle chops (`amp *`) —
+	// without it ampa is ~1.06 at REST (accel curve bottoms at 0.5 dB, and
+	// .dbamp of that is >1), so a full-volume chop fired every couple of
+	// seconds while the stick sat still (caught at the live-flip dry run,
+	// seat 5). Rotation still drives the chops, per this file's own header;
+	// the 2.0 top from the overnight rework is kept.
+	Pdef(m.ptn).set(\amp,   amp * ampa * 2.0);
 	Pdef(m.ptn).set(\dur,   dur);
 	Pdef(m.ptn).set(\attack,  0.01);
 	Pdef(m.ptn).set(\release,  rel);
