@@ -60,6 +60,9 @@ var parseMarimbaNote = { |fileStem|
 var sampleFilter = "Marimba ln mf l1x";
 var folder = PathName("~/Music/cotf_samples/African Marimba");
 var samplesLib;
+var loading = false;   // true while ~init is waiting on the sample reads;
+                       // ~deinit clears it so a load in flight bails out
+                       // instead of building an unreachable Pdef. See ~init.
 
 // Unique per-env event type — see cotf_harp1.sc for rationale.
 var eventTypeName = (\customEvent_ ++ m.ptn).asSymbol;
@@ -191,6 +194,8 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, ptch=1, start=0, pan=
 		(buffer: closest.buffer, rate: semitoneDiff.midiratio)
 	};
 
+	loading = true;
+
 	samplesLib = folder.entries
 		.select({|path| path.fileName.contains(sampleFilter) })
 		.collect({ |path|
@@ -202,85 +207,102 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, ptch=1, start=0, pan=
 			(name: path.fileNameWithoutExtension, buffer: buffer, midiNote: midiNote)
 		});
 
-	// customEvent handler — now array-aware. when ~note is an array (a chord),
-	// findClosestSample is called per element, producing arrays for ~bufnum
-	// and ~rate. the subsequent \note dispatch multichannel-expands into
-	// one synth per element, all firing at the same clock instant.
-	Event.addEventType(eventTypeName, {|e|
-		var target = ~note + ~root + (12 * ~octave);
-		if(target.isArray) {
-			~bufnum = target.collect({|n| findClosestSample.(n).buffer });
-			~rate   = target.collect({|n| findClosestSample.(n).rate });
-		} {
-			var found = findClosestSample.(target);
-			~bufnum = found.buffer;
-			~rate = found.rate;
-		};
-		~type = \note;
-		currentEnvironment.play;
-	});
+	s.sync;
+	postf("[marimba2] all buffers loaded (%) \n", samplesLib.size);
 
-	topEnvironment.use{
-		group = Group.new;
+	if(loading.not or: { samplesLib.isNil },{
+		postf("[marimba2] load cancelled — unloaded while samples were loading \n");
+	},{
+		// Name any file that didn't come back rather than failing silently.
+		// We still build: one bad sample costs its own notes, not the seat.
+		samplesLib.do({ |sample|
+			if(sample.buffer.numFrames.isNil or: { sample.buffer.numFrames == 0 },{
+				postf("[marimba2] sample failed to load : % \n", sample.name);
+			});
+		});
 
-		Pdef(m.ptn,
-			Pbind(
-				\instrument, \stereoSampler,
-				\out, ob,
-				\group, group,   // route every event's synth into our group
-				\type, eventTypeName,
+		// customEvent handler — now array-aware. when ~note is an array (a chord),
+		// findClosestSample is called per element, producing arrays for ~bufnum
+		// and ~rate. the subsequent \note dispatch multichannel-expands into
+		// one synth per element, all firing at the same clock instant.
+		Event.addEventType(eventTypeName, {|e|
+			var target = ~note + ~root + (12 * ~octave);
+			if(target.isArray) {
+				~bufnum = target.collect({|n| findClosestSample.(n).buffer });
+				~rate   = target.collect({|n| findClosestSample.(n).rate });
+			} {
+				var found = findClosestSample.(target);
+				~bufnum = found.buffer;
+				~rate = found.rate;
+			};
+			~type = \note;
+			currentEnvironment.play;
+		});
 
-				// dur — clock-derived, follows patternDur.
-				\dur, Pfunc{ |e|
-					var pos = (~beatClock.beats - phase).mod(patternLen);
-					var slot = (eventStarts.indexOfGreaterThan(pos) ? patternInv.size) - 1;
-					patternDur.wrapAt(slot.max(0))
-				},
+		topEnvironment.use{
+			group = Group.new;
 
-				// note — clock-derived slot → inversion index → chord ARRAY.
-				// voicing comes from fitted_notes (via chordVoicedOffsets),
-				// so the chord is exactly what the score plays. no chord_root/
-				// roman parsing, no fabricated triads. offsets are relative to
-				// MIDI 60; customEvent's `+ 12*~octave` transposes the whole
-				// voicing up/down as ~pieceNext modulates octave.
-				// nil slot returns Rest() (silent event, still advances by dur).
-				\note, Pfunc{ |e|
-					var voicing = chordVoicedOffsets.(60);
-					var pos = (~beatClock.beats - phase).mod(patternLen);
-					var slot = (eventStarts.indexOfGreaterThan(pos) ? patternInv.size) - 1;
-					var invIdx = patternInv.wrapAt(slot.max(0));
-					if(invIdx.isNil) { Rest() } { invertChord.(voicing, invIdx) }
-				},
+			Pdef(m.ptn,
+				Pbind(
+					\instrument, \stereoSampler,
+					\out, ob,
+					\group, group,   // route every event's synth into our group
+					\type, eventTypeName,
 
-				// root fixed at 0 — voicing already carries the correct absolute
-				// pitch classes (offsets from MIDI 60 into the target register).
-				// ~octave from ~pieceNext still transposes via customEvent's math.
-				\root, 0,
+					// dur — clock-derived, follows patternDur.
+					\dur, Pfunc{ |e|
+						var pos = (~beatClock.beats - phase).mod(patternLen);
+						var slot = (eventStarts.indexOfGreaterThan(pos) ? patternInv.size) - 1;
+						patternDur.wrapAt(slot.max(0))
+					},
+
+					// note — clock-derived slot → inversion index → chord ARRAY.
+					// voicing comes from fitted_notes (via chordVoicedOffsets),
+					// so the chord is exactly what the score plays. no chord_root/
+					// roman parsing, no fabricated triads. offsets are relative to
+					// MIDI 60; customEvent's `+ 12*~octave` transposes the whole
+					// voicing up/down as ~pieceNext modulates octave.
+					// nil slot returns Rest() (silent event, still advances by dur).
+					\note, Pfunc{ |e|
+						var voicing = chordVoicedOffsets.(60);
+						var pos = (~beatClock.beats - phase).mod(patternLen);
+						var slot = (eventStarts.indexOfGreaterThan(pos) ? patternInv.size) - 1;
+						var invIdx = patternInv.wrapAt(slot.max(0));
+						if(invIdx.isNil) { Rest() } { invertChord.(voicing, invIdx) }
+					},
+
+					// root fixed at 0 — voicing already carries the correct absolute
+					// pitch classes (offsets from MIDI 60 into the target register).
+					// ~octave from ~pieceNext still transposes via customEvent's math.
+					\root, 0,
+				);
 			);
-		);
 
-		Pdef(m.ptn).play(~beatClock, quant: [~scoreBeatsPerBar * ~scoreEventsPerBeat, phase]);
-		// cotf: seed envir so a stickless seat is silent — SC's Event default
-		// amp is 0.1, and the ~*Next tick hooks (the only writers of \amp) run
-		// only while the seat's device is enabled. Envir .set, not a Pbind key:
-		// Pbind keys override the envir and would defeat the hooks' .set.
-		Pdef(m.ptn).set(\amp, 0);
-
-	};
-
-	// ~onResync in d.env (per-device dispatch — no cross-device clobber).
-	// Body in topEnvironment.use so ~beatClock etc. resolve.
-	~onResync = { |idx|
-		topEnvironment.use {
-			Pdef(m.ptn).stop;
-			s.bind { group.freeAll };
 			Pdef(m.ptn).play(~beatClock, quant: [~scoreBeatsPerBar * ~scoreEventsPerBeat, phase]);
+			// cotf: seed envir so a stickless seat is silent — SC's Event default
+			// amp is 0.1, and the ~*Next tick hooks (the only writers of \amp) run
+			// only while the seat's device is enabled. Envir .set, not a Pbind key:
+			// Pbind keys override the envir and would defeat the hooks' .set.
+			Pdef(m.ptn).set(\amp, 0);
+
 		};
-	};
+
+		// ~onResync in d.env (per-device dispatch — no cross-device clobber).
+		// Body in topEnvironment.use so ~beatClock etc. resolve.
+		~onResync = { |idx|
+			topEnvironment.use {
+				Pdef(m.ptn).stop;
+				s.bind { group.freeAll };
+				Pdef(m.ptn).play(~beatClock, quant: [~scoreBeatsPerBar * ~scoreEventsPerBeat, phase]);
+			};
+		};
+	});
 };
 
 //------------------------------------------------------------
 ~deinit = ~deinit <> {
+	loading = false;
+
 	Pdef(m.ptn).remove;
 	Event.eventTypes.removeAt(eventTypeName);
 

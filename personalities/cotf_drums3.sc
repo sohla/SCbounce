@@ -14,6 +14,9 @@ var bi = -1;
 // music-downbeat alignment in clock beats
 var phase = 4;
 var group;
+var loading = false;   // true while ~init is waiting on the sample reads;
+                       // ~deinit clears it so a load in flight bails out
+                       // instead of building an unreachable Pdef. See ~init.
 
 // legend: K=kick(0)  S=snare(5)  h=closed hat(2)  t=tom hi(7)  M=tom mid(9)  F=floor(13)  O=open hat(4)
 // nil = rest slot (silence at that 16th)
@@ -55,8 +58,9 @@ SynthDef(\drumkitt3, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 ~init = ~init <> {
 	var folder = PathName("~/Music/cotf_samples/drums");
 
+	loading = true;
+
 	topEnvironment.use{
-		group = Group.new;
 		postf("loading samples : % \n", folder);
 		~buffers = folder.entries.collect({|path,i|
 			Buffer.read(s, path.fullPath, action:{|buf|
@@ -64,56 +68,77 @@ SynthDef(\drumkitt3, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 				if(folder.entries.size - 1 == i, { "samples loaded".postln });
 			});
 		});
-
-		Pdef(m.ptn,
-			Pbind(
-				\instrument, \drumkitt3,
-				\out, ob,
-				\group, group,
-				// uniform 16th grid; nil slots → Rest() → event skipped but time advances
-				\dur, 1,
-				\bufnum, Pfunc{|e|
-					var pos = (~beatClock.beats - phase).mod(patternLen);
-					var slot = pos.floor.asInteger.mod(samples.size);
-					var sm = samples[slot];
-					bi = slot;
-					if(sm.isNil, { Rest() }, { ~buffers[sm] })
-				},
-				\octave, Pseq([5].stutter(24), inf),
-				\start, 0,
-				\note, Pseq([40], inf),
-				\pan, Pwhite(-0.05, 0.05),
-				\attack, 0.02,
-				\decay, 1,
-				\args, #[],
-			)
-		);
-
-		Pdef(m.ptn).play(~beatClock, quant: [~scoreBeatsPerBar * ~scoreEventsPerBeat, phase]);
-		// cotf: seed envir so a stickless seat is silent — SC's Event default
-		// amp is 0.1, and the ~*Next tick hooks (the only writers of \amp) run
-		// only while the seat's device is enabled. Envir .set, not a Pbind key:
-		// Pbind keys override the envir and would defeat the hooks' .set.
-		Pdef(m.ptn).set(\amp, 0);
-		Pdef(m.ptn).set(\bufnum, ~buffers[0]);
-		Pdef(m.ptn).pause;
-
 	};
 
-	// ~onResync in d.env (per-device dispatch — no cross-device clobber).
-	~onResync = { |idx|
-		topEnvironment.use {
-			Pdef(m.ptn).stop;
-			s.bind { group.freeAll };
-			if (~roomState == \piece) {
-				Pdef(m.ptn).play(~beatClock, quant: [~scoreBeatsPerBar * ~scoreEventsPerBeat, phase]);
+	s.sync;
+	postf("[drums3] all buffers loaded (%) \n", (topEnvironment[\buffers] ? []).size);
+
+	if(loading.not,{
+		postf("[drums3] load cancelled — unloaded while samples were loading \n");
+	},{
+		// Name any file that didn't come back rather than failing silently.
+		// We still build: one bad sample costs its own notes, not the seat.
+		(topEnvironment[\buffers] ? []).do({ |buf, i|
+			if(buf.numFrames.isNil or: { buf.numFrames == 0 },{
+				postf("[drums3] sample failed to load : index % \n", i);
+			});
+		});
+
+		topEnvironment.use{
+			group = Group.new;
+
+			Pdef(m.ptn,
+				Pbind(
+					\instrument, \drumkitt3,
+					\out, ob,
+					\group, group,
+					// uniform 16th grid; nil slots → Rest() → event skipped but time advances
+					\dur, 1,
+					\bufnum, Pfunc{|e|
+						var pos = (~beatClock.beats - phase).mod(patternLen);
+						var slot = pos.floor.asInteger.mod(samples.size);
+						var sm = samples[slot];
+						bi = slot;
+						if(sm.isNil, { Rest() }, { ~buffers[sm] })
+					},
+					\octave, Pseq([5].stutter(24), inf),
+					\start, 0,
+					\note, Pseq([40], inf),
+					\pan, Pwhite(-0.05, 0.05),
+					\attack, 0.02,
+					\decay, 1,
+					\args, #[],
+				)
+			);
+
+			Pdef(m.ptn).play(~beatClock, quant: [~scoreBeatsPerBar * ~scoreEventsPerBeat, phase]);
+			// cotf: seed envir so a stickless seat is silent — SC's Event default
+			// amp is 0.1, and the ~*Next tick hooks (the only writers of \amp) run
+			// only while the seat's device is enabled. Envir .set, not a Pbind key:
+			// Pbind keys override the envir and would defeat the hooks' .set.
+			Pdef(m.ptn).set(\amp, 0);
+			Pdef(m.ptn).set(\bufnum, ~buffers[0]);
+			Pdef(m.ptn).pause;
+
+		};
+
+		// ~onResync in d.env (per-device dispatch — no cross-device clobber).
+		~onResync = { |idx|
+			topEnvironment.use {
+				Pdef(m.ptn).stop;
+				s.bind { group.freeAll };
+				if (~roomState == \piece) {
+					Pdef(m.ptn).play(~beatClock, quant: [~scoreBeatsPerBar * ~scoreEventsPerBeat, phase]);
+				};
 			};
 		};
-	};
+	});
 };
 
 //------------------------------------------------------------
 ~deinit = ~deinit <> {
+	loading = false;
+
 	Pdef(m.ptn).remove;
 	fork {
 		if (group.notNil) {

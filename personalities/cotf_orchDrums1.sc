@@ -10,6 +10,9 @@ instruments: [Gravitone]
 var m = ~model;
 var ob = ~outBus ? 0;
 var group;
+var loading = false;   // true while ~init is waiting on the sample reads;
+                       // ~deinit clears it so a load in flight bails out
+                       // instead of building an unreachable Pdef. See ~init.
 var bufs;   // file-scope so event handler + hooks resolve it lexically
             // (would be nil via `~buffers` because those run in d.env / event env)
 
@@ -220,8 +223,9 @@ SynthDef(\drumkitOrch, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0,
 		pat.collect({|str| parseGrid.(str) })
 	});
 
+	loading = true;
+
 	topEnvironment.use{
-		group = Group.new;
 		postf("loading samples : % \n", folder);
 		bufs = folder.entries.collect({|path, i|
 			var buf = Buffer.read(s, path.fullPath, action:{|b|
@@ -229,84 +233,105 @@ SynthDef(\drumkitOrch, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0,
 			});
 			buf
 		});
+	};
 
-		// Custom event: at each slot, iterate roles and spawn one synth
-		// per active-hit role. baseAmp gate skips iteration when silent.
-		// Accel-gated ghost dropout: at rest the threshold is higher so
-		// only full hits play; motion drops the threshold to 0 so ghosts
-		// come through.
-		Event.addEventType(eventTypeName, {|e|
-			// NB: inside Event.play the currentEnvironment is the event
-			// itself — env-var lookups (`~buffers`) would resolve to
-			// event[\buffers] (nil). File-scope `bufs` is a lexical
-			// closure so it resolves regardless of currentEnvironment.
-			var slot   = ~slotIdx;
-			var pat    = parsedPatterns[currentPattern];
-			var layer  = layers[currentLayer];
-			var base   = ~baseAmp ? 0;
-			var motion = m.accelMassFiltered.linlin(0, 2.0, 0, 1);
-			var thresh = 0.4 * (1 - motion);   // 0.4 at rest → 0 at motion
+	s.sync;
+	postf("[orchDrums1] all buffers loaded (%) \n", (bufs ? []).size);
 
-			if (base > 0.001 and: { pat.notNil } and: { layer.notNil } and: { bufs.notNil }, {
-				roles.do({|role|
-					var grid   = pat[role];
-					var bufIdx = layer[role];
-					if (grid.notNil and: { bufIdx.notNil }, {
-						var v = grid.wrapAt(slot);
-						if (v >= thresh and: { v > 0 }, {
-							(
-								instrument: \drumkitOrch,
-								bufnum:     bufs[bufIdx],
-								out:        ob,
-								group:      group,
-								amp:        v * base,
-								pan:        -0.08.rrand(0.08),
-								attack:     0.02,
-								decay:      1,
-								release:    1.0,
-								type:       \note,
-							).play;
+	if(loading.not,{
+		postf("[orchDrums1] load cancelled — unloaded while samples were loading \n");
+	},{
+		// Name any file that didn't come back rather than failing silently.
+		// We still build: one bad sample costs its own notes, not the seat.
+		(bufs ? []).do({ |buf, i|
+			if(buf.numFrames.isNil or: { buf.numFrames == 0 },{
+				postf("[orchDrums1] sample failed to load : index % \n", i);
+			});
+		});
+
+		topEnvironment.use{
+			group = Group.new;
+
+			// Custom event: at each slot, iterate roles and spawn one synth
+			// per active-hit role. baseAmp gate skips iteration when silent.
+			// Accel-gated ghost dropout: at rest the threshold is higher so
+			// only full hits play; motion drops the threshold to 0 so ghosts
+			// come through.
+			Event.addEventType(eventTypeName, {|e|
+				// NB: inside Event.play the currentEnvironment is the event
+				// itself — env-var lookups (`~buffers`) would resolve to
+				// event[\buffers] (nil). File-scope `bufs` is a lexical
+				// closure so it resolves regardless of currentEnvironment.
+				var slot   = ~slotIdx;
+				var pat    = parsedPatterns[currentPattern];
+				var layer  = layers[currentLayer];
+				var base   = ~baseAmp ? 0;
+				var motion = m.accelMassFiltered.linlin(0, 2.0, 0, 1);
+				var thresh = 0.4 * (1 - motion);   // 0.4 at rest → 0 at motion
+
+				if (base > 0.001 and: { pat.notNil } and: { layer.notNil } and: { bufs.notNil }, {
+					roles.do({|role|
+						var grid   = pat[role];
+						var bufIdx = layer[role];
+						if (grid.notNil and: { bufIdx.notNil }, {
+							var v = grid.wrapAt(slot);
+							if (v >= thresh and: { v > 0 }, {
+								(
+									instrument: \drumkitOrch,
+									bufnum:     bufs[bufIdx],
+									out:        ob,
+									group:      group,
+									amp:        v * base,
+									pan:        -0.08.rrand(0.08),
+									attack:     0.02,
+									decay:      1,
+									release:    1.0,
+									type:       \note,
+								).play;
+							});
 						});
 					});
 				});
 			});
-		});
 
-		// Pdef fires one event per 16th (\dur = 1 clock beat in _mul4).
-		// The event's slotIdx is derived from beatClock so a seek
-		// re-anchors cleanly.
-		// NB: \baseAmp is deliberately NOT a Pbind key. Pbind keys win
-		// over Pdef.set, so putting \baseAmp in here would silence every
-		// event forever. Instead, .set flows via envir → each event's
-		// ~baseAmp lookup returns the current tick-set value.
-		Pdef(m.ptn,
-			Pbind(
-				\type,    eventTypeName,
-				\dur,     1,
-				\slotIdx, Pfunc {|e|
-					var barLen = ~scoreBeatsPerBar * ~scoreEventsPerBeat;
-					var pos = (~beatClock.beats - phase).mod(barLen);
-					pos.round.asInteger.mod(barLen)
-				},
-			)
-		);
+			// Pdef fires one event per 16th (\dur = 1 clock beat in _mul4).
+			// The event's slotIdx is derived from beatClock so a seek
+			// re-anchors cleanly.
+			// NB: \baseAmp is deliberately NOT a Pbind key. Pbind keys win
+			// over Pdef.set, so putting \baseAmp in here would silence every
+			// event forever. Instead, .set flows via envir → each event's
+			// ~baseAmp lookup returns the current tick-set value.
+			Pdef(m.ptn,
+				Pbind(
+					\type,    eventTypeName,
+					\dur,     1,
+					\slotIdx, Pfunc {|e|
+						var barLen = ~scoreBeatsPerBar * ~scoreEventsPerBeat;
+						var pos = (~beatClock.beats - phase).mod(barLen);
+						pos.round.asInteger.mod(barLen)
+					},
+				)
+			);
 
-		Pdef(m.ptn).set(\baseAmp, 0);   // safe starting value via envir
-		Pdef(m.ptn).play(~beatClock, quant: [~scoreBeatsPerBar * ~scoreEventsPerBeat, phase]);
-	};
-
-	// State-aware ~onResync (in d.env — per-device dispatch).
-	~onResync = { |idx|
-		topEnvironment.use {
-			Pdef(m.ptn).stop;
-			s.bind { group.freeAll };
+			Pdef(m.ptn).set(\baseAmp, 0);   // safe starting value via envir
 			Pdef(m.ptn).play(~beatClock, quant: [~scoreBeatsPerBar * ~scoreEventsPerBeat, phase]);
 		};
-	};
+
+		// State-aware ~onResync (in d.env — per-device dispatch).
+		~onResync = { |idx|
+			topEnvironment.use {
+				Pdef(m.ptn).stop;
+				s.bind { group.freeAll };
+				Pdef(m.ptn).play(~beatClock, quant: [~scoreBeatsPerBar * ~scoreEventsPerBeat, phase]);
+			};
+		};
+	});
 };
 
 //------------------------------------------------------------
 ~deinit = ~deinit <> {
+	loading = false;
+
 	Pdef(m.ptn).remove;
 	Event.eventTypes.removeAt(eventTypeName);
 	fork {

@@ -33,6 +33,9 @@ var m = ~model;
 var ob = ~outBus ? 0;
 var group;
 var bufs;
+var loading = false;   // true while ~init is waiting on the sample reads;
+                       // ~deinit clears it so a load in flight bails out
+                       // instead of building an unreachable Pdef. See ~init.
 var eventTypeName = (\percEvent_ ++ m.ptn).asSymbol;
 var phase = 0;
 
@@ -291,133 +294,151 @@ SynthDef(\timpVoice, {
 // ============================================================
 ~init = ~init <> {
 	var folder = PathName("~/Music/cotf_samples/orchkit");
+	var entries;
 
 	parsedPatterns = rawPatterns.collect({|pat|
 		pat.collect({|str| parseGrid.(str) })
 	});
 
-	topEnvironment.use {
-		var entries = folder.entries;
-		group = Group.new;
-		postf("loading samples : % \n", folder);
+	loading = true;
+	entries = folder.entries;
+	postf("loading samples : % \n", folder);
 
-		// Resolve the name-keyed sampleGain table to a per-index array,
-		// and post the real index->name map so the indices used in
-		// `layers` can be checked against what SC actually loaded.
-		gainByIdx = entries.collect({|path| sampleGain[path.fileNameWithoutExtension.asSymbol] ? 1.0 });
-		"[perc] orchkit map (index : file : gain)".postln;
-		entries.do({|path, i|
-			postf("  %  %  x%\n", i.asString.padLeft(2), path.fileNameWithoutExtension, gainByIdx[i]);
+	// Resolve the name-keyed sampleGain table to a per-index array,
+	// and post the real index->name map so the indices used in
+	// `layers` can be checked against what SC actually loaded.
+	gainByIdx = entries.collect({|path| sampleGain[path.fileNameWithoutExtension.asSymbol] ? 1.0 });
+	"[perc] orchkit map (index : file : gain)".postln;
+	entries.do({|path, i|
+		postf("  %  %  x%\n", i.asString.padLeft(2), path.fileNameWithoutExtension, gainByIdx[i]);
+	});
+
+	bufs = entries.collect({|path, i|
+		var buf = Buffer.read(s, path.fullPath, action:{|b|
+			postf("buffer alloc [% : %] \n", i, path.fileNameWithoutExtension);
 		});
+		buf
+	});
 
-		bufs = entries.collect({|path, i|
-			var buf = Buffer.read(s, path.fullPath, action:{|b|
-				postf("buffer alloc [% : %] \n", i, path.fileNameWithoutExtension);
+	s.sync;
+	postf("[perc] all buffers loaded (%) \n", bufs.size);
+
+	if(loading.not or: { bufs.isNil },{
+		postf("[perc] load cancelled — unloaded while samples were loading \n");
+	},{
+		// Name any file that didn't come back rather than failing silently —
+		// a short read shows up as one dead index in the map above, and the
+		// `layers` tables are written against those indices.
+		bufs.do({|buf, i|
+			if(buf.numFrames.isNil or: { buf.numFrames == 0 },{
+				postf("[perc] sample failed to load : %  %\n",
+					i.asString.padLeft(2), entries[i].fileNameWithoutExtension);
 			});
-			buf
 		});
 
-		Event.addEventType(eventTypeName, {|e|
-			var slot = ~slotIdx;
-			// Fall back rather than go silent — an unmapped section or a
-			// mistyped key must never mute a seat mid-show.
-			var pat = parsedPatterns[currentPatternKey] ? parsedPatterns[\low];
-			var layer = layers[currentLayerKey] ? layers[\default];
-			var base = ~baseAmp ? 0;
+		topEnvironment.use {
+			group = Group.new;
 
-			if (base > 0.001 and: { pat.notNil } and: { layer.notNil } and: { bufs.notNil }, {
-				roles.do({|role|
-					var grid = pat[role];
-					var choices = layer[role];
-					var inGroup = activeRoles.isNil or: { activeRoles.includes(role) };
-					if (inGroup and: { grid.notNil } and: { choices.notNil }, {
-						var v = grid.wrapAt(slot);
+			Event.addEventType(eventTypeName, {|e|
+				var slot = ~slotIdx;
+				// Fall back rather than go silent — an unmapped section or a
+				// mistyped key must never mute a seat mid-show.
+				var pat = parsedPatterns[currentPatternKey] ? parsedPatterns[\low];
+				var layer = layers[currentLayerKey] ? layers[\default];
+				var base = ~baseAmp ? 0;
+
+				if (base > 0.001 and: { pat.notNil } and: { layer.notNil } and: { bufs.notNil }, {
+					roles.do({|role|
+						var grid = pat[role];
+						var choices = layer[role];
+						var inGroup = activeRoles.isNil or: { activeRoles.includes(role) };
+						if (inGroup and: { grid.notNil } and: { choices.notNil }, {
+							var v = grid.wrapAt(slot);
+							if (v > 0, {
+								// Role holds a COLLECTION of samples — pick one per
+								// hit so repeats vary. asArray keeps a bare integer
+								// working; wrapAt keeps a bad index from ever being
+								// nil (a throw here would kill the Pdef for good).
+								var bufIdx = choices.asArray.choose;
+								var buf    = bufIdx !? { bufs.wrapAt(bufIdx) };
+								if (buf.notNil, {
+									(
+										instrument: \percHit,
+										bufnum:     buf,
+										out:        ob,
+										group:      group,
+										amp:        v * base
+										            * ((gainByIdx !? { gainByIdx.wrapAt(bufIdx) }) ? 1.0)
+										            * (roleGain[role] ? 1.0),
+										pan:        -0.08.rrand(0.08),
+										attack:     0.004,
+										release:    2.0,
+										type:       \note,
+									).play;
+								});
+							});
+						});
+					});
+
+					// Pitched timpani — own grid row, own SynthDef, nearest
+					// source sample shifted to timpNote.
+					if (timpEnabled, {
+						var grid = pat[\timp];
+						var v    = grid !? { grid.wrapAt(slot) } ? 0;
 						if (v > 0, {
-							// Role holds a COLLECTION of samples — pick one per
-							// hit so repeats vary. asArray keeps a bare integer
-							// working; wrapAt keeps a bad index from ever being
-							// nil (a throw here would kill the Pdef for good).
-							var bufIdx = choices.asArray.choose;
-							var buf    = bufIdx !? { bufs.wrapAt(bufIdx) };
+							var src = timpSamples.minItem({|t| (timpNote - t.srcMidi).abs });
+							var buf = bufs.wrapAt(src.idx);
 							if (buf.notNil, {
 								(
-									instrument: \percHit,
+									instrument: \timpVoice,
 									bufnum:     buf,
 									out:        ob,
 									group:      group,
+									rate:       (timpNote - src.srcMidi).midiratio,
 									amp:        v * base
-									            * ((gainByIdx !? { gainByIdx.wrapAt(bufIdx) }) ? 1.0)
-									            * (roleGain[role] ? 1.0),
-									pan:        -0.08.rrand(0.08),
-									attack:     0.004,
-									release:    2.0,
+									            * ((gainByIdx !? { gainByIdx.wrapAt(src.idx) }) ? 1.0),
+									pan:        -0.05.rrand(0.05),
+									release:    rrand(2.0, 4.0),
 									type:       \note,
 								).play;
 							});
 						});
 					});
 				});
-
-				// Pitched timpani — own grid row, own SynthDef, nearest
-				// source sample shifted to timpNote.
-				if (timpEnabled, {
-					var grid = pat[\timp];
-					var v    = grid !? { grid.wrapAt(slot) } ? 0;
-					if (v > 0, {
-						var src = timpSamples.minItem({|t| (timpNote - t.srcMidi).abs });
-						var buf = bufs.wrapAt(src.idx);
-						if (buf.notNil, {
-							(
-								instrument: \timpVoice,
-								bufnum:     buf,
-								out:        ob,
-								group:      group,
-								rate:       (timpNote - src.srcMidi).midiratio,
-								amp:        v * base
-								            * ((gainByIdx !? { gainByIdx.wrapAt(src.idx) }) ? 1.0),
-								pan:        -0.05.rrand(0.05),
-								release:    rrand(2.0, 4.0),
-								type:       \note,
-							).play;
-						});
-					});
-				});
 			});
-		});
 
-		Pdef(m.ptn,
-			Pbind(
-				\type,    eventTypeName,
-				\dur,     1,
-				\slotIdx, Pfunc {|e|
-					var pos = (~beatClock.beats - phase).mod(patternLen);
-					pos.round.asInteger.mod(patternLen)
-				},
-			)
-		);
+			Pdef(m.ptn,
+				Pbind(
+					\type,    eventTypeName,
+					\dur,     1,
+					\slotIdx, Pfunc {|e|
+						var pos = (~beatClock.beats - phase).mod(patternLen);
+						pos.round.asInteger.mod(patternLen)
+					},
+				)
+			);
 
-		Pdef(m.ptn).set(\baseAmp, 0);
-		Pdef(m.ptn).play(~beatClock, quant: [~scoreBeatsPerBar * ~scoreEventsPerBeat, phase]);
-	};
-
-	// MUST be outside topEnvironment.use — the conductor dispatches this
-	// as d.env.use { ~onResync.(idx) }, so it has to live in the DEVICE
-	// env. Assigned inside the use block it lands in topEnvironment, the
-	// device keeps the controller's empty default, and the Pdef is never
-	// restarted across the beat clock's re-anchor.
-	~onResync = { |idx|
-		topEnvironment.use {
-			postf("[perc] onResync idx % clockBeats % \n",
-				idx, ~beatClock.beats.round(0.01));
-			Pdef(m.ptn).stop;
-			s.bind { group.freeAll };
+			Pdef(m.ptn).set(\baseAmp, 0);
 			Pdef(m.ptn).play(~beatClock, quant: [~scoreBeatsPerBar * ~scoreEventsPerBeat, phase]);
 		};
-	};
+
+		~onResync = { |idx|
+			topEnvironment.use {
+				postf("[perc] onResync idx % clockBeats % \n",
+					idx, ~beatClock.beats.round(0.01));
+				Pdef(m.ptn).stop;
+				s.bind { group.freeAll };
+				Pdef(m.ptn).play(~beatClock, quant: [~scoreBeatsPerBar * ~scoreEventsPerBeat, phase]);
+			};
+		};
+	});
 };
 
 // ============================================================
 ~deinit = ~deinit <> {
+
+	loading = false;
+
 	Pdef(m.ptn).remove;
 	Event.eventTypes.removeAt(eventTypeName);
 	fork {

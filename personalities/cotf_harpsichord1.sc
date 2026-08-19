@@ -58,6 +58,9 @@ var parseHarpsichordNote = { |fileStem|
 
 var folder = PathName("~/Music/cotf_samples/Harpsichord");
 var samplesLib;
+var loading = false;   // true while ~init is waiting on the sample reads;
+                       // ~deinit clears it so a load in flight bails out
+                       // instead of building an unreachable Pdef. See ~init.
 
 // Unique per-env event type — see cotf_harp1.sc for rationale.
 var eventTypeName = (\customEvent_ ++ m.ptn).asSymbol;
@@ -143,6 +146,8 @@ SynthDef(\stereoSamplerH, {|bufnum=0, out=0, amp=1, rate=1, ptch=1, start=0, pan
 	};
 
 	// scan the folder, parse each stem, load buffer.
+	loading = true;
+
 	samplesLib = folder.entries
 		.collect({ |path|
 			var midiNote = parseHarpsichordNote.(path.fileNameWithoutExtension);
@@ -153,84 +158,101 @@ SynthDef(\stereoSamplerH, {|bufnum=0, out=0, amp=1, rate=1, ptch=1, start=0, pan
 			(name: path.fileNameWithoutExtension, buffer: buffer, midiNote: midiNote)
 		});
 
-	// customEvent handler — array-aware (from marimba2). when ~note is
-	// an array (a chord), findClosestSample runs per element and produces
-	// arrays for ~bufnum/~rate; the \note dispatch multichannel-expands
-	// into one synth per element, all firing at the same clock instant.
-	Event.addEventType(eventTypeName, {|e|
-		var target = ~note + ~root + (12 * ~octave);
-		if(target.isArray) {
-			~bufnum = target.collect({|n| findClosestSample.(n).buffer });
-			~rate   = target.collect({|n| findClosestSample.(n).rate });
-		} {
-			var found = findClosestSample.(target);
-			~bufnum = found.buffer;
-			~rate = found.rate;
-		};
-		~type = \note;
-		currentEnvironment.play;
-	});
+	s.sync;
+	postf("[harpsichord1] all buffers loaded (%) \n", samplesLib.size);
 
-	topEnvironment.use{
-		group = Group.new;
+	if(loading.not or: { samplesLib.isNil },{
+		postf("[harpsichord1] load cancelled — unloaded while samples were loading \n");
+	},{
+		// Name any file that didn't come back rather than failing silently.
+		// We still build: one bad sample costs its own notes, not the seat.
+		samplesLib.do({ |sample|
+			if(sample.buffer.numFrames.isNil or: { sample.buffer.numFrames == 0 },{
+				postf("[harpsichord1] sample failed to load : % \n", sample.name);
+			});
+		});
 
-		Pdef(m.ptn,
-			Pbind(
-				\instrument, \stereoSamplerH,
-				\out, ob,
-				\group, group,
-				\type, eventTypeName,
-				// \strum, 0.4,
+		// customEvent handler — array-aware (from marimba2). when ~note is
+		// an array (a chord), findClosestSample runs per element and produces
+		// arrays for ~bufnum/~rate; the \note dispatch multichannel-expands
+		// into one synth per element, all firing at the same clock instant.
+		Event.addEventType(eventTypeName, {|e|
+			var target = ~note + ~root + (12 * ~octave);
+			if(target.isArray) {
+				~bufnum = target.collect({|n| findClosestSample.(n).buffer });
+				~rate   = target.collect({|n| findClosestSample.(n).rate });
+			} {
+				var found = findClosestSample.(target);
+				~bufnum = found.buffer;
+				~rate = found.rate;
+			};
+			~type = \note;
+			currentEnvironment.play;
+		});
 
-				// ~note branches on room state:
-				//   \piece → 3-note chord voicing from fitted_notes
-				//            (offsets relative to baseMidi 60, ~root = 0)
-				//   else   → single note; ~note = 0, ~root drives it
-				\note, Pfunc {
-					if (topEnvironment[\roomState] == \piece) {
-						chordVoicedOffsets.(60)
-					} {
-						0
-					}
-				},
+		topEnvironment.use{
+			group = Group.new;
 
-				// ~root branches too — in piece the chord voicing carries
-				// absolute pitch classes so root = 0; otherwise use a
-				// voice-pool pitch class (harp1 style).
-				\root, Pfunc {
-					if (topEnvironment[\roomState] == \piece) {
-						0
-					} {
-						(~scoreVoicePool ? [69]).choose.wrap(0, 11).asInteger
-					}
-				},
+			Pdef(m.ptn,
+				Pbind(
+					\instrument, \stereoSamplerH,
+					\out, ob,
+					\group, group,
+					\type, eventTypeName,
+					// \strum, 0.4,
 
-				\args, #[]
+					// ~note branches on room state:
+					//   \piece → 3-note chord voicing from fitted_notes
+					//            (offsets relative to baseMidi 60, ~root = 0)
+					//   else   → single note; ~note = 0, ~root drives it
+					\note, Pfunc {
+						if (topEnvironment[\roomState] == \piece) {
+							chordVoicedOffsets.(60)
+						} {
+							0
+						}
+					},
+
+					// ~root branches too — in piece the chord voicing carries
+					// absolute pitch classes so root = 0; otherwise use a
+					// voice-pool pitch class (harp1 style).
+					\root, Pfunc {
+						if (topEnvironment[\roomState] == \piece) {
+							0
+						} {
+							(~scoreVoicePool ? [69]).choose.wrap(0, 11).asInteger
+						}
+					},
+
+					\args, #[]
+				);
 			);
-		);
 
-		Pdef(m.ptn).play(~beatClock, quant: ~scoreBeatsPerBar * ~scoreEventsPerBeat);
-		// cotf: seed envir so a stickless seat is silent — SC's Event default
-		// amp is 0.1, and the ~*Next tick hooks (the only writers of \amp) run
-		// only while the seat's device is enabled. Envir .set, not a Pbind key:
-		// Pbind keys override the envir and would defeat the hooks' .set.
-		Pdef(m.ptn).set(\amp, 0);
-		Pdef(m.ptn).set(\dur, 2);   // sensible default; state ticks override
-	};
-
-	// ~onResync in d.env (per-device dispatch — no cross-device clobber).
-	// Body in topEnvironment.use so ~beatClock etc. resolve.
-	~onResync = { |idx|
-		topEnvironment.use {
-			Pdef(m.ptn).stop;
-			s.bind { group.freeAll };
 			Pdef(m.ptn).play(~beatClock, quant: ~scoreBeatsPerBar * ~scoreEventsPerBeat);
+			// cotf: seed envir so a stickless seat is silent — SC's Event default
+			// amp is 0.1, and the ~*Next tick hooks (the only writers of \amp) run
+			// only while the seat's device is enabled. Envir .set, not a Pbind key:
+			// Pbind keys override the envir and would defeat the hooks' .set.
+			Pdef(m.ptn).set(\amp, 0);
+			Pdef(m.ptn).set(\dur, 2);   // sensible default; state ticks override
 		};
-	};
+
+		// ~onResync in d.env (per-device dispatch — no cross-device clobber).
+		// Body in topEnvironment.use so ~beatClock etc. resolve.
+		~onResync = { |idx|
+			topEnvironment.use {
+				Pdef(m.ptn).stop;
+				s.bind { group.freeAll };
+				Pdef(m.ptn).play(~beatClock, quant: ~scoreBeatsPerBar * ~scoreEventsPerBeat);
+			};
+		};
+	});
 };
 
 //------------------------------------------------------------
 ~deinit = ~deinit <> {
+	loading = false;
+
 	Pdef(m.ptn).remove;
 	Event.eventTypes.removeAt(eventTypeName);
 

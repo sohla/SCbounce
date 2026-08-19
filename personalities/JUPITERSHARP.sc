@@ -20,12 +20,16 @@ family:      harp
 */
 
 var m = ~model;
-var ob = ~outBus ? 0; // capture NOW — ~init bodies run under topEnvironment.use
+var ob = ~outBus ? 0; // capture NOW — ~outBus lives in d.env, and the Pbind
+                      // is built inside topEnvironment.use{} where it's nil
 var lastTime = 0;
 var idleNotes = [0,2,4,5,8,5,4,2];
 var tuneTime = 0;
 var group;   // dedicated Group for this personality's synths — see
              // concert_p_files.md §5 (Pdef personalities need this)
+var loading = false;   // true while ~init is waiting on the sample reads;
+                       // ~deinit clears it so a load in flight bails out
+                       // instead of building an unreachable Pdef. See ~init.
 //------------------------------------------------------------
 
 var noteToMidi = { |noteName|
@@ -45,21 +49,7 @@ var noteToMidi = { |noteName|
 var folder = PathName("~/Music/cotf_samples/harp");
 var samplesLib;
 
-// Unique per-env event type. Event.addEventType registers on a class-level
-// dict, so multiple personalities sharing \customEvent clobber each other's
-// handlers (last loader wins → cross-device sample bleed). m.ptn is a fresh
-// 16-char random string per env, so this stays unique per device AND reload.
 var eventTypeName = (\customEvent_ ++ m.ptn).asSymbol;
-
-// scope issue!?!
-// var samplesLib = folder.entries.collect({ |path|
-// 	var note = path.fileNameWithoutExtension.split($_).last;
-// 	var buffer = Buffer.read(s, path.fullPath, action:{ |buf|
-// 		postf("buffer alloc [%] \n", buf);
-// 	});
-// 	postf("loading sample : % \n", path.fileNameWithoutExtension);
-// 	(name: path.fileNameWithoutExtension, buffer: buffer, midiNote: noteToMidi.(note))
-// });
 
 //------------------------------------------------------------
 
@@ -86,8 +76,6 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, start=0, pan=0, freq=
 //------------------------------------------------------------
 ~init = ~init <> {
 
-	var result;
-
 	var findSampleBuffer = {|note|
 		var bufnum;
 		samplesLib.do({|sample|
@@ -98,6 +86,8 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, start=0, pan=0, freq=
 		bufnum
 	};
 
+	loading = true;
+
 	samplesLib = folder.entries.collect({ |path|
 		var note = path.fileNameWithoutExtension.split($_).last;
 		var buffer = Buffer.read(s, path.fullPath, action:{ |buf|
@@ -107,60 +97,73 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, start=0, pan=0, freq=
 		(name: path.fileNameWithoutExtension, buffer: buffer, midiNote: noteToMidi.(note))
 	});
 
-	Event.addEventType(eventTypeName, {|e|
-		// asInteger because SC's default ~octave is 5.0 (Float); the
-		// addition promotes ~note to Float and .odd is not defined on Float.
-		~note = (~note + ~root + (12 * ~octave)).asInteger;
-		// Explicitly hand the actual played frequency to the SynthDef —
-		// otherwise the default \note event recomputes ~freq from ~note +
-		// ~root + 12*~octave, which double-counts because we've already
-		// folded those in above. Now the SynthDef's \freq arg is the true
-		// playing pitch (odd/even resample still lands on the intended
-		// pitch: even → rate 1 at correct sample; odd → rate 1.midiratio
-		// off the note-1 sample, which raises it back to the intended freq).
-		~freq = ~note.midicps;
-		if(~note.odd,{
-			~bufnum = findSampleBuffer.(~note-1);
-				~rate = 1.midiratio;
-		},{
-			~bufnum = findSampleBuffer.(~note);
-				~rate = 1;
+	s.sync;
+	postf("all buffers loaded \n");
+
+	if(loading.not or: { samplesLib.isNil },{
+		postf("JUPITERSHARP: load cancelled — unloaded while samples were loading \n");
+	},{
+		// Name any file that didn't come back, rather than failing silently.
+		// We still build: one bad sample costs its own notes, not the seat.
+		samplesLib.do({ |sample|
+			if(sample.buffer.numFrames.isNil or: { sample.buffer.numFrames == 0 },{
+				postf("JUPITERSHARP: sample failed to load : % \n", sample.name);
+			});
 		});
-			~type = \note;
-			currentEnvironment.play;
-	});
 
-	topEnvironment.use{
-		group = Group.new;
+		Event.addEventType(eventTypeName, {|e|
+			~note = (~note + ~root + (12 * ~octave)).asInteger;
+			~freq = ~note.midicps;
+			if(~note.odd,{
+				~bufnum = findSampleBuffer.(~note-1);
+					~rate = 1.midiratio;
+			},{
+				~bufnum = findSampleBuffer.(~note);
+					~rate = 1;
+			});
+				~type = \note;
+				currentEnvironment.play;
+		});
 
-		Pdef(m.ptn,
-			Pbind(
-				\instrument, \stereoSampler,
-				\out, ob,
-				\group, group,    // route every event's synth into our group
-				\type, eventTypeName,
-				\note, 0,
-				\root, Pfunc { ~scoreVoicePool.choose.wrap(0,11).asInteger},
-				// \octave, 6,
-				\args, #[]
+		topEnvironment.use{
+			group = Group.new;
+
+			Pdef(m.ptn,
+				Pbind(
+					\instrument, \stereoSampler,
+					\out, ob,
+					\group, group,    // route every event's synth into our group
+					\type, eventTypeName,
+					\note, 0,
+					\root, Pfunc { ~scoreVoicePool.choose.wrap(0,11).asInteger},
+					// \octave, 6,
+					\args, #[]
+				);
 			);
-		);
 
-		Pdef(m.ptn).play(~beatClock, quant: ~scoreBeatsPerBar * ~scoreEventsPerBeat);
-		Pdef(m.ptn).set(\amp, 0, \dur, 2);
-	};
-
-	~onResync = { |idx|
-		topEnvironment.use {
-			Pdef(m.ptn).stop;
-			s.bind { group.freeAll };
 			Pdef(m.ptn).play(~beatClock, quant: ~scoreBeatsPerBar * ~scoreEventsPerBeat);
+			Pdef(m.ptn).set(\amp, 0, \dur, 2);
 		};
-	};
+
+		~onResync = { |idx|
+			topEnvironment.use {
+				Pdef(m.ptn).stop;
+				s.bind { group.freeAll };
+				Pdef(m.ptn).play(~beatClock, quant: ~scoreBeatsPerBar * ~scoreEventsPerBeat);
+			};
+		};
+	});
 };
 
 //------------------------------------------------------------
 ~deinit = ~deinit <> {
+	
+	var t0 = Main.elapsedTime;
+	var tlog = topEnvironment[\airkitTraceLog];
+	var tport = ~device !? { |dev| dev.port };
+
+	loading = false;
+
 	Pdef(m.ptn).remove;
 	Event.eventTypes.removeAt(eventTypeName);
 
@@ -178,6 +181,10 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, start=0, pan=0, freq=
 				s.sync;
 			});
 			samplesLib = nil;
+		};
+		tlog !? { |f|
+			f.(tport, "deinit.done", "name=JUPITERSHARP ms=%".format(
+				((Main.elapsedTime - t0) * 1000).round.asInteger));
 		};
 	};
 };

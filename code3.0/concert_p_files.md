@@ -184,6 +184,10 @@ fork {
 Without the guards the second call double-frees buffers → "Cannot
 call free on a Buffer that has been freed". Reference: `cotf_celesta1.sc`.
 
+Sampler personalities need one more thing in both halves: a load
+barrier before the Group/Pdef are built, and a `loading = false` in
+`~deinit` so an unload landing mid-load can cancel it. See §27.
+
 ---
 
 ## 6. `~onResync` for Pdef personalities
@@ -1553,3 +1557,132 @@ Don't over-signpost the reveals. If every gesture unlocks something,
 nothing feels earned. Rule of thumb: at most **two** reveals per
 personality, each requiring a distinct interaction shape.
 
+---
+
+## 27. Sample loading — the `s.sync` barrier
+
+`Buffer.read` is **asynchronous**. It returns a Buffer whose bufnum
+is already allocated client-side, but the server hasn't filled it
+yet. A note that fires against an unfilled buffer is not an error —
+it is **silence** — so a Pdef built and played in the same breath as
+the reads can lose its opening events with nothing in the post
+window to say why. On a mid-show reload that is a dead instrument
+for the first bar.
+
+Hold the build behind one `s.sync`:
+
+```supercollider
+var loading = false;   // top-level file scope, next to `group` / `samplesLib`
+
+~init = ~init <> {
+    loading = true;
+
+    samplesLib = folder.entries.collect({ |path|
+        var buffer = Buffer.read(s, path.fullPath, action:{ |buf|
+            postf("buffer alloc [%] \n", buf);
+        });
+        (name: ..., buffer: buffer, midiNote: ...)
+    });
+
+    // One barrier for every outstanding /b_allocRead. ~init is called
+    // from personalityController's load Routine, so s.sync yields that
+    // thread and resumes when the server is done.
+    s.sync;
+    postf("[%] all buffers loaded (%) \n", m.name, samplesLib.size);
+
+    if (loading.not or: { samplesLib.isNil }, {
+        postf("[%] load cancelled — unloaded while samples were loading \n", m.name);
+    },{
+        Event.addEventType(eventTypeName, { |e| ... });
+
+        topEnvironment.use{
+            group = Group.new;
+            Pdef(m.ptn, Pbind(...));
+            Pdef(m.ptn).play(~beatClock, quant: ~scoreBeatsPerBar * ~scoreEventsPerBeat);
+        };
+
+        ~onResync = { |idx| ... };   // see §6
+    });
+};
+
+~deinit = ~deinit <> {
+    loading = false;   // cancel a load still parked in the barrier
+    Pdef(m.ptn).remove;
+    ...
+};
+```
+
+**Do NOT gate on a per-file completion counter.** Counting calls to
+`Buffer.read`'s `action:` and building the pattern when the count
+reaches `folder.entries.size` looks equivalent. It isn't, and it
+fails twice:
+
+- One unreadable file (missing, bad format, a `.DS_Store` that trips
+  the name parser) leaves the count permanently short, so the
+  pattern is **never built at all** — a silent seat with no error,
+  where a single bad sample should have cost one note.
+- The build then runs inside a `/done` responder, i.e. off the load
+  Routine and outside `d.env`. `~onResync = { … }` there lands in
+  whatever environment the responder happens to be in (normally
+  `topEnvironment`, over `~cotfResyncDispatcher`) instead of the
+  device env, and it arrives long after `~init` returned — see the
+  ordering note below.
+
+**Keep `s.sync` OUTSIDE `topEnvironment.use{}`.** `s.sync` yields,
+and a Routine restores its **own** environment (`d.env`) when
+resumed — so everything after a yield inside a `use` block runs
+outside that block, and `~beatClock` / `~score*` read nil. If the
+reads must happen inside a `use` block because they assign an env
+var rather than a file-scope `var` (as `cotf_drums*` do with
+`~buffers`), close that block after the reads and open a second one
+for the build:
+
+```supercollider
+topEnvironment.use{
+    ~buffers = folder.entries.collect({ |path, i| Buffer.read(s, path.fullPath) });
+};
+
+s.sync;                      // outside — safe to yield here
+
+topEnvironment.use{
+    group = Group.new;
+    Pdef(m.ptn, Pbind(...));
+};
+```
+
+**The load can be cancelled under you.** `~deinit` may run while
+`~init` is parked in the barrier — a fast reload, or the COTF server
+reconciling a hand-loaded personality back within ~10 s. The next
+load gets a fresh env with a fresh `m.ptn`, so a Pdef built after
+that point is an **orphan**: keyed to the dead env, unreachable by
+any later `~deinit`, firing synths at freed buffers until
+`Server.killAll`. Hence the `loading` flag — `~deinit` clears it,
+`~init` checks it after the barrier and bails.
+
+**Ordering — why the barrier goes inside `~init`, not around it.**
+`personalityController.scd` runs `~init.(d)` and
+`captureResyncHook.(d)` back to back in the same Routine with no
+yield between them, under `d.env.use`. An `s.sync` *inside* `~init`
+keeps the Routine blocked until the buffers land, so `~onResync` is
+still installed in `d.env` before `~init` returns — which is what
+both `conductorController.scd`'s per-device dispatch and the capture
+hook require (§6, §7). Deferring the install to a callback breaks
+that ordering; deferring it to a barrier does not.
+
+**Report short reads rather than failing silently.** After the
+sync, a buffer whose read failed has `numFrames` nil — name it and
+carry on building, so one bad file costs its own notes and not the
+seat:
+
+```supercollider
+samplesLib.do({ |sample|
+    if (sample.buffer.numFrames.isNil or: { sample.buffer.numFrames == 0 }, {
+        postf("[%] sample failed to load : % \n", m.name, sample.name);
+    });
+});
+```
+
+Reference: `_TEMPLATE_authored.sc`; `cotf_celesta1.sc` (reads at
+`~init` level); `cotf_drums1.sc` (reads inside a `use` block, split
+form); `PERCUSSION.sc` (same, with a name-keyed gain table resolved
+against the index map).

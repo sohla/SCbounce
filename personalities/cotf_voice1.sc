@@ -14,6 +14,9 @@ instruments: [Lumivox]
 var m = ~model;
 var ob = ~outBus ? 0;
 var group;
+var loading = false;   // true while ~init is waiting on the sample reads;
+                       // ~deinit clears it so a load in flight bails out
+                       // instead of building an unreachable Pdef. See ~init.
 
 var samplePath = "~/Music/cotf_samples/voice/aah.wav";
 var samplePitchMidi = 68;   // G#4 — intrinsic pitch of aah.wav
@@ -48,53 +51,73 @@ SynthDef(\voiceGrain, {|out=0, bufnum=0, amp=0.5, rate=1, freq=440, start=0,
 
 //------------------------------------------------------------
 ~init = ~init <> {
+	loading = true;
+
 	topEnvironment.use{
-		group = Group.new;
 
 		sampleBuffer = Buffer.read(s, samplePath.standardizePath, action:{|buf|
 			postf("voice sample loaded: % (% frames, % channels) \n",
 				samplePath, buf.numFrames, buf.numChannels);
 		});
+	};
 
-		// Pbind — ONLY static routing. See concert_p_files.md §22.
-		Pdef(m.ptn,
-			Pbind(
-				\instrument, \voiceGrain,
-				\out, ob,
-				\group, group,
-				\pan, Pwhite(-0.15, 0.15),
-				\args, #[],
+	s.sync;
+	postf("[voice1] all buffers loaded (% frames) \n", sampleBuffer.numFrames ? 0);
+
+	if(loading.not,{
+		postf("[voice1] load cancelled — unloaded while samples were loading \n");
+	},{
+		// Say so rather than failing silently — an unread buffer is just
+		// silence at the server, not an error.
+		if(sampleBuffer.numFrames.isNil or: { sampleBuffer.numFrames == 0 },{
+			postf("[voice1] sample failed to load : % \n", samplePath);
+		});
+
+		topEnvironment.use{
+			group = Group.new;
+
+			// Pbind — ONLY static routing. See concert_p_files.md §22.
+			Pdef(m.ptn,
+				Pbind(
+					\instrument, \voiceGrain,
+					\out, ob,
+					\group, group,
+					\pan, Pwhite(-0.15, 0.15),
+					\args, #[],
+				);
 			);
-		);
 
-		// Static constant — set ONCE (never changes over personality life).
-		Pdef(m.ptn).set(\bufnum, sampleBuffer.bufnum);
-		// Silent defaults so pre-first-tick events don't scream.
-		Pdef(m.ptn).set(\amp, 0);
-		Pdef(m.ptn).set(\dur, 1);
-		Pdef(m.ptn).set(\grainAtk, 0.02);
-		Pdef(m.ptn).set(\grainDec, 0.28);
-		Pdef(m.ptn).set(\rate, 1);
-		Pdef(m.ptn).set(\freq, samplePitchMidi.midicps);
-		Pdef(m.ptn).set(\start, 0);
+			// Static constant — set ONCE (never changes over personality life).
+			Pdef(m.ptn).set(\bufnum, sampleBuffer.bufnum);
+			// Silent defaults so pre-first-tick events don't scream.
+			Pdef(m.ptn).set(\amp, 0);
+			Pdef(m.ptn).set(\dur, 1);
+			Pdef(m.ptn).set(\grainAtk, 0.02);
+			Pdef(m.ptn).set(\grainDec, 0.28);
+			Pdef(m.ptn).set(\rate, 1);
+			Pdef(m.ptn).set(\freq, samplePitchMidi.midicps);
+			Pdef(m.ptn).set(\start, 0);
 
-		Pdef(m.ptn).play(~beatClock, quant: ~scoreBeatsPerBar * ~scoreEventsPerBeat);
-
-		// §15 reload guard — ~onRoomState only fires on change
-		if (~roomState == \tuning, { tuneTime = TempoClock.beats });
-	};
-
-	~onResync = { |idx|
-		topEnvironment.use {
-			Pdef(m.ptn).stop;
-			s.bind { group.freeAll };
 			Pdef(m.ptn).play(~beatClock, quant: ~scoreBeatsPerBar * ~scoreEventsPerBeat);
+
+			// §15 reload guard — ~onRoomState only fires on change
+			if (~roomState == \tuning, { tuneTime = TempoClock.beats });
 		};
-	};
+
+		~onResync = { |idx|
+			topEnvironment.use {
+				Pdef(m.ptn).stop;
+				s.bind { group.freeAll };
+				Pdef(m.ptn).play(~beatClock, quant: ~scoreBeatsPerBar * ~scoreEventsPerBeat);
+			};
+		};
+	});
 };
 
 //------------------------------------------------------------
 ~deinit = ~deinit <> {
+	loading = false;
+
 	Pdef(m.ptn).remove;
 	fork {
 		if (group.notNil) {

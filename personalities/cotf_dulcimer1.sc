@@ -63,6 +63,9 @@ var parseDulcimerNote = { |fileStem|
 var sampleFilter = "Dlcmr-hrd";
 var folder = PathName("~/Music/cotf_samples/Celtic Hammered Dulcimer");
 var samplesLib;
+var loading = false;   // true while ~init is waiting on the sample reads;
+                       // ~deinit clears it so a load in flight bails out
+                       // instead of building an unreachable Pdef. See ~init.
 
 // Unique per-env event type — see cotf_harp1.sc for rationale.
 var eventTypeName = (\customEvent_ ++ m.ptn).asSymbol;
@@ -152,6 +155,8 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, ptch=1, start=0, pan=
 		picked
 	};
 
+	loading = true;
+
 	samplesLib = folder.entries
 		.select({|path| path.fileName.contains(sampleFilter) })
 		.collect({ |path|
@@ -163,78 +168,95 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, ptch=1, start=0, pan=
 			(name: path.fileNameWithoutExtension, buffer: buffer, midiNote: midiNote)
 		});
 
-	// customEvent handler — array-aware form (same as marimba2 for
-	// consistency, though dulcimer only fires single notes here).
-	Event.addEventType(eventTypeName, {|e|
-		var target = ~note + ~root + (12 * ~octave);
-		if(target.isArray) {
-			~bufnum = target.collect({|n| findClosestSample.(n).buffer });
-			~rate   = target.collect({|n| findClosestSample.(n).rate });
-		} {
-			var found = findClosestSample.(target);
-			~bufnum = found.buffer;
-			~rate = found.rate;
-		};
-		~type = \note;
-		currentEnvironment.play;
-	});
+	s.sync;
+	postf("[dulcimer1] all buffers loaded (%) \n", samplesLib.size);
 
-	topEnvironment.use{
-		group = Group.new;
+	if(loading.not or: { samplesLib.isNil },{
+		postf("[dulcimer1] load cancelled — unloaded while samples were loading \n");
+	},{
+		// Name any file that didn't come back rather than failing silently.
+		// We still build: one bad sample costs its own notes, not the seat.
+		samplesLib.do({ |sample|
+			if(sample.buffer.numFrames.isNil or: { sample.buffer.numFrames == 0 },{
+				postf("[dulcimer1] sample failed to load : % \n", sample.name);
+			});
+		});
 
-		Pdef(m.ptn,
-			Pbind(
-				\instrument, \stereoSampler,
-				\out, ob,
-				\group, group,   // route every event's synth into our group
-				\type, eventTypeName,
+		// customEvent handler — array-aware form (same as marimba2 for
+		// consistency, though dulcimer only fires single notes here).
+		Event.addEventType(eventTypeName, {|e|
+			var target = ~note + ~root + (12 * ~octave);
+			if(target.isArray) {
+				~bufnum = target.collect({|n| findClosestSample.(n).buffer });
+				~rate   = target.collect({|n| findClosestSample.(n).rate });
+			} {
+				var found = findClosestSample.(target);
+				~bufnum = found.buffer;
+				~rate = found.rate;
+			};
+			~type = \note;
+			currentEnvironment.play;
+		});
 
-				// note — clock-derived slot → pool offset → MIDI note, then
-				// converted to an offset from baseMidi=60 so ~octave still
-				// transposes via customEvent's `+ 12*~octave`.
-				\note, Pfunc{ |e|
-					var pos = (~beatClock.beats - phase).mod(patternLen);
-					var slot = (eventStarts.indexOfGreaterThan(pos) ? patternOffset.size) - 1;
-					var offset = patternOffset.wrapAt(slot.max(0));
-					if(offset.isNil) {
-						Rest()
-					} {
-						melodyMidiForOffset.(offset) - 60
-					}
-				},
+		topEnvironment.use{
+			group = Group.new;
 
-				\root, 0,
-				\args, #[],
+			Pdef(m.ptn,
+				Pbind(
+					\instrument, \stereoSampler,
+					\out, ob,
+					\group, group,   // route every event's synth into our group
+					\type, eventTypeName,
+
+					// note — clock-derived slot → pool offset → MIDI note, then
+					// converted to an offset from baseMidi=60 so ~octave still
+					// transposes via customEvent's `+ 12*~octave`.
+					\note, Pfunc{ |e|
+						var pos = (~beatClock.beats - phase).mod(patternLen);
+						var slot = (eventStarts.indexOfGreaterThan(pos) ? patternOffset.size) - 1;
+						var offset = patternOffset.wrapAt(slot.max(0));
+						if(offset.isNil) {
+							Rest()
+						} {
+							melodyMidiForOffset.(offset) - 60
+						}
+					},
+
+					\root, 0,
+					\args, #[],
+				);
 			);
-		);
 
-		Pdef(m.ptn).play(~beatClock, quant: [~scoreBeatsPerBar * ~scoreEventsPerBeat, phase]);
-		// cotf: seed envir so a stickless seat is silent — SC's Event default
-		// amp is 0.1, and the ~*Next tick hooks (the only writers of \amp) run
-		// only while the seat's device is enabled. Envir .set, not a Pbind key:
-		// Pbind keys override the envir and would defeat the hooks' .set.
-		Pdef(m.ptn).set(\amp, 0);
-		// Default dur = 1 (uniform 16th grid, matches the old Pfunc behaviour).
-		// State hooks override this to change the melody firing rate — the
-		// \note Pfunc still tracks pattern position on ~beatClock so the
-		// melody continues to cycle regardless of dur.
-		Pdef(m.ptn).set(\dur, 1);
-
-	};
-
-	// ~onResync in d.env (per-device dispatch — no cross-device clobber).
-	// Body in topEnvironment.use so ~beatClock etc. resolve.
-	~onResync = { |idx|
-		topEnvironment.use {
-			Pdef(m.ptn).stop;
-			s.bind { group.freeAll };
 			Pdef(m.ptn).play(~beatClock, quant: [~scoreBeatsPerBar * ~scoreEventsPerBeat, phase]);
+			// cotf: seed envir so a stickless seat is silent — SC's Event default
+			// amp is 0.1, and the ~*Next tick hooks (the only writers of \amp) run
+			// only while the seat's device is enabled. Envir .set, not a Pbind key:
+			// Pbind keys override the envir and would defeat the hooks' .set.
+			Pdef(m.ptn).set(\amp, 0);
+			// Default dur = 1 (uniform 16th grid, matches the old Pfunc behaviour).
+			// State hooks override this to change the melody firing rate — the
+			// \note Pfunc still tracks pattern position on ~beatClock so the
+			// melody continues to cycle regardless of dur.
+			Pdef(m.ptn).set(\dur, 1);
+
 		};
-	};
+
+		// ~onResync in d.env (per-device dispatch — no cross-device clobber).
+		// Body in topEnvironment.use so ~beatClock etc. resolve.
+		~onResync = { |idx|
+			topEnvironment.use {
+				Pdef(m.ptn).stop;
+				s.bind { group.freeAll };
+				Pdef(m.ptn).play(~beatClock, quant: [~scoreBeatsPerBar * ~scoreEventsPerBeat, phase]);
+			};
+		};
+	});
 };
 
 //------------------------------------------------------------
 ~deinit = ~deinit <> {
+	loading = false;
+
 	Pdef(m.ptn).remove;
 	Event.eventTypes.removeAt(eventTypeName);
 
