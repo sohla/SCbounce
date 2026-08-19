@@ -40,6 +40,11 @@ so the other side can catch up at a glance.
 1. **Quarks:** `Require` (scztt/Require.quark) + `Canvas3D` (supercollider-quarks/Canvas3D) cloned
    into `~/Library/Application Support/SuperCollider/Extensions/`, then recompile. `main.sc`
    errors with "Class not defined" without them.
+   **Plus sc3-plugins** (2026-08-19): `SC3plugins/` (release 3.14.0-macOS, universal x86_64+arm64)
+   in the same Extensions dir — ALTOSYNTH uses `BMoog` (BhobUGens) and dies with "Class not
+   defined" on every load without it. Strip AppleDouble `._*` files from the zip before
+   installing (a `._*.sc` breaks the class compile). Installed on M1 for user m1 (covers both
+   room engines).
 2. **Samples:** `~/Music/cotf_samples/` (harp, drums, celesta, marimba, dulcimer, …) — gitignored,
    from the composer. Sampler personalities print "Buffer UGen: no buffer data" and play silence
    without it. The `cotf_simple*` personalities need nothing.

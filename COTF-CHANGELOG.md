@@ -9,14 +9,14 @@ here ever changes how AirKit behaves for you — if it does, that's a bug, tell 
 Both found with real testers this morning; minimal edits so we could go live at 1pm —
 both are yours to re-do properly.
 
-- **ALTOSYNTH: `BMoog` doesn't exist on M1** (no sc3-plugins installed — M1 has only
+- **ALTOSYNTH: `BMoog` doesn't exist on M1** (no sc3-plugins installed — M1 had only
   Require + Canvas3D), so every ALTOSYNTH load died with `ERROR: Class not defined` and
-  the seat was completely silent. Substituted the nearest core filter (`BPF`, bandpass,
-  q 0.5, mul 0.4) with your original line kept commented right above it. Note the
-  original's `add: 0.9` fed a DC offset into the `.tanh` — we dropped it; shout if that
-  bias was deliberate. **If you want BMoog for real, let's install sc3-plugins on M1
-  together on a dark day** (arm64 build + both engines recompiled), then restore your
-  line and re-tune by ear.
+  the seat was completely silent. Briefly ran a core-`BPF` stand-in, then **installed
+  sc3-plugins 3.14.0 (universal, user Extensions on M1, both engines) the same morning
+  and restored your BMoog line verbatim** — your patch runs exactly as you wrote it,
+  including the `add: 0.9` into `.tanh` (worth an ear-check that the DC bias is the
+  colour you intended, since it never compiled on the rig before today). Install is
+  documented in CLAUDE.md machine setup.
 - **SOPRANOVOICE: idle chops lost their rotation gate.** `Pdef .set(\amp, ampa * 2.0)` —
   `ampa`'s curve bottoms out at 0.5 (dB) and `.dbamp` of that is ≈1.06, so a full-volume
   chop fired every couple of seconds with the stick at rest ("a note just plays
