@@ -149,14 +149,15 @@ s.waitForBoot({
     // Room 3 only — Room 2 keeps its seat-keyed trims (see above). An unknown
     // personality gets 1 (no compensation).
     ~cotfPatchTrims = if(~cotfRoom == 3, {
-        // Ear-tuned at the 2026-08-19 live-flip dry run (Ciaran): PERC +2,
-        // JUP +1, BASS +1, SOPRANO -2, ALTO -3 relative to the migration bake.
+        // Ear-tuned live day 1 of super-seats (2026-08-19 afternoon, Ciaran,
+        // after group 214): PERC +3, JUP +2, ALTO -2, SOPRANO -3 on top of
+        // the morning dry-run values; BASS unchanged.
         IdentityDictionary[
             \BASSBUZZ -> 2.3714,       // +7.5 dB
-            \JUPITERSHARP -> 1.4125,   // +3 dB
-            \ALTOSYNTH -> 2.5119,      // +8 dB
-            \PERCUSSION -> 0.7079,     // -3 dB
-            \SOPRANOVOICE -> 1.4125    // +3 dB
+            \JUPITERSHARP -> 1.7783,   // +5 dB
+            \ALTOSYNTH -> 1.9953,      // +6 dB
+            \PERCUSSION -> 1.0,        // 0 dB
+            \SOPRANOVOICE -> 1.0       // 0 dB
         ]
     }, { IdentityDictionary.new });
     // Current patch-trim factor per seat (1..5), updated on personality load;
