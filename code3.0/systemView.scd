@@ -62,8 +62,8 @@ var cpuView = UserView()
 	.animate_(true)
 	.drawFunc_({|uv|
 			("System Load: "++getSystemLoad.().asStringPrec(2)++"%").drawAtPoint(10@4, Font.default, Color.yellow);
-			("SC Load: "++getSCLoad.()[1].asStringPrec(2)++"%").drawAtPoint(140@4, Font.default, Color.yellow);
-			thermalString.().drawAtPoint(240@4, Font.default, Color.yellow);
+			("SC Load: "++getSCLoad.()[1].asStringPrec(2)++"%").drawAtPoint(200@4, Font.default, Color.yellow);
+			thermalString.().drawAtPoint(300@4, Font.default, Color.yellow);
 });
 
 var serverView = UserView()
@@ -73,10 +73,10 @@ var serverView = UserView()
     .animate_(true)
     .drawFunc_({|uv|
 			("Server: "++s.peakCPU.asStringPrec(3)++"%").drawAtPoint(10@4, Font.default, Color.yellow);
-			("UGens: "++s.numUGens).drawAtPoint(120@4, Font.default, Color.yellow);
-			("Groups: "++s.numGroups).drawAtPoint(200@4, Font.default, Color.yellow);
-			("Synths: "++s.numSynths).drawAtPoint(280@4, Font.default, Color.yellow);
-			("Hosting: "++hosts).drawAtPoint(400@4, Font.default, Color.yellow);
+			("UGens: "++s.numUGens).drawAtPoint(250@4, Font.default, Color.yellow);
+			("Groups: "++s.numGroups).drawAtPoint(350@4, Font.default, Color.yellow);
+			("Synths: "++s.numSynths).drawAtPoint(450@4, Font.default, Color.yellow);
+			("Hosting: "++hosts).drawAtPoint(550@4, Font.default, Color.yellow);
 			("Port: "++NetAddr.	localAddr.port).drawAtPoint(1000@4, Font.default, Color.yellow);
 });
 

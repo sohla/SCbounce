@@ -93,7 +93,7 @@ SynthDef(\versatilePerc, {
 }).add;
 
 //------------------------------------------------------------
-~init = ~init <> {
+~init = ~init <> {|d|
 
 	// visual : the lamps of the tunnel, coming at us.
 	//
@@ -205,8 +205,12 @@ SynthDef(\versatilePerc, {
 			\startWidth, 1,
 			\endWidth, Pfunc({ |e| (e[\amp] ? 0.3).linlin(0, 1, 3, 11) }),
 			\widthEnv, Pfunc({ Env([0, 1], [1], 3) }),
-			\startColor, Pfunc({ |e| Color.hsv((0.03 + rootHue.()).wrap(0, 1), 1.0, 0.8, 0.95) }),
-			\endColor, Pfunc({ |e| Color.hsv((0.03 + rootHue.()).wrap(0, 1), 0.70, 1.0, 0.05) }),
+			// \startColor, Pfunc({ |e| Color.hsv((0.03 + rootHue.()).wrap(0, 1), 1.0, 0.8, 0.95) }),
+			// \endColor, Pfunc({ |e| Color.hsv((0.03 + rootHue.()).wrap(0, 1), 0.70, 1.0, 0.05) }),
+
+			\startColor, d.color,
+			\endColor, d.color,
+
 			\colorEnv, Pfunc({ Env([0, 1], [1], 3) }),
 			\duration, 1.7,
 			\modulation, Pfunc({ |e|
