@@ -16,7 +16,7 @@ var personalityDir = "~/Develop/SuperCollider/Projects/AirKit/personalities/";//
 var list = "list_alon26.sc";
 // var list = "list_yourDNA26.sc";
 // var list = "list_BtB.sc";
-var defaultLists = list!8;
+var defaultLists = list!9;
 
 
 // var defaultLists = [
