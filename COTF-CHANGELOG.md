@@ -4,6 +4,16 @@ One entry per push batch from the Concerts of the Future side, newest first: wha
 why, and what (if anything) behaves differently on your machine. The intent is that nothing
 here ever changes how AirKit behaves for you — if it does, that's a bug, tell us.
 
+## 2026-08-23 — Birdsong: Ciaran's TEST personality for widening the pool (cotf)
+
+**Nothing changes on your machine.** `personalities/Birdsong.sc` is a new, fully synthesised
+(no samples) blackbird personality Ciaran wrote and auditioned in the COTF Patch Lab, added to
+`lists/list_cotf.sc` (before the trailing `silence`) as a test patch for widening the pool.
+It is admin-disabled for the super-seats auto-pick on M0, so no audience member gets it unless
+a staff member hand-assigns it to a seat for an audition group. It defines only its own
+SynthDef (`\labBirdChirp`) and an env-unique Pdef/event type — no shared names touched.
+Not a Steph patch; please leave it as is, or tell Ciaran if it gets in your way.
+
 ## 2026-08-19 — patch trims ear-tuned at the dry run (cotf)
 
 **Nothing changes on your machine.** With sc3-plugins in, your reworked sounds live, and
