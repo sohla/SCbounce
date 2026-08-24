@@ -206,10 +206,10 @@ SynthDef(\nicTwoNoteSampler, {|bufnum=0, out=0, amp=1, rate=1, start=0, pan=0, f
 //   gyro x -> which of the three registers
 ~next = {|d|
 
-	var move = m.accelMassFiltered.lincurve(0, 0.7, 1, cell.size, 1);
-	var amp = m.accelMassFiltered.lincurve(0, 0.5, -60, -2, -1);
+	var move = m.accelMassFiltered.lincurve(0, 0.1, 1, cell.size, 1);
+	var amp = m.accelMassFiltered.lincurve(0, 0.1, -60, -2, -1);
 	var step = m.gyroXFiltered.linlin(-0.8, 0.8, 0, octaves.size - 0.001).floor;
-	var start = m.accelMassFiltered.lincurve(0, 2.5, 0.0, 0.1,0);
+	var start = m.accelMassFiltered.lincurve(0, 0.5, 0.0, 0.1,0);
 
 	if(amp < -58, { amp = -90; });
 

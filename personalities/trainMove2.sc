@@ -401,7 +401,7 @@ SynthDef(\warmPadMove2, {
 	synth.set(\filtMax, fmax);
 
 
-	if(d.sensors.accelEvent.x > 3.0, {
+	if(d.sensors.accelEvent.x > 1.0, {
 
 		if(TempoClock.beats > (lastTime + 0.055),{
 			// same expression the bsynth below takes for its \amp, so the

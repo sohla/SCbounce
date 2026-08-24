@@ -22,11 +22,11 @@ SynthDef(\simple, {|out=0, amp=0.0, freq=440, attack=0.001, decay=0.03, sustain=
   Pdef(m.ptn,
     Pbind(
       \instrument, \simple,
-      \octave, 5,
-	  \root, 3,//Pseq([0,3,-2,2].stutter(22), inf),
+      \octave, Pseq([4,5], inf),
+	  \root, Pseq([0,3,-2,2].stutter(22), inf),
       \note, Pseq([11,4,7,0,4,7,11,12,11,7,4], inf),
-	  \amp,0.2,
-      \attack,0.03,
+	  \amp,0.1,
+      \attack,0.1,
       \decay, 0.1,
       \sustain,0.1,
       \release,2.04,
@@ -45,7 +45,8 @@ SynthDef(\simple, {|out=0, amp=0.0, freq=440, attack=0.001, decay=0.03, sustain=
 //------------------------------------------------------------
 ~next = {|d|
 
-  var dur = m.rrateMassFiltered.lincurve(0,0.1,0.4,0.04,-1);
+//   var dur = m.rrateMassFiltered.lincurve(0,0.1,0.4,0.04,-1);
+	var dur = m.accelMassFiltered.lincurve(0,0.5,4,12,-10).reciprocal;
 
   Pdef(m.ptn).set(\dur, dur);
  	if(m.rrateMassFiltered > 0.008,{

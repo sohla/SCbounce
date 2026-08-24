@@ -31,6 +31,10 @@
 	"frog2",
 	"timWind1",
 
+	"violin1",
+	"violin2",
+		"droplet",
+
 	"melodicPerc2",
 
 	"velocity1",

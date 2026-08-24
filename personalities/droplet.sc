@@ -157,6 +157,7 @@ SynthDef(\raindrop, {
   var dcy  = ((d.sensors.accelEvent.y.abs + d.sensors.accelEvent.z.abs) * 0.1).lincurve(0,1.0,0.05,3.0,-1);
   var verb = m.accelMassFiltered.lincurve(0,2.5,0.53,10.0,2);
   var amp = m.gyroYFiltered.lincurve(-1.0,1.0,0.0,1,-2);
+  // var amp = m.accelMassFiltered.lincurve(0,0.1,0.0,1.0,-1);
 
   if(amp < 0.21, {amp = 0});
 

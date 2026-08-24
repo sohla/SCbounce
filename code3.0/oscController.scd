@@ -6,7 +6,7 @@
 
 // var oscMessageTag  = "CombinedDataPacket";
 var oscMessageTag  = "IMUFusedData"; // this is coming from AirSticks
-var outAddr = NetAddr.new("192.168.50.53", 5005);
+var outAddr = NetAddr.new("192.168.70.178", 5005);
 var airstickListeners = [];
 var numAirwareVirtualDevices = 9;
 var oscThru = false;

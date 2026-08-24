@@ -83,16 +83,16 @@ SynthDef(\scale1, {
 ~next = {|d|
 
 	var amp = m.rrateMassFiltered.lincurve(0.0,0.01,-70,-1,-10);
-	var notes = [0,2,4,5,9,14,16,21,24];
+	var notes = [10];
 	var index = ((((d.sensors.gyroEvent.z/pi) + 1).half) * notes.size).asInteger;
 	var note = notes[index];
 	var dur = m.accelMassFiltered.lincurve(0,0.5,4,12,-10).reciprocal;
 	// dur.postln;
-	if(dur<0.04,{dur=0.04});
+	if(dur<0.06,{dur=0.06});
 Pdef(m.ptn).set(\dur, dur);
 	Pdef(m.ptn).set(\note, note - 24);
 	Pdef(m.ptn).set(\amp, amp.dbamp );
-	if(amp.dbamp > 0.001,{
+	if(amp.dbamp > 0.009,{
 		if( Pdef(m.ptn).isPlaying.not,{
 			Pdef(m.ptn).resume(quant:0.2);
 		});
