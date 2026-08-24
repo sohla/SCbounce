@@ -100,7 +100,7 @@ SynthDef(\drumkit, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 	var thr = (d.sensors.accelEvent.y.abs).lincurve(0,0.5,0.0,1.0,-2).asInteger;
 	var ff = ((d.sensors.gyroEvent.z / pi).fold(-0.5,0.5) * 2).lincurve(-1.0,1.0,500,50.0,1);
 
-	Pdef(m.ptn).set(\amp, amp*2);
+	Pdef(m.ptn).set(\amp, amp*1);
 	Pdef(m.ptn).set(\rate, roll);
 	Pdef(m.ptn).set(\cutoff, ff);
 

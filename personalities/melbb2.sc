@@ -135,7 +135,7 @@ SynthDef(\drumkit3, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 	var time = TempoClock.beats;
 
 	Pdef(m.ptn).set(\subdiv,2.pow(ud));
-	Pdef(m.ptn).set(\amp,1);
+	Pdef(m.ptn).set(\amp,0.4);
 	Pdef(m.ptn).set(\rate,2.pow(rate));
 
 	if(m.accelMassFiltered > 0.05,{

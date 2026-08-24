@@ -68,6 +68,7 @@ SynthDef(\multiBeatVoice, {|out=0, freq=440, amp=0.2, pan=0,
 			\div,  divPat,
 			\step, stepPat,
 			\note, notePat,
+			\root, Pseq([0,3,-2,1].stutter(32), inf),
 			\octave, Prand([4,5,6], inf),
 			\dur,  Pkey(\div).reciprocal * 0.5,
 			// \release, Pkey(\dur) * 1.8,
@@ -78,7 +79,7 @@ SynthDef(\multiBeatVoice, {|out=0, freq=440, amp=0.2, pan=0,
 			\sx, (Pkey(\step) / Pkey(\div) * 1.6) - 0.8,
 			\ex, Pkey(\sx),
 			\startSize, Pkey(\amp) * 400,
-			\endSize, 8,
+			\endSize, Pkey(\amp) * 8,
 			\startColor, Color.new(0.6, 1.0, 0.8),
 			\endColor, Color.new(0.1, 0.4, 0.6).alpha_(0.0),
 			\startWidth, 3,
@@ -116,11 +117,12 @@ SynthDef(\multiBeatVoice, {|out=0, freq=440, amp=0.2, pan=0,
 // is deliberately NOT a Pbind key, because a Pbind key would override
 // the envir and defeat this .set.
 ~next = {|d|
-	var idx = m.accelMassFiltered.lincurve(0, 2.5, 0, divs.size - 1, 1)
+	var idx = m.accelMassFiltered.lincurve(0, 1.5, 0, divs.size - 1, 1)
 		.round.asInteger.clip(0, divs.size - 1);
-	var amp = m.accelMassFiltered.lincurve(0, 2.0, -60, -12, -1);
-	var ffreq = m.accelMassFiltered.lincurve(0, 2.0, 700, 6000, 2);
-	var rel = m.accelMassFiltered.lincurve(0, 2.0, 0.1, 1.2, 2);
+	var amp = m.accelMassFiltered.lincurve(0, 1.0, -60, -12, -1);
+	var ffreq = m.accelMassFiltered.lincurve(0, 1.0, 700, 6000, 2);
+	var rel = m.accelMassFiltered.lincurve(0, 1.0, 0.1, 1.2, 2);
+
 
 	Pdef(m.ptn).set(\viewID, d.port);
 	Pdef(m.ptn).set(\divIdx, idx);

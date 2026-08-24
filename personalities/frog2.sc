@@ -66,12 +66,12 @@ SynthDef(\miniMoogModel, { |freq = 440, amp = 0.5, gate = 1, pan = 0,
 				if(bi >= (buffers.size-1),{bi=0});
 				buffers[bi];
 			},
-			\dur, Pseq([0.2,Rest(0.2),0.2,0.2,Rest(0.2),0.1,0.1,0.2]*1.25, inf),
-			\octave, Pseq([3].stutter(48), inf),
-			\rate, Pseq([0,12,0].midiratio, inf),
+			\dur, Pseq([0.2,Rest(0.2),0.2,0.2,Rest(0.2),0.1,0.1,0.2]*1, inf),
+			\octave, Pseq([1,3].stutter(4), inf),
+			\rate, Pseq([0,4,7].midiratio, inf),
 			\legato, Prand([0.35,0.65], inf),
 			\start, Pwhite(0, 0.2),
-			\note, Pseq([33,35,33,35,36,33,36,33,35,33,35,33,36,33,36,33,38,35,38,35].stutter(8), inf),
+			\note, Pseq([33].stutter(8), inf),
 			// \amp, 2,
 			\attack, 0.002,
 			\release,0.17,
@@ -101,7 +101,7 @@ SynthDef(\miniMoogModel, { |freq = 440, amp = 0.5, gate = 1, pan = 0,
 
 	if(m.accelMassFiltered > 0.07,{
 		if( Pdef(~model.ptn).isPlaying.not,{
-			Pdef(~model.ptn).resume(quant:0.25);
+			Pdef(~model.ptn).resume(quant:0.2);
 		});
 	},{
 		if( Pdef(~model.ptn).isPlaying,{
