@@ -2,17 +2,17 @@
 NetAddr.localAddr
 
 // configure to send
-b = NetAddr.new("192.168.50.105", 8888);
+b = NetAddr.new("192.168.50.33", 8888);
 
 
 // set LED
-b.sendMsg("/Config/SetLED",1,0,0,255);
+b.sendMsg("/Config/SetLED",1,1,0,255);
 
 // set ID / OSC path
-b.sendMsg("/Config/SetID","1");
+b.sendMsg("/Config/SetID","9");
 
 // set diestination IP and Port
-b.sendMsg("/Config/RequestStream",192,168,70,1,57120);
+b.sendMsg("/Config/RequestStream",192,168,50,52,57120);
 
 // check data is coming thru
 OSCFunc.trace(true)
@@ -35,3 +35,4 @@ OSCFunc.trace(false)
 o = OSCFunc({ arg msg, time, addr, recvPort; [msg, time, addr, recvPort].postln; }, '/1/AnalogIn');
 o.free;
 
+Color
