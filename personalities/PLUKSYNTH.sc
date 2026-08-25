@@ -8,7 +8,7 @@ rhythm:      one note per \dur ~beatClock tick. Idle 2 → 1 by accel; tuning sp
 instruments: [thinViolin]
 prints:      [thinViolin, compactViolin, greenHolder, whiteWing, boneRod]
 seats:       [2, 3, 4]
-affinity:    [pluck, plucked, string, strings, guitar, harpsichord, koto, banjo, zither, wire, harp, minimal, reich, pulse, repetitive]
+affinity:    [pluck, plucked, string, strings, guitar, koto, banjo, zither, wire, minimal, reich, pulse, repetitive, chime, chimes, plucky, bells]
 register:    [traditional]
 family:      pluck
 */

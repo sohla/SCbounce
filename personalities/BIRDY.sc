@@ -8,7 +8,7 @@ rhythm:      blackbird phrases are beat-quantised on ~beatClock with phrase and 
 instruments: [oliveBird]
 prints:      [oliveBird, whiteWing, greenHolder]
 seats:       [3, 4, 5]
-affinity:    [bird, birds, birdsong, blackbird, whipbird, chirp, whistle, crack, whip, dawn, morning, garden, forest, bush, jungle, rainforest, nature, wild, feathers, wings, spring]
+affinity:    [bird, birds, birdsong, blackbird, whipbird, chirp, whistle, whistling, crack, whip, dawn, morning, garden, forest, bush, jungle, rainforest, nature, wild, feathers, wings, spring, country, squeaking, glass, chipmunk]
 register:    [wild]
 family:      bird
 */

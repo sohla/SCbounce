@@ -152,12 +152,20 @@ s.waitForBoot({
         // Ear-tuned live day 1 of super-seats (2026-08-19 afternoon, Ciaran,
         // after group 214): PERC +3, JUP +2, ALTO -2, SOPRANO -3 on top of
         // the morning dry-run values; BASS unchanged.
+        // Re-tuned 2026-08-25 (Ciaran, mid-run): BASS -1, JUP +3, ALTO -4 on
+        // top of the 08-19 values; four new patches enter padded (STRINGCHORD
+        // -4, BIRDY -3, PLUKSYNTH -3, WHIPBIRD -2). RainKeys/WindVoice pad
+        // in-patch instead (they must also pad in Room 2 auditions).
         IdentityDictionary[
-            \BASSBUZZ -> 2.3714,       // +7.5 dB
-            \JUPITERSHARP -> 1.7783,   // +5 dB
-            \ALTOSYNTH -> 1.9953,      // +6 dB
+            \BASSBUZZ -> 2.1135,       // +6.5 dB
+            \JUPITERSHARP -> 2.5119,   // +8 dB
+            \ALTOSYNTH -> 1.2589,      // +2 dB
             \PERCUSSION -> 1.0,        // 0 dB
-            \SOPRANOVOICE -> 1.0       // 0 dB
+            \SOPRANOVOICE -> 1.0,      // 0 dB
+            \STRINGCHORD -> 0.6310,    // -4 dB
+            \BIRDY -> 0.7079,          // -3 dB
+            \PLUKSYNTH -> 0.7079,      // -3 dB
+            \WHIPBIRD -> 0.7943       // -2 dB
         ]
     }, { IdentityDictionary.new });
     // Current patch-trim factor per seat (1..5), updated on personality load;

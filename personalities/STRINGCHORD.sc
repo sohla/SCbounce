@@ -8,7 +8,7 @@ rhythm:      per-note on ~beatClock; \dur state-driven; \range 1..8 in piece fro
 instruments: [Clavelium]
 prints:      [thinViolin, compactViolin, whiteWing]
 seats:       [2, 3, 4, 5]
-affinity:    [harpsichord, piano, keyboard, keys, organ, baroque, bach, classical, royal, palace, castle, elegant]
+affinity:    [harpsichord, piano, keyboard, keys, organ, baroque, bach, classical, royal, palace, castle, elegant, music, chords]
 register:    [traditional]
 family:      harpsichord
 */

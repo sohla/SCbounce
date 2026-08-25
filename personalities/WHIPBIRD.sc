@@ -8,8 +8,8 @@ rhythm:      one call per \dur tick on ~beatClock. Idle and piece pick dur by am
 instruments: [oliveBird]
 prints:      [oliveBird, whiteWing, greenHolder]
 seats:       [3, 4, 5]
-affinity:    [whipbird, bird, birds, forest, bush, jungle, rainforest, australia, crack, whip, whistle, nature, wild, dawn]
-register:    [wild]
+affinity:    [pipes, pan pipes, panpipes, flute, gentle]
+register:    [traditional]
 family:      bird
 */
 

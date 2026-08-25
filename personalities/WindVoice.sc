@@ -59,7 +59,7 @@ SynthDef(\labWindPad, { |out=0, bufnum=0, amp=0, freq=440, srcFreq=440, gate=1,
 	var sig  = GrainBuf.ar(2, trig, grainDur, bufnum, rate, pos, 2, 0);
 	var sub  = SinOsc.ar(freq * [1, 1.003], 0, 0.1);
 	var filt = RLPF.ar(sig, ffreq.lag(0.04), 0.4) + sub;
-	Out.ar(out, filt * env * amp.lagud(lagAttack, lagRelease));
+	Out.ar(out, filt * env * amp.lagud(lagAttack, lagRelease) * 0.7079);   // -3 dB patch pad (Ciaran 2026-08-25)
 }).add;
 
 //------------------------------------------------------------
@@ -69,7 +69,7 @@ SynthDef(\labWindNote, { |out=0, bufnum=0, amp=0.5, freq=440, srcFreq=440,
 	var env = EnvGen.kr(Env.adsr(attack, decay, 0.07, release), gate, doneAction: Done.freeSelf);
 	var lr  = (freq.lag(0.4) / srcFreq) * BufRateScale.kr(bufnum) * 0.99;
 	var sig = PlayBuf.ar(1, bufnum, rate: lr * [1, 1.003], loop: 0);
-	Out.ar(out, Pan2.ar(sig, pan, amp * env));
+	Out.ar(out, Pan2.ar(sig, pan, amp * env * 0.7079));   // -3 dB patch pad (Ciaran 2026-08-25)
 }).add;
 
 //------------------------------------------------------------
@@ -100,7 +100,7 @@ SynthDef(\labWindAir, { |out=0, amp=0, force=0, freq=233, gate=1|
 	// [COTF 2026-08-25 round 2] asymmetric level lag — wind rises in ~0.7 s and
 	// dies away over ~3 s ("attack and release too sudden"), short enough not
 	// to smear across piece dynamics.
-	Out.ar(out, sig * env * amp.lagud(0.7, 3.0));
+	Out.ar(out, sig * env * amp.lagud(0.7, 3.0) * 0.7079);   // -3 dB patch pad (Ciaran 2026-08-25)
 }).add;
 
 //------------------------------------------------------------
