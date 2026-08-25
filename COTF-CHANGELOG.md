@@ -4,6 +4,18 @@ One entry per push batch from the Concerts of the Future side, newest first: wha
 why, and what (if anything) behaves differently on your machine. The intent is that nothing
 here ever changes how AirKit behaves for you — if it does, that's a bug, tell us.
 
+## 2026-08-25 — RainKeys + WindVoice: two more Ciaran audition patches (cotf)
+
+**Nothing changes on your machine.** Two new personalities Ciaran wrote and auditioned in the
+COTF Patch Lab, added to `lists/list_cotf.sc` (before the trailing `silence`) and
+admin-disabled for the super-seats auto-pick on M0 — no audience member gets them unless a
+staff member hand-assigns one for an audition group. `RainKeys` is JUPITERSHARP's harp engine
+(reads your `~/Music/cotf_samples/harp` library, own SynthDefs `\labRainPluck` /
+`\labRainWeather`) inside a synthesised rain field; `WindVoice` is SOPRANOVOICE's two voice
+engines (reads `voice/aah.wav`, own SynthDefs `\labWindPad` / `\labWindNote` / `\labWindAir`)
+inside a synthesised wind field. Env-unique Pdefs/event types, no shared names touched, core
+UGens only. Not Steph patches; leave as is, or tell Ciaran if they get in your way.
+
 ## 2026-08-23 — Birdsong: Ciaran's TEST personality for widening the pool (cotf)
 
 **Nothing changes on your machine.** `personalities/Birdsong.sc` is a new, fully synthesised
