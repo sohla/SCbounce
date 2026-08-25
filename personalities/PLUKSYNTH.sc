@@ -255,7 +255,7 @@ SynthDef(\plukString, { |out = 0, freq = 440, amp = 0.3, pan = 0, gate = 1,
 	var amp   = m.accelMassFiltered.lincurve(0, 0.5, -70, -14, -1);
 	var oct   = (d.sensors.gyroEvent.y / pi.half).lincurve(-1, 1, 4, 6, 1).asInteger;
 	var pitch = (ctx.voicePool ? [69]).choose.asInteger.wrap(0, 11);
-	var durs  = [2, 1, 0.5];
+	var durs  = [2];
 	var di    = m.accelMassFiltered.lincurve(0, 2.0, 0, durs.size - 0.001, 1).asInteger;
 	var ffreq = ((d.sensors.gyroEvent.x / pi).fold(-0.5, 0.5) * 2).lincurve(-1, 1, 400, 9000, 3);
 	var res   = m.rrateMassFiltered.lincurve(0, 1.5, 0.65, 0.12, -1);   // twist = buzz

@@ -57,8 +57,8 @@ SynthDef(\simple, {|out=0, amp=0.0, freq=440,
 	var lifetime = EnvGen.kr(Env.adsr(attack, decay, sustain, release), gate, doneAction: Done.freeSelf);
 	var trig = \trig.tr(0);
 	var exciter = EnvGen.kr(Env.perc(excAttack, excRelease), trig);
-	var burst = LFSaw.ar(freq, 0, 0.1) * exciter * excAmp;
-	var tone = LFTri.ar(freq.lagud(lagAttack, lagRelease) * [1.003,1.008], 0, 0.1) + SinOsc.ar(freq.lagud(lagAttack, lagRelease), LFNoise2.ar(3,20,15), 0.2);
+	var burst = LFSaw.ar(freq * 0.5, 0, 0.1) * exciter * excAmp;
+	var tone = LFTri.ar(freq.lagud(lagAttack, lagRelease) * [1.003,1.008], 0, 0.1) + SinOsc.ar(freq.lagud(lagAttack, lagRelease) * 0.5, LFNoise2.ar(3,20,15), 0.2);
 	// [COTF 2026-08-19] BMoog needs sc3-plugins — now INSTALLED on M1 (3.14.0
 	// universal, user Extensions; see CLAUDE.md machine setup). Steph's
 	// original line restored same morning after a brief core-BPF stand-in.

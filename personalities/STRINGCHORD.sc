@@ -54,6 +54,19 @@ var eventTypeName = (\customEvent_ ++ m.ptn).asSymbol;
 // as a smaller range. 8 matches harp2's notes.size and gives enough headroom.
 var maxRange = 8;
 
+// Combined motion energy: fuzzy OR (probabilistic sum) of accel and rrate.
+// High in EITHER input reads as high energy, and both high reads the same —
+// it saturates at 1.0 rather than summing past it. Two mid-range gestures
+// still read hotter than one (0.5,0.5 -> 0.75), which is the difference
+// between this and a plain max(). Inputs normalised first: they don't share
+// a scale (accel 0..2.5, rrate 0..1.0). linlin clips, so 0..1 is guaranteed.
+// NOT WIRED to anything yet — ~plot only, auditioning it before it drives.
+var calcEnergy = {
+	var a = m.accelMassFiltered.linlin(0, 2.5, 0, 1);
+	var r = m.rrateMassFiltered.linlin(0, 1.0, 0, 1);
+	a + r - (a * r)
+};
+
 //------------------------------------------------------------
 
 m.accelMassFilteredAttack = 0.99;
@@ -65,12 +78,12 @@ m.gyroFilteredDecay = 0.7;
 
 //------------------------------------------------------------
 SynthDef(\stereoSamplerH, {|bufnum=0, out=0, amp=1, rate=1, ptch=1, start=0, pan=0, freq=440,
-    attack=0.01, decay=0.1, sustain=0.3, release=4.2, gate=1, cutoff=20000, rq=1|
+    attack=0.01, decay=0.1, sustain=0.3, release=1.7, gate=1, cutoff=20000, rq=1|
 	var lr = rate * BufRateScale.kr(bufnum) * ptch;
 	var env = EnvGen.kr(Env.adsr(attack, decay, sustain, release), gate, doneAction: 2);
 	var ve = EnvGen.kr(Env.adsr(5, decay, sustain, release), gate);
-	var sig = PlayBuf.ar(2, bufnum, rate: ([lr, lr * 1.0017] - 0.027) * LFCub.ar(4,0,0.2 * ve,1), startPos: start * BufFrames.kr(bufnum), loop: 0);
-	var tone = Saw.ar(freq * 2, 0, 0.06);
+	var sig = PlayBuf.ar(2, bufnum, rate: ([lr, lr * 1.0017] - 0.027) * LFCub.ar(12,0,0.2 * ve,1), startPos: start * BufFrames.kr(bufnum), loop: 0);
+	var tone = SinOsc.ar(freq * 0.5,0,0.3)!2 * env;
 	sig = (sig + tone) * amp * env * 0.5;
 	Out.ar(out, sig);
 }).add;
@@ -149,6 +162,7 @@ SynthDef(\stereoSamplerH, {|bufnum=0, out=0, amp=1, rate=1, ptch=1, start=0, pan
 						var idx = (e[\slideIdx] ? 0).asInteger;
 						pool.wrapAt(idx).asInteger.mod(12)
 					},
+					\start, Pwhite(0.0,0.02),
 
 					\root, 0,
 					\args, #[]
@@ -215,20 +229,29 @@ SynthDef(\stereoSamplerH, {|bufnum=0, out=0, amp=1, rate=1, ptch=1, start=0, pan
 
 //------------------------------------------------------------
 ~idleNext = {|d, ctx|
-	var amp = m.accelMassFiltered.lincurve(0, 2.2, -70, -4, -2);
 	var dur = m.accelMassFiltered.lincurve(0, 2.5, 4, 1, -2).asInteger;
+	var a = m.accelMassFiltered.linlin(0, 2.0, 0, 1);
+	var r = m.rrateMassFiltered.linlin(0, 1.0, 0, 1);
+	var amp = (a + r - (a * r)).lincurve(0, 1.0, -50, -2, -2);
+
+	if(amp<40.neg, { amp = 90.neg });  
 
 	Pdef(m.ptn).set(\amp, amp.dbamp);
-	Pdef(m.ptn).set(\octave, [5,6,7,8,9].choose);
+	Pdef(m.ptn).set(\octave, [3,4,5,6,7,8].choose);
 	Pdef(m.ptn).set(\dur, dur);
 	Pdef(m.ptn).set(\range, 2);
 	Pdef(m.ptn).set(\ptch, 1);
 };
 
 ~tuningNext = {|d, ctx|
-	var amp = m.accelMassFiltered.lincurve(0, 2.0, -70, -15, -4);
 	var tt = 15.0;
 	var elapsed = TempoClock.beats - tuneTime;
+	var a = m.accelMassFiltered.linlin(0, 2.0, 0, 1);
+	var r = m.rrateMassFiltered.linlin(0, 1.0, 0, 1);
+	var amp = (a + r - (a * r)).lincurve(0, 1.0, -50, -2, -2);
+
+	if(amp<40.neg, { amp = 90.neg });  
+
 
 	Pdef(m.ptn).set(\amp, amp.dbamp);
 	Pdef(m.ptn).set(\octave, 5);
@@ -246,10 +269,15 @@ SynthDef(\stereoSamplerH, {|bufnum=0, out=0, amp=1, rate=1, ptch=1, start=0, pan
 // Same shape as harp2's ~next: still device = 1 note; harder motion
 // opens the slide up to maxRange (8) pool notes cycled per group.
 ~pieceNext = {|d, ctx|
-	var amp = m.accelMassFiltered.lincurve(0, 2.0, -45, -8, -1);
-	var oct = (d.sensors.gyroEvent.y / pi.half).lincurve(-1, 1, 5, 9, 1).asInteger;
+	var oct = (d.sensors.gyroEvent.y / pi.half).lincurve(-1, 1, 5, 8, 1).asInteger;
 	var range = m.accelMassFiltered.lincurve(0, 2.5, 1, maxRange, -1).floor;
 	var dur = m.accelMassFiltered.lincurve(0, 2.5, 2, 1, -2).asInteger;
+	var a = m.accelMassFiltered.linlin(0, 2.0, 0, 1);
+	var r = m.rrateMassFiltered.linlin(0, 1.0, 0, 1);
+	var amp = (a + r - (a * r)).lincurve(0, 1.0, -50, -6, -2);
+
+	if(amp<40.neg, { amp = 90.neg });  
+
 
 	Pdef(m.ptn).set(\amp, amp.dbamp);
 	Pdef(m.ptn).set(\octave, oct);
@@ -259,7 +287,14 @@ SynthDef(\stereoSamplerH, {|bufnum=0, out=0, amp=1, rate=1, ptch=1, start=0, pan
 };
 
 ~curtainNext = {|d, ctx|
-	var amp = m.rrateMassFiltered.lincurve(0, 1.0, -70, -30, -4);
+
+	var a = m.accelMassFiltered.linlin(0, 2.0, 0, 1);
+	var r = m.rrateMassFiltered.linlin(0, 1.0, 0, 1);
+	var amp = (a + r - (a * r)).lincurve(0, 1.0, -50, -2, -2);
+
+	if(amp<40.neg, { amp = 90.neg });  
+
+
 	Pdef(m.ptn).set(\amp, amp.dbamp);
 	Pdef(m.ptn).set(\octave, [3, 4].choose);
 	Pdef(m.ptn).set(\dur, 4);
@@ -281,4 +316,8 @@ SynthDef(\stereoSamplerH, {|bufnum=0, out=0, amp=1, rate=1, ptch=1, start=0, pan
 //------------------------------------------------------------
 ~plotMin = -1;
 ~plotMax = 1;
-~plot = {|d,p| [m.accelMassFiltered] };
+~plot = {|d,p|
+	// [m.accelMassFiltered]
+	// trace 2 = calcEnergy (fuzzy OR of accel+rrate) against rrate alone
+	[m.rrateMassFiltered.lincurve(0, 1.0, 0.0, 1.0, 0), calcEnergy.value]
+};

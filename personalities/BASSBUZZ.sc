@@ -29,7 +29,7 @@ var lastTime = 0;
 var tuneTime = 0;
 
 // var ideleNotes = [45,49,52,57,52,49,45,46,50,53,58,53,50,46,47,51,54,59,54,51,47,46,50,53,58,53,50,46];
-var ideleNotes = [45,49,52,57];
+var ideleNotes = 45 + [0,4,7,12,14,11,9,5,2] - 12;
 // var ideleNotes = [45,80];
 
 m.accelMassFilteredAttack = 0.98;
@@ -40,10 +40,12 @@ m.gyroFilteredAttack = 0.7;
 m.gyroFilteredDecay = 0.7;
 
 //------------------------------------------------------------
+
 SynthDef(\simple, {|out=0, amp=0.0, freq=440, attack=0.001, decay=0.03, sustain=0.8, release=0.59, gate=1, lagAttack=0.02, lagRelease=1.9, ffreq = 440|
 	var env = EnvGen.kr(Env.adsr(attack, decay, sustain, release), gate, doneAction: Done.freeSelf);
-	var sig = Saw.ar(freq,0.2,0.1) + SinOsc.ar(freq/2,0,0.1);
-	var filter = RLPF.ar(sig, ffreq.lag(0.3), 0.2) * 0.5;
+	// var sig = Saw.ar(freq,0.2,0.1) + SinOsc.ar(freq/2,0,0.1);
+	var sig = Saw.ar([freq, freq * 1.004]*0.5,0.5) + SinOsc.ar([freq-1, freq -1 * 0.005]*1,0,1) + LFTri.ar([freq+1, freq * 1.004]*1,0,1);
+	var filter = RLPF.ar(sig, ffreq.lag(1.2), 0.2) * 0.3;
     Out.ar(out, filter!2 * env * amp.lagud(lagAttack, lagRelease));
 }).add;
 
@@ -96,16 +98,16 @@ SynthDef(\simple, {|out=0, amp=0.0, freq=440, attack=0.001, decay=0.03, sustain=
 
 ~tuningNext = {|d, ctx|
 
-	var amp = (m.accelMass + m.rrateMass).lincurve(0, 1.0, -70, -3, 4);
+	var amp = (m.accelMass + m.rrateMass).lincurve(0, 1.0, -70, -10, 4);
 	var ffreq = ((d.sensors.gyroEvent.x / pi).fold(-0.5,0.5) * 2).lincurve(-1.0, 1.0, 200, 800, 3);
-	var fmod = ((d.sensors.gyroEvent.y / pi.half).lincurve(-1.0,1.0,-12.0,28.0,1));
+	var fmod = ((d.sensors.gyroEvent.y / pi.half).lincurve(-1.0,1.0,-16.0,16.0,1));
 	var tt = 20.0;
 
 	if( (TempoClock.beats-tuneTime) < tt, {
 		var val = (TempoClock.beats-tuneTime) / tt;
-		synth.set(\freq, (57 + (val.linexp(0, 1, 1, 0.0001) * fmod)).midicps);
+		synth.set(\freq, (45 + (val.linexp(0, 1, 1, 0.0001) * fmod)).midicps);
 	},{
-		synth.set(\freq, 57.midicps);
+		synth.set(\freq, 45.midicps);
 
 	});
 
@@ -125,7 +127,7 @@ SynthDef(\simple, {|out=0, amp=0.0, freq=440, attack=0.001, decay=0.03, sustain=
 
 ~pieceNext = {|d, ctx|
 
-	var amp = (m.accelMass + m.rrateMass).lincurve(0, 1.6, -90, 2, -1);
+	var amp = (m.accelMass + m.rrateMass).lincurve(0, 1.6, -90, -6, -1);
 	var ffreq = ((d.sensors.gyroEvent.x / pi).fold(-0.5,0.5) * 2).lincurve(-1.0, 1.0, 500, 12000, 3);
 	synth.set(\amp, amp.dbamp);
 	synth.set(\lagAttack, 0.002);

@@ -37,10 +37,10 @@ var lastTime = 0;     // dur-change throttle
 var tuneTime = 0;     // TempoClock.beats when \tuning began (§15 ramp anchor)
 
 // ---- live config knobs (the file IS the config — edit, save, hear it) ----
-var baseShift  = 12;                        // semitones above the raw call for every state
-var idleNotes  = [0, 2, 4, 7, 9, 12, 14, 16];  // idle offsets, selected by y tilt
-var tunePitch  = 2.2;                       // \pitchRand pinning the whistle peak to ≈ A5 (880 Hz)
-var tuneRamp   = 15.0;                      // seconds for the tuning bend to reach true (§16)
+var baseShift  = 61;                        // semitones above the raw call for every state
+var idleNotes  = [0,4,7,11,14];  // idle offsets, selected by y tilt
+var tunePitch  = 0.0;                       // \pitchRand pinning the whistle peak to ≈ A5 (880 Hz)
+var tuneRamp   = 0.0;                      // seconds for the tuning bend to reach true (§16)
 
 //------------------------------------------------------------
 // Filter tuning — accel rises fast and falls quickly so a stopped stick
@@ -55,7 +55,7 @@ m.gyroFilteredDecay       = 0.7;
 //------------------------------------------------------------
 // VERBATIM from synths/whipBird.sc — do not edit here.
 SynthDef(\whipbird, {
-    |out=0, pan=0, amp=0.3, gate=1, swoopDelay=0.03, gliss=0.01,pitchRand=1,
+    |out=0, pan=0, amp=0.3, gate=1, swoopDelay=0.03, gliss=0.01,pitchRand=1, freq = 440,
         reverbMix=0.3, reverbTime=2.0, reverbSize=0.8|
 
     var whipEnv, whistleEnv, whipOsc, whistleOsc, sig, mainEnv;
@@ -65,7 +65,7 @@ SynthDef(\whipbird, {
 
     // Main envelope for the whole sound
     mainEnv = EnvGen.kr(
-        Env.asr(0.01, 1, 0.5),
+        Env.asr(0.02, 1, 0.8),
         gate
 		// doneAction:2
     );
@@ -103,7 +103,7 @@ SynthDef(\whipbird, {
     // Rising whistle with more character
     whistleOsc = SinOsc.ar(
         freq: Env(
-			[200, 200, 400, 380] * pitchRand,
+			[freq, freq * 2, freq * 1.9],
             [swoopDelay, 0.15, 0.15],
             [\sine, \sine, -3]
         ).kr
@@ -128,7 +128,7 @@ SynthDef(\whipbird, {
             sig * LFNoise2.kr(0.1).range(0.01, 0.02) * DelayC.ar(sig, 0.1, t)
         }).sum
     );
-
+	
 	DetectSilence.ar(sig, time:0.3, doneAction:2);
     Out.ar(out, sig * amp * mainEnv);
 }).add;
@@ -147,6 +147,7 @@ SynthDef(\whipbird, {
 				\out, ob,
 				\group, group,          // route every call into our group (§5)
 				\pan, Pwhite(-1.0, 1.0),
+				\dur, Pseq([2,1,1,2,1,1], inf),  
 				// The SynthDef has a `gate`, so the event schedules gate=0 at
 				// \sustain. Hold it well past the ~0.35 s call so the release
 				// never truncates the whistle — DetectSilence frees the node.
@@ -199,22 +200,22 @@ SynthDef(\whipbird, {
 // Idle: quiet, sparse calls in the far distance; y tilt walks the call up and
 // down idleNotes. Palette: `low` (§17).
 ~idleNext = {|d, ctx|
-	var amp = m.accelMassFiltered.lincurve(0, 0.5, -90, -25, -1);
+	var amp = m.accelMassFiltered.lincurve(0, 0.5, -90, -5, -1);
 	var n   = m.gyroYFiltered.lincurve(-1.0, 1.0, 0, idleNotes.size, -1)
 		.asInteger.clip(0, idleNotes.size - 1);
 
 	Pdef(m.ptn).set(\amp, amp.dbamp);
-	Pdef(m.ptn).set(\pitchRand, (baseShift + idleNotes[n]).midiratio);
-	Pdef(m.ptn).set(\swoopDelay, 0.01);
-	Pdef(m.ptn).set(\gliss, 0.01);
+	Pdef(m.ptn).set(\freq, (baseShift + idleNotes.choose).midicps);
+	Pdef(m.ptn).set(\swoopDelay, 0.0);
+	Pdef(m.ptn).set(\gliss, 0.07);
 
-	case(
-		{ amp > -30 }, {
-			if (TempoClock.beats > (lastTime + 0.5), {
-				Pdef(m.ptn).set(\dur, 1);
-				lastTime = TempoClock.beats;
-			})},
-		{ Pdef(m.ptn).set(\dur, 2) });
+	// case(
+	// 	{ amp > -30 }, {
+	// 		if (TempoClock.beats > (lastTime + 0.5), {
+	// 			Pdef(m.ptn).set(\dur, 1);
+	// 			lastTime = TempoClock.beats;
+	// 		})},
+	// 	{ Pdef(m.ptn).set(\dur, 2) });
 };
 
 // Tuning: the bird finds the A. Pinned to tunePitch, sparse, quiet, with a
@@ -240,7 +241,7 @@ SynthDef(\whipbird, {
 ~pieceNext = {|d, ctx|
 	var pool = (ctx !? { ctx.voicePool }) ? [69];
 	var loud = (ctx !? { ctx.loudness }) ? 1.0;
-	var amp  = m.accelMassFiltered.lincurve(0, 0.5, -80, -2, -2);
+	var amp  = m.accelMassFiltered.lincurve(0, 0.5, -80, 10, -2);
 	var oct  = if ((d.sensors.gyroEvent.y / pi.half) > 0.3, { 12 }, { 0 });
 	var pc;
 
@@ -248,22 +249,23 @@ SynthDef(\whipbird, {
 	pc = pool.choose.asInteger.wrap(0, 11);
 
 	Pdef(m.ptn).set(\amp, amp.dbamp * loud.linlin(0, 1, 0.3, 1.0));
-	Pdef(m.ptn).set(\pitchRand, (baseShift + pc + oct).midiratio);
-	Pdef(m.ptn).set(\swoopDelay, 0.003);
-	Pdef(m.ptn).set(\gliss, 0.003);
+	Pdef(m.ptn).set(\freq, (baseShift + pc).midicps);
 
-	case(
-		{ amp > -20 }, {
-			if (TempoClock.beats > (lastTime + 0.5), {
-				Pdef(m.ptn).set(\dur, 0.5);
-				lastTime = TempoClock.beats;
-			})},
-		{ amp > -35 }, {
-			if (TempoClock.beats > (lastTime + 0.5), {
-				Pdef(m.ptn).set(\dur, 1);
-				lastTime = TempoClock.beats;
-			})},
-		{ Pdef(m.ptn).set(\dur, 2) });
+	Pdef(m.ptn).set(\swoopDelay, rrand(0.01, 0.1));
+	Pdef(m.ptn).set(\gliss, rrand(0.01,0.08));
+
+	// case(
+	// 	{ amp > -20 }, {
+	// 		if (TempoClock.beats > (lastTime + 0.5), {
+	// 			Pdef(m.ptn).set(\dur, 0.5);
+	// 			lastTime = TempoClock.beats;
+	// 		})},
+	// 	{ amp > -35 }, {
+	// 		if (TempoClock.beats > (lastTime + 0.5), {
+	// 			Pdef(m.ptn).set(\dur, 1);
+	// 			lastTime = TempoClock.beats;
+	// 		})},
+	// 	{ Pdef(m.ptn).set(\dur, 2) });
 };
 
 // Curtain: the bird recedes — rotation only, sparse, holding its last pitch.

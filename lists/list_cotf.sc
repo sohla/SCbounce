@@ -1,16 +1,15 @@
 (
 	[
 		"silence",
-		"cotf_dulcimer1",
-		"cotf_harpsichord2",
+		"STRINGCHORD",
 		"PERCUSSION",
 		"ALTOSYNTH",
 		"BASSBUZZ",
 		"SOPRANOVOICE",
 		"JUPITERSHARP",
-		"Birdsong",      // cotf: Ciaran's test patch (Patch Lab audition, 2026-08-23) — admin-disabled for auto-pick
 		"PLUKSYNTH",
-		"WHIPBIRD",
+		"BIRDY",
+		"Birdsong",      // cotf: Ciaran's test patch (Patch Lab audition, 2026-08-23) — admin-disabled for auto-pick
 		"silence",
     
 	]

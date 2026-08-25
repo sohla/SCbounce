@@ -2,6 +2,7 @@
 gestures:    [beat, shake, tilt]
 description: Pdef pattern firing per-note dulcimer sample synths on ~beatClock; fixed 2-bar melody pattern with pool-driven pitch; state controls amp/octave/ptch, gesture drives amp + octave (piece) or amp only (idle/curtain)
 sound:       hammered-dulcimer repeated-note phrase; melody hovers on top of ~scoreVoicePool with dips to lower voices; sample-based; tuning bends smoothly into pitch via \ptch
+             + always-on granular drone (\granularSamplerDul, GrainBuf over the same samples, mono mirror buffers): sustains under the melody in every room state, accel drives its amp at IMU rate, pitch re-picked from the voice pool each ~onBeat
 pitch:       score voice pool, offset-from-top per pattern step (offsets [0,1,2,3]); octave-folded into [C3..C5]; \octave state-driven; \ptch = sample rate multiplier for continuous bend (tuning ramps 0.7 → 1.0 over 15 s)
 rhythm:      fixed 2-bar 16th-note pattern from patternOffset array; phase offset = 4 for pickup alignment; runs on ~beatClock always, amp gated per state
 instruments: [Cellaris]
@@ -11,6 +12,10 @@ var m = ~model;
 var ob = ~outBus ? 0; // capture NOW — ~init bodies run under topEnvironment.use
 var phase = 4;
 var tuneTime = 0;
+var synth;       // the always-on granular drone (see ~init / startDrone)
+var startDrone;  // (re)spawns `synth` — also called from ~onResync, which
+                 // freeAlls the group and would otherwise leave us droneless
+var findClosestSample;  // hoisted out of ~init so ~onBeat can pick pitches
 var group;   // dedicated Group for this personality's synths — see
              // concert_p_files.md §5 (Pdef personalities need this)
 
@@ -107,27 +112,74 @@ m.gyroFilteredAttack = 0.7;
 m.gyroFilteredDecay = 0.7;
 
 //------------------------------------------------------------
-SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, ptch=1, start=0, pan=0, freq=440,
+SynthDef(\stereoSamplerDul, {|bufnum=0, out=0, amp=1, rate=1, ptch=1, start=0, pan=0, freq=440,
     attack=0.1, decay=0.1, sustain=0.3, release=0.8, gate=1, cutoff=20000, rq=1|
 	var lr = rate * BufRateScale.kr(bufnum) * ptch;
 	var env = EnvGen.kr(Env.new([0, 1, 1, 0], [attack, sustain, release]), gate, doneAction: 2);
 	var te = EnvGen.kr(Env.perc(0.001, release * 1), gate, doneAction: 0);
 	var sig = PlayBuf.ar(2, bufnum, rate: [lr, lr * 1.0017], startPos: start * BufFrames.kr(bufnum), loop: 0);
 	var mod = SinOsc.ar(freq * 2, LFCub.ar(1,10,10), 1).tanh;
-	var tone = LFTri.ar(freq * 0.5 * LFCub.ar(1,0,0.01,1), 0, 0.4).tanh * te;
+	var tone = LFTri.ar(freq * 1 * LFCub.ar(1,0,0.01,1), 0, 0.4).tanh * te;
 	sig = (sig * mod + tone) * amp * env;
 	Out.ar(out, sig);
+}).add;
+
+// Always-on granular drone off the SAME dulcimer samples. The per-note
+// \stereoSamplerDul above can't hold a tone — its Env is fixed-length with
+// doneAction: 2 and its PlayBuf doesn't loop, so a persistent node would
+// fall silent after ~1.2 s. GrainBuf re-triggers grains forever instead, so
+// the tone sustains for as long as the seat is loaded.
+//
+// Env.asr + gate (NOT a fixed env): the node lives until ~deinit frees the
+// group. \amp and \rate are Lag'd — \amp is written at IMU rate (~30 Hz)
+// from ~next and \rate/\bufnum jump on each ~onBeat, and both would click
+// without smoothing. rateLag also gives the pitch change a short dulcimer-ish
+// bend into the new note rather than a hard step.
+//
+// NB: GrainBuf requires a MONO buffer (same as synths/harp_grain_grainbuf.scd)
+// — hence the monoBuffer mirror loaded alongside samplesLib in ~init.
+// \freq feeds the SinOsc tone that sits under the grain cloud. It needs its
+// own control because the grains carry no pitch of their own — theirs comes
+// from which buffer is loaded plus \rate, which a sine can't read. ~onBeat
+// already computes the MIDI note, so it sets \freq alongside \bufnum/\rate;
+// default is C4 (midi 60), matching startDrone's seed sample.
+SynthDef(\granularSamplerDul, {|bufnum=0, out=0, amp=0, rate=1, ptch=1, freq=261.62556530060,
+	// pos/toneAmp measured by NRT render against "IL Hmr Dlcmr-hrd A1b":
+	// these are struck notes that decay ~38 dB by a third of the way in
+	// (peak 0.75 at the head, 0.009 at pos 0.35), so grains read from late
+	// in the file are effectively silent. pos 0.06 +/- 0.04 keeps the grains
+	// in the body of the note while staying clear of the hammer transient at
+	// 0.0. At that position grains measure rms 0.062, and toneAmp 0.06 puts
+	// the sine ~3 dB under them — audible WITH the cloud, not over it.
+	pos=0.06, posSpread=0.04, density=18, grainDur=0.25,
+	panSpread=0.4, rateSpread=0.008, envbuf= -1, interp=4,
+	toneAmp=0.06, ampLag=0.08, rateLag=0.12, gate=1, atk=0.5, rel=1.5|
+	var env   = EnvGen.kr(Env.asr(atk, 1, rel), gate, doneAction: 2);
+	var trig  = Dust.kr(density);
+	// BufRateScale as in \stereoSamplerDul's `lr` — GrainBuf's rate is
+	// relative to the SERVER sample rate, and COTF hosts run the server at
+	// 48 k against 44.1 k samples. Without it the drone sits ~1.5 semitones
+	// sharp of the melody on the show machines but in tune on a 44.1 k bench.
+	var grate = Lag.kr(rate * ptch, rateLag) * BufRateScale.kr(bufnum)
+		* TRand.kr(1 - rateSpread, 1 + rateSpread, trig);
+	var gpan  = TRand.kr(panSpread.neg, panSpread, trig);
+	var gpos  = (pos + TRand.kr(posSpread.neg, posSpread, trig)).clip(0.02, 0.98);
+	var sig   = GrainBuf.ar(2, trig, grainDur, bufnum, grate, gpos, interp, gpan, envbuf);
+	// Sine tone alongside the grains — centred (mono, summed into both
+	// GrainBuf channels), scaled by \ptch and Lag'd on the same rateLag as
+	// the grains so tone and cloud bend together on each ~onBeat pitch change.
+	var tone  = SinOsc.ar(Lag.kr(freq * ptch, rateLag), 0, toneAmp);
+	Out.ar(out, (sig + tone) * env * Lag.kr(amp, ampLag));
 }).add;
 
 //------------------------------------------------------------
 ~init = ~init <> {
 
-	var findClosestSample = { |targetMidi|
-		var closest = samplesLib.minItem({|sample| (sample.midiNote - targetMidi).abs });
-		var semitoneDiff = targetMidi - closest.midiNote;
-		(buffer: closest.buffer, rate: semitoneDiff.midiratio)
-	};
-
+	// NB: every `var` in a block must precede the first statement, and
+	// findClosestSample is now a file-level var assigned below (hoisted so
+	// ~onBeat can reach it) — so melodyMidiForOffset has to be declared
+	// FIRST or the whole file fails to parse and no hook gets assigned.
+	//
 	// pick a MIDI note from ~scoreVoicePool by "offset from top" index.
 	// offset 0 = pool.last (melody), 1 = pool[size-2], etc. pool.wrapAt
 	// cycles when offset overshoots pool.size, so a sparse 1-note pool
@@ -156,6 +208,15 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, ptch=1, start=0, pan=
 		picked
 	};
 
+	// `mono` rides alongside `buffer` for the granular drone — GrainBuf can't
+	// read the stereo buffer the note events use. Extra key only; the note
+	// event handler still reads .buffer / .rate exactly as before.
+	findClosestSample = { |targetMidi|
+		var closest = samplesLib.minItem({|sample| (sample.midiNote - targetMidi).abs });
+		var semitoneDiff = targetMidi - closest.midiNote;
+		(buffer: closest.buffer, mono: closest.monoBuffer, rate: semitoneDiff.midiratio)
+	};
+
 	loading = true;
 
 	samplesLib = folder.entries
@@ -165,8 +226,13 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, ptch=1, start=0, pan=
 			var buffer = Buffer.read(s, path.fullPath, action:{|buf|
 				postf("buffer alloc [%] \n", buf);
 			});
+			// Mono mirror of the same file for the granular drone (GrainBuf
+			// is mono-only). Same path, same midiNote — one extra buffer per
+			// sample, freed alongside its stereo twin in ~deinit.
+			var monoBuffer = Buffer.readChannel(s, path.fullPath, channels: [0]);
 			postf("loading sample : % (midi %) \n", path.fileNameWithoutExtension, midiNote);
-			(name: path.fileNameWithoutExtension, buffer: buffer, midiNote: midiNote)
+			(name: path.fileNameWithoutExtension, buffer: buffer,
+				monoBuffer: monoBuffer, midiNote: midiNote)
 		});
 
 	s.sync;
@@ -205,9 +271,26 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, ptch=1, start=0, pan=
 		topEnvironment.use{
 			group = Group.new;
 
+			// Always-on granular drone. Spawned once here, then kept alive
+			// for the life of the seat: ~next writes \amp from accel every
+			// tick, ~onBeat writes \bufnum + \rate. Starts at amp 0 so a
+			// stickless seat is silent (same reasoning as the Pdef's \amp
+			// seed below). Lives in `group`, so ~deinit's freeAll takes it.
+			startDrone = {
+				var seed = findClosestSample.(60);
+				synth = Synth(\granularSamplerDul, [
+					\bufnum, seed.mono,
+					\rate,   seed.rate,
+					\freq,   60.midicps,   // matches the midi 60 seed above
+					\out,    ob,
+					\amp,    0
+				], group);
+			};
+			startDrone.value;
+
 			Pdef(m.ptn,
 				Pbind(
-					\instrument, \stereoSampler,
+					\instrument, \stereoSamplerDul,
 					\out, ob,
 					\group, group,   // route every event's synth into our group
 					\type, eventTypeName,
@@ -255,6 +338,9 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, ptch=1, start=0, pan=
 			topEnvironment.use {
 				Pdef(m.ptn).stop;
 				s.bind { group.freeAll };
+				// freeAll took the drone too — put it back, or the seat loses
+				// its sustained layer on every seek/re-anchor.
+				startDrone.value;
 				Pdef(m.ptn).play(~beatClock, quant: [~scoreBeatsPerBar * ~scoreEventsPerBeat, phase]);
 			};
 		};
@@ -274,15 +360,17 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, ptch=1, start=0, pan=
 	// Idempotent: notNil guards let ~deinit fire twice safely.
 	fork {
 		if (group.notNil) {
-			s.bind { group.freeAll };
+			s.bind { group.freeAll };   // takes the granular drone with it
 			s.sync;
 			group.free;
 			group = nil;
+			synth = nil;
 		};
 		if (samplesLib.notNil) {
 			samplesLib.do({|sample|
 				postf("buffer dealloc [%] \n", sample.buffer);
 				sample.buffer.free;
+				sample.monoBuffer !? { sample.monoBuffer.free };
 				s.sync;
 			});
 			samplesLib = nil;
@@ -291,7 +379,21 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, ptch=1, start=0, pan=
 };
 
 //------------------------------------------------------------
-// ~next = {|d| };  // state-gated ticks handle everything
+// The Pdef melody is handled entirely by the state-gated ticks below —
+// ~next only drives the always-on granular drone, which is deliberately
+// NOT state-gated: procRout calls ~next every tick (~30 Hz) whenever the
+// device is enabled, whatever the room state, so the drone sustains
+// across idle/tuning/piece/curtain. Accel → drone amp.
+// \silent is the room's hard mute, and ~next is NOT state-gated — without
+// this check the drone would keep sounding through it, and would re-set its
+// amp 30 times a second over any mute ~onRoomState tried to apply. Read
+// topEnvironment[\roomState] explicitly: we're inside d.env.use, where a
+// bare ~roomState resolves against the personality env (nil).
+~next = {|d|
+	var amp = m.accelMassFiltered.lincurve(0, 1.2, -70, -2, -1);
+	var silent = topEnvironment[\roomState] == \silent;
+	synth !? { synth.set(\amp, if(silent) { 0 } { amp.dbamp }) };
+};
 
 //------------------------------------------------------------
 // Room-state routing — Pdef stays playing across all states; per-state
@@ -344,7 +446,7 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, ptch=1, start=0, pan=
 
 	Pdef(m.ptn).set(\attack, atk);
 	Pdef(m.ptn).set(\release, rel);
-	Pdef(m.ptn).set(\amp, amp.dbamp);
+	Pdef(m.ptn).set(\amp, 0);
 
 	Pdef(m.ptn).set(\octave, [3, 4, 5].choose);
 	Pdef(m.ptn).set(\ptch, [1,1.5].choose);  
@@ -369,7 +471,7 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, ptch=1, start=0, pan=
 
 	if (elapsed < tt, {
 		Pdef(m.ptn).set(\ptch, (elapsed / tt).linlin(0, 1, 0.85, 1.0));
-		Pdef(m.ptn).set(\note, 2);
+		Pdef(m.ptn).set(\note, (elapsed / tt).linlin(0, 1, 12, 0));
 
 	}, {
 		Pdef(m.ptn).set(\ptch, 1);
@@ -417,8 +519,33 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, ptch=1, start=0, pan=
 
 };
 
-~onBeat    = {|ctx| 
-
+// Drone pitch, once per true musical beat. Takes the top of the score
+// voice pool (same note the melody's offset 0 picks) and octave-folds it
+// into the dulcimer's [C3..C5] range, exactly as melodyMidiForOffset does
+// for the pattern — then swaps the drone onto the nearest mono sample plus
+// its pitch-shift ratio. \rate is Lag'd in the SynthDef, so the change
+// bends in rather than stepping.
+//
+// NB: read ctx.voicePool, NOT ~scoreVoicePool — beat hooks run inside
+// d.env.use, where the bare env var resolves against the personality env
+// (nil) and would silently pin the drone to the 69 fallback forever.
+~onBeat    = {|ctx|
+	var pool = ctx.voicePool ? [69];
+	var midi = if(pool.size == 0) { 69 } { pool.last.asInteger };
+	while({ midi > 72 }, { midi = midi - 12 });
+	while({ midi < 48 }, { midi = midi + 12 });
+	// Everything inside the guard: beat hooks start firing as soon as d.env
+	// exists, which is seconds before ~init finishes loading 52 buffers.
+	// `synth` is the last thing ~init creates, so it non-nil implies both
+	// samplesLib and findClosestSample are ready. Calling findClosestSample
+	// outside this guard would be nil.value(midi) -> nil, then nil.mono ->
+	// doesNotUnderstand, once per beat for the whole load.
+	synth !? {
+		var found = findClosestSample.(midi);
+		// \freq drives the SinOsc tone; the grains get \bufnum + \rate. Both
+		// come off the same folded MIDI note, so tone and cloud stay in unison.
+		synth.set(\bufnum, found.mono, \rate, found.rate, \freq, midi.midicps);
+	};
 };
 
 ~onBar     = {|ctx|

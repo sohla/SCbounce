@@ -21,9 +21,11 @@ var loading = false;   // true while ~init is waiting on the sample reads;
 // legend: K=kick(0)  S=snare(5)  h=closed hat(2)  t=tom hi(7)  M=tom mid(9)  F=floor(13)  O=open hat(4)
 // nil = rest slot (silence at that 16th)
 var bar1 = [0, nil,  2,  nil,  5,  2,   0,  nil,  0,  nil,  2,  nil,  5,  2,  nil,  2];
-var bar2 = bar1;
+var bar2 = [0, nil,  1,  nil,  3,  6,   0,  1,  0,  nil,  1,  2,  5,  1,  3,  nil];
 var bar3 = [0, nil,  2,  nil,  5,  2,   0,  0,    0,  nil,  2,  nil,  5,  2,  0,    2];
-var bar4 = [0, nil,  2,  nil,  5,  2,   0,  nil,  9,  9,    7,  7,    13, 13, 4,    4];
+var bar4 = [0, nil,  2,  3,  5,  2,   0,  0,    0,  nil,  2,  4,  5,  2,  0,    2];
+
+// var bar4 = [0, nil,  2,  nil,  5,  2,   0,  nil,  9,  9,    7,  7,    13, 13, 4,    4];
 
 var samples = bar2 ++ bar4 ++ bar3 ++ bar1;
 var patternLen = samples.size;
@@ -38,11 +40,11 @@ m.accelMassFilteredDecay = 0.98;
 
 //------------------------------------------------------------
 SynthDef(\drumkitt3, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
-    attack=0.01, decay=0.01, sustain=0.3, release=0.4, gate=1, cutoff=14000, rq=1|
+    attack=0.01, decay=0.01, sustain=0.3, release=0.4, gate=1, cutoff=16000, rq=1|
 	var lr = rate * BufRateScale.kr(bufnum);
 	var env = EnvGen.kr(Env.adsr(attack, decay, sustain, release), gate, doneAction: 2);
-	var sig = PlayBuf.ar(1, bufnum, rate: [lr, lr * 1.0], startPos: start * BufFrames.kr(bufnum), loop: 0) * env;
-	sig = RLPF.ar(sig, cutoff, rq);
+	var sig = PlayBuf.ar(1, bufnum, rate: [lr, lr * 1.0], startPos: start * BufFrames.kr(bufnum), loop: 0) * env * 2;
+	sig = RLPF.ar(sig, cutoff, rq).tanh;
 	sig = Compander.ar(sig, sig,
 		thresh: -15.dbamp,
 		slopeBelow: 1,
@@ -50,7 +52,6 @@ SynthDef(\drumkitt3, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 		clampTime:  0.01,
 		relaxTime:  0.01
 	);
-	sig = FreeVerb.ar(sig, 0.1, 1.1, 0.4);
 	Out.ar(out, sig * amp);
 }).add;
 
@@ -194,8 +195,11 @@ SynthDef(\drumkitt3, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 ~curtainNext = ~idleNext;
 
 ~pieceNext = {|d, ctx|
-	var rate = (d.sensors.gyroEvent.y / pi.half).lincurve(-1, 1, 0.5, 4, 1);
+	var rate = (d.sensors.gyroEvent.y / pi.half).lincurve(-1, 1, 0.5, 2, 1);
 	var amp = m.accelMassFiltered.lincurve(0, 2.0, 0.5, 1, 1);
+
+	if(amp<0.55, { amp = 0; });
+
 	Pdef(m.ptn).set(\amp, amp);
 	Pdef(m.ptn).set(\rate, rate);
 	topEnvironment.use {
