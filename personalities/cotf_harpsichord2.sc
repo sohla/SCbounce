@@ -65,11 +65,13 @@ m.gyroFilteredDecay = 0.7;
 
 //------------------------------------------------------------
 SynthDef(\stereoSamplerH, {|bufnum=0, out=0, amp=1, rate=1, ptch=1, start=0, pan=0, freq=440,
-    attack=0.01, decay=0.1, sustain=0.3, release=1.2, gate=1, cutoff=20000, rq=1|
+    attack=0.01, decay=0.1, sustain=0.3, release=4.2, gate=1, cutoff=20000, rq=1|
 	var lr = rate * BufRateScale.kr(bufnum) * ptch;
-	var env = EnvGen.kr(Env.new([0, 1, 1, 0], [attack, sustain, release]), doneAction: 2);
-	var sig = PlayBuf.ar(2, bufnum, rate: [lr, lr * 1.0017] - 0.027, startPos: start * BufFrames.kr(bufnum), loop: 0);
-	sig = Balance2.ar(sig[0], sig[1], pan, amp * env);
+	var env = EnvGen.kr(Env.adsr(attack, decay, sustain, release), gate, doneAction: 2);
+	var ve = EnvGen.kr(Env.adsr(5, decay, sustain, release), gate);
+	var sig = PlayBuf.ar(2, bufnum, rate: ([lr, lr * 1.0017] - 0.027) * LFCub.ar(4,0,0.2 * ve,1), startPos: start * BufFrames.kr(bufnum), loop: 0);
+	var tone = Saw.ar(freq * 2, 0, 0.06);
+	sig = (sig + tone) * amp * env * 0.5;
 	Out.ar(out, sig);
 }).add;
 
@@ -217,7 +219,7 @@ SynthDef(\stereoSamplerH, {|bufnum=0, out=0, amp=1, rate=1, ptch=1, start=0, pan
 	var dur = m.accelMassFiltered.lincurve(0, 2.5, 4, 1, -2).asInteger;
 
 	Pdef(m.ptn).set(\amp, amp.dbamp);
-	Pdef(m.ptn).set(\octave, [4,4.58, 5, 5.59, 6,6.17,7].choose);
+	Pdef(m.ptn).set(\octave, [5,6,7,8,9].choose);
 	Pdef(m.ptn).set(\dur, dur);
 	Pdef(m.ptn).set(\range, 2);
 	Pdef(m.ptn).set(\ptch, 1);

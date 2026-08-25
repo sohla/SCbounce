@@ -108,13 +108,14 @@ m.gyroFilteredDecay = 0.7;
 
 //------------------------------------------------------------
 SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, ptch=1, start=0, pan=0, freq=440,
-    attack=0.01, decay=0.1, sustain=0.3, release=1.2, gate=1, cutoff=20000, rq=1|
-	// ptch multiplies the sample playback rate — continuous pitch bend,
-	// analogous to harp1. ptch < 1 = lower/slower; ptch > 1 = higher/faster.
+    attack=0.1, decay=0.1, sustain=0.3, release=0.8, gate=1, cutoff=20000, rq=1|
 	var lr = rate * BufRateScale.kr(bufnum) * ptch;
-	var env = EnvGen.kr(Env.new([0, 1, 1, 0], [attack, sustain, release]), doneAction: 2);
+	var env = EnvGen.kr(Env.new([0, 1, 1, 0], [attack, sustain, release]), gate, doneAction: 2);
+	var te = EnvGen.kr(Env.perc(0.001, release * 1), gate, doneAction: 0);
 	var sig = PlayBuf.ar(2, bufnum, rate: [lr, lr * 1.0017], startPos: start * BufFrames.kr(bufnum), loop: 0);
-	sig = Balance2.ar(sig[0], sig[1], pan, amp * env);
+	var mod = SinOsc.ar(freq * 2, LFCub.ar(1,10,10), 1).tanh;
+	var tone = LFTri.ar(freq * 0.5 * LFCub.ar(1,0,0.01,1), 0, 0.4).tanh * te;
+	sig = (sig * mod + tone) * amp * env;
 	Out.ar(out, sig);
 }).add;
 
@@ -194,6 +195,9 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, ptch=1, start=0, pan=
 				~bufnum = found.buffer;
 				~rate = found.rate;
 			};
+			// ~note = (~note + ~root + (12 * ~octave)).asInteger;
+			~freq = target.asInteger.midicps;
+
 			~type = \note;
 			currentEnvironment.play;
 		});
@@ -208,10 +212,9 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, ptch=1, start=0, pan=
 					\group, group,   // route every event's synth into our group
 					\type, eventTypeName,
 
-					// note — clock-derived slot → pool offset → MIDI note, then
-					// converted to an offset from baseMidi=60 so ~octave still
-					// transposes via customEvent's `+ 12*~octave`.
-					\note, Pfunc{ |e|
+					// \note, 0,
+
+					\root, Pfunc{ |e|
 						var pos = (~beatClock.beats - phase).mod(patternLen);
 						var slot = (eventStarts.indexOfGreaterThan(pos) ? patternOffset.size) - 1;
 						var offset = patternOffset.wrapAt(slot.max(0));
@@ -221,8 +224,6 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, ptch=1, start=0, pan=
 							melodyMidiForOffset.(offset) - 60
 						}
 					},
-
-					\root, 0,
 					\args, #[],
 				);
 			);
@@ -233,6 +234,13 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, ptch=1, start=0, pan=
 			// only while the seat's device is enabled. Envir .set, not a Pbind key:
 			// Pbind keys override the envir and would defeat the hooks' .set.
 			Pdef(m.ptn).set(\amp, 0);
+			// Melody now rides on \root (clock-driven Pfunc), so \note is only
+			// the state ticks' offset. Seed it numeric: unset, ~note falls back
+			// to the default pitch event's *Function*, and customEvent's
+			// `~note + ~root + 12*~octave` silently builds a BinaryOpFunction
+			// that blows up in findClosestSample's minItem ("Non Boolean in
+			// test"). \piece and \curtain ticks never .set(\note, ...).
+			Pdef(m.ptn).set(\note, 0);
 			// Default dur = 1 (uniform 16th grid, matches the old Pfunc behaviour).
 			// State hooks override this to change the melody firing rate — the
 			// \note Pfunc still tracks pattern position on ~beatClock so the
@@ -300,6 +308,10 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, ptch=1, start=0, pan=
 		},
 		\piece,   { 
 			Pdef(m.ptn).set(\ptch, 1.0);
+					// note — clock-derived slot → pool offset → MIDI note, then
+					// converted to an offset from baseMidi=60 so ~octave still
+					// transposes via customEvent's `+ 12*~octave`.
+
 		},
 		\curtain, { 
 
@@ -325,9 +337,19 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, ptch=1, start=0, pan=
 ~idleNext = {|d, ctx|
 	var amp = m.rrateMassFiltered.lincurve(0, 1.0, -60, -10, -4);
 	var dur = m.accelMassFiltered.lincurve(0, 4.0, 2.0, 1.0, 7).asInteger;
+	var atk = m.accelMassFiltered.lincurve(0, 2.0, 0.1, 0.03, 2);
+	var rel = m.accelMassFiltered.lincurve(0, 2.0, 0.8, 1.3, 0.5);
+	var notes = [0,4,7,9,11,12,4,17,19,24,17,12,9,5,2];
+	var n = m.gyroYFiltered.lincurve(-1.0,1.0,0,notes.size,-1).asInteger;
+
+	Pdef(m.ptn).set(\attack, atk);
+	Pdef(m.ptn).set(\release, rel);
 	Pdef(m.ptn).set(\amp, amp.dbamp);
+
 	Pdef(m.ptn).set(\octave, [3, 4, 5].choose);
 	Pdef(m.ptn).set(\ptch, [1,1.5].choose);  
+	Pdef(m.ptn).set(\note, notes[n]);
+	
 	Pdef(m.ptn).set(\dur, dur);
 };
 
@@ -347,6 +369,8 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, ptch=1, start=0, pan=
 
 	if (elapsed < tt, {
 		Pdef(m.ptn).set(\ptch, (elapsed / tt).linlin(0, 1, 0.85, 1.0));
+		Pdef(m.ptn).set(\note, 2);
+
 	}, {
 		Pdef(m.ptn).set(\ptch, 1);
 	});
@@ -357,11 +381,17 @@ SynthDef(\stereoSampler, {|bufnum=0, out=0, amp=1, rate=1, ptch=1, start=0, pan=
 // from a preceding \tuning state is cleared. dur = 1 (uniform 16th grid
 // matching the original patternDur design).
 ~pieceNext = {|d, ctx|
-	var amp = m.accelMassFiltered.lincurve(0, 1.4, -60, -9, -1);
-	var oct = (d.sensors.gyroEvent.y / pi.half).lincurve(-1, 1, 3, 6, 1).asInteger;
-	Pdef(m.ptn).set(\amp, amp.dbamp * ctx.loudness.linlin(0, 1, 0.3, 1.4));
+	var amp = m.accelMassFiltered.lincurve(0, 2.2, -80, -9, -1);
+	var oct = (d.sensors.gyroEvent.y / pi.half).lincurve(-1, 1, 3, 7, 1).asInteger;
+	var rel = m.accelMassFiltered.lincurve(0, 2.0, 0.8, 1.3, -1);
+	var atk = m.accelMassFiltered.lincurve(0, 2.0, 0.1, 0.03, 2);
+
+	Pdef(m.ptn).set(\amp, amp.dbamp * ctx.loudness.linlin(0, 1, 0.3, 1.0));
 	Pdef(m.ptn).set(\octave, oct);
+	Pdef(m.ptn).set(\attack, atk);
+	Pdef(m.ptn).set(\release, rel);
 	Pdef(m.ptn).set(\ptch, 1);
+	Pdef(m.ptn).set(\note, 0);
 	Pdef(m.ptn).set(\dur, 1);
 };
 

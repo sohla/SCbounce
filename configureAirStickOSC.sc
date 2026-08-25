@@ -2,18 +2,18 @@
 NetAddr.localAddr
 
 // configure to send
-b = NetAddr.new("192.168.50.105", 8888);
+b = NetAddr.new("192.168.50.78", 8888);
 b = NetAddr.new("10.1.1.3", 8888);
 
 
 // set LED
-b.sendMsg("/Config/SetLED",1,0,1,255);
+b.sendMsg("/Config/SetLED",4,0,2,255);
 
 // set ID / OSC path
-b.sendMsg("/Config/SetID","5");
+b.sendMsg("/Config/SetID","4");
 
 // set diestination IP and Port
-b.sendMsg("/Config/RequestStream",10,1,1,2,57120);
+b.sendMsg("/Config/RequestStream",192,168,50,1,57120);
 
 // check data is coming thru
 OSCFunc.trace(true)

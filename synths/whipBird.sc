@@ -40,7 +40,7 @@ SynthDef(\whipbird, {
         ) +
         Resonz.ar(
             PinkNoise.ar,
-            XLine.kr(9000, 1500, 0.04),
+            XLine.kr(9000, 1500, 0.03),
             0.1,
             0.2
         );
@@ -48,15 +48,15 @@ SynthDef(\whipbird, {
     // Rising whistle with more character
     whistleOsc = SinOsc.ar(
         freq: Env(
-			[2000, 2000, 4000, 3800] * pitchRand,
+			[200, 200, 400, 380] * pitchRand,
             [swoopDelay, 0.15, 0.15],
-            [\step, \sine, -3]
+            [\sine, \sine, -3]
         ).kr
     ) * whistleEnv;
 
     // Combine both sounds
     sig = (whipOsc * whipEnv * 0.2) + (whistleOsc * 0.2);
-	sig = Pan2.ar(sig, pan);
+	sig = Pan2.ar(sig * 0.5, pan);
     // Forest-like reverb using feedback delay network
     sig = FreeVerb2.ar(
 		sig[0], sig[1],
@@ -82,12 +82,12 @@ SynthDef(\whipbird, {
 // Pattern to play the whipbird with forest-like variations
 Pbindef(\whipPattern,
     \instrument, \whipbird,
-    \dur, Pwhite(1.8, 3.8),         // Random timing
+    \dur, 0.4,//Pwhite(1.8, 3.8),         // Random timing
     \pan, Pwhite(-1, 1),        // Spatial distribution
     \amp, Pwhite(0.2, 0.1),         // Dynamic variation
-    \swoopDelay, Pwhite(0.01, 0.03),// Varied swoop timing
-	\gliss, Pwhite(0.07, 0.2),
-	\pitchRand, Pwhite(0.7,0.9),
+    \swoopDelay, 0.01,//Pwhite(0.01, 0.1),// Varied swoop timing
+	\gliss, 0.001,//Pwhite(0.07, 0.1),
+	\pitchRand, Pseq(([0,2,4,5,7,9,11,12] + 12).midiratio, inf),//Pwhite(0.7,0.9),
     \reverbMix, 0.5,                // Consistent reverb level
     \reverbTime, 3.0,               // Forest-like decay
     \reverbSize, 0.7                // Large space simulation

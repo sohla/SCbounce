@@ -72,12 +72,12 @@ Pbindef(\warmPadPattern,
 	\dcy, 0.1,
 	\sus, 0.01,
     \rel, 0.3,
-	\filtMin, 1000,
-	\filtMax, 16300,
-	\filtSpeed, 0,
-    \chorusRate, 0.2,
+	\filtMin, 100,
+	\filtMax, 2000,
+	\filtSpeed, 0.003,
+    \chorusRate, 0.03,
 	\chorusDepth, 0.01,
-	\detuneAmount, Pseg(Pseq([0.0001,0.003], inf), 4, \linear),
+	\detuneAmount, 0.003,//Pseg(Pseq([0.0001,0.003], inf), 4, \linear),
     \amp, 0.7
 ).play(quant:0.1);
 );

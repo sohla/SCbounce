@@ -6,8 +6,8 @@
 		exciter = Impulse.ar(1, SinOsc.ar(phs).range(50,600));
 	    delay = freq.reciprocal;
 	    sig = CombL.ar(exciter, delay, delay, decay);
-	    sig = sig + (SinOsc.ar(freq * 2) * 0.05);
-	    sig = sig + (SinOsc.ar(freq * 3) * 0.03);
+	    sig = sig + (SinOsc.ar(freq * 2) * 0.09);
+	    sig = sig + (SinOsc.ar(freq * 3) * 0.06);
 	    sig = RLPF.ar(sig, filterFreq, filterRes);
 	    env = EnvGen.kr(Env.perc(attack, decay), gate, doneAction: 2);
 		tone = LFTri.ar([freq,freq * 1.007], 0, 1);
@@ -20,7 +20,7 @@
 	SynthDef(\mouseY, { |bus| Out.kr(bus, MouseY.kr(0,1.0))}).add;
 
 )
-
+// use this for a new instrument
 (
 
 	var mx = Bus.control(s,1);
@@ -39,7 +39,7 @@
     \scale, Scale.major,
 	\root, Pseq([0,1,3,-2,1,3,-2,1].stutter(16), inf),
     \octave, Pseq([3, 4], inf),
-	\amp, Pexprand(0.5, 0.7),
+	\amp, Pexprand(0.2, 0.5),
 	\attack, Pseg(Pseq([0.001, 0.1], inf), Pseq([3, 3], inf), \linear, inf),
     \decay, Pfunc{ mx.getSynchronous.linlin(0.0,1.0,1.5,0.2)},
 	\phs, Pseg(Pseq([5, 20], inf), Pseq([10, 10], inf), \sine, inf),

@@ -1,8 +1,8 @@
 (
 {
-	var freq = MouseX.kr(36,58, \exponential, 0.3);
-	var sig = Splay.ar( {Gendy1.ar(1,00, 0.001, 1, freq, freq + (freq * MouseY.kr(0.1,0.14)), 0, 0.0, mul: 0.1)}!20).softclip;
-	sig = GVerb.ar(sig, 1);
+	var freq = MouseX.kr(36,158, \exponential, 0.3);
+	var sig = Splay.ar( {Gendy1.ar(1,00, 0.001, 1, freq, freq + (freq * MouseY.kr(0.1,0.4)), 0, 0.0, mul: 0.1)}!20).softclip;
+	sig = GVerb.ar(sig, 1,0.1);
 	BLowShelf.ar(sig,400, db:-8)
 }.play
 
