@@ -1,7 +1,7 @@
 /*
 gestures:    [beat, shake, tilt, roll]
 description: A harp playing in the rain — notes come faster and thicker the more you play, tilt to move up and down the strings, keep the stick turning to bring the downpour in
-internals:   Two engines. (1) JUPITERSHARP-shaped Pdef firing per-note harp sample synths (\labRainPluck, harp library, odd/even sparse-set resolver) — the pitched content, kept prominent. (2) One long-lived \labRainWeather synth: pink-noise rain bed + Dust-triggered broadband surface patter + four tuned droplet voices (Latch/Select freq, 0.94 -> 1.0 exp chirp per Farnell's bubble model, perc decay) whose f1-f4 follow the harp's idle transposition, ctx.voicePool on each half-bar in piece, and A in tuning. Rain = turning motion (rrate) max accel-above-restFloor, hard zero at rest. Patch self-pads -4 dB (Ciaran 2026-08-25) — propose ~cotfPatchTrims 1.0 at promotion. Core UGens only.
+internals:   Two engines. (1) JUPITERSHARP-shaped Pdef firing per-note harp sample synths (\labRainPluck, harp library, odd/even sparse-set resolver) — the pitched content, kept prominent. (2) One long-lived \labRainWeather synth: pink-noise rain bed + Dust-triggered broadband surface patter + four tuned droplet voices (Latch/Select freq, 0.94 -> 1.0 exp chirp per Farnell's bubble model, perc decay) whose f1-f4 follow the harp's idle transposition, ctx.voicePool on each half-bar in piece, and A in tuning. Rain = turning motion (rrate) max accel-above-restFloor, hard zero at rest. Patch self-pads -7 dB total (Ciaran 2026-08-25 x2) — ~cotfPatchTrims stays 1.0. Core UGens only.
 sound:       harp samples from ~/Music/cotf_samples/harp over a rain field — soft hiss bed, surface patter, and pitched droplets that land in tune with the harp
 pitch:       harp exactly as JUPITERSHARP (\root from voice pool, octave from y tilt 5-7 idle / 5-8 piece, idle \ptch transposition table, tuning ramp 0.7 -> 1.0); droplets latch f1-f4 = idle transposition + [69,74,76,81], top of ctx.voicePool folded to midi 76-93 per half-bar in piece, A (880/1760) in tuning
 rhythm:      harp one note per \dur clock tick, dur 0.5/1/2 by amp tier; rain is stochastic (Dust) — density from turning motion + play energy above rest (hard-silent at rest in idle), drizzle in tuning, thins to lone drips in curtain
@@ -82,7 +82,7 @@ SynthDef(\labRainPluck, {|bufnum=0, out=0, amp=1, rate=1, start=0, pan=0, freq=4
 	var env = EnvGen.kr(Env.adsr(attack, decay, sustain, release), gate, doneAction: 2);
 	var sig = PlayBuf.ar(2, bufnum, rate: [lr, lr * 1.0017], startPos: start * BufFrames.kr(bufnum), loop: 0);
 	var sparkle = FreqShift.ar(sig, freq * 0.51 * ptch, 0, 0.3);
-	Out.ar(out, (sig + sparkle) * amp * env * 0.631);   // -4 dB patch pad (Ciaran 2026-08-25)
+	Out.ar(out, (sig + sparkle) * amp * env * 0.4467);   // -7 dB patch pad (Ciaran 2026-08-25 x2: -4 then -3 more)
 }).add;
 
 // The weather — one long-lived synth, three layers:
@@ -117,7 +117,7 @@ SynthDef(\labRainWeather, {|out=0, amp=0, bed=0, dens=0, f1=880, f2=1174.7, f3=1
 		Pan2.ar(SinOsc.ar(base.lag(0.02) * bend) * aenv, TRand.kr(-0.7, 0.7, trig));
 	});
 	var sig = (drips * 0.4) + (pat * (0.15 + (bedL * 2))) + (bedSig * bedL);
-	Out.ar(out, sig * ampL * env * 0.631);   // -4 dB patch pad (Ciaran 2026-08-25)
+	Out.ar(out, sig * ampL * env * 0.4467);   // -7 dB patch pad (Ciaran 2026-08-25 x2: -4 then -3 more)
 }).add;
 
 //------------------------------------------------------------

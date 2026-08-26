@@ -4,6 +4,30 @@ One entry per push batch from the Concerts of the Future side, newest first: wha
 why, and what (if anything) behaves differently on your machine. The intent is that nothing
 here ever changes how AirKit behaves for you — if it does, that's a bug, tell us.
 
+## 2026-08-25 — trims re-tune + four patches into the live pool + affinity word pass (cotf)
+
+**One behaviour change on your side to know about: `~cotfPatchTrims` in `cotf/main_cotf.scd` is
+re-tuned** (Ciaran, by ear, mid-run): BASSBUZZ +7.5 -> +6.5 dB, JUPITERSHARP +5 -> +8,
+ALTOSYNTH +6 -> +2, and new padded entries for STRINGCHORD (-4), BIRDY (-3), PLUKSYNTH (-3),
+WHIPBIRD (-2). PLUKSYNTH and WHIPBIRD are added to `lists/list_cotf.sc` and, with STRINGCHORD
+and BIRDY, are now in the open super-seats pool on M0. Header comment blocks got an
+affinity-word pass (audience-word matching only — no code): BASSBUZZ/JUPITERSHARP/SOPRANOVOICE
+gained words; PLUKSYNTH dropped harp/harpsichord (owned by JUPITERSHARP/STRINGCHORD) and gained
+chime/bells words; WHIPBIRD's list was re-themed to pipes/pan pipes/flute/gentle and its
+register set to traditional, so BIRDY exclusively catches bird/whistle words. RainKeys and
+WindVoice (still audition-only) now self-pad -7 / -3 dB in-file.
+
+## 2026-08-25 — STRINGCHORD header keys + BIRDY/STRINGCHORD audition-gated on M0 (cotf)
+
+**Nothing changes on your machine.** Added the M0-consumed super-seats header keys
+(`prints/seats/affinity/register/family`) to `personalities/STRINGCHORD.sc` and moved your
+technical description line to `internals:` (kept verbatim) with an audience-legible
+`description:` in its place — header comment block only, zero code touched. On the M0 side,
+BIRDY and STRINGCHORD are admin-disabled for the super-seats auto-pick (same audition gate as
+Birdsong/RainKeys/WindVoice), so they reach real audiences via staff hand-assignment first and
+graduate to the open pool when Ciaran flips them on. PLUKSYNTH and WHIPBIRD are left exactly
+as you pushed them (not in `list_cotf.sc`, so not loadable yet).
+
 ## 2026-08-25 — RainKeys + WindVoice: two more Ciaran audition patches (cotf)
 
 **Nothing changes on your machine.** Two new personalities Ciaran wrote and auditioned in the

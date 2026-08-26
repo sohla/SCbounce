@@ -1,10 +1,16 @@
 /*
 gestures:    [beat, tilt, shake]
-description: Pdef pattern with Pslide melody (harp2 idiom) drawing indices from ~scoreVoicePool; \range (from ~pieceNext's accelMassFiltered mapping) sets how many top-of-pool notes cycle through per group. Idle/tuning/curtain use range=1 (single-note ostinato); piece opens the slide window with motion.
+description: A harpsichord — hold it still and it holds one repeating note; the more you play, the wider its melody sweeps across the keys
+internals:   Pdef pattern with Pslide melody (harp2 idiom) drawing indices from ~scoreVoicePool; \range (from ~pieceNext's accelMassFiltered mapping) sets how many top-of-pool notes cycle through per group. Idle/tuning/curtain use range=1 (single-note ostinato); piece opens the slide window with motion.
 sound:       Italian harpsichord; still device → single held pitch; active motion → expanding melodic sweep across the pool; state-driven amp/octave/dur
 pitch:       ~scoreVoicePool wrapped to pitch class, indexed by Pslide's \slideIdx. Root = 0 (note carries absolute PC). \octave state-driven (idle 4–6, tuning 5, piece 4–6 from tilt, curtain 3–4). \ptch = sample rate multiplier for continuous bend (tuning ramps 0.7 → 1.0 over 15 s). Sparse sample set covered by findClosestSample.
 rhythm:      per-note on ~beatClock; \dur state-driven; \range 1..8 in piece from accelMassFiltered (harp2 pattern)
 instruments: [Clavelium]
+prints:      [thinViolin, compactViolin, whiteWing]
+seats:       [2, 3, 4, 5]
+affinity:    [harpsichord, piano, keyboard, keys, organ, baroque, bach, classical, royal, palace, castle, elegant, music, chords]
+register:    [traditional]
+family:      harpsichord
 */
 
 var m = ~model;

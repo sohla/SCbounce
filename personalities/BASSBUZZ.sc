@@ -8,7 +8,7 @@ rhythm:      none — continuous drone. The idle note only changes when y tilt m
 instruments: [gymBro]
 prints:      [gymBro, oliveBird, blackGlonker, brownBall, greenHolder]
 seats:       [1, 2, 3]
-affinity:    [bass, low, deep, rumble, thunder, whale, heartbeat, cave, ocean, underground, buzz]
+affinity:    [bass, low, deep, rumble, thunder, whale, heartbeat, cave, ocean, underground, buzz, edm, dance, bee, sci-fi, scifi, car, truck]
 register:    [wild]
 family:      drone
 */

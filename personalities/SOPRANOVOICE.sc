@@ -8,7 +8,7 @@ rhythm:      Pad continuous; pattern per-note on ~beatClock with \dur from rrate
 instruments: [brownBall]
 prints:      [brownBall, blackShaker, brownShaker, boneRod, shinyStick]
 seats:       [3, 4, 5]
-affinity:    [voice, singing, choir, song, ghost, angels]
+affinity:    [voice, singing, choir, song, ghost, angels, carnival, carousel, merry go round]
 register:    [traditional]
 family:      voice
 */

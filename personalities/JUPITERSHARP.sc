@@ -8,7 +8,7 @@ rhythm:      one note per \dur ~beatClock tick. Idle and piece pick dur 0.5 / 1.
 instruments: [greenHolder]
 prints:      [thinViolin, compactViolin, greenHolder, whiteWing, brownBall]
 seats:       [2, 3, 4, 5]
-affinity:    [harp, magic, angels, dreams, stars, sparkle, fairy, gentle, calm, sleep, clouds]
+affinity:    [harp, magic, angels, dreams, stars, sparkle, fairy, gentle, calm, sleep, clouds, dulcimer, bell]
 register:    [traditional]
 family:      harp
 */
