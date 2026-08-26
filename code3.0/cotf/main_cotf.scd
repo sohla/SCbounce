@@ -165,7 +165,8 @@ s.waitForBoot({
             \STRINGCHORD -> 0.6310,    // -4 dB
             \BIRDY -> 0.7079,          // -3 dB
             \PLUKSYNTH -> 0.7079,      // -3 dB
-            \WHIPBIRD -> 0.7943       // -2 dB
+            \WHIPBIRD -> 0.7943,      // -2 dB
+            \WINDY -> 0.6310          // -4 dB (entered padded 2026-08-26, untested on real load)
         ]
     }, { IdentityDictionary.new });
     // Current patch-trim factor per seat (1..5), updated on personality load;

@@ -5,6 +5,10 @@ sound:       a wind bed — breeze rising and falling with the stick, dry leaves
 pitch:       \forestBreeze is unpitched. \syntheticLeaf's \freq is the centre frequency of its band-pass — a colour, not a note. Idle: y tilt plays through idleNotes (A pentatonic, A3..E6), throttled to one change per 0.2 s. Tuning: glides from wherever idle left it to 440 Hz over 15 s, then pins A. Piece: retuned each beat to whichever note of ctx.voicePool is closest to the one already sounding, so it voice-leads through the harmony in small steps. Curtain: holds the piece's last pitch
 rhythm:      none — both voices are continuous. The only beat-locked event is the leaf band-pass retune in ~onBeat, which runs in \piece only
 instruments: [Aetherharp]
+seats:       [1, 2, 3, 4, 5]
+affinity:    [wind, windy, breeze, breezy, gust, gale, storm, noise, white noise, static, hiss, air, airy, sky, breath, blowing, rustle, rustling, leaves, trees, whoosh, draft, weather, hurricane, tornado]
+register:    [wild]
+family:      wind
 */
 
 // -------------------------------------------------------------------------
