@@ -123,41 +123,41 @@ SynthDef(\forestBreeze, {
         masterAmp
     );
 }).add;
-
-// Example pattern with subtle movement
-Pbindef(\forestScene,
-    \instrument, \forestBreeze,
-    \dur, 12, // Overlap for continuity
-    \masterAmp, 1.0,
-
-    // Breeze variations
-    \breezeAmp, Pwhite(0.25, 0.35),
-    \breezeCutoff, Pseg(Pseq([300, 600, 300], inf), 30, \sin),
-    \breezeSpeed, Pwhite(0.15, 0.25),
-    \breezePan, Pseg(Pseq([-0.3, 0.3, -0.3], inf), 20, \sin),
-
-    // Leaves variations
-    \leavesAmp, Pwhite(0.15, 0.25),
-    \leavesDensity, Pseg(Pseq([0.8, 1.2, 0.8], inf), 25, \sin),
-    \leavesPan, Pseg(Pseq([0.3, -0.3, 0.3], inf), 15, \sin),
-
-    // Tree variations
-    \treeAmp, Pwhite(0.1, 0.2),
-    \treeSpeed, Pwhite(0.08, 0.12),
-    \treePan, Pseg(Pseq([-0.2, 0.2, -0.2], inf), 30, \sin),
-
-    // Individual reverbs
-    \breezeVerb, 0.3,
-    \leavesVerb, 0.4,
-    \treeVerb, 0.5
-);
-)
-
-// Start the soundscape:
-Pbindef(\forestScene).play;
-
-// Stop:
-Pbindef(\forestScene).stop;
+//
+// // Example pattern with subtle movement
+// Pbindef(\forestScene,
+// 	\instrument, \forestBreeze,
+// 	\dur, 12, // Overlap for continuity
+// 	\masterAmp, 1.0,
+//
+// 	// Breeze variations
+// 	\breezeAmp, Pwhite(0.25, 0.35),
+// 	\breezeCutoff, Pseg(Pseq([300, 600, 300], inf), 30, \sin),
+// 	\breezeSpeed, Pwhite(0.15, 0.25),
+// 	\breezePan, Pseg(Pseq([-0.3, 0.3, -0.3], inf), 20, \sin),
+//
+// 	// Leaves variations
+// 	\leavesAmp, Pwhite(0.15, 0.25),
+// 	\leavesDensity, Pseg(Pseq([0.8, 1.2, 0.8], inf), 25, \sin),
+// 	\leavesPan, Pseg(Pseq([0.3, -0.3, 0.3], inf), 15, \sin),
+//
+// 	// Tree variations
+// 	\treeAmp, Pwhite(0.1, 0.2),
+// 	\treeSpeed, Pwhite(0.08, 0.12),
+// 	\treePan, Pseg(Pseq([-0.2, 0.2, -0.2], inf), 30, \sin),
+//
+// 	// Individual reverbs
+// 	\breezeVerb, 0.3,
+// 	\leavesVerb, 0.4,
+// 	\treeVerb, 0.5
+// );
+// )
+//
+// // Start the soundscape:
+// Pbindef(\forestScene).play;
+//
+// // Stop:
+// Pbindef(\forestScene).stop;
 (
 // Or create a single instance with specific settings:
 ~forest = Synth(\forestBreeze, [

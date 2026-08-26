@@ -126,9 +126,43 @@ var gapLeft = 0;      // rest events remaining before the next phrase may start
 var lastMidi = 95;    // where the previous phrase left off — the next one walks on from here
 
 var midiLo = 86, midiHi = 100;   // fluty register ≈ 1.2–2.6 kHz before tilt shift
+
+// ---- WOBBLE: the FM "trill" on every chirp -------------------------------
+// EDIT THE WOBBLE HERE. Nothing else in this file reads these numbers.
+//
+// \labBirdChirp multiplies the chirp's pitch by
+//
+//     1 + (trill * SinOsc.kr(trate))       <- line ~152, the `f = ...` line
+//
+// so there are TWO independent knobs per note:
+//
+//   trill  DEPTH — how far the pitch swings, as a fraction of the note.
+//                  0.005 = ±0.5 %, about ±9 cents. 0 = dead straight tone.
+//   trate  RATE  — how fast it swings, in Hz. 6 = a slow fluty flutter,
+//                  80 = a fast buzzy twiddle.
+//
+// Each is a LO/HI pair; one value is picked at random per note, so the bird
+// doesn't wobble identically every time. Narrow the pair to make it uniform.
+//
+// To reduce the wobble:
+//   * less warble, same speed  -> lower the *Trill* numbers (depth)
+//   * slower warble, same size -> lower the *Trate* numbers (rate)
+//   * none at all              -> set the *Trill* pair to 0, 0
+//
+// Ordinary fluty motif notes (buildPhrase):
+var motifTrillLo     = 0.003, motifTrillHi     = 0.007;  // depth, short notes
+var motifTrillLongLo = 0.008, motifTrillLongHi = 0.014;  // depth, the held last note
+var motifTrateLo     = 2.75,  motifTrateHi     = 4.5;    // rate Hz, all motif notes
+                                                         //   (2026-08-26: halved from 5.5/9)
+
+// The shrill twiddle run (shrillRun) — deliberately much deeper and faster:
+var shrillTrillLo    = 0.035, shrillTrillHi    = 0.07;   // depth
+var shrillTrateLo    = 7.5,  shrillTrateHi    = 15;     // rate Hz
+                                                         
+
 // Forward declarations — SC requires every `var` before the first statement; the
 // helper functions below are assigned later.
-var freqComp, scaleNotes, unitBeats, mkNote, shrillRun, buildPhrase, gapFor, step, sense;
+var freqComp, scaleNotes, unitBeats, shrillRun, buildPhrase, gapFor, step, sense;
 
 // Smoothing knobs — Birdsong's, see note 2 in the header block.
 m.accelMassFilteredAttack = 0.95;
@@ -145,11 +179,11 @@ m.gyroFilteredDecay  = 0.7;
 // off), light FM "trill" (slow/shallow for fluty notes, fast/deep for the
 // shrill twiddle), per-note small-room reverb, self-freeing.
 SynthDef(\labBirdChirp, { |out=0, freq=2000, g0=0.9, g1=1.0, secs=0.15, amp=0.1, pan=0,
-	trill=0.005, trate=7, bright=0.15, air=0.04, verb=0.22|
+	trill=0.005, trate=1, bright=0.15, air=0.04, verb=0.22|
 	var life  = secs + 0.6;   // amp env + reverb tail, then free
 	var fenv  = EnvGen.kr(Env([g0, 1, 1, g1], [0.22, 0.38, 0.4] * secs, \exp));
 	var aenv  = EnvGen.kr(Env([0, 1, 0.85, 0], [0.12, 0.55, 0.33] * secs, [-2, 0, -3]));
-	var f     = freq * fenv * (1 + (trill * SinOsc.kr(trate, Rand(0, 2pi))));
+	var f     = freq * fenv * (1 + (trill * SinOsc.kr(trate, Rand(0, 2pi)))) * 0.5;
 	var tone  = SinOsc.ar(f) + (SinOsc.ar(f * 2) * bright * 0.6) + (SinOsc.ar(f * 3) * bright * 0.2);
 	var breath = BPF.ar(WhiteNoise.ar, f, 0.08) * air * 4;
 	var sig   = (tone + breath) * aenv * amp;
@@ -171,20 +205,14 @@ SynthDef(\whipbird, {
     var numAllpass = 4;
     var room = reverbSize.clip(0.1, 0.9);
 
-    // Main envelope for the whole sound
     mainEnv = EnvGen.kr(
         Env.asr(0.02, 1, 0.8),
         gate
-		// doneAction:2
     );
-
-    // Whip crack envelope
     whipEnv = EnvGen.ar(
         Env.perc(0.001, 0.03, curve: -8),
         gate
     );
-
-    // Rising whistle envelope with adjustable delay
     whistleEnv = EnvGen.ar(
         Env(
             [0, 0, 1, 0],
@@ -193,8 +221,6 @@ SynthDef(\whipbird, {
         ),
         gate
     );
-
-    // Whip crack sound - enhanced with slight resonance
     whipOsc = WhiteNoise.ar *
         BPF.ar(
             PinkNoise.ar,
@@ -208,7 +234,6 @@ SynthDef(\whipbird, {
             0.2
         );
 
-    // Rising whistle with more character
     whistleOsc = SinOsc.ar(
         freq: Env(
 			[freq, freq * 2, freq * 1.9],
@@ -217,18 +242,14 @@ SynthDef(\whipbird, {
         ).kr
     ) * whistleEnv;
 
-    // Combine both sounds
     sig = (whipOsc * whipEnv * 0.2) + (whistleOsc * 0.2);
 	sig = Pan2.ar(sig * 0.5, pan);
-    // Forest-like reverb using feedback delay network
     sig = FreeVerb2.ar(
 		sig[0], sig[1],
         mix: reverbMix,
         room: room,
         damp: 0.3
     );
-
-    // Additional early reflections for forest feel
     sig = sig + DelayN.ar(
 		sig,
         0.1,
@@ -236,7 +257,6 @@ SynthDef(\whipbird, {
             sig * LFNoise2.kr(0.1).range(0.01, 0.02) * DelayC.ar(sig, 0.1, t)
         }).sum
     );
-
 	DetectSilence.ar(sig, time:0.3, doneAction:2);
     Out.ar(out, sig * amp * mainEnv);
 }).add;
@@ -266,25 +286,45 @@ unitBeats = {
 	((0.12 * tempo) / 0.25).round.max(1) * 0.25
 };
 
-mkNote = { |midi, beats, g0, g1, trill, trate, bright, air, ampScale, pan|
-	(note: midi, beats: beats, g0: g0, g1: g1, trill: trill, trate: trate,
-		bright: bright, air: air, ampScale: ampScale, pan: pan)
-};
+// THE QUEUED NOTE. Both builders below just write one of these Events per
+// note straight into `queue`; step() pulls them off and the event handler
+// hands each field to \labBirdChirp as the arg of the same name. So editing
+// a sound here is editing the number next to its own key — no indirection.
+//
+//   note      pitch, MIDI note number  -> \freq  (handler does .midicps)
+//   beats     length in clock beats    -> \secs  (handler divides by tempo)
+//   g0        pitch at the START of the glide, as a multiple of freq
+//             (< 1 scoops UP into the note, > 1 falls into it)
+//   g1        pitch at the END of the glide, same units (the tail-off)
+//   trill     wobble DEPTH, fraction of the pitch   } see the WOBBLE block
+//   trate     wobble RATE, Hz                       } near the top of the file
+//   bright    level of the 2nd/3rd harmonics
+//   air       level of the band-passed noise "breath"
+//   ampScale  per-note level trim (twiddles sit under motif notes) — NOT the
+//             master gain, which arrives from Pdef(m.ptn).set(\amp, ...)
+//   pan       -1 .. 1
 
 // The shrill run: 4–8 very fast alternating up/down sweeps, +12..+19 above
 // the motif, quieter, with fast FM — the "twiddle" that ends a blackbird phrase.
 shrillRun = { |fromMidi, k|
 	var u = unitBeats.();
-	var sb = (u * 0.5).max(0.25);
+	var sb = (u * 0.5).max(0.25) * rrand(0.5, 1.5);
 	var base = (fromMidi + 12 + 5.rand).clip(100, 112);
 	k.collect { |i|
 		var up = i.even;
 		var midi = (base + (if (up) { rrand(1, 4) } { rrand(-4, -1) })).clip(98, 114);
-		mkNote.(midi, sb,
-			if (up) { rrand(0.72, 0.85) } { rrand(1.18, 1.35) },
-			if (up) { rrand(1.04, 1.15) } { rrand(0.86, 0.95) },
-			rrand(0.035, 0.07), rrand(55, 110), 0.35, 0.12,
-			0.45 * (1 - (i * 0.04)), rrand(-0.5, 0.5))
+		(
+			note:     midi,
+			beats:    sb,
+			g0:       if (up) { rrand(0.72, 0.85) } { rrand(1.18, 1.35) },  // scoop up / fall in
+			g1:       if (up) { rrand(1.04, 1.15) } { rrand(0.86, 0.95) },  // tail up / down
+			trill:    rrand(shrillTrillLo, shrillTrillHi),   // WOBBLE depth
+			trate:    rrand(shrillTrateLo, shrillTrateHi),   // WOBBLE rate, Hz
+			bright:   0.25,
+			air:      0.32,
+			ampScale: 0.45 * (1 - (i * 0.04)),               // quieter, fading over the run
+			pan:      rrand(-0.5, 0.5)
+		)
 	}
 };
 
@@ -305,12 +345,19 @@ buildPhrase = { |pcsIn, maxN, shrillOK|
 		idx = if (notes.size > 1) { (idx + step).fold(0, notes.size - 1) } { 0 };
 		long = (i == (n - 1)) and: { 0.45.coin };
 		beats = if (long) { u * [2, 3].choose } { u * [1, 1, 1, 1.5, 2].choose };
-		out = out.add(mkNote.(notes[idx], beats,
-			[0.82, 0.88, 0.94, 1.0, 1.0, 1.08].choose,
-			[1.0, 1.0, 1.0, 0.96, 1.04].choose,
-			if (long) { rrand(0.008, 0.014) } { rrand(0.003, 0.007) },
-			rrand(5.5, 9), rrand(0.1, 0.2), rrand(0.03, 0.06),
-			1.0, rrand(-0.3, 0.3)));
+		out = out.add((
+			note:     notes[idx],
+			beats:    beats,
+			g0:       [0.82, 0.88, 0.94, 1.0, 1.0, 1.08].choose,   // mostly scoops in
+			g1:       [1.0, 1.0, 1.0, 0.96, 1.04].choose,          // mostly straight out
+			trill:    if (long) { rrand(motifTrillLongLo, motifTrillLongHi) }
+			                    { rrand(motifTrillLo,     motifTrillHi)     },  // WOBBLE depth
+			trate:    rrand(motifTrateLo, motifTrateHi),           // WOBBLE rate, Hz
+			bright:   rrand(0.1, 0.2),
+			air:      rrand(0.03, 0.06),
+			ampScale: 1.0,                                         // motif notes at full level
+			pan:      rrand(-0.3, 0.3)
+		));
 		lastMidi = notes[idx];
 	};
 	if (shrillOK and: { (twist > 0.35) or: { 0.3.coin } }) {
@@ -534,21 +581,21 @@ sense = { |d|
 	// call peaks ~7 dB below a \labBirdChirp at the same nominal amp, so this
 	// range lands the two voices at comparable peaks; trimming it "to sit
 	// under the blackbird" buries the whip instead of balancing it.
-	var wAmp = m.accelMassFiltered.lincurve(0, 0.5, -90, -5, -1);
+	var wAmp = m.accelMassFiltered.lincurve(0, 0.5, -90, 5, -1);
 	var wN   = m.gyroYFiltered.lincurve(-1.0, 1.0, 0, whipIdleNotes.size, -1)
 		.asInteger.clip(0, whipIdleNotes.size - 1);
 
 	// Blackbird: gesture drives the level, as everywhere else. The floor is
 	// -90 dB (below ampFloor) so a still stick is genuinely silent — the old
 	// -32 dB floor is why it sang continuously no matter what you did.
-	var bAmp = m.accelMassFiltered.lincurve(0, 0.5, -90, -12, -1);
+	var bAmp = m.accelMassFiltered.lincurve(0, 0.5, -90, -20, -1);
 
 	sense.(d);
 	stateName = \idle;
 
 	Pdef(m.ptn).set(\amp, bAmp.dbamp);
 	Pdef(m.ptn).set(\pcs, idlePcs);
-	Pdef(m.ptn).set(\notes, 8, \gapMin, 2, \gapMax, 16, \shrill, 1);
+	Pdef(m.ptn).set(\notes, 8, \gapMin, 2, \gapMax, 16, \shrill, 0.2);
 
 	whipGap = 8;
 	Pdef(whipPtn).set(\amp, wAmp.dbamp);
@@ -566,9 +613,9 @@ sense = { |d|
 	var bend    = if (elapsed < whipTuneRamp) {
 		(elapsed / whipTuneRamp).linlin(0, 1, 0.85, 1.0)   // flat → true
 	} { 1.0 };
-	var wAmp    = m.accelMassFiltered.lincurve(0, 1.0, -80, -30, -4);
+	var wAmp    = m.accelMassFiltered.lincurve(0, 1.0, -80, -5, -4);
 
-	var bAmp    = m.accelMassFiltered.lincurve(0, 1.0, -90, -18, -4);
+	var bAmp    = m.accelMassFiltered.lincurve(0, 1.0, -90, -20, -4);
 
 	sense.(d);
 	stateName = \tuning;
@@ -593,7 +640,7 @@ sense = { |d|
 ~pieceNext = { |d, ctx|
 	var pool = (ctx !? { ctx.voicePool }) ? [69];
 	var loud = (ctx !? { ctx.loudness }) ? 1.0;
-	var wAmp = m.accelMassFiltered.lincurve(0, 1.5, -80, 8, -2);   // WHIPBIRD's range, see ~idleNext
+	var wAmp = m.accelMassFiltered.lincurve(0, 1.5, -80, 10, -2);   // WHIPBIRD's range, see ~idleNext
 	var wOct = if ((d.sensors.gyroEvent.y / pi.half) > 0.3, { 12 }, { 0 });
 	var wPc;
 
@@ -601,7 +648,7 @@ sense = { |d|
 	// those set the dB RANGE the engine then re-mapped energy into, so accel
 	// was fighting itself. Now it is one plain gesture -> level curve, the
 	// same shape every other p-file uses.
-	var bAmp = m.accelMassFiltered.lincurve(0, 2.5, -80, -18, -2);
+	var bAmp = m.accelMassFiltered.lincurve(0, 2.5, -80, -20, -2);
 
 	sense.(d);
 	stateName = \piece;
@@ -617,7 +664,7 @@ sense = { |d|
 
 	whipGap = energy.clip(restFloor, 1.3).linlin(restFloor, 1.3, 10, 4).round.max(2);
 	Pdef(whipPtn).set(\amp, wAmp.dbamp * loud.linlin(0, 1, 0.0, 1.0));
-	Pdef(whipPtn).set(\freq, (whipBase + wPc + wOct).midicps);
+	Pdef(whipPtn).set(\freq, (whipBase + wPc + wOct - 12).midicps);
 	Pdef(whipPtn).set(\swoopDelay, rrand(0.01, 0.1));
 	Pdef(whipPtn).set(\gliss, rrand(0.01, 0.08));
 };
