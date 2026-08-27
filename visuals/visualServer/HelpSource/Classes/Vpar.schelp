@@ -1,0 +1,26 @@
+class:: Vpar
+summary:: Ppar of visual patterns (play several at once)
+categories:: Libraries>VisualServer
+related:: Classes/Ppar, Classes/Vbind, Classes/Vseq, Guides/VisualServer
+
+description::
+
+Thin wrapper returning code::Ppar(list, repeats):: so several visual patterns play in parallel.
+
+CLASSMETHODS::
+
+method:: new
+argument:: list
+An link::Classes/Array:: of patterns (e.g. link::Classes/Vbind::s).
+argument:: repeats
+Default 1.
+returns:: a link::Classes/Ppar::.
+
+EXAMPLES::
+
+code::
+Vpar([
+    Vbind(\instrument, \circle, \x, Pwhite(-0.8,0.8), \dur, 0.3, \view, \demo),
+    Vbind(\instrument, \square, \y, Pwhite(-0.8,0.8), \dur, 0.5, \view, \demo)
+]).vplay;
+::

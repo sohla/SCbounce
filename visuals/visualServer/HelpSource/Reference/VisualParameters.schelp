@@ -1,0 +1,119 @@
+title:: Visual Parameters
+summary:: Every key a visual pattern/event accepts, with defaults
+categories:: Reference>VisualServer
+related:: Classes/Vbind, Classes/AVbind, Classes/VisualSynthDef, Classes/VisualServer, Guides/VisualServer
+
+The complete, authoritative set of keys forwarded from a visual pattern/event to a node. The whitelist is code::VisualServer.visualArgsFrom:: (plus code::\instrument:: and code::\view::, handled by the event types, and code::\timeDelay::, consumed at scheduling). Coordinates are normalised code::-1.0 .. 1.0:: about the view centre. Any value may be a link::Classes/Function:: (evaluated live every frame) except envelope-timing keys, which must be plain numbers.
+
+section:: Naming: plain vs v-prefixed
+
+The keys are used by their strong::plain:: name in the visual-only patterns (link::Classes/Vbind::, link::Classes/Vpulse::, link::Classes/Vline::, link::Classes/Vlive::). In link::Classes/AVbind:: (audio + visual in one event) strong::every visual key is code::v::-prefixed:: so it never collides with the audio note's plain keys (including the note's own code::\legato::/code::\sustain::/code::\dur::). There are no other differences — same defaults, same meaning.
+
+table::
+## strong::group:: || strong::plain (Vbind/Vpulse/Vline/Vlive):: || strong::v-prefixed (AVbind)::
+## routing      || code::\instrument \view:: || code::\vinstrument \vview::
+## position     || code::\x \y:: || code::\vx \vy::
+## line ends    || code::\x1 \y1 \x2 \y2:: || code::\vx1 \vy1 \vx2 \vy2::
+## appearance   || code::\size \color \fill \width:: || code::\vsize \vcolor \vfill \vwidth::
+## rotation     || code::\rotation:: || code::\vrotation::
+## pulse sweep  || code::\startSize \endSize \curve:: || code::\vstartSize \vendSize \vcurve::
+## timing       || code::\dur \sustain \legato \stretch \attack \release:: || code::\vdur \vsustain \vlegato \vstretch \vattack \vrelease::
+## scheduling   || code::\timeDelay:: || code::\vtimeDelay::
+::
+
+section:: Routing keys
+
+table::
+## strong::key:: || strong::default:: || strong::meaning::
+## code::\instrument:: || code::\circle:: (Vbind); each Vxxx pattern forces its own def || which link::Classes/VisualSynthDef:: to use.
+## code::\view:: || code::\default:: || target window symbol (auto-created).
+::
+
+section:: Geometry & appearance
+
+table::
+## strong::key:: || strong::default:: || strong::used by:: || strong::meaning::
+## code::\x:: code::\y:: || 0, 0 || circle, square, pulse, live || centre position (normalised).
+## code::\size:: || 50 || circle, square, live || diameter / side (px), scaled by the envelope.
+## code::\color:: || code::Color.white:: || all || fill/stroke colour; alpha is multiplied by the envelope.
+## code::\fill:: || code::true:: || circle, square, live || code::true:: = filled, code::false:: = stroked.
+## code::\rotation:: || 0 || all || rotation in strong::radians:: about the shape centre (line: midpoint). Pass a link::Classes/Function:: for animated spin, e.g. code::\rotation, { thisThread.seconds * 2pi }::.
+## code::\startSize:: code::\endSize:: || 10, 100 || pulse || size swept start->end over the node life.
+## code::\x1 \y1 \x2 \y2:: || -0.5, 0, 0.5, 0 || line || line endpoints (normalised).
+## code::\width:: || 1 (line) || line || stroke width (px), scaled by envelope.
+## code::\curve:: || code::\exp:: (pulse), else code::\sin:: || pulse + envelope (all) || easing: code::\linear \sin \cos \exp \log::. For the envelope, code::\exp::/code::\log:: are mapped to numeric curves (link::Classes/Env:: exp segments cannot touch level 0).
+::
+
+section:: Timing & envelope
+
+code::\dur:: is the pattern delta (spawn spacing) AND the default base lifetime. The node's life and its alpha/size envelope are computed by code::VisualSynthDef.envState:::
+
+code::
+life = (sustain ? dur) * legato * stretch
+envelope = Env([0,1,1,0], [attack, hold, release], curve)   // over `life`
+::
+
+table::
+## strong::key:: || strong::default:: || strong::meaning::
+## code::\dur:: || 1 (circle/square/line/pulse), code::inf:: (live) || event spacing; base lifetime if no code::\sustain::.
+## code::\sustain:: || code::nil:: -> code::\dur:: || explicit base lifetime in seconds (before legato/stretch).
+## code::\legato:: || 1 || time-scale on the total life only (NOT spacing, NOT attack/release). code::>1:: => nodes outlive the gap and overlap.
+## code::\stretch:: || 1 || additional global time-scale on the total life (also scales Pbind delta).
+## code::\attack:: || 0 || fade/scale-in time in strong::absolute seconds:: (NOT scaled by legato/stretch), clamped into life.
+## code::\release:: || code::nil:: -> whole life || fade/scale-out tail in strong::absolute seconds:: (NOT scaled), clamped to code::life - attack::. code::nil:: => the entire life is the release ramp (original single-fade). The remainder code::life - attack - release:: is the hold.
+## code::\timeDelay:: (Vbind) / code::\vtimeDelay:: (AVbind) || code::0:: (Vbind) / audio code::s.latency:: (AVbind) || seconds to defer the visual before it appears (scheduled on AppClock). Not a node param - consumed at scheduling. AVbind default makes the visual coincide with the heard audio (which is sent at code::+s.latency::); raise it to also compensate projector/display lag.
+::
+
+note::
+code::life == inf:: (e.g. code::\live:: with code::dur: inf::, or code::sustain: inf::) => the node is strong::persistent::: never auto-freed, code::alpha = 1::, code::scale = 1::. Free it with code::VisualServer.default.vfree(id):: or code::freeAll::.
+::
+
+Defaults (code::legato 1, stretch 1, attack 0, release nil, sustain nil::) reproduce the original behaviour: fade code::1 -> 0:: over code::\dur:: and free at code::\dur:: — no overlap. Set code::\legato:: or code::\sustain:: to make animations overlap. See link::Guides/VisualServer:: §Envelope.
+
+section:: Per-def key matrix
+
+Which keys each built-in link::Classes/VisualSynthDef:: actually reads. Timing/envelope keys (code::\dur \sustain \legato \stretch \attack \release::), code::\color::, and code::\rotation:: apply to strong::all:: defs and are omitted from the matrix. Keys not used by a def are silently ignored.
+
+table::
+## strong::def:: || strong::geometry keys it reads:: || strong::pattern:: || strong::notes::
+## code::\circle::  || code::\x \y \size \fill:: || link::Classes/Vbind:: || filled/stroked oval.
+## code::\square::  || code::\x \y \size \fill:: || link::Classes/Vbind:: || filled/stroked rect.
+## code::\line::    || code::\x1 \y1 \x2 \y2 \width:: || link::Classes/Vline:: || code::\width:: scaled by envelope; code::\rotation:: pivots around the midpoint.
+## code::\pulse::   || code::\x \y \startSize \endSize \curve:: || link::Classes/Vpulse:: || size swept over life; envelope drives alpha only.
+## code::\live::    || code::\x \y \size \fill:: || link::Classes/Vlive:: || persistent (code::dur: inf::); params usually link::Classes/Function::s.
+::
+
+section:: Recipes
+
+strong::Spinning line:: (replaces the old code::\spinner:: def):
+
+code::
+Vbind(\instrument, \line,
+    \x1, -0.1, \y1, 0, \x2, 0.1, \y2, 0,
+    \width, 3, \color, Color.white,
+    \rotation, { thisThread.seconds * 2pi * 2 },   // 2 rev / sec
+    \dur, inf, \view, \demo
+).vplay;
+::
+
+strong::Tilted squares:: (per-event random angle):
+
+code::
+Vbind(\instrument, \square, \size, 80,
+    \rotation, Pwhite(0, 2pi),
+    \dur, 0.3, \legato, 4, \view, \demo
+).vplay;
+::
+
+strong::Audio-driven spin:: (frequency -> spin rate):
+
+code::
+AVbind(
+    \instrument, \default, \freq, Pseq([220, 330, 440, 550], inf),
+    \amp, 0.2, \dur, 0.4,
+    \vinstrument, \line,
+    \vwidth, 4,
+    \vrotation, { thisThread.seconds * 2pi * 3 },
+    \vdur, inf, \vview, \demo
+).play;
+::

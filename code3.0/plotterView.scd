@@ -22,22 +22,26 @@ var plotterView = {|data, parentView|
 
 	Routine{
 		loop {
-			{
-			// pd = pd.addFirst([sin(Clock.beats),cos(Clock.beats),tan(Clock.beats).wrap2(1.0)]);
-			pd = pd.addFirst(plotData.());
+			if(data.enabled.not, {
+				{ plotter.value = [0]!50 }.defer;
+			},{
+				{
+				// pd = pd.addFirst([sin(Clock.beats),cos(Clock.beats),tan(Clock.beats).wrap2(1.0)]);
+				pd = pd.addFirst(plotData.());
 
-			if(pd.size > 50, {pd.pop()});
-			plotter.superpose = true;
-			plotter.setValue(pd, false, true, false);
-			plotter.value = plotter.value.keep(50).flop;
+				if(pd.size > 50, {pd.pop()});
+				plotter.superpose = true;
+				plotter.setValue(pd, false, true, false);
+				plotter.value = plotter.value.keep(50).flop;
 
-			plotter.minval_(pmin);
-			plotter.maxval_(pmax);
-			// plotter.setProperties(\plotColor, col).refresh;
+				plotter.minval_(pmin);
+				plotter.maxval_(pmax);
+				// plotter.setProperties(\plotColor, col).refresh;
 
-			}.defer;
+				}.defer;
+			});
 			0.03.yield; //this has a big impact on CPU use
-		}
+		};
 	}.play;
 
 	plotter.interactionView.mouseDownAction_({false});
@@ -45,6 +49,5 @@ var plotterView = {|data, parentView|
 
 	plotter.interactionView
 };
-
 
 plotterView

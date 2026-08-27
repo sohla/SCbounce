@@ -81,7 +81,7 @@ SynthDef(\drumkit2, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 			\endWidth, 1,
 			// \widthEnv: ~sizeEnv ? defaultEnv,
 
-			\startSize, 100,
+			\startSize, 300,
 			\endSize, 60,
 			// \sizeEnv: ~sizeEnv ? defaultEnv,
 
@@ -135,7 +135,7 @@ SynthDef(\drumkit2, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 			\endWidth, 10,
 			// \widthEnv: ~sizeEnv ? defaultEnv,
 
-			\startSize, Pfunc{|e| 100 - ((e.octave + 1) * 30)},
+			\startSize, Pfunc{|e| 300 - ((e.octave + 1) * 30)},
 			\endSize, 10,
 			// \sizeEnv: ~sizeEnv ? defaultEnv,
 

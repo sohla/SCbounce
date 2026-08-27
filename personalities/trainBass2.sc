@@ -1,0 +1,229 @@
+var m = ~model;
+var note = 60;
+var dur = 0.22;
+var subdiv = 1;
+
+
+// SHARED ACROSS THE QUARTET. All four voices read m.com.root, so a
+// harmony change turns every hue together — this file is the one that
+// WRITES it (see ~onEvent), the other three follow. Each voice keeps its
+// own base hue; the root only nudges it, so the ensemble shifts as one
+// without losing channel identity.
+var rootHue = { (m.com.root ? 0).linlin(-2, 3, -0.06, 0.06) };
+
+// Nothing rotates here any more, so there is no turn counter. Angle is
+// read straight off the note instead — see the ~vdef comment in ~init.
+
+//------------------------------------------------------------
+m.accelMassFilteredAttack = 0.99;
+m.accelMassFilteredDecay = 0.49;
+m.rrateMassFilteredAttack = 0.7;
+m.rrateMassFilteredDecay = 0.3;
+m.gyroFilteredAttack = 0.7;
+m.gyroFilteredDecay = 0.7;
+
+//------------------------------------------------------------
+SynthDef(\versatilePerc, {
+    |out=0, freq=50, tension=0.1, decay=0.5, clickLevel=0.5, amp=0.5, dist = 5, filtFreq = 20, filtRes = 0.8,pan =0|
+    var pitch_contour, drum_osc, click_osc, drum_env, click_env, sig, pch;
+
+	var sub = SinOsc.ar(freq * 0.5, pi, 1) * 1;
+    // Pitch envelope
+    pitch_contour = Line.kr(1, 0, 0.02);
+
+    // Drum oscillator
+
+	pch = freq * (1 + (pitch_contour * tension));
+	drum_osc = SinOsc.ar([pch,pch*1.007], LFNoise2.ar([4,5],10,-10),0.8);
+
+    // Click oscillator
+    click_osc = LPF.ar(WhiteNoise.ar(1), 1500);
+
+    // Drum envelope
+    drum_env = EnvGen.ar(
+        Env.perc(attackTime: 0.005, releaseTime: decay, curve: -4),
+        doneAction: 2
+    );
+
+    // Click envelope
+    click_env = EnvGen.ar(
+        Env.perc(attackTime: 0.001, releaseTime: 0.01),
+        levelScale: clickLevel
+    );
+	sig = (drum_osc * drum_env) + (click_osc * click_env);
+	sig = (sig * dist).tanh.distort;
+	sig = HPF.ar(sig, filtFreq)+ (sub * drum_env);
+    // Mix and output
+    Out.ar(out, Balance2.ar(sig[0], sig[1],pan,amp))
+}).add;
+
+//------------------------------------------------------------
+~init = ~init <> {
+
+	// visual : the lamps of the tunnel, coming at us.
+	//
+	// All four voices share one vanishing point at the canvas centre.
+	// Nothing here is placed — every mark is BORN at the vanishing point,
+	// tiny and almost dark, and travels outward until it leaves the frame.
+	// The travel is the \startSize -> \endSize sweep read through a curve
+	// of +3, which is what makes it read as depth rather than as a zoom:
+	// a lamp far down the tunnel barely moves, then blows past in the last
+	// fifth of its life. Linear would look like an expanding circle;
+	// curved looks like approach.
+	//
+	// Nothing rotates. The angle is not a counter creeping round, it is
+	// read straight off the note: pitch class maps to the full circle, so
+	// a given note ALWAYS fires down the same bearing. Repeats of a note
+	// stack on the same line and the riff becomes a fixed set of bearings
+	// rather than a sweep — a constellation you learn, not a clock.
+	//
+	// The pair is the point. \note is .stutter(2) and \octave is
+	// Pseq([3,4]), so every note is played twice, once in each octave.
+	// The upper octave adds pi, which puts it diametrically opposite its
+	// own lower octave. So each note arrives as two lines firing out from
+	// the centre on exactly opposite bearings — the octave swap read as
+	// symmetry across the tunnel instead of as a change of size. Both
+	// halves travel the same distance, so the pair stays balanced.
+	//
+	// trail is 1.0, so the line is anchored at the middle and grows
+	// outward rather than detaching as a comet. It is a ray leaving the
+	// vanishing point, with the head riding its tip.
+	//
+	// The Rest in the dur cycle falls on every third event, so now and
+	// then only one half of a pair is drawn — the symmetry breaks for a
+	// beat. That is the rest made visible, and it stops the figure
+	// becoming a static cross.
+	//
+	// Lineage: cyclic/radial notation, atlas grammar G8 — but with the
+	// traversal removed, which the atlas allows: when no cursor moves,
+	// meaning comes from the field reconfiguring itself (§0.2). Palette
+	// from §0.5, saturated primaries on black.
+	//
+	//   note        -> bearing round the tunnel, by pitch class
+	//   octave      -> which side of the circle, 3 vs 4 is opposite
+	//   distance    -> \startSize -> \endSize through a +3 curve
+	//   amp         -> ray weight as it nears     (\widthEnv)
+	//   m.com.root  -> hue, shared with all four voices
+	//   Rest        -> nothing drawn, so a pair goes half-lit
+	~vdef.(\driveSpoke, { |ev, c|
+		var mod   = ev[\modulation] ? ();
+		var hub   = c[\pos];
+		var rim   = hub + (c[\size] @ 0);
+		var head  = c[\size] * (mod[\headRatio] ? 0.07);
+		var trail = mod[\trail] ? 0.34;
+		var tail  = hub.blend(rim, 1 - trail);
+		if((mod[\rest] ? false).not, {
+			c[\render].(Array.fill(12, { |j| tail.blend(rim, j / 11) }), 0.6, 0.55, false);
+			c[\draw].(\circle, (pos: rim, size: head), 1, 1);
+		});
+		nil
+	});
+
+	Pdef(m.ptn,
+		Pbind(
+			\instrument, \versatilePerc,
+			\note, Pseq([0,10,5,4,7,7,2,5,4,4,-2,2,0,0,0,0].stutter(2) + 4, inf),
+    		\dur, Pseq([0.22,0.22,Rest(0.22),0.22,0.22,0.22] * subdiv, inf),
+			\octave,Pseq([3,4].stutter(1),inf),
+			\root, Pseq([0,0,-2,0,3].stutter(32), inf),
+			\decay,Pkey(\octave).squared * 0.05,
+   			\pan, Pxrand([-0.5,0.5], inf),
+   			\filtRes, 1.0,//Pwhite(0.4,0.7),
+
+			\type, \customVisualEvent,
+			\shape, \driveSpoke,
+			\rotation,
+			// Pfunc({ |e|
+			// 	(((e[\note] ? 4) % 12) / 12 * pi.half) - 0.525
+			// 		+ if((e[\octave] ? 3) > 3.5, { pi }, { 0 })
+			// }),
+
+			Pfunc({ |e|
+				var midi = (e[\note] ? 6) + (e[\root] ? 0) + (12 * (e[\octave] ? 5));
+				var a = midi.linlin(36, 96, 0, 2pi);
+
+				if((e[\octave] ? 3) > 3.5, { 
+					a + 0.95// (((e[\note] ? 4) % 12) / 12 * pi.half) - 0.525
+				}, { 
+					a.neg + 0.95// (((e[\note] ? 4) % 12) / 12 * pi.half) - 0.525
+				})
+
+			}),
+
+			\startSize, Pfunc({ |e| 
+				var a = e[\amp];
+				if(a<0.03,{a=0});(a ? 0.3).linlin(0, 1, 0, 400) 
+				}),
+			\endSize, Pkey(\startSize) * 2,
+			\sizeEnv, Pfunc({ Env([0, 1], [1], 3) }),
+			\startWidth, 1,
+			\endWidth, Pfunc({ |e| (e[\amp] ? 0.3).linlin(0, 1, 3, 11) }),
+			\widthEnv, Pfunc({ Env([0, 1], [1], 3) }),
+			\startColor, Pfunc({ |e| Color.hsv((0.03 + rootHue.()).wrap(0, 1), 1.0, 0.8, 0.95) }),
+			\endColor, Pfunc({ |e| Color.hsv((0.03 + rootHue.()).wrap(0, 1), 0.70, 1.0, 0.05) }),
+			\colorEnv, Pfunc({ Env([0, 1], [1], 3) }),
+			\duration, 1.7,
+			\modulation, Pfunc({ |e|
+				(rest: e.isRest, amp: 0, headRatio: 0.07, trail: 1.0)
+			}),
+
+			\func, Pfunc({|e| ~onEvent.(e)}),
+			\args, #[],
+		)
+	);
+
+	Pdef(m.ptn).play(quant:dur);
+};
+
+//------------------------------------------------------------
+~deinit = ~deinit <> {
+	Pdef(m.ptn).remove;
+};
+
+//------------------------------------------------------------
+~onEvent = {|e|
+
+	m.com.root = e.root;
+	m.com.dur = e.dur;
+
+};
+
+//------------------------------------------------------------
+~next = {|d|
+
+	var a = m.accelMass.lincurve(0,2.5,0,1,-1);
+	var filtSpeed = m.accelMassFiltered.lincurve(0,2.5,0.1,20,3);
+	var ff = ((d.sensors.gyroEvent.x / pi).fold(-0.5,0.5) * 2).linexp(-1.0,1.0,7000,800.2);
+	var dist = m.accelMassFiltered.lincurve(0,2.5,0,4,1);
+	var tension = ((d.sensors.gyroEvent.x / pi).fold(-0.5,0.5) * 2).lincurve(-1.0,1.0,0.01,2,2);
+
+	if(a<0.08,{a=0});
+
+	Pdef(m.ptn).set(\viewID, d.port);
+	Pdef(m.ptn).set(\amp, a * 1);
+	Pdef(m.ptn).set(\filtFreq, ff);
+	Pdef(m.ptn).set(\dist, dist);
+	Pdef(m.ptn).set(\tension, tension);
+
+};
+
+
+//------------------------------------------------------------
+// plot with min and max
+//------------------------------------------------------------
+~plotMin = -1;
+~plotMax = 1;
+
+~plot = { |d,p|
+	// [d.sensors.rrateEvent.x, m.rrateMass * 0.1, m.accelMassFiltered * 0.5];
+	// [m.accelMass * 0.1, m.accelMassFiltered * 0.1];
+	// [m.rrateMassFiltered, m.rrateMassThreshold];
+	// [m.rrateMassFiltered, m.rrateMassThreshold, m.accelMassAmp];
+	// [d.sensors.gyroEvent.z];
+	[((d.sensors.gyroEvent.x / pi).fold(-0.5,0.5) * 2)];
+	// [d.sensors.rrateEvent.x, d.sensors.rrateEvent.y, d.sensors.rrateEvent.z];
+	// [d.sensors.accelEvent.x, d.sensors.accelEvent.y, d.sensors.accelEvent.z];
+
+
+};
+

@@ -42,7 +42,7 @@ SynthDef(\stereoSamplerH, {|bufnum=0, out=0, amp=1, rate=1, start=0, pan=0, freq
     attack=0.01, decay=0.1, sustain=0.3, release=1.2, gate=1,cutoff=20000, rq=1|
 	var lr = rate * BufRateScale.kr(bufnum);// * (freq/440.0);
     var env = EnvGen.kr(Env.new([0, 1, 1, 0], [attack, sustain, release]), doneAction: 2);
-	var sig = PlayBuf.ar(2, bufnum, rate: [lr, lr * 1.0017], startPos: start * BufFrames.kr(bufnum), loop: 0);
+	var sig = PlayBuf.ar(1, bufnum, rate: [lr, lr * 1.0017], startPos: start * BufFrames.kr(bufnum), loop: 0);
 	// sig = RLPF.ar(sig, cutoff, rq);
     sig = Balance2.ar(sig[0], sig[1], pan, amp * env);
     Out.ar(out, sig);
@@ -166,7 +166,7 @@ SynthDef(\stereoSamplerH, {|bufnum=0, out=0, amp=1, rate=1, start=0, pan=0, freq
 	Pdef(m.ptn).set(\dur, dur);
 	Pdef(m.ptn).set(\range, move.floor);
 	Pdef(m.ptn).set(\amp, amp.dbamp);
-  Pdef(m.ptn).set(\root, root);
+  Pdef(m.ptn).set(\root, root-2);
   Pdef(m.ptn).set(\octave, octave);
 
 	if(m.accelMassFiltered > 0.07,{

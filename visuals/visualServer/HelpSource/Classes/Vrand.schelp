@@ -1,0 +1,26 @@
+class:: Vrand
+summary:: Prand over visual events
+categories:: Libraries>VisualServer
+related:: Classes/Prand, Classes/Vseq, Classes/Vwrand, Classes/Vbind, Guides/VisualServer
+
+description::
+
+Returns a link::Classes/Prand:: that randomly picks visual events from a list (same item normalisation as link::Classes/Vseq::).
+
+CLASSMETHODS::
+
+method:: new
+argument:: list
+Events or instrument symbols.
+argument:: repeats
+Default code::inf::.
+argument:: view
+Default code::\default::.
+returns:: a link::Classes/Prand::.
+
+EXAMPLES::
+
+code::
+Vrand([\circle, \square,
+    (instrument: \pulse, endSize: 200)], inf, \demo).vplay;
+::

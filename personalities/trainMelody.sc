@@ -31,7 +31,7 @@ SynthDef(\funMelody, {
 			\note, Pseq([12,14,10,7,0]-1, inf),
 			// \octave,Pseq([5,6].stutter(2),inf),
 			// \root, Pseq([0].stutter(32), inf),
-			\envAtk, Pwhite(0.02,0.04, inf),
+			\envAtk, Pwhite(0.002,0.04, inf),
 			\envDec, Pwhite(0.2, 0.1, inf),
 			\envSus, 0.0,
 			// \envRel,Pkey(\octave) * 0.4,
@@ -64,10 +64,10 @@ SynthDef(\funMelody, {
 	var oct = m.gyroYFiltered.linlin(-1,1,6,3).floor;
   	var envRel = m.accelMassFiltered.lincurve(0,1,0.5,0.6,2);
 	var amp = m.accelMassFiltered.lincurve(0,2,0.001,0.5,-2);
-	
+
 	Pdef(m.ptn).set(\dur, dur);
 	Pdef(m.ptn).set(\filtFreq, m.accelMassFiltered.linexp(0,1.5,180,800));
-	Pdef(m.ptn).set(\amp, amp*0.7);
+	Pdef(m.ptn).set(\amp, amp*0.7));
 	Pdef(m.ptn).set(\octave,oct);
 	Pdef(m.ptn).set(\envRel,envRel);
 

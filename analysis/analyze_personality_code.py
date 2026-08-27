@@ -4,6 +4,12 @@ import re
 import json
 from collections import defaultdict
 from datetime import datetime
+from pathlib import Path
+
+# Generated data lands here and is gitignored - the scripts are the source of
+# truth, not their output. Anchored to this file rather than the working
+# directory so it does not matter where the script is invoked from.
+OUTPUT_DIR = Path(__file__).resolve().parent / 'output'
 
 # Regex patterns for classification
 SYNTHDEF_PATTERNS = [
@@ -339,7 +345,8 @@ def main():
     }
 
     # Write to file
-    output_file = 'personality_code_data.json'
+    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+    output_file = OUTPUT_DIR / 'personality_code_data.json'
     with open(output_file, 'w') as f:
         json.dump(data, f, indent=2)
 

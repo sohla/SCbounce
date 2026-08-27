@@ -1,0 +1,882 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Personality Similarities Explorer</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #0a0a0a;
+            color: #e0e0e0;
+            overflow: hidden;
+        }
+        
+        #container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+        }
+        
+        #main-view {
+            flex: 1;
+            position: relative;
+            transition: margin-right 0.3s ease-in-out;
+        }
+        
+        #main-view.sidebar-open {
+            margin-right: 450px;
+        }
+        
+        #network-svg {
+            width: 100%;
+            height: 100%;
+            cursor: move;
+        }
+        
+        #controls {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(30, 30, 30, 0.95);
+            padding: 20px;
+            border-radius: 8px;
+            border: 2px solid #FF6B6B;
+            z-index: 100;
+            min-width: 220px;
+            width: 220px;
+        }
+        
+        #controls h1 {
+            color: #FF6B6B;
+            font-size: 24px;
+            margin-bottom: 15px;
+        }
+        
+        #controls p {
+            color: #888;
+            font-size: 14px;
+            margin-bottom: 15px;
+            line-height: 1.4;
+        }
+        
+        .control-group {
+            margin-bottom: 15px;
+        }
+        
+        .control-group label {
+            display: block;
+            color: #ccc;
+            font-size: 13px;
+            margin-bottom: 5px;
+        }
+        
+        .control-group select, .control-group input {
+            width: 100%;
+            padding: 8px;
+            background: #333;
+            border: 1px solid #555;
+            border-radius: 4px;
+            color: #fff;
+            font-size: 13px;
+        }
+        
+        .control-group select:focus, .control-group input:focus {
+            border-color: #FF6B6B;
+            outline: none;
+        }
+        
+        .stats {
+            background: #222;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 15px;
+        }
+        
+        .stats .stat-item {
+            display: flex;
+            justify-content: space-between;
+            margin: 5px 0;
+            font-size: 12px;
+        }
+        
+        .stats .stat-label {
+            color: #888;
+        }
+        
+        .stats .stat-value {
+            color: #FF6B6B;
+            font-weight: bold;
+        }
+        
+        #sidebar {
+            width: 0;
+            background: rgba(30, 30, 30, 0.98);
+            border-left: 2px solid #FF6B6B;
+            overflow-y: auto;
+            transition: width 0.3s ease-in-out;
+            z-index: 200;
+        }
+        
+        #sidebar.active {
+            width: 450px;
+        }
+        
+        #sidebar-content {
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        #sidebar h2 {
+            color: #FF6B6B;
+            margin-bottom: 15px;
+            font-size: 20px;
+            border-bottom: 2px solid #FF6B6B;
+            padding-bottom: 10px;
+        }
+        
+        .personality-info {
+            background: #222;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .personality-name {
+            font-family: monospace;
+            color: #FF6B6B;
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .feature-section {
+            margin: 15px 0;
+        }
+        
+        .feature-section h4 {
+            color: #4ECDC4;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        
+        .feature-list {
+            color: #ccc;
+            font-size: 12px;
+            line-height: 1.4;
+        }
+        
+        .similarity-item {
+            background: #333;
+            padding: 10px;
+            margin: 8px 0;
+            border-radius: 4px;
+            font-size: 13px;
+        }
+        
+        .similarity-name {
+            color: #4ECDC4;
+            font-weight: bold;
+        }
+        
+        .similarity-score {
+            color: #FF6B6B;
+            font-size: 12px;
+            margin-top: 3px;
+        }
+        
+        .similarity-breakdown {
+            color: #888;
+            font-size: 11px;
+            margin-top: 5px;
+        }
+        
+        #close-sidebar {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: #444;
+            border: none;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        #close-sidebar:hover {
+            background: #555;
+        }
+        
+        /* Network styling */
+        .node {
+            cursor: pointer;
+            stroke-width: 2px;
+        }
+        
+        .node:hover {
+            stroke-width: 3px;
+            filter: brightness(1.3);
+        }
+        
+        .node.selected {
+            stroke: #fff;
+            stroke-width: 3px;
+        }
+        
+        .link {
+            stroke: #666;
+            stroke-opacity: 0.3;
+        }
+        
+        .link:hover {
+            stroke: #FF6B6B;
+            stroke-opacity: 0.8;
+        }
+        
+        .link.highlighted {
+            stroke: #FF6B6B;
+            stroke-opacity: 0.9;
+            stroke-width: 3px;
+        }
+        
+        .node-label {
+            fill: #fff;
+            font-size: 10px;
+            text-anchor: middle;
+            pointer-events: none;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+        
+        .legend {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(30, 30, 30, 0.95);
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #444;
+            z-index: 100;
+        }
+        
+        .legend h3 {
+            color: #FF6B6B;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin: 5px 0;
+            font-size: 12px;
+        }
+        
+        .legend-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <div id="main-view">
+            <div id="controls">
+                <h1>Personality Similarities</h1>
+                <p>Explore similarity patterns between SuperCollider personality files based on IMU mappings, synthesis techniques, and overall approaches.</p>
+                
+                
+                <div class="control-group">
+                    <label for="similarity-type">Similarity Type:</label>
+                    <select id="similarity-type">
+                        <option value="overall">Overall Similarity</option>
+                        <option value="mapping">IMU Mapping Similarity</option>
+                        <option value="technique">Synthesis Technique Similarity</option>
+                        <option value="approach">Approach Similarity</option>
+                        <option value="pattern">Pattern Usage Similarity</option>
+                    </select>
+                </div>
+                
+                <div class="control-group">
+                    <label for="technique-filter">Filter by Synthesis Technique:</label>
+                    <select id="technique-filter">
+                        <option value="all">All Techniques</option>
+                        <option value="sample_playback">Sample Playback</option>
+                        <option value="sine_oscillator">Sine Oscillator</option>
+                        <option value="sawtooth">Sawtooth</option>
+                        <option value="white_noise">White Noise</option>
+                        <option value="pink_noise">Pink Noise</option>
+                    </select>
+                </div>
+                
+                <div class="control-group">
+                    <label for="approach-filter">Filter by Approach Type:</label>
+                    <select id="approach-filter">
+                        <option value="all">All Approaches</option>
+                        <option value="pattern">Pattern-based</option>
+                        <option value="logic">Logic-based</option>
+                        <option value="hybrid">Hybrid</option>
+                    </select>
+                </div>
+                
+                <div class="control-group">
+                    <label for="min-similarity">Co-change Threshold:</label>
+                    <input type="range" id="min-similarity" min="0" max="1" step="0.1" value="0.8">
+                    <span id="min-similarity-value">0.8</span>
+                </div>
+                
+                <div class="stats">
+                    <div class="stat-item">
+                        <span class="stat-label">Personalities:</span>
+                        <span class="stat-value" id="stat-personalities">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Connections:</span>
+                        <span class="stat-value" id="stat-connections">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Avg Similarity:</span>
+                        <span class="stat-value" id="stat-avg-similarity">0.00</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="legend">
+                <h3>Node Size</h3>
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: #FF6B6B; width: 20px; height: 20px; border-radius: 50%;"></div>
+                    <span>High complexity (many connections)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: #4ECDC4; width: 15px; height: 15px; border-radius: 50%;"></div>
+                    <span>Medium complexity</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: #45B7D1; width: 10px; height: 10px; border-radius: 50%;"></div>
+                    <span>Low complexity</span>
+                </div>
+            </div>
+            
+            <svg id="network-svg"></svg>
+        </div>
+        
+        <div id="sidebar">
+            <button id="close-sidebar">✕ Close</button>
+            <div id="sidebar-content"></div>
+        </div>
+    </div>
+
+    <script>
+        let personalityData = null;
+        let filteredData = null;
+        let svg, simulation, nodes, links, labels;
+        let selectedNode = null;
+        
+        // Color scheme for different technique categories
+        const techniqueColors = {
+            'sample_playback': '#FF6B6B',
+            'sine_oscillator': '#4ECDC4',
+            'sawtooth': '#45B7D1',
+            'white_noise': '#96CEB4',
+            'pink_noise': '#FFEAA7',
+            'mixed': '#DDA0DD',
+            'other': '#95A5A6'
+        };
+        
+        // Initialize visualization
+        function initVisualization() {
+            svg = d3.select('#network-svg');
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+            
+            svg.attr('width', width).attr('height', height);
+            
+            // Add zoom behavior
+            const zoom = d3.zoom()
+                .scaleExtent([0.1, 4])
+                .on('zoom', (event) => {
+                    svg.select('g').attr('transform', event.transform);
+                });
+            
+            svg.call(zoom);
+            
+            // Create main group
+            const g = svg.append('g');
+            
+            // Create groups for links and nodes
+            g.append('g').attr('class', 'links');
+            g.append('g').attr('class', 'nodes');
+            g.append('g').attr('class', 'labels');
+        }
+        
+        // Process raw data into network format
+        function processData() {
+            if (!personalityData) return;
+            
+            const personalities = personalityData.personalities;
+            const similarities = personalityData.similarities;
+            
+            // Create nodes
+            const nodes = Object.keys(personalities).map(name => {
+                const p = personalities[name];
+                const primaryTechnique = getPrimaryTechnique(p.synthesis_techniques.synthesis_methods);
+                
+                return {
+                    id: name,
+                    name: name,
+                    data: p,
+                    primaryTechnique: primaryTechnique,
+                    complexity: p.complexity_metrics.code_lines,
+                    patternBased: p.overall_approach.pattern_based,
+                    sampleBased: p.synthesis_techniques.sample_based,
+                    usesVisuals: p.visual_events.uses_visuals
+                };
+            });
+            
+            // Create edges based on similarity
+            const edges = [];
+            const similarityType = document.getElementById('similarity-type').value + '_similarity';
+            const minSimilarity = parseFloat(document.getElementById('min-similarity').value);
+            
+            if (similarities[similarityType]) {
+                Object.keys(similarities[similarityType]).forEach(name1 => {
+                    Object.keys(similarities[similarityType][name1]).forEach(name2 => {
+                        const similarity = similarities[similarityType][name1][name2];
+                        if (similarity >= minSimilarity) {
+                            edges.push({
+                                source: name1,
+                                target: name2,
+                                similarity: similarity,
+                                weight: similarity
+                            });
+                        }
+                    });
+                });
+            }
+            
+            return { nodes, edges };
+        }
+        
+        // Get primary synthesis technique for coloring
+        function getPrimaryTechnique(techniques) {
+            if (!techniques || techniques.length === 0) return 'other';
+            if (techniques.length > 2) return 'mixed';
+            return techniques[0] || 'other';
+        }
+
+        
+        // Filter data based on current settings
+        function filterData() {
+            if (!personalityData) return;
+            
+            const processed = processData();
+            if (!processed) return;
+            
+            let { nodes, edges } = processed;
+            
+            // Apply technique filter
+            const techniqueFilter = document.getElementById('technique-filter').value;
+            if (techniqueFilter !== 'all') {
+                nodes = nodes.filter(node => 
+                    node.data.synthesis_techniques.synthesis_methods.includes(techniqueFilter)
+                );
+            }
+            
+            // Apply approach filter
+            const approachFilter = document.getElementById('approach-filter').value;
+            if (approachFilter !== 'all') {
+                nodes = nodes.filter(node => 
+                    node.data.pattern_analysis.approach_type === approachFilter
+                );
+            }
+            
+            // Filter edges to only include filtered nodes
+            if (techniqueFilter !== 'all' || approachFilter !== 'all') {
+                const nodeIds = new Set(nodes.map(n => n.id));
+                edges = edges.filter(edge => 
+                    nodeIds.has(edge.source) && nodeIds.has(edge.target)
+                );
+            }
+            
+            // Remove isolated nodes
+            const connectedNodeIds = new Set();
+            edges.forEach(edge => {
+                connectedNodeIds.add(edge.source);
+                connectedNodeIds.add(edge.target);
+            });
+            
+            nodes = nodes.filter(node => connectedNodeIds.has(node.id) || edges.length === 0);
+            
+            filteredData = { nodes, edges };
+            
+            updateStats();
+            updateVisualization();
+        }
+        
+        // Update statistics display
+        function updateStats() {
+            if (!filteredData) return;
+            
+            document.getElementById('stat-personalities').textContent = filteredData.nodes.length;
+            document.getElementById('stat-connections').textContent = filteredData.edges.length;
+            
+            const avgSimilarity = filteredData.edges.length > 0 
+                ? filteredData.edges.reduce((sum, edge) => sum + edge.similarity, 0) / filteredData.edges.length
+                : 0;
+            document.getElementById('stat-avg-similarity').textContent = avgSimilarity.toFixed(2);
+        }
+        
+        // Update network visualization
+        function updateVisualization() {
+            if (!filteredData) return;
+            
+            const sidebarActive = document.getElementById('sidebar').classList.contains('active');
+            const width = sidebarActive ? window.innerWidth - 450 : window.innerWidth;
+            const height = window.innerHeight;
+            
+            // Clear previous visualization
+            svg.select('.links').selectAll('*').remove();
+            svg.select('.nodes').selectAll('*').remove();
+            svg.select('.labels').selectAll('*').remove();
+            
+            // Stop previous simulation
+            if (simulation) simulation.stop();
+            
+            if (filteredData.nodes.length === 0) {
+                svg.select('g').selectAll('text.no-data').remove();
+                svg.select('g').append('text')
+                    .attr('class', 'no-data')
+                    .attr('x', width / 2)
+                    .attr('y', height / 2)
+                    .attr('text-anchor', 'middle')
+                    .attr('fill', '#888')
+                    .attr('font-size', '18px')
+                    .text('No personalities match the current filter criteria');
+                return;
+            } else {
+                svg.select('g').selectAll('text.no-data').remove();
+            }
+            
+            // Create new simulation (always use force layout)
+            simulation = createSimulation('force', width, height);
+            
+            // Create links
+            links = svg.select('.links')
+                .selectAll('line')
+                .data(filteredData.edges)
+                .enter()
+                .append('line')
+                .attr('class', 'link')
+                .style('stroke-width', d => Math.max(0.5, d.similarity * 2.5))
+                .style('stroke-opacity', d => 0.3 + (d.similarity * 0.7));
+            
+            // Create nodes
+            nodes = svg.select('.nodes')
+                .selectAll('circle')
+                .data(filteredData.nodes)
+                .enter()
+                .append('circle')
+                .attr('class', 'node')
+                .attr('r', d => (Math.sqrt(d.complexity) * 0.5 + 5) * 0.5)
+                .style('fill', d => techniqueColors[d.primaryTechnique] || techniqueColors['other'])
+                .style('stroke', d => d3.rgb(techniqueColors[d.primaryTechnique] || techniqueColors['other']).darker(2))
+                .on('click', function(event, d) {
+                    selectNode(d);
+                    showPersonalityDetails(d);
+                })
+                .on('mouseover', function(event, d) {
+                    d3.select(this).classed('selected', true);
+                    highlightConnections(d);
+                })
+                .on('mouseout', function() {
+                    d3.select(this).classed('selected', false);
+                    unhighlightConnections();
+                });
+            
+            // Create labels (show for all nodes, but make them visible based on zoom/selection)
+            labels = svg.select('.labels')
+                .selectAll('text')
+                .data(filteredData.nodes)
+                .enter()
+                .append('text')
+                .attr('class', 'node-label')
+                .text(d => d.name)
+                .style('font-size', d => Math.max(8, Math.min(12, Math.sqrt(d.complexity) * 0.8 + 6)) + 'px')
+                .style('opacity', d => d.complexity > 80 ? 1.0 : 0.7);
+            
+            // Add drag behavior
+            nodes.call(d3.drag()
+                .on('start', dragstarted)
+                .on('drag', dragged)
+                .on('end', dragended));
+            
+            // Update positions on tick
+            simulation.on('tick', () => {
+                if (links) {
+                    links
+                        .attr('x1', d => d.source.x)
+                        .attr('y1', d => d.source.y)
+                        .attr('x2', d => d.target.x)
+                        .attr('y2', d => d.target.y);
+                }
+                
+                if (nodes) {
+                    nodes
+                        .attr('cx', d => d.x)
+                        .attr('cy', d => d.y);
+                }
+                
+                if (labels) {
+                    labels
+                        .attr('x', d => d.x)
+                        .attr('y', d => d.y + 3);
+                }
+            });
+        }
+        
+        // Create simulation based on layout type
+        function createSimulation(layoutType, width, height) {
+            let sim;
+            
+            switch (layoutType) {
+                case 'force':
+                    sim = d3.forceSimulation(filteredData.nodes)
+                        .force('link', d3.forceLink(filteredData.edges).id(d => d.id).distance(80))
+                        .force('charge', d3.forceManyBody().strength(-300))
+                        .force('center', d3.forceCenter(width / 2, height / 2))
+                        .force('collision', d3.forceCollide().radius(d => (Math.sqrt(d.complexity) * 0.5 + 5) * 0.5 + 5))
+                        .force('x', d3.forceX(width / 2).strength(0.1))
+                        .force('y', d3.forceY(height / 2).strength(0.1))
+                        .force('bounds', () => {
+                            filteredData.nodes.forEach(node => {
+                                const radius = (Math.sqrt(node.complexity) * 0.5 + 5) * 0.5;
+                                node.x = Math.max(radius + 50, Math.min(width - radius - 50, node.x));
+                                node.y = Math.max(radius + 50, Math.min(height - radius - 50, node.y));
+                            });
+                        });
+                    break;
+                    
+                case 'circular':
+                    const radius = Math.min(width, height) * 0.35;
+                    filteredData.nodes.forEach((node, i) => {
+                        const angle = (i / filteredData.nodes.length) * 2 * Math.PI;
+                        node.fx = width / 2 + radius * Math.cos(angle);
+                        node.fy = height / 2 + radius * Math.sin(angle);
+                    });
+                    
+                    sim = d3.forceSimulation(filteredData.nodes)
+                        .force('link', d3.forceLink(filteredData.edges).id(d => d.id).distance(50));
+                    break;
+                    
+                case 'hierarchical':
+                    // Group by primary technique
+                    const techniques = [...new Set(filteredData.nodes.map(d => d.primaryTechnique))];
+                    const techniqueY = {};
+                    techniques.forEach((tech, i) => {
+                        techniqueY[tech] = (height / (techniques.length + 1)) * (i + 1);
+                    });
+                    
+                    filteredData.nodes.forEach(node => {
+                        node.fy = techniqueY[node.primaryTechnique];
+                    });
+                    
+                    sim = d3.forceSimulation(filteredData.nodes)
+                        .force('link', d3.forceLink(filteredData.edges).id(d => d.id).distance(60))
+                        .force('x', d3.forceX(width / 2).strength(0.1))
+                        .force('collision', d3.forceCollide().radius(d => Math.sqrt(d.complexity) * 0.5 + 10));
+                    break;
+            }
+            
+            return sim;
+        }
+        
+        // Highlight connections when hovering over a node
+        function highlightConnections(node) {
+            const connectedEdges = filteredData.edges.filter(edge => 
+                edge.source === node || edge.target === node ||
+                edge.source.id === node.id || edge.target.id === node.id
+            );
+            
+            links.classed('highlighted', d => connectedEdges.includes(d));
+        }
+        
+        function unhighlightConnections() {
+            links.classed('highlighted', false);
+        }
+        
+        // Select a node and show its details
+        function selectNode(node) {
+            nodes.classed('selected', false);
+            nodes.filter(d => d.id === node.id).classed('selected', true);
+            selectedNode = node;
+        }
+        
+        // Show detailed information about a personality
+        function showPersonalityDetails(node) {
+            const sidebar = document.getElementById('sidebar');
+            const content = document.getElementById('sidebar-content');
+            
+            const p = node.data;
+            const techniqueColor = techniqueColors[node.primaryTechnique] || techniqueColors['other'];
+            
+            // Find similar personalities
+            const similarityType = document.getElementById('similarity-type').value + '_similarity';
+            const similarities = personalityData.similarities[similarityType][node.name] || {};
+            const topSimilar = Object.entries(similarities)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 8);
+            
+            let html = `
+                <div class="personality-info">
+                    <div class="personality-name">${node.name}</div>
+                    <div style="color: ${techniqueColor}; font-weight: bold; margin-bottom: 10px;">
+                        Primary: ${node.primaryTechnique.replace('_', ' ')}
+                    </div>
+                    <div style="color: #888; font-size: 12px;">
+                        ${p.complexity_metrics.code_lines} lines of code
+                    </div>
+                </div>
+                
+                <div class="feature-section">
+                    <h4>IMU Sensor Usage</h4>
+                    <div class="feature-list">
+                        Accel: ${p.imu_mappings.sensor_usage.accel.length} signals<br>
+                        Gyro: ${p.imu_mappings.sensor_usage.gyro.length} signals<br>
+                        RRate: ${p.imu_mappings.sensor_usage.rrate.length} signals<br>
+                        Mapping functions: ${p.imu_mappings.mapping_functions.join(', ') || 'none'}
+                    </div>
+                </div>
+                
+                <div class="feature-section">
+                    <h4>Synthesis Techniques</h4>
+                    <div class="feature-list">
+                        Methods: ${p.synthesis_techniques.synthesis_methods.join(', ') || 'none'}<br>
+                        Effects: ${p.synthesis_techniques.effects.join(', ') || 'none'}<br>
+                        Sample-based: ${p.synthesis_techniques.sample_based ? 'Yes' : 'No'}<br>
+                        Generative: ${p.synthesis_techniques.generative ? 'Yes' : 'No'}
+                    </div>
+                </div>
+                
+                <div class="feature-section">
+                    <h4>Approach Characteristics</h4>
+                    <div class="feature-list">
+                        Pattern-based: ${p.overall_approach.pattern_based ? 'Yes' : 'No'}<br>
+                        Direct control: ${p.overall_approach.direct_control ? 'Yes' : 'No'}<br>
+                        Visual events: ${p.visual_events.uses_visuals ? 'Yes' : 'No'}<br>
+                        Timing: ${p.overall_approach.timing_approach.join(', ') || 'none'}
+                    </div>
+                </div>
+                
+                <div class="feature-section">
+                    <h4>Pattern Analysis</h4>
+                    <div class="feature-list">
+                        Approach type: ${p.pattern_analysis.approach_type}<br>
+                        Pattern objects: ${p.pattern_analysis.pattern_objects.map(obj => obj[0]).join(', ') || 'none'}<br>
+                        Dynamic parameters: ${p.pattern_analysis.dynamic_parameters.join(', ') || 'none'}<br>
+                        Pattern vs Logic: ${(p.pattern_analysis.pattern_vs_logic_ratio * 100).toFixed(0)}% pattern<br>
+                        Mapping style: ${p.pattern_analysis.parameter_mapping_style.join(', ') || 'none'}
+                    </div>
+                </div>
+                
+                <h3 style="color: #FF6B6B; margin: 20px 0 10px;">Most Similar (${document.getElementById('similarity-type').selectedOptions[0].text})</h3>
+            `;
+            
+            topSimilar.forEach(([name, score]) => {
+                const otherPersonality = personalityData.personalities[name];
+                if (otherPersonality) {
+                    html += `
+                        <div class="similarity-item">
+                            <div class="similarity-name">${name}</div>
+                            <div class="similarity-score">Similarity: ${(score * 100).toFixed(1)}%</div>
+                            <div class="similarity-breakdown">
+                                ${otherPersonality.synthesis_techniques.synthesis_methods.slice(0, 2).join(', ')}
+                            </div>
+                        </div>
+                    `;
+                }
+            });
+            
+            content.innerHTML = html;
+            sidebar.classList.add('active');
+            document.getElementById('main-view').classList.add('sidebar-open');
+        }
+        
+        // Drag functions
+        function dragstarted(event, d) {
+            if (!event.active) simulation.alphaTarget(0.3).restart();
+            d.fx = d.x;
+            d.fy = d.y;
+        }
+        
+        function dragged(event, d) {
+            d.fx = event.x;
+            d.fy = event.y;
+        }
+        
+        function dragended(event, d) {
+            if (!event.active) simulation.alphaTarget(0);
+            d.fx = null;
+            d.fy = null;
+        }
+        
+        // Event listeners
+        function setupEventListeners() {
+            document.getElementById('similarity-type').addEventListener('change', filterData);
+            document.getElementById('technique-filter').addEventListener('change', filterData);
+            document.getElementById('approach-filter').addEventListener('change', filterData);
+            document.getElementById('min-similarity').addEventListener('input', function() {
+                document.getElementById('min-similarity-value').textContent = this.value;
+                filterData();
+            });
+            
+            document.getElementById('close-sidebar').addEventListener('click', function() {
+                document.getElementById('sidebar').classList.remove('active');
+                document.getElementById('main-view').classList.remove('sidebar-open');
+                if (selectedNode) {
+                    nodes.classed('selected', false);
+                    selectedNode = null;
+                }
+            });
+        }
+        
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+            svg.attr('width', width).attr('height', height);
+            if (simulation) {
+                simulation.force('center', d3.forceCenter(width / 2, height / 2));
+                simulation.restart();
+            }
+        });
+        
+        // Load data and initialize
+        d3.json('output/personality_similarities.json').then(function(data) {
+            personalityData = data;
+            
+            console.log('Personality data loaded:', Object.keys(data.personalities).length, 'personalities');
+            
+            // Initialize visualization
+            initVisualization();
+            setupEventListeners();
+            
+            console.log('About to call initial filterData...');
+            filterData();
+            
+            console.log('Personality similarities visualization loaded');
+        }).catch(error => {
+            console.error('Error loading personality similarity data:', error);
+        });
+    </script>
+</body>
+</html>

@@ -6,9 +6,9 @@
 
 // var oscMessageTag  = "CombinedDataPacket";
 var oscMessageTag  = "IMUFusedData"; // this is coming from AirSticks
-var outAddr = NetAddr.new("192.168.100.40", 3333);
+var outAddr = NetAddr.new("192.168.50.53", 5005);
 var airstickListeners = [];
-var numAirwareVirtualDevices = 5;
+var numAirwareVirtualDevices = 9;
 var oscThru = false;
 //------------------------------------------------------------
 // Models
@@ -350,12 +350,15 @@ var addDevice = { |ip,port,index|
 
     var configPattern = "/%/Config".format(index);
     var configListener = OSCFunc({ |msg2, time2, addr2, recvPort2|
-        d.color = Color.fromArray(msg2.at([15,16,17])++[1.0]);
-        "CONFIG % %".format(index,d.color).postln;
-        // {
-        //     var n = NetAddr.new("127.0.0.1", 57120);
-        //     n.sendMsg("/airkit/addDevice", port);
-        // }.defer;
+        var a = msg2.keep(-4)/255;
+        a = (a.keep(3) * (255 / a.keep(3).maxItem)).round ++ a.drop(3);
+        d.color = Color.fromArray(a/255);
+        postf("Device connected [%]: % : %\n", index, ip, port);
+        // "CONFIG % %".format(index,d.color).postln;
+        {
+            var n = NetAddr.new("127.0.0.1", 57120);
+            n.sendMsg("/airkit/addDevice", port);
+        }.defer;
     }, configPattern).oneShot;
 
     var d = Event.new(proto:deviceProto);
@@ -371,26 +374,18 @@ var addDevice = { |ip,port,index|
     d.params.sensitivity =  0.5;
     d.sensors.digiInEvent = Array.fill(4,0); // must allocate for each instance
 
+    // prefill colour     
     d.color = [Color.red,Color.yellow,Color.green,Color.blue].choose;
-    
+
     // global storage : port is the key
     ~devices.put(port,d);
 	NetAddr.new("127.0.0.1", 57120).sendMsg("/airkit/loadPersonality", port, 0);
 
     // start listening to device data
     addOSCDeviceListeners.(d);
-    // ["Connected:", NetAddr.new(ip,port).isConnected].postln;
 
-    // hack : try and get color from config
     NetAddr.new(ip,port-index+1).sendMsg("/Config/GetConfig", 57120);
-    // ...wait then make then add devices
-	{ NetAddr.new("127.0.0.1", 57120).sendMsg("/airkit/addDevice", port) }.defer(0.2);
-
-    // Use from AirStick 
-    // NetAddr.new(ip,port-index+1).sendMsg("/Config/GetConfig", 57120);
-    // Use from Airware
-	// NetAddr.new("127.0.0.1", 57120).sendMsg("/airkit/addDevice", port);
-
+    
     d // return the device
 };
 

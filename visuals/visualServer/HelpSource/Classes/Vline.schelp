@@ -1,0 +1,26 @@
+class:: Vline
+summary:: Pbind that produces line visual events
+categories:: Libraries>VisualServer
+related:: Classes/Vbind, Classes/VisualSynthDef, Guides/VisualServer, Reference/VisualParameters
+
+description::
+
+Factory returning a link::Classes/Pbind:: pre-seeded with code::(type: \vline, dur: 1, view: \default)::. Targets the code::\line:: link::Classes/VisualSynthDef:: (endpoints code::x1,y1 -> x2,y2::, normalised coords). See link::Classes/Vbind:: for the shared playback model.
+
+CLASSMETHODS::
+
+method:: new
+argument:: ... pairs
+Common keys: code::x1 y1 x2 y2 color width dur view:: plus the envelope keys.
+returns:: a link::Classes/Pbind::.
+
+EXAMPLES::
+
+code::
+Vline(
+    \x1, Pwhite(-0.8, 0.8), \y1, Pwhite(-0.8, 0.8),
+    \x2, Pkey(\x1) + Pwhite(-0.2, 0.2), \y2, Pkey(\y1) + Pwhite(-0.2, 0.2),
+    \color, Pseq([Color.red, Color.green, Color.blue], inf),
+    \width, Pexprand(1, 5), \dur, 0.3, \view, \demo
+).vplay;
+::

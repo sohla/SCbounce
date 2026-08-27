@@ -85,13 +85,13 @@ SynthDef(\drumkit, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 //------------------------------------------------------------
 ~next = {|d|
 
-	var rate = m.rrateMassFiltered.linlin(0,2,1.5,4);
+	var rate = m.rrateMassFiltered.linlin(0,1.3,1.5,4);
 	var amp = m.accelMassFiltered.lincurve(0,2.5,0.3,1, -1);
 	Pdef(m.ptn).set(\amp, amp * 0.8);
 	Pdef(m.ptn).set(\rate, rate);
 	// bi = (d.sensors.gyroEvent.y.abs / pi) * (~buffers.size-1);
 	// bi = bi.asInteger;
-	bi = [4,5,6].choose;
+	bi = [3,4,5,6,7,8,9].choose;
 
 
 	if(m.accelMassFiltered > 0.1,{

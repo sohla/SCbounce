@@ -1,0 +1,119 @@
+class:: VisualSynthDef
+summary:: A visual instrument definition (render function + default params + envelope)
+categories:: Libraries>VisualServer
+related:: Classes/VisualServer, Classes/Vbind, Guides/VisualServer, Reference/VisualParameters
+
+description::
+
+Defines how a visual node is drawn each frame, analogous to a link::Classes/SynthDef:: for audio. A def has a name, a render link::Classes/Function:: code::{ |node, view, elapsed, centerX, centerY, params| ... }::, and a default-parameter link::Classes/Event::.
+
+All defs are registered in code::*initClass:: via link::#*initBuiltInDefs::; look them up with link::#*at::. Coordinates are normalised code::-1.0 .. 1.0:: relative to the view centre.
+
+subsection:: Built-in defs
+
+table::
+## strong::name:: || strong::default params::
+## code::\circle:: || code::(x: 0, y: 0, size: 50, color: Color.white, dur: 1, fill: true, rotation: 0)::
+## code::\square:: || code::(x: 0, y: 0, size: 50, color: Color.white, dur: 1, fill: true, rotation: 0)::
+## code::\line::   || code::(x1: -0.5, y1: 0, x2: 0.5, y2: 0, color: Color.white, width: 1, dur: 1, rotation: 0)::
+## code::\pulse::  || code::(x: 0, y: 0, startSize: 10, endSize: 100, color: Color.white, dur: 1, curve: \exp, rotation: 0)::
+## code::\live::   || code::(x: 0, y: 0, size: 50, color: Color.white, dur: inf, fill: true, rotation: 0)::
+::
+
+All built-ins read code::\rotation:: (radians, default 0) and rotate about the shape centre — for code::\line:: that pivot is the midpoint of code::(x1,y1)–(x2,y2)::. Pass a link::Classes/Function:: for animated spin, e.g. code::\rotation, { thisThread.seconds * 2pi }::. This replaces the old code::\spinner:: def — build a spinner with code::Vbind(\instrument, \line, \rotation, { ... }, \dur, inf, ...)::.
+
+See link::Reference/VisualParameters:: for the meaning of every key.
+
+subsection:: Envelope / lifetime model
+
+Every def's lifetime and alpha/scale come from link::#-envState::. The node's life is decoupled from the pattern's code::\dur:: (event spacing):
+
+code::
+life = (sustain ? dur) * legato * stretch
+::
+
+with an code::[attack, hold, release]:: envelope spanning that life. code::\legato::/code::\stretch:: scale only the total life; code::\attack:: and code::\release:: are strong::absolute seconds:: (not scaled), clamped into life, the remainder being the hold. Defaults (code::legato:: 1, code::stretch:: 1, code::attack:: 0, code::release:: nil, code::sustain:: nil) reproduce the original "fade 1->0 over code::dur::, free at code::dur::" behaviour. code::life == inf:: => persistent node (e.g. code::\live::, or any def used with code::dur: inf::). Set code::\legato:: or code::\sustain:: to make animations overlap. See link::Guides/VisualServer:: §Envelope.
+
+CLASSMETHODS::
+
+method:: new
+Create and register a def.
+argument:: name
+A link::Classes/Symbol::.
+argument:: renderFunc
+code::{ |node, view, elapsed, centerX, centerY, params| ... }::. Use code::node[\def].getParam(node, \key, default):: to read params and link::#-envState:: for alpha/scale/expiry. Do not use code::^:: in this function (out-of-context return).
+argument:: defaultParams
+An link::Classes/Event:: of default key/value pairs.
+
+method:: at
+Look up a registered def by name.
+argument:: name
+The def symbol. Returns code::nil:: if not found.
+
+method:: initBuiltInDefs
+Register the six built-in defs. Called from code::*initClass::; also re-called defensively by link::Classes/VisualServer::'s code::init:: if the registry is empty.
+
+method:: all
+The link::Classes/Dictionary:: of name -> def.
+
+INSTANCEMETHODS::
+
+method:: getParam
+Read a node parameter, falling back to this def's defaults then code::default::. link::Classes/Function::-valued params are evaluated every call (live input).
+argument:: node
+The node event.
+argument:: key
+Parameter symbol.
+argument:: default
+Fallback if unset.
+
+method:: numParam
+Like link::#-getParam:: but strictly numeric: any non-number (e.g. an inherited code::sustain:: Function) falls back to code::default::. Used by link::#-envState:: for timing keys.
+argument:: node
+argument:: key
+argument:: default
+
+method:: envState
+Per-frame envelope state for a node. Returns an link::Classes/Event:: code::(alpha:, scale:, expired:, life:)::.
+argument:: node
+The node event.
+argument:: elapsed
+Seconds since the node started.
+discussion::
+code::life = (sustain ? dur) * legato * stretch::; code::life == inf:: returns code::(alpha: 1, scale: 1, expired: false, life: inf)::. Otherwise builds code::Env([0,1,1,0], [attack, hold, release], curve):: and samples it at code::elapsed::.
+
+method:: calcEnv
+Map code::(elapsed/duration).clip(0,1):: through a curve symbol (code::\linear \sin \cos \exp \log::). Used by code::\pulse:: for its size sweep.
+argument:: elapsed
+argument:: duration
+argument:: curve
+
+method:: envCurve
+Map a curve symbol to an link::Classes/Env::-safe curve: code::\exp:: -> code::-4::, code::\log:: -> code::4:: (Env exp segments cannot touch level 0), code::\sin::/code::\linear:: pass through, default code::\sin::.
+argument:: sym
+
+method:: name
+method:: renderFunc
+method:: defaultParams
+
+EXAMPLES::
+
+code::
+VisualSynthDef(\ring, { |node, view, elapsed, centerX, centerY, params|
+    var def = node[\def];
+    var st  = def.envState(node, elapsed);
+    if (st[\expired]) {
+        VisualServer.default.vfree(node[\nodeID]);
+    } {
+        var x = def.getParam(node, \x, 0) * centerX + centerX;
+        var y = def.getParam(node, \y, 0) * centerY + centerY;
+        var s = def.getParam(node, \size, 60) * st[\scale];
+        Pen.strokeColor = def.getParam(node, \color, Color.white).copy.alpha_(st[\alpha]);
+        Pen.width = 4;
+        Pen.addOval(Rect(x - (s/2), y - (s/2), s, s));
+        Pen.stroke;
+    };
+}, (x: 0, y: 0, size: 60, color: Color.white, dur: 1));
+
+VisualServer.default.vnew(\ring, nil, \demo, [\size, 120, \dur, 2, \legato, 3]);
+::

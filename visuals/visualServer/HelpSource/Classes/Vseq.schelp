@@ -1,0 +1,31 @@
+class:: Vseq
+summary:: Pseq of visual events
+categories:: Libraries>VisualServer
+related:: Classes/Vbind, Classes/Pseq, Classes/Vrand, Classes/Vpar, Guides/VisualServer
+
+description::
+
+Returns a link::Classes/Pseq:: over a list of visual events. Each list item that is a link::Classes/Dictionary::/link::Classes/Event:: has its code::\type:: defaulted to code::\visual:: and code::\view:: defaulted to code::view::; any other item code::x:: becomes code::(type: \visual, instrument: x, view: view)::.
+
+CLASSMETHODS::
+
+method:: new
+argument:: list
+Events or instrument symbols.
+argument:: repeats
+Default 1.
+argument:: offset
+Default 0.
+argument:: view
+Default code::\default::.
+returns:: a link::Classes/Pseq::.
+
+EXAMPLES::
+
+code::
+Vseq([
+    (instrument: \circle, x: -0.5, size: 80),
+    (instrument: \square, x: 0.5, size: 60),
+    \circle
+], inf, view: \demo).vplay;
+::

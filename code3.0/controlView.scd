@@ -43,19 +43,24 @@ var sliderView = {|lt="default", rt="", d|
   
 };
 
+// A personality may supply its own ~controlView. Most do not, and a device
+// exists before any personality is interpreted (\env defaults to nil in
+// oscController's deviceProto), so both lookups have to be guarded or a nil
+// reaches the GridLayout in addDeviceView. Falling back to the generic
+// per-param slider grid keeps the tab useful in both cases.
 var controlsView = {|d|
-  // var sliders = d.params.collect({|v,k| 
-  //     [sliderView.(k.asString, "", d)]
-  // });
-	// View()
-	// 	// .onClose_({osc.free})
-	// 	.layout_(GridLayout.columns(sliders).hSpacing_(spacing).vSpacing_(spacing))
-  var view;
-    d.env.use{
-      view = ~controlView.(d);
-    };
-    view
-
+	var view;
+	if(d.env != nil, {
+		d.env.use{
+			view = ~controlView.(d);
+		};
+	});
+	view ?? {
+		var sliders = d.params.keys.asArray.sort.collect({|k|
+			[sliderView.(k.asString, "", d)]
+		});
+		View().layout_(GridLayout.columns(sliders).hSpacing_(spacing).vSpacing_(spacing))
+	};
 };
 
 var controlView = {

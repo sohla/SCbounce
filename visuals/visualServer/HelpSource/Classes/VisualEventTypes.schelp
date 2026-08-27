@@ -1,0 +1,41 @@
+class:: VisualEventTypes
+summary:: Auto-registers the visual event types at class-library compile
+categories:: Libraries>VisualServer
+related:: Classes/VisualServer, Classes/Vbind, Classes/AVbind, Guides/VisualServer, Reference/VisualParameters
+
+description::
+
+Registers the visual link::Classes/Event:: types so the pattern classes work strong::without any manual load::. SuperCollider runs every class's code::*initClass:: on each class-library recompile; this class uses that hook (the same pattern as link::Classes/Pdef::'s code::\phrase:: and code::EventTypesWithCleanup::) to call link::Classes/Event#*addEventType:: for each type, guarded by code::Class.initClassTree(Event):: so code::Event.default[\eventTypes]:: exists first (SC does not guarantee code::*initClass:: ordering between classes).
+
+The registered types:
+
+table::
+## strong::type:: || strong::creates
+## code::\visual:: || a node of code::~instrument:: (default code::\circle::)
+## code::\vpulse:: || a code::\pulse:: node
+## code::\vline:: || a code::\line:: node
+## code::\vlive:: || a code::\live:: (persistent) node
+## code::\audioVisual:: || plays the audio note, then a synced visual (see link::Classes/AVbind::)
+::
+
+All types forward provided shape params via link::Classes/VisualServer#*visualArgsFrom:: and resolve the visual server from code::~vserver:: (falling back to link::Classes/VisualServer#*default::), because the standard event play function forces code::~server:: to the audio link::Classes/Server::.
+
+note::
+You do not call anything on this class. The file code::VisualEventTypes.scd:: still ships as a harmless no-op stub so older scripts that code::.load:: it do not error — it does not register anything (this class is the single source of truth).
+::
+
+CLASSMETHODS::
+
+private:: initClass
+
+EXAMPLES::
+
+After recompiling the class library, the types are already available:
+
+code::
+Event.default[\eventTypes].includesKey(\visual);   // -> true, no load needed
+
+VisualServer.default.start;
+VisualServer.default.createView(\demo, Rect(200,200,800,600));
+Vbind(\x, Pwhite(-0.7,0.7), \dur, 0.2, \view, \demo).vplay;
+::

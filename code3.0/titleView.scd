@@ -10,8 +10,10 @@ var addTitleView = { |d|
 		])
 		.action_({|but|
 			if(but.value == 0, {
+				d.enabled = true;
 				NetAddr.new("127.0.0.1", 57120).sendMsg("/airkit/reLoadPersonality", d.port, d.personality);
 			},{
+				d.enabled = false;
 				NetAddr.new("127.0.0.1", 57120).sendMsg("/airkit/unLoadPersonality", d.port, d.personality);
 		});
 		});

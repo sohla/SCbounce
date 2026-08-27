@@ -1,6 +1,13 @@
 (
 	[
 		"silence",
+
+		"mel4",
+		"mel5",
+		"mel3",
+		"mel1",
+		"melbb2",
+
 		"template3",
 		"harp1",
 		"bongo1",
@@ -13,6 +20,19 @@
 		"magicWand",
 		"wind1",
 		"insects1",
+		"rain1",
+		"thunder",
+
+
+		"quackQuack",
+		"chicken2",
+		"frog2",
+
+	    "trainChooka",
+	    "trainMelody",
+		"trainMove",
+		"trainBass",
+
 		"silence",
 	]
 )

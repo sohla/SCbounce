@@ -1,0 +1,67 @@
+class:: VisualEvent
+summary:: Convenience factory for one-off visual events
+categories:: Libraries>VisualServer
+related:: Classes/VisualServer, Classes/Vbind, Guides/VisualServer
+
+description::
+
+A small helper that builds an link::Classes/Event:: with the right code::\type:: so it can be played directly (code::().play::) without a pattern. The event types it targets are auto-registered at class compile by link::Classes/VisualEventTypes:: — nothing to load.
+
+These are equivalent: code::VisualEvent.circle(0, 0, 50).play:: and code::(type: \visual, instrument: \circle, x: 0, y: 0, size: 50).play::.
+
+CLASSMETHODS::
+
+method:: new
+Build an event of the given type.
+argument:: type
+Event type symbol (default code::\visual::).
+argument:: args
+An link::Classes/Event:: / association collection copied into the event.
+returns:: the link::Classes/Event::.
+
+method:: circle
+A code::\visual:: event with code::instrument: \circle::.
+argument:: x
+argument:: y
+argument:: size
+argument:: color
+code::nil:: -> code::Color.white::.
+argument:: dur
+argument:: view
+
+method:: pulse
+A code::\vpulse:: event.
+argument:: x
+argument:: y
+argument:: startSize
+argument:: endSize
+argument:: color
+argument:: dur
+argument:: view
+
+method:: line
+A code::\vline:: event.
+argument:: x1
+argument:: y1
+argument:: x2
+argument:: y2
+argument:: color
+argument:: width
+argument:: dur
+argument:: view
+
+method:: live
+A code::\vlive:: event (code::dur:: defaults to code::inf::).
+argument:: x
+argument:: y
+argument:: size
+argument:: color
+argument:: dur
+argument:: view
+
+EXAMPLES::
+
+code::
+VisualEvent.circle(0.3, -0.2, 70, Color.cyan, 1, \demo).play;
+VisualEvent.pulse(0, 0, 10, 250, Color.red, 1.2, \demo).play;
+::

@@ -1,10 +1,11 @@
 var m = ~model;
 var bi = 0;
-var dur = 0.11;
+var dur = 0.2;
+var buffers;
+var lastTime = 0;
 
-~buffers;
-m.accelMassFilteredAttack = 0.99;
-m.accelMassFilteredDecay = 0.9;
+m.accelMassFilteredAttack = 0.9999;
+m.accelMassFilteredDecay = 0.999;
 m.rrateMassFilteredAttack = 0.7;
 m.rrateMassFilteredDecay = 0.3;
 m.gyroFilteredAttack = 0.7;
@@ -13,7 +14,7 @@ m.gyroFilteredDecay = 0.7;
 
 //------------------------------------------------------------
 SynthDef(\drumkit, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
-    attack=0.01, decay=0.1, sustain=0.8, release=0.02, gate=1,cutoff=10, rq=1|
+    attack=0.01, decay=0.1, sustain=0.8, release=0.02, gate=1,cutoff=50, rq=0.01|
 	var lr = rate * BufRateScale.kr(bufnum);
 	var cd = BufDur.kr(bufnum);
   var env = EnvGen.kr(Env.adsr(attack, decay, sustain, release), gate, doneAction: 2);
@@ -37,7 +38,7 @@ SynthDef(\drumkit, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 
 	postf("loading samples : % \n", folder);
 
-	~buffers = folder.entries.collect({ |path,i|
+	buffers = folder.entries.collect({ |path,i|
 		Buffer.read(s, path.fullPath, action:{|buf|
 			postf("buffer alloc [%] \n", buf);
 			if(folder.entries.size - 1 == i,{
@@ -50,13 +51,12 @@ SynthDef(\drumkit, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 		Pbind(
 			\instrument, \drumkit,			
 			\bufnum, Pfunc{
-				if(bi >= (~buffers.size-1),{bi=0});
-				~buffers[bi];
+				if(bi >= (buffers.size-1),{bi=0});
+				buffers[bi];
 			},
 			\octave, Pseq([5].stutter(24), inf),
 			\start, 0,
 			\note, Pseq([40], inf),
-			\dur, Pseq([1] * dur, inf),
 			\pan, Pwhite(-0.3,0.3),
 			\attack, 0.01,
 			\release,1.3,
@@ -68,27 +68,22 @@ SynthDef(\drumkit, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 			\sy, Pwhite(-0.02,0.02),
 			\ex, 0,
 			\ey, 0,
-			// \startSize, 40,
-			// \endSize, 30,
 			\rotation, pi / Pwhite(1.7,2.3),
-			\fill, false,
-			// \startWidth, 30,
+			\fill, true,
 			\endWidth, 0.1,
-			// \startColor, Color.hsv(0.0,1,1.0,1),
-			// \endColor, Color.hsv(0.1,1,1.0,0.0),
       \duration, 0.3,
 		)
 	);
 
-	Pdef(m.ptn).play(quant:dur);
-	Pdef(m.ptn).set(\bufnum, ~buffers[0]);
+	Pdef(m.ptn).play(TempoClock,quant:dur);
+	Pdef(m.ptn).set(\bufnum, buffers[0]);
 
 };
 
 ~deinit = ~deinit <> {
 	Pdef(m.ptn).remove;
 
-	~buffers.do({|buf|
+	buffers.do({|buf|
 		// s.sync;
 		postf("buffer dealloc [%] \n", buf);
 		buf.free;
@@ -99,36 +94,47 @@ SynthDef(\drumkit, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 //------------------------------------------------------------
 ~next = {|d|
 
-	var rate = m.rrateMassFiltered.linlin(0,1,0.2,10.4);
-	var amp = m.accelMassFiltered.lincurve(0,1.5,0.02,1, 2);
+	var rate = m.rrateMassFiltered.linlin(0,0.5,0.2,10.4);
+	var amp = m.accelMassFiltered.lincurve(0,0.5,0.0,2, 2);
+	var roll = ((d.sensors.gyroEvent.x / pi).fold(-0.5,0.5) * 2).lincurve(-1.0,1.0,0.5,2.0,0);
+	var thr = (d.sensors.accelEvent.y.abs).lincurve(0,0.5,0.0,1.0,-2).asInteger;
+	var ff = ((d.sensors.gyroEvent.z / pi).fold(-0.5,0.5) * 2).lincurve(-1.0,1.0,500,50.0,1);
 
-	Pdef(m.ptn).set(\amp, amp * 1.5);
-	Pdef(m.ptn).set(\rate, rate);
+	Pdef(m.ptn).set(\amp, amp*1);
+	Pdef(m.ptn).set(\rate, roll);
+	Pdef(m.ptn).set(\cutoff, ff);
 
 	Pdef(m.ptn).set(\viewID, d.port);
-  Pdef(m.ptn).set(\startSize, 3);
-  Pdef(m.ptn).set(\endSize, 30 + (100 * amp));
-  Pdef(m.ptn).set(\startWidth, (10.pow(amp)));
+  	Pdef(m.ptn).set(\startSize, 50 * amp);
+  	Pdef(m.ptn).set(\endSize, 130 + (40 * amp));
+  	Pdef(m.ptn).set(\startWidth, (2.pow(amp)));
 
 	Pdef(m.ptn).set(\modulation, (
 			type: \radial,
 			freq: 1 ,
-			amp: 1 + (10 * amp),
+			amp: 1 + (30 * amp),
 			harmonics: 2
 	));
 
+	bi = (d.sensors.gyroEvent.y / pi.half).linlin(-1.0,1.0,0,buffers.size-1);
+	bi = bi.asInteger;
 
-	// bi = (d.sensors.gyroEvent.y.abs / pi) * (~buffers.size-1);
-	// bi = bi.asInteger;
-	// bi = [0,1].choose;
-  bi = ~buffers.size.rand;
-	Pdef(m.ptn).set(\startColor, Color.hsv(bi/~buffers.size,1,1.0,1));
-	Pdef(m.ptn).set(\endColor, Color.hsv(bi/~buffers.size,1,1.0,0.1));
+	Pdef(m.ptn).set(\startColor, Color.hsv(bi/buffers.size,1,1.0,0.5));
+	Pdef(m.ptn).set(\endColor, Color.hsv(bi/buffers.size,1,1.0,0.1));
 
+	if(TempoClock.beats >= (lastTime + 0.1),{
+		if(m.accelMassFiltered > 0.5,{
+			lastTime = TempoClock.beats;
+			dur = 0.1;
+		},{
+			dur = 0.2;			
+		});
+	});
+	Pdef(m.ptn).set(\dur, dur);
 
 	if(m.accelMassFiltered > 0.02,{
 		if( Pdef(m.ptn).isPlaying.not,{
-			Pdef(m.ptn).resume(quant:dur*2);
+			Pdef(m.ptn).resume(quant:0.2);
 		});
 	},{
 		if( Pdef(m.ptn).isPlaying,{
@@ -141,7 +147,8 @@ SynthDef(\drumkit, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 ~plotMin = -1;
 ~plotMax = 1;
 ~plot = { |d,p|
-	[m.rrateMass * 0.1, m.rrateMassFiltered * 0.1];
+	// [m.rrateMass * 0.1, m.rrateMassFiltered * 0.1];
+	[d.sensors.gyroEvent.y / pi.half, (d.sensors.gyroEvent.x / pi).fold(-0.5,0.5) * 2,d.sensors.accelEvent.y.abs,(d.sensors.gyroEvent.z / pi).fold(-0.5,0.5) * 2];
 	// [m.accelMass * 0.3, m.accelMassFiltered * 0.5];
 	// [m.rrateMassFiltered, m.rrateMassThreshold];
 	// [m.rrateMassFiltered, m.rrateMassThreshold, m.accelMassAmp];
@@ -151,4 +158,4 @@ SynthDef(\drumkit, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 
 
 };
-Buffer.cachedBuffersDo(s, {|b|b.postln})
+// Buffer.cachedBuffersDo(s, {|b|b.postln})
