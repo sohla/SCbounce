@@ -156,14 +156,16 @@ s.waitForBoot({
         // top of the 08-19 values; four new patches enter padded (STRINGCHORD
         // -4, BIRDY -3, PLUKSYNTH -3, WHIPBIRD -2). RainKeys/WindVoice pad
         // in-patch instead (they must also pad in Room 2 auditions).
+        // 2026-08-27 (Ciaran, heard live): STRINGCHORD +3 (-4 -> -1),
+        // BIRDY +3 (-3 -> 0).
         IdentityDictionary[
             \BASSBUZZ -> 2.1135,       // +6.5 dB
             \JUPITERSHARP -> 2.5119,   // +8 dB
             \ALTOSYNTH -> 1.2589,      // +2 dB
             \PERCUSSION -> 1.0,        // 0 dB
             \SOPRANOVOICE -> 1.0,      // 0 dB
-            \STRINGCHORD -> 0.6310,    // -4 dB
-            \BIRDY -> 0.7079,          // -3 dB
+            \STRINGCHORD -> 0.8913,    // -1 dB (was -4; +3 dB 2026-08-27)
+            \BIRDY -> 1.0,             // 0 dB (was -3; +3 dB 2026-08-27)
             \PLUKSYNTH -> 0.7079,      // -3 dB
             \WHIPBIRD -> 0.7943,      // -2 dB
             \WINDY -> 0.6310          // -4 dB (entered padded 2026-08-26, untested on real load)

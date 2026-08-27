@@ -4,6 +4,12 @@ One entry per push batch from the Concerts of the Future side, newest first: wha
 why, and what (if anything) behaves differently on your machine. The intent is that nothing
 here ever changes how AirKit behaves for you — if it does, that's a bug, tell us.
 
+## 2026-08-27 — STRINGCHORD and BIRDY up +3 dB each in the Room 3 trim table (cotf)
+
+**Nothing changes for you.** Two `~cotfPatchTrims` values in `cotf/main_cotf.scd` only
+(Room 3 show loudness, ear-tuned by Ciaran during today's groups): STRINGCHORD -4 → -1 dB,
+BIRDY -3 → 0 dB. No personality files touched, no roster change.
+
 ## 2026-08-26 — WINDY into the live pool: header keys, -4 dB trim, roster BIRDY dedupe (cotf)
 
 **One small behaviour change on your side: WINDY gets a `~cotfPatchTrims` entry (-4 dB)** in
