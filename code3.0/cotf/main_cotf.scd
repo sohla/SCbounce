@@ -164,7 +164,7 @@ s.waitForBoot({
             \ALTOSYNTH -> 1.2589,      // +2 dB
             \PERCUSSION -> 1.0,        // 0 dB
             \SOPRANOVOICE -> 1.0,      // 0 dB
-            \STRINGCHORD -> 0.8913,    // -1 dB (was -4; +3 dB 2026-08-27)
+            \STRINGCHORD -> 1.1220,    // +1 dB (was -1; +2 dB 2026-08-31 Ciaran ear-check)
             \BIRDY -> 1.0,             // 0 dB (was -3; +3 dB 2026-08-27)
             \PLUKSYNTH -> 0.7079,      // -3 dB
             \WHIPBIRD -> 0.7943,      // -2 dB
