@@ -3,13 +3,21 @@
 
 	"silence",
 
+	"celeste1",
+	"harpsichord1",
+	"dulcimer1",
+	
+	"multiBeat1",
+	"multiBeat3",
+	"multiBeat4",
+	"multiBeat5",
+	"multiBeatSynth1",
+
 	"trainMove2",
-	"trainMove3",
 	"trainBass3",
 	"trainMelody2",
 	"trainChooka2",
 
-	"multiBeat1",
 
 	"melbb2",
 	"nicTwoNote",

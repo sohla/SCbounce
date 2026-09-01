@@ -25,7 +25,7 @@ var group;
 // count and the dur can disagree.
 //
 // Take 3 and 6 out of divs for a binary-only ladder.
-var divs = [2, 4, 6];
+var divs = [1, 2, 4];
 var pool = [0, 4, 7, 11, 12, 11, 7, 2];   // needs at least divs.last entries
 
 var divPat  = Pswitch(divs.collect({ |n| Pn(n, n) }),              Pkey(\divIdx));
@@ -84,7 +84,8 @@ SynthDef(\multiBeatVoice, {|out=0, freq=440, amp=0.2, pan=0,
 			\endColor, Color.new(0.1, 0.4, 0.6).alpha_(0.0),
 			\startWidth, 3,
 			\endWidth, 0.4,
-			\duration, Pkey(\dur) * 2,
+			\duration, Pkey(\dur) * 8,
+			\func, Pfunc({|e| ~onEvent.(e)}),
 
 			\args, #[],
 		)
@@ -113,6 +114,13 @@ SynthDef(\multiBeatVoice, {|out=0, freq=440, amp=0.2, pan=0,
 };
 
 //------------------------------------------------------------
+~onEvent = {|e|
+
+	m.com.root = e.root;
+	m.com.dur = e.dur;
+};
+
+//------------------------------------------------------------
 // Accel drives the ladder index, and nothing else touches it — \divIdx
 // is deliberately NOT a Pbind key, because a Pbind key would override
 // the envir and defeat this .set.
@@ -121,14 +129,15 @@ SynthDef(\multiBeatVoice, {|out=0, freq=440, amp=0.2, pan=0,
 		.round.asInteger.clip(0, divs.size - 1);
 	var amp = m.accelMassFiltered.lincurve(0, 1.0, -60, -12, -1);
 	var ffreq = m.accelMassFiltered.lincurve(0, 1.0, 700, 6000, 2);
-	var rel = m.accelMassFiltered.lincurve(0, 1.0, 0.1, 1.2, 2);
+	var rel = m.accelMassFiltered.lincurve(0, 1.0, 0.1, 3.2, 2);
 
 
 	Pdef(m.ptn).set(\viewID, d.port);
 	Pdef(m.ptn).set(\divIdx, idx);
 	Pdef(m.ptn).set(\amp, amp.dbamp);
 	Pdef(m.ptn).set(\ffreq, ffreq);
-	Pdef(m.ptn).set(\release, rel);
+	Pdef(m.ptn).set(\attack, 0.0003);
+	Pdef(m.ptn).set(\release, rel * 0.1);
 };
 
 //------------------------------------------------------------

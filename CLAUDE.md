@@ -85,6 +85,8 @@ output is "a piece in the lineage of X", never "page 47 of X".
 | `code3.0/plotterView.scd` | The per-device plotter driven by `~plot`. |
 | `personalities/*.sc` | The personality files ("p-files"). |
 | `visuals/graphic-scores-atlas.md` | Design source document for visual grammars. |
+| `code3.0/ak_pfile_authoring.md` | How to write a p-file at all: the controller contract, the model and sensors, sound architectures, cleanup, and the non-visual traps. Read it before writing a new personality; this file stays the authority on the visual API. |
+| `personalities/_TEMPLATE_ak_pfile.sc` | The skeleton to copy for a new p-file. |
 
 Reference implementations to read before writing a new one:
 
