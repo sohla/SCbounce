@@ -1,5 +1,8 @@
 var m = ~model;
 var bl=false;
+var group;
+var fxBus;
+var verbSynth;
 
 m.accelMassFilteredAttack = 0.9;
 m.accelMassFilteredDecay = 0.7;
@@ -11,16 +14,26 @@ m.gyroFilteredDecay = 0.7;
 //------------------------------------------------------------
 SynthDef(\raindrop, {
     |out=0, freq=1000, amp=0.8, pan=0, gate=1, attack=0.001, decay=0.05,
-	filterFreq=3000, filterRQ=1, wobble=10,
- 	reverbMix=0.2, reverbRoom=0.83, reverbDamp=0.5|
+	filterFreq=3000, filterRQ=1, wobble=10|
 
-	  var sig, env, verb;
+	  var sig, env;
     env = EnvGen.ar(Env.perc(attack, decay), gate);
     sig = SinOsc.ar(freq * LFPar.ar(wobble,pi/2, 0.2,1)) * env;
     sig = BPF.ar(sig, filterFreq, filterRQ);
-    verb = FreeVerb.ar(sig, reverbMix, reverbRoom, reverbDamp);
-  	DetectSilence.ar(verb, doneAction: 2);
-    Out.ar(out, PanAz.ar(2, verb, pan, 1, 2, 0.5) * amp);
+  	DetectSilence.ar(sig, doneAction: 2);
+    Out.ar(out, PanAz.ar(2, sig, pan, 1, 2, 0.5) * amp);
+}).add;
+
+// The reverb the drops used to each carry their own copy of, now one synth
+// at the tail of the group. room is clipped : a persistent reverb fed a
+// room above 1 does not decay, it grows.
+SynthDef(\dropletVerb, {
+    |in=0, out=0, mix=0.2, room=0.83, damp=0.5, amp=1, gate=1, release=0.5|
+	var sig = In.ar(in, 2);
+	var env = EnvGen.kr(Env.asr(0.01, 1, release), gate, doneAction: 2);
+	sig = FreeVerb2.ar(sig[0], sig[1], mix, room.clip(0, 0.95), damp);
+	sig = LeakDC.ar(sig);
+	Out.ar(out, sig * env * amp);
 }).add;
 
 //------------------------------------------------------------
@@ -87,9 +100,15 @@ SynthDef(\raindrop, {
     nil
   });
 
+  group = Group.new;
+  fxBus = Bus.audio(s, 2);
+  verbSynth = Synth.tail(group, \dropletVerb, [\in, fxBus, \out, 0]);
+
   Pdef(m.ptn,
     Pbind(
       \instrument, \raindrop,
+      \group, group,
+      \out, fxBus,
       \octave, 4,
       \note, Pwhite(2,40,inf),//Pseq([13,20,29], inf),//Pwhite(2,40,inf),
       \attack, 0.001,
@@ -145,7 +164,22 @@ SynthDef(\raindrop, {
 //------------------------------------------------------------
 ~deinit = ~deinit <> {
   Pdef(m.ptn).remove;
+  if (verbSynth.notNil) { verbSynth.set(\gate, 0) };
 
+  fork {
+    0.7.wait;
+    if (group.notNil) {
+      s.bind { group.freeAll };
+      s.sync;
+      group.free;
+      group = nil;
+      verbSynth = nil;
+    };
+    if (fxBus.notNil) {
+      fxBus.free;
+      fxBus = nil;
+    };
+  };
 };
 
 //------------------------------------------------------------
@@ -155,7 +189,7 @@ SynthDef(\raindrop, {
   var wob = ((d.sensors.gyroEvent.x / pi).fold(-0.5,0.5) * 2).lincurve(-1.0,1.0,0.01,14000.0,-2);
   var side  = ((d.sensors.accelEvent.y.abs + d.sensors.accelEvent.z.abs) * 0.1).lincurve(0,1.0,1.0,wob,-2);
   var dcy  = ((d.sensors.accelEvent.y.abs + d.sensors.accelEvent.z.abs) * 0.1).lincurve(0,1.0,0.05,3.0,-1);
-  var verb = m.accelMassFiltered.lincurve(0,2.5,0.53,10.0,2);
+  var verb = m.accelMassFiltered.lincurve(0,2.5,0.53,0.95,2);
   var amp = m.gyroYFiltered.lincurve(-1.0,1.0,0.0,1,-2);
   // var amp = m.accelMassFiltered.lincurve(0,0.1,0.0,1.0,-1);
 
@@ -169,6 +203,7 @@ SynthDef(\raindrop, {
   Pdef(m.ptn).set(\wobble, side);
   Pdef(m.ptn).set(\decay, dcy);
   Pdef(m.ptn).set(\reverbRoom, verb);
+  if (verbSynth.notNil) { verbSynth.set(\room, verb) };
 
   // Pdef(m.ptn).set(\startSize, amp.linlin(0, 1, 45, 200));
 

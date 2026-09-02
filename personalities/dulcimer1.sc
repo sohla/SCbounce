@@ -1,40 +1,25 @@
-/*
-gestures:    [beat, shake]
-description: The hammered dulcimer's repeated-note tremolo, built as a subdivision ladder. Every group fills exactly ONE beat, so the note count and the dur are two views of the same number: n notes of dur 1/n. Accel picks n off the ladder [1 2 3 4], and because the whole figure is built from Pswitch the subdivision can only change at a group boundary — the tremolo thickens and thins between beats but never drifts inside one. The note material lengthens with it: n notes of the pool, so a single sustained strike at rest becomes a four note run flat out. It publishes root and dur on m.com, so another p-file can follow the key it is walking through.
-sound:       hammered dulcimer samples, one voice per strike, tail scaling with dur so fast tremolo stays tight and slow strikes ring
-pitch:       first n notes of a local pool over a root that moves every 32 notes; nearest-sample lookup, ≤2 semitone shift
-rhythm:      n strikes per beat, n from accel, on a half second beat
-instruments: [Cellaris]
-*/
-
 var m = ~model;
 var group;
 var samplesLib;
 
+// The voices do not reach the hardware directly any more : they play into
+// fxBus, and the reverb sitting at the TAIL of the group reads that bus
+// and writes to 0. Order is the whole mechanism — a Pbind's synths are
+// added with addToHead, so every voice lands in front of the tail synth
+// however many of them are sounding.
+var fxBus;
+var verb;
+
 var eventTypeName = (\customEvent_ ++ m.ptn).asSymbol;
 
 var folder = PathName("~/Downloads/cotf_samples/Celtic Hammered Dulcimer");
-// Articulation, embedded in the stem : hrd = hard mallets, the open tone.
-// med / sft / mtd are softer, trill is pre-trilled.
 var sampleFilter = "Dlcmr-hrd";
 
-// THE RULE, in one line each.
-//
-//   Pn(n, n)             -> n copies of n      : the dur denominator, latched for the group
-//   Pseries(0, 1, n)     -> 0 .. n-1           : where we are inside the group
-//   Pseq(pool.keep(n),1) -> first n pool notes : the figure lengthens as it subdivides
-//
-// All three are FINITE patterns of length n, so all three Pswitches end
-// their group on the same event and re-read \divIdx together. That
-// lockstep is what keeps the count and the dur from disagreeing.
 var beat = 0.5;
 var divs = [2, 4, 6];
-var pool = [0, 11, 7, 4, 2, -1];   // needs at least divs.last entries
+var pool = [0, 11, 7, 4, 2, -5];
 
 //------------------------------------------------------------
-// note-name -> MIDI, and the library's own stem shape:
-//   "IL Hmr Dlcmr-hrd F#2c" -> note F#2, take c. The trailing variant
-// letter is stripped, so every take of a pitch resolves to one note.
 var noteToMidi = { |noteName|
 	var pattern = "([A-G](#|b)?)([0-9])";
 	var noteNames = "C C# D D# E F F# G G# A A# B";
@@ -61,35 +46,33 @@ m.accelMassFilteredDecay = 0.6;
 
 //------------------------------------------------------------
 SynthDef(\dulcimerVoice, {|out=0, bufnum=0, amp=0.2, rate=1, start=0, pan=0,
-    attack=0.002, sustain=0.2, release=1.2|
+    attack=0.002, sustain=0.2, release=1.2, freq=440|
 	var env = EnvGen.kr(Env.new([0, 1, 1, 0], [attack, sustain, release]), doneAction: 2);
 	var sig = PlayBuf.ar(2, bufnum,
-		rate: rate * BufRateScale.kr(bufnum),
+		rate: rate * BufRateScale.kr(bufnum) * [1, 1.007],
 		startPos: start * BufFrames.kr(bufnum), loop: 0);
-	Out.ar(out, Balance2.ar(sig[0], sig[1], pan, amp * env));
+	var tone = LFTri.ar(freq * [1,1.02] * 1 * LFCub.ar(9 * amp,0, 0.1 * amp,2), 0, 0.02);
+	var mix = (sig + tone) * amp * env;
+	Out.ar(out, mix);
+}).add;
+
+// The tail of the group. FreeVerb2 carries its own dry signal, so mix is
+// the wet/dry blend and nothing has to be routed around it. Gated, because
+// a hard free on a reverb cuts the tail off mid-air.
+SynthDef(\dulcimerVerb, {|in=0, out=0, mix=0.1, room=1.12, damp=0.2, amp=1,
+    gate=1, release=1.4|
+	var sig = In.ar(in, 2);
+	var env = EnvGen.kr(Env.asr(0.01, 1, release), gate, doneAction: 2);
+	sig = FreeVerb2.ar(sig[0], sig[1], mix, room, damp);
+	sig = LeakDC.ar(sig);
+	Out.ar(out, sig * env * amp);
 }).add;
 
 //------------------------------------------------------------
-// visual : the subdivision as a piano roll. Each group lays its n strikes
-// left to right across one beat, so the tremolo density you hear is the
-// density you see, and a triplet reads as three ticks where a four run
-// reads as four. Height is the sounding pitch, so the pool climbs the
-// canvas and the whole stack steps whenever the root moves.
-//
-// Lineage: pin-barrel and piano-roll notation — the marks are the pins,
-// the beat is one turn of the barrel. Atlas grammars G3 (grid) and G10
 // (machine-legible), on the phosphor palette from §0.5.
-//
-//   step in group -> horizontal position   (\sx -> \ex)
-//   note + root   -> height                (-> \sy)
-//   dur           -> length of the tick    (-> \startSize)
-//   amp           -> stroke weight
 ~init = ~init <> {
 
-	// Nearest-sample lookup. Coverage is a G major scale across four
-	// octaves, so a chromatic target is never more than two semitones
-	// from a real strike.
-	var findClosestSample = { |targetMidi|
+		var findClosestSample = { |targetMidi|
 		var closest = samplesLib.minItem({ |sample| (sample.midiNote - targetMidi).abs });
 		(buffer: closest.buffer, rate: (targetMidi - closest.midiNote).midiratio)
 	};
@@ -115,21 +98,24 @@ SynthDef(\dulcimerVoice, {|out=0, bufnum=0, amp=0.2, rate=1, start=0, pan=0,
 	});
 
 	group = Group.new;
+	fxBus = Bus.audio(s, 2);
+	verb = Synth.tail(group, \dulcimerVerb, [\in, fxBus, \out, 0]);
 
 	Pdef(m.ptn,
 		Pbind(
 			\instrument, \dulcimerVoice,
 			\group, group,
+			\out, fxBus,
 			\type, eventTypeName,
 
 			\div,  Pswitch(divs.collect({ |n| Pn(n, n) }),              Pkey(\divIdx)),
 			\step, Pswitch(divs.collect({ |n| Pseries(0, 1, n) }),      Pkey(\divIdx)),
 			\note, Pswitch(divs.collect({ |n| Pseq(pool.keep(n), 1) }), Pkey(\divIdx)),
 			\root, Pseq([0, 2,-2,0].stutter(24), inf),
-			\octave, 4,
+			\octave, Pseq([2, 4, 3, 5].stutter(2), inf),
 			\dur,  Pkey(\div).reciprocal * beat,
 			\legato, 0.8,
-			\release, Pkey(\dur) * 2.2,
+			\release, 2,
 			\pan, Pwhite(-0.3, 0.3),
 
 			\shape, \line,
@@ -137,14 +123,14 @@ SynthDef(\dulcimerVoice, {|out=0, bufnum=0, amp=0.2, rate=1, start=0, pan=0,
 			\sx, (Pkey(\step) / Pkey(\div) * 1.5) - 0.75,
 			\ex, Pkey(\sx),
 			\sy, Pfunc({ |e| ((e[\note] ? 0) + (e[\root] ? 0)).linlin(-4, 14, 0.6, -0.6) }),
-			\ey, Pkey(\sy),
-			\startSize, Pkey(\dur) * 90,
-			\endSize, Pkey(\dur) * 90,
-			\startColor, Color.new(0.49, 1.0, 0.63, 0.9),
-			\endColor, Color.new(0.1, 0.4, 0.2, 0.0),
+			\ey, Pkey(\sy).neg,
+			\startSize, Pkey(\amp) * 490,
+			\endSize, Pkey(\amp) * 90,
+			\startColor, Color.new(1.0, 0.0, 0.0, 0.9),
+			\endColor, Color.new(0.0, 1.0, 0.0, 0.0),
 			\startWidth, Pfunc({ |e| ((e[\amp] ? 0.2) * 22) + 1 }),
 			\endWidth, 0.4,
-			\duration, Pkey(\dur) * 3,
+			\duration, Pkey(\dur) * 6,
 			\func, Pfunc({ |e| ~onEvent.(e) }),
 
 			\args, #[],
@@ -152,9 +138,6 @@ SynthDef(\dulcimerVoice, {|out=0, bufnum=0, amp=0.2, rate=1, start=0, pan=0,
 	);
 
 	Pdef(m.ptn).play(quant: 1);
-
-	// Seed the envir — ~next has not run when the first events fire, and a
-	// nil \divIdx would index the Pswitch lists with nil.
 	Pdef(m.ptn).set(\divIdx, 0);
 	Pdef(m.ptn).set(\amp, 0);
 };
@@ -163,13 +146,19 @@ SynthDef(\dulcimerVoice, {|out=0, bufnum=0, amp=0.2, rate=1, start=0, pan=0,
 ~deinit = ~deinit <> {
 	Pdef(m.ptn).remove;
 	Event.eventTypes.removeAt(eventTypeName);
+	if (verb.notNil) { verb.set(\gate, 0) };
 
+	// Synths first, then buffers, then the bus. Freeing a buffer a PlayBuf
+	// is still reading crashes the server; the wait lets the reverb tail
+	// out rather than being cut off by the freeAll.
 	fork {
+		0.6.wait;
 		if (group.notNil) {
 			s.bind { group.freeAll };
 			s.sync;
 			group.free;
 			group = nil;
+			verb = nil;
 		};
 		if (samplesLib.notNil) {
 			samplesLib.do({ |sample|
@@ -179,12 +168,15 @@ SynthDef(\dulcimerVoice, {|out=0, bufnum=0, amp=0.2, rate=1, start=0, pan=0,
 			});
 			samplesLib = nil;
 		};
+		if (fxBus.notNil) {
+			postf("bus dealloc [%] \n", fxBus);
+			fxBus.free;
+			fxBus = nil;
+		};
 	};
 };
 
 //------------------------------------------------------------
-// Publish the key and the beat this file is walking through, so another
-// p-file can follow it.
 ~onEvent = {|e|
 
 	m.com.root = e.root;
@@ -192,13 +184,11 @@ SynthDef(\dulcimerVoice, {|out=0, bufnum=0, amp=0.2, rate=1, start=0, pan=0,
 };
 
 //------------------------------------------------------------
-// Accel drives the ladder index, and nothing else touches it — \divIdx is
-// deliberately NOT a Pbind key, because a Pbind key would override the
-// envir and defeat this .set.
 ~next = {|d|
-	var idx = m.accelMassFiltered.lincurve(0, 1.5, 0, divs.size - 1, 1)
-		.round.asInteger.clip(0, divs.size - 1);
-	var amp = m.accelMassFiltered.lincurve(0, 1.2, -60, -12, -1);
+	var idx = m.accelMassFiltered.lincurve(0, 2.5, 0, divs.size - 1, 2).round.asInteger.clip(0, divs.size - 1);
+	var amp = m.accelMassFiltered.lincurve(0, 2.5, -40, -5, -2);
+
+	if(amp < 39.neg, { amp = 120.neg});
 
 	Pdef(m.ptn).set(\viewID, d.port);
 	Pdef(m.ptn).set(\divIdx, idx);

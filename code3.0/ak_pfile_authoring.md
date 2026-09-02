@@ -560,30 +560,35 @@ guards are load-bearing rather than defensive.
 
 ---
 
-## 12. Front matter
+## 12. Comments — keep p-files lean
 
-A block comment at the top of the file. **Nothing parses it** — no code in
-`code3.0/` reads these keys. It is documentation for the next reader, and for
-Claude when asked to write a companion file. Roughly a quarter of the
-personalities carry it; new ones should.
+**Almost none. No header, no front matter.** The code is the explanation; if a
+line needs explaining, name the variable better or pull the expression out.
 
-```supercollider
-/*
-gestures:    [beat, shake, tilt]
-description: <what it is, mechanically — the long one. Say what the rule is.>
-sound:       <what you hear>
-pitch:       <where notes come from>
-rhythm:      <rhythmic behaviour>
-instruments: [Gravitone]
-*/
-```
+The only comments a p-file carries are the `//---` section separators every
+file in `personalities/` uses. Do not write:
 
-`gestures` in use: `beat`, `shake`, `tilt`, `twist`, `strike`.
-`instruments` in use: `Gravitone`, `Lumivox`, `Velaphone`, `Aetherharp`,
-`Cellaris`, `Clavelium`, `Template`.
+- a `/* gestures: description: sound: pitch: rhythm: instruments: */` header
+- a prose block above a `~vdef`, an atlas lineage, or a mapping table
+- a comment inside a `Pbind`, an event literal, or a `~vdef` body
+- a comment restating what the next line does
 
-If the file has a visual, the atlas lineage goes in the comment block above
-the `~vdef`, not here — see `CLAUDE.md` §C.
+If something genuinely cannot be read off the code, **one short line**. One.
+Most of the time the honest fix is that the code should be clearer, or the
+value should be sitting on the event where it can be seen.
+
+**Commented-out code is protected.** Probe lines in `~plot`, a disabled
+`Balance2.ar` in a SynthDef — those are working notes, not dead code. Leave
+them exactly where they are.
+
+Older files carry the heavy annotated style — `templateVisual.sc`, the train
+quartet, most of `cotf_*`. Read them for the explanations; do not copy the
+style, and do not go and strip them either unless asked.
+
+The reasoning behind a file still matters — the grammar chosen, why a mapping
+is shaped the way it is. It just does not live in the file. Say it in the chat
+when handing the work over, or put it here if it is a rule rather than a
+one-off.
 
 ---
 
@@ -641,6 +646,7 @@ Two things to know:
 - [ ] `Pdef(m.ptn).set(\viewID, d.port)` if there is a visual
 - [ ] `~plot` returns a real array; `~plotMin` / `~plotMax` set
 - [ ] every `var` at the top of its body
+- [ ] no header, no front matter, effectively no comments (§12)
 - [ ] save it twice in a row and confirm the post window balances
 
 ---

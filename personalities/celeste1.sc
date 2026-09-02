@@ -1,30 +1,14 @@
-/*
-gestures:    [beat, shake]
-description: A cyclic score for the celeste. Every note takes the next position on a 96 step ring, and the dur pattern under it is 11 steps long, so the figure never lands on the same points twice — it precesses, a lap at a time. The rests in that dur pattern are real: they take a ring position and draw nothing, so the gaps are as structural as the strikes. Movement is the on switch and nothing else: below the threshold the pattern is paused mid-ring and the canvas empties, above it the ring fills again from wherever it stopped.
-sound:       celeste samples, one voice per strike, tail scaling with how hard you are moving — still and it rings out, hard and it goes dry and close
-pitch:       a pentatonic pool over three octaves of the sample library, nearest-sample lookup with a ≤1 semitone shift
-rhythm:      a fixed 11 step dur pattern with three rests in it, laid round a 96 step ring
-instruments: [Lumivox]
-*/
-
 var m = ~model;
 var group;
 var samplesLib;
 
-// Unique per-env event type — a shared \customEvent registration would be
-// clobbered by the next device to load a sampler.
 var eventTypeName = (\customEvent_ ++ m.ptn).asSymbol;
 
 var folder = PathName("~/Downloads/cotf_samples/Celesta_ES_mf");
 
-// Position around the ring. State, not a tunable : it counts events, and
-// nothing in m can recompute where the last lap got to. The ring LENGTH
-// is on the event, next to everything else.
 var step = 0;
 
 //------------------------------------------------------------
-// note-name -> MIDI, for the library's "CE_ES_mf_<NOTE>.wav" stems. The
-// note token is the last underscore-separated piece of the stem.
 var noteToMidi = { |noteName|
 	var pattern = "([A-G](#|b)?)([0-9])";
 	var noteNames = "C C# D D# E F F# G G# A A# B";
@@ -56,39 +40,12 @@ SynthDef(\celesteVoice, {|out=0, bufnum=0, amp=0.2, rate=1, start=0, pan=0,
 //------------------------------------------------------------
 ~init = ~init <> {
 
-	// nearest-sample lookup. The library is every semitone at the bottom
-	// and every whole tone above that, so the shift is never more than a
-	// semitone and the bell keeps its character.
 	var findClosestSample = { |targetMidi|
 		var closest = samplesLib.minItem({ |sample| (sample.midiNote - targetMidi).abs });
 		(buffer: closest.buffer, rate: (targetMidi - closest.midiNote).midiratio)
 	};
 
 	//--------------------------------------------------------
-	// visual : a cyclic score. Each strike takes the next position round
-	// a 96 step ring and its radius is its pitch, so a rising phrase
-	// spirals outward as it goes round. The dur pattern under it is 11
-	// steps long, so the figure walks a few positions each lap instead of
-	// stamping the same points — and its three rests take a position and
-	// draw nothing, which is what makes the gaps legible as gaps.
-	//
-	// The mark is a gong point : a struck head with a spoke trailing out
-	// along the radius, both shrinking on the sample's own tail, so what
-	// you see decaying is what you hear decaying.
-	//
-	// Lineage: gong-point and nested-cycle notations from the atlas, in
-	// the Ikeda-ish white-on-black data palette rather than a warm one —
-	// the celeste is a cold instrument. Atlas grammar G8, palette §0.5.
-	//
-	//   ring position -> angle          (\cyc -> \rotation)
-	//   pitch         -> radius         (\rad -> \startSize)
-	//   amp           -> head size      (\modulation)
-	//   release       -> how long the mark lives, and how fast it shrinks
-	//
-	// A draw func : head and spoke are two sub-paths. It knows no geometry
-	// of its own — the event sits at the canvas centre, \rotation carries
-	// the angle and \startSize is the radius, so it only steps out along
-	// +x and asks c[\draw] for library shapes.
 	~vdef.(\gongPoint, { |ev, c|
 		var mod = ev[\modulation] ? ();
 		var rest = mod[\rest] ? false;
@@ -109,8 +66,6 @@ SynthDef(\celesteVoice, {|out=0, bufnum=0, amp=0.2, rate=1, start=0, pan=0,
 		nil
 	});
 
-	// Load the library. Every stem ends in its note name, so the MIDI note
-	// each buffer holds is known before a single note is played.
 	samplesLib = folder.entries.collect({ |path|
 		var note = path.fileNameWithoutExtension.split($_).last;
 		var buffer = Buffer.read(s, path.fullPath, action: { |buf|
@@ -120,8 +75,6 @@ SynthDef(\celesteVoice, {|out=0, bufnum=0, amp=0.2, rate=1, start=0, pan=0,
 	});
 	postf("loading celeste : % samples \n", samplesLib.size);
 
-	// The event type resolves pitch to a buffer and a rate, then hands on
-	// to \customVisualEvent, which draws the mark and re-types to \note.
 	Event.addEventType(eventTypeName, { |e|
 		var target = ~note + ~root + (12 * ~octave);
 		var found = findClosestSample.(target);
@@ -207,9 +160,6 @@ SynthDef(\celesteVoice, {|out=0, bufnum=0, amp=0.2, rate=1, start=0, pan=0,
 };
 
 //------------------------------------------------------------
-// Movement is the on switch. Below the threshold the pattern pauses where
-// it is — the ring keeps its position, so picking the stick back up
-// carries on round rather than restarting the lap.
 ~next = {|d|
 	var amp = m.accelMassFiltered.lincurve(0, 1.4, -60, -14, -1);
 	var release = m.accelMassFiltered.lincurve(0, 1.4, 2.6, 0.5, 2);

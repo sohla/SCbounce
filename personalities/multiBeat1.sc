@@ -1,32 +1,8 @@
-/*
-gestures:    [beat, shake]
-description: A subdivision ladder driven by accel. Every group fills exactly ONE beat, so the note count and the dur are two views of the same number: n notes of dur 1/n. Accel picks n off the ladder [1 2 3 4 6 8] — 3 and 6 are the triplets. Because the whole thing is built from Pswitch, the subdivision can only change at a group boundary, so the grid never drifts mid-figure however hard the stick is moved.
-sound:       short filtered pulse+sine mallet tone; release scales with dur so fast subdivisions stay tight and slow ones ring
-pitch:       first n notes of a local pool — the figure literally lengthens as it subdivides
-rhythm:      n notes per beat, n from accel. binary 1/2/4/8 and triplet 3/6 on one continuous ladder
-instruments: [Template]
-*/
-
 var m = ~model;
 var group;
 
-// THE RULE, in one line each.
-//
-// divs is the ladder of subdivisions, ordered by density so accel can
-// ride straight up it. For each n:
-//
-//   Pn(n, n)             -> n copies of n      : the dur denominator, latched for the group
-//   Pseries(0, 1, n)     -> 0 .. n-1           : where we are inside the group
-//   Pseq(pool.keep(n),1) -> first n pool notes : "each subdivision has that multiple of values"
-//
-// All three are FINITE patterns of length n, so all three Pswitches end
-// their group on the same event and re-read \divIdx together. That
-// lockstep is what keeps the figure coherent — drop it and the note
-// count and the dur can disagree.
-//
-// Take 3 and 6 out of divs for a binary-only ladder.
 var divs = [1, 2, 4];
-var pool = [0, 4, 7, 11, 12, 11, 7, 2];   // needs at least divs.last entries
+var pool = [0, 4, 7, 11, 12, 11, 7, 2];
 
 var divPat  = Pswitch(divs.collect({ |n| Pn(n, n) }),              Pkey(\divIdx));
 var stepPat = Pswitch(divs.collect({ |n| Pseries(0, 1, n) }),      Pkey(\divIdx));
@@ -48,15 +24,6 @@ SynthDef(\multiBeatVoice, {|out=0, freq=440, amp=0.2, pan=0,
 }).add;
 
 //------------------------------------------------------------
-// visual : the subdivision, drawn as itself. Each group lays n marks
-// left to right across the canvas over one beat, so the density you
-// hear is the density you see, and a triplet reads as three marks where
-// a sixteenth run reads as four. Atlas grammar G8 (event-triggered)
-// over a G3 grid field.
-//
-//   step in group -> horizontal position   (\sx -> \ex)
-//   amp           -> mark size
-//   dur           -> how long the mark lives
 ~init = ~init <> {
 	group = Group.new;
 
@@ -71,7 +38,6 @@ SynthDef(\multiBeatVoice, {|out=0, freq=440, amp=0.2, pan=0,
 			\root, Pseq([0,3,-2,1].stutter(32), inf),
 			\octave, Prand([4,5,6], inf),
 			\dur,  Pkey(\div).reciprocal * 0.5,
-			// \release, Pkey(\dur) * 1.8,
 			\pan, Pwhite(-0.2, 0.2),
 
 			\type, \customVisualEvent,
@@ -91,8 +57,6 @@ SynthDef(\multiBeatVoice, {|out=0, freq=440, amp=0.2, pan=0,
 		)
 	);
 
-	// Seed the envir — ~next has not run when the first events fire, and
-	// a nil \divIdx would index the Pswitch lists with nil.
 	Pdef(m.ptn).set(\divIdx, 0);
 	Pdef(m.ptn).set(\amp, 0);
 	Pdef(m.ptn).set(\ffreq, 2000);
@@ -121,16 +85,12 @@ SynthDef(\multiBeatVoice, {|out=0, freq=440, amp=0.2, pan=0,
 };
 
 //------------------------------------------------------------
-// Accel drives the ladder index, and nothing else touches it — \divIdx
-// is deliberately NOT a Pbind key, because a Pbind key would override
-// the envir and defeat this .set.
 ~next = {|d|
 	var idx = m.accelMassFiltered.lincurve(0, 1.5, 0, divs.size - 1, 1)
 		.round.asInteger.clip(0, divs.size - 1);
 	var amp = m.accelMassFiltered.lincurve(0, 1.0, -60, -12, -1);
 	var ffreq = m.accelMassFiltered.lincurve(0, 1.0, 700, 6000, 2);
 	var rel = m.accelMassFiltered.lincurve(0, 1.0, 0.1, 3.2, 2);
-
 
 	Pdef(m.ptn).set(\viewID, d.port);
 	Pdef(m.ptn).set(\divIdx, idx);

@@ -6,7 +6,7 @@
 	"celeste1",
 	"harpsichord1",
 	"dulcimer1",
-	
+	"piano1",
 	"multiBeat1",
 	"multiBeat3",
 	"multiBeat4",
