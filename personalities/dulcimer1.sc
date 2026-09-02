@@ -199,5 +199,28 @@ SynthDef(\dulcimerVerb, {|in=0, out=0, mix=0.1, room=1.12, damp=0.2, amp=1,
 ~plotMin = -1;
 ~plotMax = 1;
 ~plot = { |d,p|
+
+	// [yellow, magenta, cyan]
+
+	// RAW values
+	// Velocity
+	// [d.sensors.velocity.x, d.sensors.velocity.y, d.sensors.velocity.z] * 30;
+	// Acceleration
+	// [d.sensors.accelEvent.x, d.sensors.accelEvent.y, d.sensors.accelEvent.z] * 0.1;
+	// Gyro
+	// [(d.sensors.gyroEvent.x / pi).fold(-0.5,0.5) * 2];//roll
+	// [(d.sensors.gyroEvent.y / pi.half)];//up down
+	// [(d.sensors.gyroEvent.z / pi).fold(-0.5,0.5) * 2];//left right
+
+	// MODEL values
+	// Acceleration
+	// [m.accelMass, m.accelMassFiltered].lincurve(0.0,5.0,0.0,1.0,0);
+	// Rotation Rate
+	// [m.rrateMass, m.rrateMassFiltered].lincurve(0.0,1.0,0.0,1.0,0);
+
+	// COMPUTED values : this file's own ~next, recomputed
+	// [m.accelMassFiltered.lincurve(0, 2.5, 0, divs.size - 1, 2).round / (divs.size - 1)];//divIdx
+	// [m.accelMassFiltered.lincurve(0, 2.5, -40, -5, -2).dbamp];//amp
+
 	[m.accelMass, m.accelMassFiltered];
 };

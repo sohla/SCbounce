@@ -531,8 +531,11 @@ If something genuinely cannot be read off the code, one short line is allowed.
 One. Most of the time the honest fix is that the code should be clearer, or
 the value should be sitting on the event where it can be seen.
 
-Commented-out code is different and is protected — probe lines in `~plot`,
-a disabled `Balance2.ar` in a SynthDef. Those are working notes. Leave them.
+Commented-out code is different and is protected — a disabled `Balance2.ar`
+in a SynthDef, and above all the probe menu in `~plot`. `~plot` is deliberately
+written as a list of every signal the file could show, all commented but one;
+`silence.sc` is the reference and `code3.0/ak_pfile_authoring.md` §12 has the
+block to copy. Those are working notes. Leave them, and add to them.
 
 The design reasoning — the grammar chosen, the lineage, the mapping — still
 matters; it just does not live in the file. Say it in the chat when handing

@@ -208,5 +208,31 @@ SynthDef(\multiBeatSampler, {|bufnum=0, out=0, amp=1, rate=1, ptch=1, start=0, p
 ~plotMin = -1;
 ~plotMax = 1;
 ~plot = { |d,p|
+
+	// [yellow, magenta, cyan]
+
+	// RAW values
+	// Velocity
+	// [d.sensors.velocity.x, d.sensors.velocity.y, d.sensors.velocity.z] * 30;
+	// Acceleration
+	// [d.sensors.accelEvent.x, d.sensors.accelEvent.y, d.sensors.accelEvent.z] * 0.1;
+	// Gyro
+	// [(d.sensors.gyroEvent.x / pi).fold(-0.5,0.5) * 2];//roll
+	// [(d.sensors.gyroEvent.y / pi.half)];//up down
+	// [(d.sensors.gyroEvent.z / pi).fold(-0.5,0.5) * 2];//left right
+
+	// MODEL values
+	// Acceleration
+	// [m.accelMass, m.accelMassFiltered].lincurve(0.0,5.0,0.0,1.0,0);
+	// Rotation Rate
+	// [m.rrateMass, m.rrateMassFiltered].lincurve(0.0,1.0,0.0,1.0,0);
+
+	// COMPUTED values : this file's own ~next, recomputed
+	// [m.accelMassFiltered.lincurve(0, 1.5, 0, divs.size - 1, 1).round / (divs.size - 1)];//divIdx
+	// [m.accelMassFiltered.lincurve(0, 1.4, -41, 0 -1).dbamp];//energy
+	// [(d.sensors.gyroEvent.y / pi.half).lincurve(-1, 1, 4, 6, 1) / 6];//octave
+	// [(d.sensors.gyroEvent.x / pi).fold(-0.5, 0.5).linlin(-0.5, 0.5, 0.94, 1.06) - 1];//ptch
+	// [(d.sensors.gyroEvent.z / pi).fold(-0.5, 0.5).linlin(-0.5, 0.5, -0.5, 0.5)];//panBias
+
 	[m.accelMass, m.accelMassFiltered, (d.sensors.gyroEvent.y / pi.half)];
 };

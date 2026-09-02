@@ -581,6 +581,63 @@ value should be sitting on the event where it can be seen.
 `Balance2.ar` in a SynthDef — those are working notes, not dead code. Leave
 them exactly where they are.
 
+### The `~plot` block is the one exception
+
+`~plot` is written as a **menu**: every signal the file could usefully show,
+one per line, all commented out except one. `silence.sc` is the reference.
+Copy the block whole into every new p-file:
+
+```supercollider
+//------------------------------------------------------------
+~plotMin = -1;
+~plotMax = 1;
+~plot = { |d,p|
+
+	// [yellow, magenta, cyan]
+
+	// RAW values
+	// Velocity
+	// [d.sensors.velocity.x, d.sensors.velocity.y, d.sensors.velocity.z] * 30;
+	// Acceleration
+	// [d.sensors.accelEvent.x, d.sensors.accelEvent.y, d.sensors.accelEvent.z] * 0.1;
+	// Gyro
+	// [(d.sensors.gyroEvent.x / pi).fold(-0.5,0.5) * 2];//roll
+	// [(d.sensors.gyroEvent.y / pi.half)];//up down
+	// [(d.sensors.gyroEvent.z / pi).fold(-0.5,0.5) * 2];//left right
+
+	// MODEL values
+	// Acceleration
+	// [m.accelMass, m.accelMassFiltered].lincurve(0.0,5.0,0.0,1.0,0);
+	// Rotation Rate
+	// [m.rrateMass, m.rrateMassFiltered].lincurve(0.0,1.0,0.0,1.0,0);
+
+	// COMPUTED values : this file's own ~next, recomputed
+	// [m.accelMassFiltered.lincurve(0, 1.5, 0, divs.size - 1, 1).round / (divs.size - 1)];//divIdx
+	// [m.accelMassFiltered.lincurve(0, 1.0, -60, -12, -1).dbamp];//amp
+
+	[m.accelMass, m.accelMassFiltered];
+};
+```
+
+Four rules for it:
+
+- **The RAW and MODEL sections are fixed** — the same lines in every file, so
+  you can switch between devices without re-deriving anything.
+- **The COMPUTED section is per file**: one line for every value `~next`
+  computes, `//`-labelled with the name it has in `~next`. Tuning a mapping
+  means uncommenting its line, not writing a probe from scratch mid-session.
+- **The probes recompute; they do not read `~next`'s locals** (they can't —
+  different function). Same rule as a `~vdef`: write the expression out. When
+  a curve changes in `~next`, change it here too — a probe that has drifted
+  is worse than no probe.
+- **Scale each probe into -1..1**, since `~plotMin` / `~plotMax` are read once
+  at view build and are not worth changing per signal. `.dbamp` for levels,
+  `/ max` for frequencies and indices.
+
+**Exactly one line is left live, and it goes last.** Only the final expression
+in a function is returned, so an earlier uncommented line is evaluated and
+thrown away — harmless, but it means the plotter is not showing what you think.
+
 Older files carry the heavy annotated style — `templateVisual.sc`, the train
 quartet, most of `cotf_*`. Read them for the explanations; do not copy the
 style, and do not go and strip them either unless asked.

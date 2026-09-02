@@ -183,5 +183,29 @@ SynthDef(\celesteVoice, {|out=0, bufnum=0, amp=0.2, rate=1, start=0, pan=0,
 ~plotMin = -1;
 ~plotMax = 1;
 ~plot = { |d,p|
+
+	// [yellow, magenta, cyan]
+
+	// RAW values
+	// Velocity
+	// [d.sensors.velocity.x, d.sensors.velocity.y, d.sensors.velocity.z] * 30;
+	// Acceleration
+	// [d.sensors.accelEvent.x, d.sensors.accelEvent.y, d.sensors.accelEvent.z] * 0.1;
+	// Gyro
+	// [(d.sensors.gyroEvent.x / pi).fold(-0.5,0.5) * 2];//roll
+	// [(d.sensors.gyroEvent.y / pi.half)];//up down
+	// [(d.sensors.gyroEvent.z / pi).fold(-0.5,0.5) * 2];//left right
+
+	// MODEL values
+	// Acceleration
+	// [m.accelMass, m.accelMassFiltered].lincurve(0.0,5.0,0.0,1.0,0);
+	// Rotation Rate
+	// [m.rrateMass, m.rrateMassFiltered].lincurve(0.0,1.0,0.0,1.0,0);
+
+	// COMPUTED values : this file's own ~next, recomputed
+	// [m.accelMassFiltered.lincurve(0, 1.4, -60, -14, -1).dbamp];//amp
+	// [m.accelMassFiltered.lincurve(0, 1.4, 2.6, 0.5, 2) / 2.6];//release
+	// [(m.accelMassFiltered > 0.03).binaryValue];//play gate
+
 	[m.accelMass, m.accelMassFiltered];
 };

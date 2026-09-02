@@ -185,10 +185,30 @@ SynthDef(\harpsiVoice, {|out=0, bufnum=0, amp=0.2, rate=1, start=0, pan=0,
 ~plotMin = -1;
 ~plotMax = 1;
 ~plot = { |d,p|
-	[
-		// m.accelMassFiltered, 
-		(d.sensors.gyroEvent.y / pi.half),
-		// (d.sensors.gyroEvent.z / pi).fold(-0.5, 0.5)
-		
-	];
+
+	// [yellow, magenta, cyan]
+
+	// RAW values
+	// Velocity
+	// [d.sensors.velocity.x, d.sensors.velocity.y, d.sensors.velocity.z] * 30;
+	// Acceleration
+	// [d.sensors.accelEvent.x, d.sensors.accelEvent.y, d.sensors.accelEvent.z] * 0.1;
+	// Gyro
+	// [(d.sensors.gyroEvent.x / pi).fold(-0.5,0.5) * 2];//roll
+	// [(d.sensors.gyroEvent.y / pi.half)];//up down
+	// [(d.sensors.gyroEvent.z / pi).fold(-0.5,0.5) * 2];//left right
+
+	// MODEL values
+	// Acceleration
+	// [m.accelMass, m.accelMassFiltered].lincurve(0.0,5.0,0.0,1.0,0);
+	// Rotation Rate
+	// [m.rrateMass, m.rrateMassFiltered].lincurve(0.0,1.0,0.0,1.0,0);
+
+	// COMPUTED values : this file's own ~next, recomputed
+	// [(d.sensors.gyroEvent.y / pi.half).linlin(-1, 1, 0, chordPool.size - 1).round / (chordPool.size - 1)];//chordIdx
+	// [(d.sensors.gyroEvent.z / pi).fold(-0.5, 0.5).abs.linlin(0, 0.5, 0, 0.07) * 14];//strum
+	// [m.accelMassFiltered.lincurve(0, 1.6, -70, -13, -1).dbamp];//amp
+	// [(m.accelMassFiltered > 0.02).binaryValue];//play gate
+
+	[(d.sensors.gyroEvent.y / pi.half)];//up down
 };
