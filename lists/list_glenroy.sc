@@ -18,6 +18,10 @@
 	"trainMelody2",
 	"trainChooka2",
 
+		"velocity3",
+		"velocity1",
+		"velocity2",
+
 
 	"melbb2",
 	"nicTwoNote",
@@ -25,6 +29,9 @@
 	"droplet",
 	"cymbals1",
 	"pluck1",
+		"celeste1",
+	"harpsichord1",
+
   	"harp1",
 
 	"wind1",

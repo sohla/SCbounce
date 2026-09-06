@@ -17,6 +17,7 @@ var sampleFilter = "Dlcmr-hrd";
 
 var beat = 0.5;
 var divs = [2, 4, 6];
+// var pool = [0, 11, 7, 4, 2, -5];
 var pool = [0, 11, 7, 4, 2, -5];
 
 //------------------------------------------------------------
@@ -111,7 +112,7 @@ SynthDef(\dulcimerVerb, {|in=0, out=0, mix=0.1, room=1.12, damp=0.2, amp=1,
 			\div,  Pswitch(divs.collect({ |n| Pn(n, n) }),              Pkey(\divIdx)),
 			\step, Pswitch(divs.collect({ |n| Pseries(0, 1, n) }),      Pkey(\divIdx)),
 			\note, Pswitch(divs.collect({ |n| Pseq(pool.keep(n), 1) }), Pkey(\divIdx)),
-			\root, Pseq([0, 2,-2,0].stutter(24), inf),
+			\root, 0,//Pseq([0, 2,-2,0].stutter(24), inf),
 			\octave, Pseq([2, 4, 3, 5].stutter(2), inf),
 			\dur,  Pkey(\div).reciprocal * beat,
 			\legato, 0.8,
@@ -185,8 +186,8 @@ SynthDef(\dulcimerVerb, {|in=0, out=0, mix=0.1, room=1.12, damp=0.2, amp=1,
 
 //------------------------------------------------------------
 ~next = {|d|
-	var idx = m.accelMassFiltered.lincurve(0, 2.5, 0, divs.size - 1, 2).round.asInteger.clip(0, divs.size - 1);
-	var amp = m.accelMassFiltered.lincurve(0, 2.5, -40, -5, -2);
+	var idx = m.accelMassFiltered.lincurve(0, 1.5, 0, divs.size - 1, 2).round.asInteger.clip(0, divs.size - 1);
+	var amp = m.accelMassFiltered.lincurve(0, 1.5, -40, -5, -2);
 
 	if(amp < 39.neg, { amp = 120.neg});
 

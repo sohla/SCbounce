@@ -246,16 +246,16 @@ SynthDef(\versatilePerc, {
 //------------------------------------------------------------
 ~next = {|d|
 
-	var a = m.accelMassFiltered.lincurve(0,0.5,0.0,1,-1);
+	var a = m.accelMassFiltered.lincurve(0,0.2,0.0,1,-1);
 	var filtSpeed = m.accelMassFiltered.lincurve(0,2.5,0.1,20,3);
 	var ff = ((d.sensors.gyroEvent.x / pi).fold(-0.5,0.5) * 2).linexp(-1.0,1.0,700,1000);
 	var dist = m.accelMassFiltered.lincurve(0,2.5,1,2,1);
 	var tension = ((d.sensors.gyroEvent.x / pi).fold(-0.5,0.5) * 2).lincurve(-1.0,1.0,0.01,1,2);
 
-	if(a<0.2,{a=0});
+	if(a<0.02,{a=0});
 
 	Pdef(m.ptn).set(\viewID, d.port);
-	Pdef(m.ptn).set(\amp, a * 0.8);
+	Pdef(m.ptn).set(\amp, a * 1.0);
 	Pdef(m.ptn).set(\filtFreq, ff);
 	Pdef(m.ptn).set(\dist, dist);
 	Pdef(m.ptn).set(\tension, tension);

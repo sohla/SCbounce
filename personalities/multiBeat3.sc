@@ -92,10 +92,10 @@ SynthDef(\multiBeatWind, {|out=0, freq=220, amp=0.2, pan=0, gate=1,
 
 //------------------------------------------------------------
 ~next = {|d|
-	var idx = m.accelMassFiltered.lincurve(0, 1.5, 0, divs.size - 1, 1)
+	var idx = m.accelMassFiltered.lincurve(0, 0.5, 0, divs.size - 1, 1)
 		.round.asInteger.clip(0, divs.size - 1);
-	var amp = m.accelMassFiltered.lincurve(0, 2.0, -80, -17, -1);
-	var ffreq = m.accelMassFiltered.lincurve(0, 2.0, 200, 6000, 2);
+	var amp = m.accelMassFiltered.lincurve(0, 1.0, -80, -17, -1);
+	var ffreq = m.accelMassFiltered.lincurve(0, 1.0, 200, 6000, 2);
 
 	Pdef(m.ptn).set(\viewID, d.port);
 	Pdef(m.ptn).set(\divIdx, idx);

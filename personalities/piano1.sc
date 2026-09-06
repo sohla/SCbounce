@@ -15,7 +15,7 @@ var eventTypeName = (\customEvent_ ++ m.ptn).asSymbol;
 
 var folder = PathName("~/Downloads/cotf_samples/chronicPiano");
 
-var scale = [0, 1, 4, 5, 7, 8, 10];
+var scale = [0,4,7,11];
 var octaves = [2, 3, 4, 5, 6];
 
 //------------------------------------------------------------
@@ -176,8 +176,8 @@ SynthDef(\pianoVoice, {|out=0, bufnum=0, amp=0.2, rate=1, start=0, pan=0,
 // Shake sets the level, with a floor — a test bench has to keep sounding
 // when the stick is put down.
 ~next = {|d|
-	var amp = m.accelMassFiltered.lincurve(0, 1.4, -34, -2, -1);
-	var dur = m.accelMassFiltered.lincurve(0, 2.4, 0.4, 0.05, -1);
+	var amp = m.accelMassFiltered.lincurve(0, 0.2, -34, -2, -1);
+	var dur = m.accelMassFiltered.lincurve(0, 1.4, 0.4, 0.05, -1);
 
 	if(amp < 29.neg, { amp = 120.neg});
 

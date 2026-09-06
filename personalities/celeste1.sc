@@ -97,7 +97,7 @@ SynthDef(\celesteVoice, {|out=0, bufnum=0, amp=0.2, rate=1, start=0, pan=0,
 			\octave, Pseq([6, 6, 7, 6, 5, 6, 7], inf),
 			\root, 0,
 			\legato, 0.4,
-			\pan, Pwhite(-0.35, 0.35),
+			\pan, Pwhite(-1.0, 1.0),
 
 			\shape, \gongPoint,
 			\cyc, Pfunc({
@@ -110,7 +110,7 @@ SynthDef(\celesteVoice, {|out=0, bufnum=0, amp=0.2, rate=1, start=0, pan=0,
 				((e[\note] ? 0) + ((e[\octave] ? 6) * 12)).linlin(60, 96, 0.3, 0.8)
 			}),
 			\rotation, Pfunc({ |e| (e[\cyc] * 2pi) - 0.5pi }),
-			\startSize, Pfunc({ |e| e[\rad] * 380 }),
+			\startSize, Pfunc({ |e| e[\rad] * 780 }),
 			\endSize, Pkey(\startSize),
 			\startColor, Color.new(1.0, 1.0, 1.0, 0.9),
 			\endColor, Color.new(0.35, 0.85, 1.0, 0.0),
@@ -161,8 +161,10 @@ SynthDef(\celesteVoice, {|out=0, bufnum=0, amp=0.2, rate=1, start=0, pan=0,
 
 //------------------------------------------------------------
 ~next = {|d|
-	var amp = m.accelMassFiltered.lincurve(0, 1.4, -60, -14, -1);
+	var amp = m.accelMassFiltered.lincurve(0, 1.4, -30, -4, -1);
 	var release = m.accelMassFiltered.lincurve(0, 1.4, 2.6, 0.5, 2);
+
+	if(amp < 29.neg, { amp = 90.neg });
 
 	Pdef(m.ptn).set(\viewID, d.port);
 	Pdef(m.ptn).set(\amp, amp.dbamp);

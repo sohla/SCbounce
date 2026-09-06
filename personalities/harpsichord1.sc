@@ -12,7 +12,7 @@ var folder = PathName("~/Downloads/cotf_samples/Harpsichord");
 // 	// [-3,  0,  4],
 // 	// [-1,  2,  7],
 // ];
-var chordPool = [0,2,5,9];
+var chordPool = [0];
 
 //------------------------------------------------------------
 var noteToMidi = { |noteName|

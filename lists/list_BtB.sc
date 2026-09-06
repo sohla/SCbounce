@@ -4,6 +4,8 @@
 
 		"circusChoir1",
 		"trainBass3",
+		"trainMove2",
+		"trainMelody2",
 		"melChest1",
 		"timWind1",
 		"treeWind",
@@ -40,11 +42,14 @@
 
 		"droplet",
 		"cymbals1",
+		"harp1",
 
 		"bee",
 		"bells",
 		"bongo1",
+		"cymbals1",
 		"pluck1",
+		"droplet",
 		"metal1",
 		"miniMoog",
 		

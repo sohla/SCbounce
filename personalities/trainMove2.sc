@@ -313,8 +313,8 @@ SynthDef(\warmPadMove2, {
 	(type: \customVisualEvent, amp: 0, dur: 0.01, viewID: d.port,
 		shape: \airstick,
 		sx: -0.0, sy: 0, ex: 0, ey: 0,
-		startSize: 500,
-		startWidth: 2.6,
+		startSize: 1500,
+		startWidth: 12.6,
 		startColor: d.color,
 		closed: false,
 		duration: inf,
@@ -394,7 +394,7 @@ SynthDef(\warmPadMove2, {
 	// aa = a;
 
     synth.set(\freq, (note + m.com.root).midicps);
-	synth.set(\amp, a * 0.3);
+	synth.set(\amp, a * 2);
 	synth.set(\filtSpeed, filtSpeed);
 	synth.set(\lfoFreq, lfoFreq);
 	synth.set(\filtMin, fmin);

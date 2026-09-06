@@ -54,7 +54,7 @@ var firstNoteOf = { |stem|
 var folder = PathName("~/Downloads/nicSamples/twoNote");
 
 var cellBase = 63;					
-var cell = [2,0,-2,-12,-24];
+var cell = [2,0,-2,-12,-24] + 2;
 var octaves = [0,-1];			
 
 
@@ -150,8 +150,8 @@ SynthDef(\nicTwoNoteSampler, {|bufnum=0, out=0, amp=1, rate=1, start=0, pan=0, f
 
 			\type, \customVisualEvent,
 			\shape, \circle,
-			\startSize, 30,
-			\endSize, 200,
+			\startSize, 330,
+			\endSize, 600,
 			\startWidth, 3,
 			\endWidth, 100,
 			\duration, 1.2,
