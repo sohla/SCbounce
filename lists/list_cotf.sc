@@ -10,9 +10,7 @@
 		"BIRDY",
 		"PLUKSYNTH",     // cotf: promoted 2026-08-25 (Ciaran) — live pool
 		"WHIPBIRD",      // cotf: promoted 2026-08-25 (Ciaran) — live pool
-
-		"BIRDY",
-		"WINDY",
+		"WINDY",         // cotf: Steph's new wind bed, live pool 2026-08-26 (dupe "BIRDY" removed — already rostered above)
 
 		"Birdsong",      // cotf: Ciaran's test patch (Patch Lab audition, 2026-08-23) — admin-disabled for auto-pick
 		"RainKeys",      // cotf: Ciaran audition patch (Patch Lab, 2026-08-25) — admin-disabled for auto-pick

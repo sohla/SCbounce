@@ -4,6 +4,29 @@ One entry per push batch from the Concerts of the Future side, newest first: wha
 why, and what (if anything) behaves differently on your machine. The intent is that nothing
 here ever changes how AirKit behaves for you — if it does, that's a bug, tell us.
 
+## 2026-08-31 — STRINGCHORD up +2 dB in the Room 3 trim table (cotf)
+
+**Nothing changes for you.** One `~cotfPatchTrims` value in `cotf/main_cotf.scd` only
+(Room 3 show loudness, Ciaran ear-check from the 08-28 groups, applied at season close):
+STRINGCHORD -1 -> +1 dB. No personality files touched, no roster change.
+
+## 2026-08-27 — STRINGCHORD and BIRDY up +3 dB each in the Room 3 trim table (cotf)
+
+**Nothing changes for you.** Two `~cotfPatchTrims` values in `cotf/main_cotf.scd` only
+(Room 3 show loudness, ear-tuned by Ciaran during today's groups): STRINGCHORD -4 → -1 dB,
+BIRDY -3 → 0 dB. No personality files touched, no roster change.
+
+## 2026-08-26 — WINDY into the live pool: header keys, -4 dB trim, roster BIRDY dedupe (cotf)
+
+**One small behaviour change on your side: WINDY gets a `~cotfPatchTrims` entry (-4 dB)** in
+`cotf/main_cotf.scd`, so it enters the Room 3 pool padded like the other 08-25 newcomers
+(Room 2/composer behaviour unchanged — the trim table is Room 3 only). Also: added the
+M0-consumed super-seats header keys to `personalities/WINDY.sc` (seats 1-5, wind/noise/white
+noise affinity words, register wild, family wind — header comment block only, zero code
+touched), and removed the duplicate `"BIRDY"` line your push added to `lists/list_cotf.sc`
+(it was already rostered a few lines up; your new WINDY entry stays). With this, WINDY and
+your BIRDY fixes go live to real audiences at the next between-groups pull on M1.
+
 ## 2026-08-25 — trims re-tune + four patches into the live pool + affinity word pass (cotf)
 
 **One behaviour change on your side to know about: `~cotfPatchTrims` in `cotf/main_cotf.scd` is
