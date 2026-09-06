@@ -7,7 +7,7 @@ b = NetAddr.new("10.1.1.3", 8888);
 
 
 // set LED
-b.sendMsg("/Config/SetLED",4,0,2,255);
+b.sendMsg("/Config/SetLED",3,1,2,255);
 
 // set ID / OSC path
 b.sendMsg("/Config/SetID","4");
