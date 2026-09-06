@@ -38,7 +38,7 @@ m.accelMassFilteredDecay = 0.6;
 
 //------------------------------------------------------------
 SynthDef(\pianoVoice, {|out=0, bufnum=0, amp=0.2, rate=1, start=0, pan=0,
-    attack=0.002, sustain=0.3, release=1.8|
+    attack=0.002, sustain=0.3, release=0.2|
 	var env = EnvGen.kr(Env.new([0, 1, 1, 0], [attack, sustain, release]), doneAction: 2);
 	var sig = PlayBuf.ar(2, bufnum,
 		rate: rate * BufRateScale.kr(bufnum),
@@ -127,10 +127,10 @@ SynthDef(\pianoVoice, {|out=0, bufnum=0, amp=0.2, rate=1, start=0, pan=0,
 
 			\note, Pseq(scale, inf),
 			\octave, Pseq(octaves.stutter(scale.size), inf),
-			\root, 0,
+			// \root, 0,
 			// \dur, 0.2,
-			\legato, 0.6,
-			\release, 1.1,
+			\legato, 1.6,
+			\release, 2.1,
 			\pan, 0,
 
 			\shape, \circle,
@@ -184,6 +184,8 @@ SynthDef(\pianoVoice, {|out=0, bufnum=0, amp=0.2, rate=1, start=0, pan=0,
 	Pdef(m.ptn).set(\viewID, d.port);
 	Pdef(m.ptn).set(\amp, amp.dbamp);
 	Pdef(m.ptn).set(\dur, dur);
+	Pdef(m.ptn).set(\root, m.com.root ? 0);
+
 };
 
 //------------------------------------------------------------

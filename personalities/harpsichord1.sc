@@ -7,12 +7,12 @@ var eventTypeName = (\customEvent_ ++ m.ptn).asSymbol;
 var folder = PathName("~/Downloads/cotf_samples/Harpsichord");
 
 // var chordPool = [
-// 	[ 0,2,7],
-// 	[ 0,3,8],
+// 	[ 0,7,11,16],
+// 	// [ 0,3,8],
 // 	// [-3,  0,  4],
 // 	// [-1,  2,  7],
 // ];
-var chordPool = [0];
+var chordPool = [0,11,4,7];
 
 //------------------------------------------------------------
 var noteToMidi = { |noteName|
@@ -46,7 +46,7 @@ SynthDef(\harpsiVoice, {|out=0, bufnum=0, amp=0.2, rate=1, start=0, pan=0,
     attack=0.003, sustain=0.3, release=2.0, freq = 440|
 	var env = EnvGen.kr(Env.new([0, 1, 1, 0], [attack, sustain, release]), doneAction: 2);
 	var sig = PlayBuf.ar(2, bufnum,
-		rate: rate * BufRateScale.kr(bufnum),
+		rate: rate * BufRateScale.kr(bufnum) * 0.98,
 		startPos: start * BufFrames.kr(bufnum), loop: 0);
 	var mix = sig * amp * env;
 	Out.ar(out, mix);
@@ -92,8 +92,8 @@ SynthDef(\harpsiVoice, {|out=0, bufnum=0, amp=0.2, rate=1, start=0, pan=0,
 			\type, eventTypeName,
 
 			\note, Pfunc({ |e| chordPool.wrapAt(e[\chordIdx] ? 0) }),
-			\root, 0,
-			\octave, Pseq([3,4,5,6,7].stutter(2), inf),
+			// \root, 0,
+			\octave, Pseq([4,5,6,7].stutter(2), inf),
 			\dur, 0.1,
 			\legato, 1.6,
 			\pan, Pwhite(-0.25, 0.25),
@@ -153,7 +153,7 @@ SynthDef(\harpsiVoice, {|out=0, bufnum=0, amp=0.2, rate=1, start=0, pan=0,
 ~next = {|d|
 	var chordIdx = (d.sensors.gyroEvent.y / pi.half).linlin(-1, 1, 0, chordPool.size - 1).round.asInteger;
 	var strum = (d.sensors.gyroEvent.z / pi).fold(-0.5, 0.5).abs.linlin(0, 0.5, 0, 0.07);
-	var amp = m.accelMassFiltered.lincurve(0, 1.6, -70, -13, -1).dbamp;
+	var amp = m.accelMassFiltered.lincurve(0, 0.3, -70, -10, -1).dbamp;
 	// var oct = m.accelMassFiltered.lincurve(0, 1.6, 5, 6, 1).round.asInteger;
 	var hue = chordIdx / chordPool.size;
 
@@ -161,6 +161,8 @@ SynthDef(\harpsiVoice, {|out=0, bufnum=0, amp=0.2, rate=1, start=0, pan=0,
 	Pdef(m.ptn).set(\chordIdx, chordIdx);
 	Pdef(m.ptn).set(\strum, strum);
 	Pdef(m.ptn).set(\amp, amp);
+	Pdef(m.ptn).set(\root, m.com.root ? 0);
+
 	// Pdef(m.ptn).set(\octave, oct);
 
 	Pdef(m.ptn).set(\rotation, chordIdx / chordPool.size * 2pi);

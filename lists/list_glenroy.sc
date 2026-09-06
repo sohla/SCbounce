@@ -8,7 +8,6 @@
 	"dulcimer1",
 	"piano1",
 	"multiBeat1",
-	"multiBeat3",
 	"multiBeat4",
 	"multiBeat5",
 	"multiBeatSynth1",

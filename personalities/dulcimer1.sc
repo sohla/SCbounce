@@ -112,10 +112,11 @@ SynthDef(\dulcimerVerb, {|in=0, out=0, mix=0.1, room=1.12, damp=0.2, amp=1,
 			\div,  Pswitch(divs.collect({ |n| Pn(n, n) }),              Pkey(\divIdx)),
 			\step, Pswitch(divs.collect({ |n| Pseries(0, 1, n) }),      Pkey(\divIdx)),
 			\note, Pswitch(divs.collect({ |n| Pseq(pool.keep(n), 1) }), Pkey(\divIdx)),
-			\root, 0,//Pseq([0, 2,-2,0].stutter(24), inf),
+			// \root, 0,//Pseq([0, 2,-2,0].stutter(24), inf),
 			\octave, Pseq([2, 4, 3, 5].stutter(2), inf),
 			\dur,  Pkey(\div).reciprocal * beat,
 			\legato, 0.8,
+			\attack, 0.01,
 			\release, 2,
 			\pan, Pwhite(-0.3, 0.3),
 
@@ -132,7 +133,7 @@ SynthDef(\dulcimerVerb, {|in=0, out=0, mix=0.1, room=1.12, damp=0.2, amp=1,
 			\startWidth, Pfunc({ |e| ((e[\amp] ? 0.2) * 22) + 1 }),
 			\endWidth, 0.4,
 			\duration, Pkey(\dur) * 6,
-			\func, Pfunc({ |e| ~onEvent.(e) }),
+			// \func, Pfunc({ |e| ~onEvent.(e) }),
 
 			\args, #[],
 		);
@@ -178,22 +179,24 @@ SynthDef(\dulcimerVerb, {|in=0, out=0, mix=0.1, room=1.12, damp=0.2, amp=1,
 };
 
 //------------------------------------------------------------
-~onEvent = {|e|
+// ~onEvent = {|e|
 
-	m.com.root = e.root;
-	m.com.dur = e.dur;
-};
+// 	m.com.root = e.root;
+// 	m.com.dur = e.dur;
+// };
 
 //------------------------------------------------------------
 ~next = {|d|
 	var idx = m.accelMassFiltered.lincurve(0, 1.5, 0, divs.size - 1, 2).round.asInteger.clip(0, divs.size - 1);
-	var amp = m.accelMassFiltered.lincurve(0, 1.5, -40, -5, -2);
+	var amp = m.accelMassFiltered.lincurve(0, 1.5, -40, -6, -2);
 
 	if(amp < 39.neg, { amp = 120.neg});
 
 	Pdef(m.ptn).set(\viewID, d.port);
 	Pdef(m.ptn).set(\divIdx, idx);
 	Pdef(m.ptn).set(\amp, amp.dbamp);
+	Pdef(m.ptn).set(\root, m.com.root ? 0);
+
 };
 
 //------------------------------------------------------------

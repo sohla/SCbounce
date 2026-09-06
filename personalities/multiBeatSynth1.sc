@@ -96,7 +96,7 @@ SynthDef(\multiBeatDrone, {|out=0, freq=110, amp=0.05, pan=0,
 			\div,  Pswitch(divs.collect({ |n| Pn(n, n) }),              Pkey(\divIdx)),
 			\step, Pswitch(divs.collect({ |n| Pseries(0, 1, n) }),      Pkey(\divIdx)),
 			\note, Pswitch(divs.collect({ |n| Pseq(pool.keep(n), 1) }), Pkey(\divIdx)),
-			\root, Pseq([0,3,-2,1].stutter(32), inf),
+			// \root, Pseq([0,3,-2,1].stutter(32), inf),
 			\octave, Prand([4,5,6], inf),
 			\dur,  Pkey(\div).reciprocal * 0.5,
 			\pan, Pwhite(-0.2, 0.2),
@@ -171,6 +171,7 @@ SynthDef(\multiBeatDrone, {|out=0, freq=110, amp=0.05, pan=0,
 	Pdef(m.ptn).set(\ffreq, ffreq);
 	Pdef(m.ptn).set(\attack, 0.0003);
 	Pdef(m.ptn).set(\release, rel);
+	Pdef(m.ptn).set(\root, m.com.root ? 0);
 
 	if (drone.notNil) {
 		drone.set(
