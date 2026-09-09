@@ -18,8 +18,9 @@ SynthDef(\noise, { |out=0, frq=10000, gate=0, amp = 0, atk=0.02, sus=0.9, rel=1.
 	var env = EnvGen.ar(Env.adsr(atk,0.03,sus,rel), gate, doneAction:Done.freeSelf);
    var sig = DynKlank.ar(`[[50,100,200,400] * pch, [1,0.4,0.2,0.1], [1, 0.6, 0.3, 0.1]], WhiteNoise.ar(0.1));
     // var sig = WhiteNoise.ar(0.5);
+    var tone = SinOsc.ar(100 * pch,0,2).tanh;
 
-    sig = LPF.ar(sig, frq.lag(0.3)) * env * amp.lagud(0.2,0.5);
+    sig = LPF.ar(sig + tone, frq.lag(0.3)) * env * amp.lagud(0.007,0.01);
 	Out.ar(out, sig!2);
 }).add;
 
@@ -41,11 +42,18 @@ SynthDef(\noise, { |out=0, frq=10000, gate=0, amp = 0, atk=0.02, sus=0.9, rel=1.
 //------------------------------------------------------------
 ~next = {|d|
 
-	var amp = m.accelMassFiltered.lincurve(0,0.3,0.0,0.02,-3);
-    // var ud = m.gyroYFiltered.linexp(-0.8,0.9,400,10000);
-	var ud = m.accelMassFiltered.lincurve(0,0.3,400,1000,-3);
+    // var amp = m.gyroYFiltered.lincurve(-1.0,1.0,0.0,0.02,-2);
+    // var wob = ((d.sensors.gyroEvent.x / pi).fold(-0.5,0.5) * 2).lincurve(-1.0,1.0,0.01,14000.0,-2);
 
-    if(amp<0.04,{
+	var amp = m.accelMassFiltered.lincurve(0,0.7,0.0,0.1,-3);
+    // var ud = m.gyroYFiltered.linexp(-0.8,0.9,100,400);
+	var ud = m.accelMassFiltered.lincurve(0,0.1,800,11000,-2);
+    var dur = m.gyroYFiltered.lincurve(-1.0,1.0,0.5,0.075);
+	var notes = [0,4,7,11,14,17];
+	var ni = ((d.sensors.gyroEvent.z / pi).fold(-0.5,0.5) * 2.0).lincurve(-1.0,1.0,0,notes.size-1,-2).floor;
+
+
+    if(amp<0.001,{
         amp=0;
         synth.set(\lag,0.1);
         if(trig, {
@@ -64,6 +72,8 @@ SynthDef(\noise, { |out=0, frq=10000, gate=0, amp = 0, atk=0.02, sus=0.9, rel=1.
 
     synth.set(\amp, amp);
     synth.set(\frq, ud);
+    notes[ni].midiratio.postln;
+    synth.set(\pch, notes[ni].midiratio);
 };
 
 //------------------------------------------------------------

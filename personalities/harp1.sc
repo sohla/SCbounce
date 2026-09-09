@@ -214,10 +214,10 @@ SynthDef(\funBass, {
 				endSize: 190,// * amp.dbamp,
 				duration: 3.4,
 				sizeEnv: Env([0,1], [1], [-3]),
-				startColor: Color.hsv(n/14.0,1,1).alpha_(amp.dbamp), //Color.red.alpha_(0.7),
+				startColor: Color.hsv(n/14.0,1,1).alpha_(1), //Color.red.alpha_(0.7),
 				endColor: Color.yellow.alpha_(amp.dbamp),
-				startWidth: 1,
-				endWidth: 0.1,
+				startWidth: 100,
+				endWidth: 10.1,
 				sx: 0,
 				sy: 0,
 				ex: 0,
@@ -258,7 +258,7 @@ SynthDef(\funBass, {
 		bassSynth.set(\filtFreq, ff);
 	});
 
-	if(m.accelMassFiltered > 0.07,{
+	if(m.accelMassFiltered > 0.02,{
 		if( Pdef(m.ptn).isPlaying.not,{
 			Pdef(m.ptn).resume(quant:dur);
 		});

@@ -12,7 +12,7 @@ m.gyroFilteredDecay = 0.4;
 
 //------------------------------------------------------------
 SynthDef(\stereoSampler1, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, freq=440,
-	attack=0.01, decay=0.1, sustain=0.3, release=1.2, gate=1,cutoff=20000, rq=0.9|
+	attack=0.01, decay=0.1, sustain=0.3, release=0.2, gate=1,cutoff=20000, rq=0.9|
 	var lr = rate * BufRateScale.kr(bufnum) * (freq/440.0);
 	var env = EnvGen.kr(Env.adsr(attack, decay, sustain, release), gate, timeScale: 1,doneAction: 2);
 	var sig = PlayBuf.ar(2, bufnum, rate: [lr, lr * 1.003], startPos: start * BufFrames.kr(bufnum), loop: 0);
@@ -28,7 +28,7 @@ SynthDef(\stereoSampler1, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, fr
 ~init = ~init <> {
 
 	// var path = PathName("~/Downloads/yourDNASamples/brenton/BrentonVoice_02.wav");
-	var path = PathName("~/Downloads/melSamples/mel_sing_dry-005.wav");
+	var path = PathName("~/Downloads/melSamples/WC_Doo_Loop_2_bpm47.aif");
 	// var path = PathName("~/Downloads/alessioSamples/ahAirEveryPig.wav");
 	postf("loading sample : % \n", path.fileName);
 
@@ -39,13 +39,14 @@ SynthDef(\stereoSampler1, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, fr
 				\instrument, \stereoSampler1,
 				\bufnum, buf,
 				// \octave, Pxrand([0,1,2,1,3,2], inf),
-				\note, Pwhite(33,33, inf).floor,
-				\start,Pwhite(0.0,0.9),
-				\attack,0.01,
+				\note, 33,//Pwhite(33,33, inf).floor,
+				// \root,0,
+				\start,Pseq([0.0,0.1,0.2,0.3,0.4,0.5,0.6,0.7], inf),
+				\attack,0.1,
 				\decay, 0.2,
 				\sustain,0.1,
-				\release,1.3,
-				\rate, Pslide(notes.midiratio, inf, Pkey(\range), 0, 0),
+				\release,0.3,
+				\rate, 1,//Pslide(notes.midiratio, inf, Pkey(\range), 0, 0),
 
 
 			\type, \customVisualEvent,
@@ -62,7 +63,7 @@ SynthDef(\stereoSampler1, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, fr
 				\args, #[],
 			)
 		);
-		Pdef(m.ptn).play(quant:0.125);
+		Pdef(m.ptn).play(quant:0.18);
 	});
 };
 ~deinit = ~deinit <> {
@@ -78,25 +79,27 @@ SynthDef(\stereoSampler1, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, fr
 //------------------------------------------------------------
 ~next = {|d|
 
-	var dur = m.accelMassFiltered.lincurve(0,1.0,0.4,0.06,-3);
+	var dur = m.accelMassFiltered.lincurve(0,2.0,0.4,0.06,-3);
 	var start = m.gyroXFiltered.lincurve(0.0,1.0,0.1,0.9,0);
-	var amp = m.accelMassFiltered.lincurve(0,1.5,0,1,-6);
+	var amp = m.accelMassFiltered.lincurve(0,2.5,0,1,-6);
 	var rate= m.accelMass.linlin(0,1,0,2);
-	var range = m.accelMassFiltered.lincurve(0,1.0,1,notes.size,-2).asInteger;
-	var octave = m.gyroYFiltered.lincurve(-1.0,1.0,0,4,0).asInteger;
+	var range = m.accelMassFiltered.lincurve(0,2.0,1,notes.size,-2).asInteger;
+	var octave = m.gyroYFiltered.lincurve(-1.0,1.0,2,4,0).asInteger;
 	var bal = m.gyroYFiltered.lincurve(-1.0,1.0,1,1,0).asInteger;
+	var roots = [0,3,-2];
+	var ri = ((m.gyroYFiltered.fold(-0.5,0.5) * 2)).linlin(-1.0,1.0,0,roots.size-1,-1).asInteger;
 
 	if(amp < 0.02, {amp = 0});
 
 	Pdef(m.ptn).set(\viewID, d.port);
-	Pdef(m.ptn).set(\startSize, amp * 850);
+	Pdef(m.ptn).set(\startSize, amp * 50);
 	Pdef(m.ptn).set(\endSize, amp * 1);
-
-
-	Pdef(m.ptn).set(\dur, dur);
+	Pdef(m.ptn).set(\dur, 0.18);
 	Pdef(m.ptn).set(\amp, amp * bal);
 	Pdef(m.ptn).set(\range, range);
 	Pdef(m.ptn).set(\octave, octave);
+
+	Pdef(m.ptn).set(\root, roots[ri]);
 
 };
 
@@ -107,12 +110,12 @@ SynthDef(\stereoSampler1, {|bufnum=0, out=0, amp=0.5, rate=1, start=0, pan=0, fr
 ~plot = { |d,p|
 	// [m.rrateMass * 0.1, m.rrateMassFiltered * 0.1];
 	// [m.accelMass * 0.2, m.rrateMass, (m.rrateMass + m.accelMass) * 0.2];
-	// [m.rrateMassFiltered, m.rrateMassThreshold];
+	// [m.rrateMassFiltered];
 	// [m.rrateMass, m.rrateMassFiltered, d.sensors.rrateEvent.x];
 	// [d.sensors.gyroEvent.x, d.sensors.gyroEvent.y, d.sensors.gyroEvent.z];
 	// [d.sensors.rrateEvent.x, d.sensors.rrateEvent.y, d.sensors.rrateEvent.z];
 	// [d.sensors.accelEvent.x, d.sensors.accelEvent.y, d.sensors.accelEvent.z];
-	//  [ ((m.gyroZFiltered.fold(-0.5,0.5) * 2)+1) + (m.gyroYFiltered + 1)] - 2 * 0.5 ;
-	[m.gyroYFiltered];
+	 [ ((m.gyroYFiltered.fold(-0.5,0.5) * 2))]  ;
+	// [m.gyroYFiltered];
 
 };

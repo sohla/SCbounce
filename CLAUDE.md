@@ -65,8 +65,9 @@ It is ~850 lines, so read it in the order it was written to be read:
 | **§4** coverage map | Indexed **by grammar** — the fast way to find catalogue entries once you know you want, say, G8. |
 | **§2** the catalogue | Read only the specific entries you are drawing on. |
 
-Cite the lineage in the p-file's comment header, as `magicWand.sc` and
-`bongo1.sc` do — it is both correct attribution and useful to the next reader.
+Do **not** write the lineage into the p-file. P-files are kept lean (see
+**Comments** in §C) and a paragraph of attribution is exactly the kind of prose
+that goes stale in them. Say it in the chat when you hand the file over.
 
 **§0.4 is binding:** these works are under copyright and visually distinctive.
 Never reproduce, trace or closely approximate a specific published score page.
@@ -85,12 +86,14 @@ output is "a piece in the lineage of X", never "page 47 of X".
 | `code3.0/plotterView.scd` | The per-device plotter driven by `~plot`. |
 | `personalities/*.sc` | The personality files ("p-files"). |
 | `visuals/graphic-scores-atlas.md` | Design source document for visual grammars. |
+| `code3.0/ak_pfile_authoring.md` | How to write a p-file at all: the controller contract, the model and sensors, sound architectures, cleanup, and the non-visual traps. Read it before writing a new personality; this file stays the authority on the visual API. |
+| `personalities/_TEMPLATE_ak_pfile.sc` | The skeleton to copy for a new p-file. |
 
 Reference implementations to read before writing a new one:
 
 | file | shows |
 |---|---|
-| `templateVisual.sc` | commented skeleton, points func |
+| `_TEMPLATE_ak_pfile.sc` | the lean skeleton to copy. `templateVisual.sc` is the older annotated one — read it for the explanations, do not copy its style |
 | `miniMoog.sc` | a points func with a continuous parameter (superellipse) |
 | `bongo1.sc` | draw func built entirely from `c[\draw]` — no `Pen` |
 | `magicWand.sc`, `bells.sc` | draw funcs built from `c[\render]` |
@@ -509,33 +512,34 @@ there before designing a mark.
 
 ### Comments: the code tells the story
 
-**No comments inside a `Pbind`, an event literal, or a `~vdef` body.** If a
-line needs explaining, name the variable better or pull the expression out —
-the code is the explanation.
+**Keep p-files lean. Almost no comments, no header, no front matter.**
 
-Comments belong in **one place**: the block above `~vdef` / above the event, in
-`~init`. That block carries the context the code genuinely cannot — what the
-mark is, the atlas lineage it comes from, and which musical parameter drives
-which visual dimension:
+The code is the explanation. If a line needs explaining, name the variable
+better or pull the expression out — do not annotate it. The only comments a
+p-file carries are the `//---` section separators every file in
+`personalities/` uses.
 
-```supercollider
-// visual : a cyclic score. Hits are laid round a ring by their position
-// in a 128 step cycle ... Rests draw nothing, so the gaps are real.
-//
-// Lineage: the cyclic notations in the atlas crossed with Chladni/cymatic
-// plate figures for the mark itself. Atlas grammars G8 / G7.
-//
-//   cycle    -> angle round the ring       (\cyc -> \rotation)
-//   pitch    -> radius                     (\rad -> \startSize)
-//   amp      -> head size                  (\modulation)
-//   damp     -> how long the mark lives    (\duration)
-~vdef.(\membrane, { |ev, c|
-    ...
-});
-```
+Specifically, do not write:
 
-That mapping table is the useful part and the part nothing else records. A
-comment restating what `Pen.width = wid * a` does is noise.
+- a `/* gestures: description: sound: pitch: rhythm: instruments: */` header
+- a prose block above `~vdef` describing the mark
+- the atlas lineage, or a space→sound mapping table
+- a comment inside a `Pbind`, an event literal, or a `~vdef` body
+- a comment restating what the next line does
+
+If something genuinely cannot be read off the code, one short line is allowed.
+One. Most of the time the honest fix is that the code should be clearer, or
+the value should be sitting on the event where it can be seen.
+
+Commented-out code is different and is protected — a disabled `Balance2.ar`
+in a SynthDef, and above all the probe menu in `~plot`. `~plot` is deliberately
+written as a list of every signal the file could show, all commented but one;
+`silence.sc` is the reference and `code3.0/ak_pfile_authoring.md` §12 has the
+block to copy. Those are working notes. Leave them, and add to them.
+
+The design reasoning — the grammar chosen, the lineage, the mapping — still
+matters; it just does not live in the file. Say it in the chat when handing
+the work over.
 
 ### The tightness rule
 

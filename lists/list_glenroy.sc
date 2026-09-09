@@ -3,13 +3,24 @@
 
 	"silence",
 
+	"celeste1",
+	"harpsichord1",
+	"dulcimer1",
+	"piano1",
+	"multiBeat1",
+	"multiBeat4",
+	"multiBeat5",
+	"multiBeatSynth1",
+
 	"trainMove2",
-	"trainMove3",
 	"trainBass3",
 	"trainMelody2",
 	"trainChooka2",
 
-	"multiBeat1",
+		"velocity3",
+		"velocity1",
+		"velocity2",
+
 
 	"melbb2",
 	"nicTwoNote",
@@ -17,6 +28,9 @@
 	"droplet",
 	"cymbals1",
 	"pluck1",
+		"celeste1",
+	"harpsichord1",
+
   	"harp1",
 
 	"wind1",
@@ -30,6 +44,10 @@
 
 	"frog2",
 	"timWind1",
+
+	"violin1",
+	"violin2",
+		"droplet",
 
 	"melodicPerc2",
 

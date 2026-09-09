@@ -24,7 +24,7 @@ var note = 60;
 // octave 2, exactly the trainBass2 figure struck twice per position.
 // Rest(0.22) / 2 is Rest(0.11), so a subdivided rest stays a rest.
 var reps = [1, 2];
-var doubleThresh = 1.0;
+var doubleThresh = 0.5;
 
 // THE ONE SHOT. The pattern is defined in ~init but NOT played there.
 // The first time accel crosses startThresh the pattern starts, and the
@@ -167,8 +167,8 @@ SynthDef(\versatilePerc, {
 		Pbind(
 			\instrument, \versatilePerc,
 			\rep, repPat,
-			\note, Pdup(Pkey(\rep), Pseq([0,10,5,4,7,7,2,5,4,4,-2,2,0,0,0,0].stutter(2) + 4, inf)),
-    		\slotDur, Pdup(Pkey(\rep), Pseq([0.22,0.22,Rest(0.22),0.22,0.22,0.22], inf)),
+			\note, 8,//Pdup(Pkey(\rep), Pseq([0,10,5,4,7,7,2,5,4,4,-2,2,0,0,0,0].stutter(2) + 4, inf)),
+    		\slotDur, Pdup(Pkey(\rep), Pseq([0.22,0.22,Rest(0.22),0.22,0.22,0.22] - 0.04, inf)),
 			\dur, Pkey(\slotDur) / Pkey(\rep),
 			\octave,Pdup(Pkey(\rep), Pseq([4,3],inf)),
 			\root, Pdup(Pkey(\rep), Pseq([0,0,-2,0,3].stutter(32), inf)),
@@ -246,16 +246,16 @@ SynthDef(\versatilePerc, {
 //------------------------------------------------------------
 ~next = {|d|
 
-	var a = m.accelMassFiltered.lincurve(0,0.5,0.0,1,-1);
+	var a = m.accelMassFiltered.lincurve(0,0.2,0.0,1,-1);
 	var filtSpeed = m.accelMassFiltered.lincurve(0,2.5,0.1,20,3);
 	var ff = ((d.sensors.gyroEvent.x / pi).fold(-0.5,0.5) * 2).linexp(-1.0,1.0,700,1000);
 	var dist = m.accelMassFiltered.lincurve(0,2.5,1,2,1);
 	var tension = ((d.sensors.gyroEvent.x / pi).fold(-0.5,0.5) * 2).lincurve(-1.0,1.0,0.01,1,2);
 
-	if(a<0.2,{a=0});
+	if(a<0.02,{a=0});
 
 	Pdef(m.ptn).set(\viewID, d.port);
-	Pdef(m.ptn).set(\amp, a * 1);
+	Pdef(m.ptn).set(\amp, a * 1.0);
 	Pdef(m.ptn).set(\filtFreq, ff);
 	Pdef(m.ptn).set(\dist, dist);
 	Pdef(m.ptn).set(\tension, tension);
@@ -268,7 +268,7 @@ SynthDef(\versatilePerc, {
 	Pdef(m.ptn).set(\rateIdx, m.accelMassFiltered.lincurve(0.0,2.5,0,1,6).asInteger);
 	if(started.not and: { m.accelMass > doubleThresh }, {
 		started = true;
-		Pdef(m.ptn).play(quant:0.22);
+		Pdef(m.ptn).play(quant:0.18);
 	});
 
 };

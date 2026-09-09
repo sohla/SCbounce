@@ -1,6 +1,6 @@
 var m = ~model;
 var bi = 0;
-var dur = 0.2;
+var dur = 0.18;
 var buffers;
 var lastTime = 0;
 
@@ -96,7 +96,7 @@ SynthDef(\drumkit, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 
 	var rate = m.rrateMassFiltered.linlin(0,0.5,0.2,10.4);
 	var amp = m.accelMassFiltered.lincurve(0,0.5,0.0,2, 2);
-	var roll = ((d.sensors.gyroEvent.x / pi).fold(-0.5,0.5) * 2).lincurve(-1.0,1.0,0.5,2.0,0);
+	var roll = ((d.sensors.gyroEvent.x / pi).fold(-0.5,0.5) * 2).lincurve(-1.0,1.0,0.5,1.0,0);
 	var thr = (d.sensors.accelEvent.y.abs).lincurve(0,0.5,0.0,1.0,-2).asInteger;
 	var ff = ((d.sensors.gyroEvent.z / pi).fold(-0.5,0.5) * 2).lincurve(-1.0,1.0,500,50.0,1);
 
@@ -122,19 +122,19 @@ SynthDef(\drumkit, {|bufnum=0, out, amp=0.5, rate=1, start=0, pan=0, freq=440,
 	Pdef(m.ptn).set(\startColor, Color.hsv(bi/buffers.size,1,1.0,0.5));
 	Pdef(m.ptn).set(\endColor, Color.hsv(bi/buffers.size,1,1.0,0.1));
 
-	if(TempoClock.beats >= (lastTime + 0.1),{
+	if(TempoClock.beats >= (lastTime + 0.18),{
 		if(m.accelMassFiltered > 0.5,{
 			lastTime = TempoClock.beats;
-			dur = 0.1;
+			dur = 0.18/2;
 		},{
-			dur = 0.2;			
+			dur = 0.18;			
 		});
 	});
-	Pdef(m.ptn).set(\dur, dur);
+	Pdef(m.ptn).set(\dur, 0.18);
 
 	if(m.accelMassFiltered > 0.02,{
 		if( Pdef(m.ptn).isPlaying.not,{
-			Pdef(m.ptn).resume(quant:0.2);
+			Pdef(m.ptn).resume(quant:0.18);
 		});
 	},{
 		if( Pdef(m.ptn).isPlaying,{

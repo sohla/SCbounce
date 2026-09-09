@@ -147,7 +147,7 @@ SynthDef(\beeSynth1, { |out=0, rr=0.1, amp = 0.0, gate = 1, release = 2, af=264,
 		fill: false,
 		closed: false,
 		sx: 0, sy: 0, ex: 0, ey: 0,
-		startSize: 60,
+		startSize: 560,
 		endSize: 1200,
 		startWidth: 10.4,
 		endWidth: 10.4,
@@ -183,7 +183,7 @@ SynthDef(\beeSynth1, { |out=0, rr=0.1, amp = 0.0, gate = 1, release = 2, af=264,
 	var amp = m.accelMassFiltered.linlin(0,1,0,0.4);
 	var rate = m.accelMassFiltered.lincurve(0.0,2.5 * srr,0.3,1.2,4 * srr);
 	var rr = m.rrateMassFiltered.linlin(0,1,1,2.1);
-	synth.set(\amp, amp * 0.01);
+	synth.set(\amp, amp * 0.05);
 	synth.set(\rr, rate * rr);
 };
 

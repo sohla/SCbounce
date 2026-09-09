@@ -26,7 +26,7 @@ SynthDef(\sheet3, {
 	filtered = RLPF.ar(wind, filterFreq.lag(3)  * strengthMod.linexp(0, 1, 0.5, 2), filterQ);
   reverbed = FreeVerb.ar(filtered, reverbMix, reverbRoom, reverbDamp);
 	reverbed = Balance2.ar(reverbed[0],reverbed[1],pan.lag(3));
-	Out.ar(out, reverbed * amp.lag(0.0001) * env);
+	Out.ar(out, reverbed * amp.lagud(0.3,0.5) * env);
 
 }).add;
 //------------------------------------------------------------

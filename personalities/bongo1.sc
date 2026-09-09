@@ -205,7 +205,7 @@ SynthDef(\bongo1, {
 	// tells the visual router which device these shapes came from
 	Pdef(m.ptn).set(\viewID, d.port);
 
-	Pdef(m.ptn).set(\amp, amp*2);
+	Pdef(m.ptn).set(\amp, amp*1);
 	Pdef(m.ptn).set(\damp, damp);
 
 	if(m.accelMassFiltered > 0.004,{

@@ -1,7 +1,7 @@
 var m = ~model;
 var synth;
 var bsynth;
-var note = 48 + 4 - 12 + 7;
+var note = 48 + 4 - 12;
 var lastTime = 0;
 
 // The device, captured lexically in ~init. It CANNOT be read as ~device
@@ -69,7 +69,7 @@ SynthDef(\warmPadMove2, {
             0.1  // Shorter decay time for cleaner sound
         )
     });    // Final processing
-	sub = LFTri.ar(freq * (3/2), pi, 13).tanh * 0.2;
+	sub = LFTri.ar(freq * (3/2), pi, 13).tanh * 0.4;
 	sig = Mix([sig, chorus.sum, sub]) / (numVoices + 3);
 
 	    // Filter sweep
@@ -81,7 +81,7 @@ SynthDef(\warmPadMove2, {
     // Output with stereo spread
     sig = Splay.ar(sig, spread);
 		// sig = GVerb.ar(sig.tanh * 0.2,4,0.1);
-	Out.ar(out, sig * Amplitude.kr(amp,0.1,0.5) * env * exciter);
+	Out.ar(out, sig * Amplitude.kr(amp,0.1,0.3) * env * exciter);
 }).add;
 
 
@@ -373,7 +373,7 @@ SynthDef(\warmPadMove2, {
 ~next = {|d|
 
 	var dur = 0.5 * 2.pow(m.accelMassFiltered.linlin(0,3,0,2).floor).reciprocal;
-	var a = m.accelMassFiltered.lincurve(0,1.5,0,1,-2);
+	var a = m.accelMassFiltered.lincurve(0,1.0,0,1,-2);
 	var filtSpeed = m.accelMassFiltered.lincurve(0,2.5,0.1,40,3);
 	var lfoFreq = m.accelMassFiltered.lincurve(0,2.5,0.1,8,-1);
 	var fmin = (m.gyroZFiltered.fold(-0.5,0.5) * 2).linexp(-1.0,1.0,200,500);
@@ -386,14 +386,14 @@ SynthDef(\warmPadMove2, {
 	if(a>0.9,{a=0.9});
     
     synth.set(\freq, (note + m.com.root).midicps);
-	synth.set(\amp, a * 0.3);
+	synth.set(\amp, a * 0.8);
 	synth.set(\filtSpeed, filtSpeed);
 	synth.set(\lfoFreq, lfoFreq);
 	synth.set(\filtMin, fmin);
 	synth.set(\filtMax, fmax);
 
 
-	if(d.sensors.accelEvent.x > 3.0, {
+	if(d.sensors.accelEvent.x > 1.0, {
 
 		if(TempoClock.beats > (lastTime + 0.055),{
 			// same expression the bsynth below takes for its \amp, so the

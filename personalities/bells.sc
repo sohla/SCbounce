@@ -176,13 +176,13 @@ SynthDef(\bambooComplex, {
 //------------------------------------------------------------
 ~next = {|d|
 
-	var move = m.accelMassFiltered.linlin(0,3,0,1);
+	var move = m.accelMassFiltered.linlin(0,1,0,1);
 	var att = m.accelMassFiltered.lincurve(0,2.5,0.1,0.001,-8);
 	var amp = m.accelMassFiltered.linexp(0,2.5,0.08,1);
 	var noteIndex = m.accelMassFiltered.linlin(0,2,0.0001,notes.size).floor;
-	var space = m.accelMassFiltered.lincurve(0,1.0,0.25,0.02,-1);
+	var space = m.accelMassFiltered.lincurve(0,0.3,0.25,0.02,-1);
 	if(noteIndex>=notes.size,{noteIndex=notes.size-1});
-	if(move > 0.01, {
+	if(move > 0.02, {
 		if(TempoClock.beats > (lastTime + space),{
 			lastTime = TempoClock.beats;
 			notes = notes.rotate(-1);

@@ -194,8 +194,11 @@ SynthDef(\chooka, {
 	var kd = (d.sensors.gyroEvent.y / pi.half).lincurve(-0.8,0.8,0.1,2,-2);
 	var ca = m.accelMassFiltered.lincurve(0,2.5,0.0,1.0,-12);
 
+	dur = (m.rrateMassFiltered).lincurve(0.0,0.1,0.2,0.01,-1);
+
+
 	if(amp < 0.02) { amp = 0.0 };
-	if(amp > 0.95, { 
+	if(amp > 0.85, { 
 		// Pdef(m.ptn).set(\subFreq, notes[0].midicps);
 		Pdef(m.ptn).set(\subFreq, notes[ni].midicps);
 		Pdef(m.ptn).set(\seq, amp * 0.5);
