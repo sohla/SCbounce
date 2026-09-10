@@ -360,7 +360,7 @@ oscController.scd:37   sensorsProto = ( gyroEvent, gyroMass, rrateEvent,
                                         quatEvent, quatReference,
                                         quatCalibrated, velocity, ...,
                                         digiInEvent )
-oscController.scd:71   sensorBus = Bus.control(s, 7)         // ax ay az w x y z
+oscController.scd:72   sensorBus = Bus.control(s, 7)         // ax ay az w x y z
 ```
 
 and the derivation in `personalityController.scd:151–186` is entirely
@@ -536,7 +536,7 @@ would kill it.
 
 **The personality file is the plugin format, and it is a good one.** It is
 plain interpreted SuperCollider, hot-reloaded on save
-(`personalityController.scd:283`), namespaced per device, with a documented
+(`personalityController.scd:240`), namespaced per device, with a documented
 contract (`ak_pfile_authoring.md`, 700 lines) and a template. A researcher can
 open a file, save it, and hear the change in 10 milliseconds without restarting
 anything. That is a better iteration loop than most commercial audio software
@@ -802,7 +802,7 @@ records — that `/airkit/mute` is a GUI unload/reload and **not** an audio mute
 **senders must keep a stable source port**.
 
 Adopting that file and that rule here costs nothing, closes the gap between
-`API.md` (five addresses) and reality (at least fifteen on this branch alone),
+`API.md` (five addresses) and reality (sixteen live on this branch alone),
 and is the thing that would have made the divergence visible while it was small.
 
 **2. Proof, for §8 and §10.** CotF is a live demonstration that the intervention
@@ -825,8 +825,9 @@ the first where it has no reason to.
 
 ### What is there today
 
-Firmware 0.4, ESP32-S3 Feather, `AirStick-ESP-Arduino-FW/`. Eight sensor/IO
-modules, each a header with a `setupX()` / `updateX()` pair:
+Firmware 0.4, ESP32-S3 Feather, `AirStick-ESP-Arduino-FW/`. Seven sensor/IO
+modules, each a header with a `setupX()` / `updateX()` pair, plus the WiFi and
+OSC controller:
 
 | Module | Hardware | OSC out | Notes |
 |---|---|---|---|
@@ -840,16 +841,22 @@ modules, each a header with a `setupX()` / `updateX()` pair:
 | `WifiController.h` | — | `/N/Config` | the config protocol |
 
 **This is not middleware. It is a set of build variants selected by commenting
-lines out.** `AirStick-ESP-Arduino-FW.ino:68` is the whole configuration story:
+lines out.** `AirStick-ESP-Arduino-FW.ino:70` is the whole configuration story,
+and `:83` repeats it for the update calls:
 
 ```cpp
   // setupDigiIn();
-  // setupAnalogIn();
+  setupAnalogIn();
   // setupI2COut();
-  setupI2CIn();
+  // setupI2CIn();
 ```
 
-Three consequences worth naming:
+That block read the other way round a fortnight ago — CAP1188 on, analog off —
+and flipped with the `more sensor testing` commits. Which is the argument, not a
+complaint: **the record of which sensors a stick has is a comment character in a
+file every variant edits.**
+
+Four consequences worth naming:
 
 1. **Which sensors a stick has is decided at compile time and is invisible at
    runtime.** Nothing in the OSC protocol says which of those `setup` calls ran.
@@ -857,7 +864,13 @@ Three consequences worth naming:
    exclusive as written — not by policy but by pin. So "which sensors are
    fitted" is partly a board question, not a firmware flag, and any capability
    model has to say so rather than pretend every combination is buildable.
-3. A researcher bringing up a new sensor edits the `.ino`, which means the
+3. **The host does not listen to most of it.** `oscController.scd:233-235`
+   builds exactly three listener patterns — `IMUFusedData`, `Battery`,
+   `DigiIn`. There is none for `/N/AnalogIn` or `/N/I2CIn`. So as the firmware
+   stands *today*, with `setupAnalogIn()` enabled, the stick is streaming
+   analog readings at ~100 Hz that AirKit receives and discards. That is the §4
+   gap in its most literal form, and it is live right now.
+4. A researcher bringing up a new sensor edits the `.ino`, which means the
    `.ino` is a merge point every variant touches. Same failure mode as
    `personalityController.scd` holding the set-list — which has since been
    fixed by giving each machine its own file (§16), and the same fix shape
@@ -878,7 +891,7 @@ sensor must degrade to a missing sensor, never to a dead stick.**
 ### The config protocol already exists, and AirKit throws most of it away
 
 Part I §4 said the `/Config/GetConfig` handshake "carries almost nothing".
-That is wrong. `WifiController.h:355 sendConfig()` replies with **eighteen
+That is wrong. `WifiController.h:363 sendConfig()` replies with **eighteen
 values**:
 
 ```
@@ -889,7 +902,7 @@ frameDelay,
 r, g, b, a
 ```
 
-And `oscController.scd:354` reads this:
+And `oscController.scd:355` reads this:
 
 ```supercollider
 var a = msg2.keep(-4)/255;
@@ -914,6 +927,10 @@ Additive on both sides, in this order:
 1. **Parse the whole config reply.** `d.config = (id:, fw:, ip:, port:,
    frameDelay:, color:)`. Nothing else changes. This is a half-day and it
    unblocks fleet reporting (§7 move 5) for the instrument half of the fleet.
+   While in there: **add a listener for `/N/AnalogIn`**, in the `digiIn` shape,
+   landing in its own `sensorsProto` field. The stream already exists and is
+   being dropped; catching it costs one `OSCFunc` and no existing p-file
+   notices.
 2. **Add a capability field to `sendConfig`.** A bitfield plus a variant string
    (`"v0.4-imu-cap8"`). The firmware knows which `setup` calls it made; have it
    say so. This is §4's capability descriptor, and the handshake to carry it is
@@ -921,14 +938,15 @@ Additive on both sides, in this order:
 3. **Make the module set a runtime decision where the pins allow it.** One
    binary, NVS flags, `/Config/SetModules`. Where the pins do not allow it
    (DigiIn vs AnalogIn), the variant string is the honest answer.
-4. **Two one-line firmware fixes that are already diagnosed.**
-   `optimize_report.md` establishes that the 100 Hz is `reportIntervalUs =
-   10000` at `BNO085.h:17` — a sensor configuration default, not a headroom
-   artefact and not a musical decision. And `WifiController.h:76` has
-   `WiFi.setSleep(WIFI_PS_NONE)` commented out, so the radio parks between
-   beacons and `udp.endPacket()` can block 3–100 ms. That is a jitter source at
-   *any* rate. Measure max inter-packet gap before and after; the report tells
-   you exactly how.
+4. **Finish the rate work.** `optimize_report.md` sequenced two changes.
+   **Step A is done**: `WifiController.h:95` now calls `WiFi.setSleep(false)`
+   with a comment explaining the DTIM-beacon stall it removes, so the radio no
+   longer parks between beacons and blocks `udp.endPacket()` for 3–100 ms.
+   **Step B is not**: `reportIntervalUs = 10000` still stands at `BNO085.h:18`,
+   so the stream is still capped at 100 Hz by the sensor itself. Dropping it to
+   `5000` is the one-line change to 200 Hz. Measure average rate *and* max
+   inter-packet gap before and after — the report tells you exactly how, and
+   warns that the both-reports-ready gate skews as the period shrinks.
 5. **Implement `Multi-Network-WiFi-Plan.md`.** Written, unimplemented. A kit
    that must sometimes join its own AP and sometimes a venue network needs it,
    and the non-blocking state machine it specifies is the right shape.
@@ -1080,15 +1098,15 @@ AirKit's device listeners are **source-filtered and source-keyed**:
 var address = NetAddr.new(d.ip, d.port - i);        // oscController.scd:241
 d.listeners.airware = OSCFunc({ ... }, pattern, address);
 …
-var d = addDevice.(addr.ip, addr.port + i, i + 1);  // :408 — keyed by SOURCE PORT
+var d = addDevice.(addr.ip, addr.port + i, i + 1);  // :410 — keyed by SOURCE PORT
 ```
 
 A replayed packet arrives from PyOSCCam's socket, not the stick's. AirKit will
 therefore auto-register a *new* device at the replay's source port — and then
-`addDevice` sends `/Config/GetConfig` back to that port (`:387`), which nothing
+`addDevice` sends `/Config/GetConfig` back to that port (`:389`), which nothing
 answers. The one-shot config listener never fires, so `/airkit/addDevice` is
 never sent, so `visualCore` and `deviceView` never learn the device exists.
-`/airkit/loadPersonality` *is* sent unconditionally (`:382`).
+`/airkit/loadPersonality` *is* sent unconditionally (`:384`).
 
 **Expected symptom: the replay makes sound, with no canvas and no device panel**
 — the exact "audio-with-no-picture" signature `CLAUDE.md` documents for a
@@ -1290,7 +1308,7 @@ researchers.
 | §3, §5 | "move the control GUI to the browser" | Most of the OSC API for it exists — in a fork outside this repository. |
 | §6 | "29 remote branches" | Understates it — there are two firmware trees as well. But `origin/AirConcert` is a deliberate separation, not drift: it is a production fork and it stays separate (§11). **The branch count is no longer the config problem** either — see the config row below. What remains is repertoire divergence, and an OSC contract that diverged invisibly; `configPlan.md` never claimed to fix either. |
 | §7 | Phase 1 move 8, "measure Pi headroom" | Must now also settle the PyOSCCam question (§14) and be measured against the documented WiFi-IRQ/audio balance, not in isolation. |
-| §10 | Q2, "is 100 Hz musical or a headroom artefact?" | Neither. It is `reportIntervalUs = 10000` at `BNO085.h:17` (a **firmware** repo, not this one — see §11), a sensor default. Changing it is one line, and `optimize_report.md` has the measurement plan. §3 has been corrected to defer to this. |
+| §10 | Q2, "is 100 Hz musical or a headroom artefact?" | Neither. It is `reportIntervalUs = 10000` at `BNO085.h:18` (a **firmware** repo, not this one — see §11), a sensor default. Changing it is one line, and `optimize_report.md` has the measurement plan. §3 has been corrected to defer to this. |
 
 **Config, added 2026-09-10.** `configPlan.md` was implemented between Part I
 and this section, so several Part I claims about it are now historical:
@@ -1330,8 +1348,9 @@ retiring the machine branches, is unblocked by it.*
    dependency — only its contract discipline crosses over (§11).
 1. Parse the full `/Config` reply into `d.config`. Half a day; unblocks fleet
    reporting for the sticks.
-2. `WiFi.setSleep(WIFI_PS_NONE)` and a max-inter-packet-gap counter. Measure
-   before and after.
+2. Drop `reportIntervalUs` to `5000` and add a max-inter-packet-gap counter.
+   Modem sleep is already off (§12), so this is the remaining half of the rate
+   work. Measure before and after.
 
 **Into Phase 1**
 
