@@ -348,6 +348,65 @@ var addOSCDeviceListeners = {|d|
 };
 
 //------------------------------------------------------------
+// Device params : volume and sensitivity
+//
+// Stored on the device model, owned here, changed only through
+// /airkit/param so every surface (panel, webapp, MIDI) sees the same
+// value and hears about it on /airkit/paramIs.
+//
+// Persisted against the stick's own ID - d.index, set with
+// /Config/SetID and carried in its OSC address. NOT the IP: AirStick
+// leases are dynamic, and d.ip is written once and never refreshed. NOT
+// the port either, which only encodes the ID for as long as every stick
+// happens to share a source port.
+//
+// So params follow the slot, not the hardware : a spare stick set to ID
+// 2 inherits slot 2's place in the mix.
+//------------------------------------------------------------
+var paramFile = machine[\stateDir] +/+ "deviceParams.scd";
+var paramStore = ();
+var paramsDirty = false;
+
+var loadParams = {
+    var str = if(File.exists(paramFile), { File.readAllString(paramFile) });
+    var ev = str !? { str.interpret };      // nil on a malformed file, never throws
+    if(ev.isKindOf(Event), { paramStore = ev }, {
+        if(str.notNil, {
+            "[params] % unreadable - starting from defaults".format(paramFile).warn;
+        });
+    });
+};
+
+var saveParams = {
+    var f;
+    if(File.exists(machine[\stateDir]).not, { File.mkdir(machine[\stateDir]) });
+    f = File(paramFile, "w");
+    if(f.isOpen, { f.write(paramStore.asCompileString); f.close },{
+        "[params] cannot write %".format(paramFile).warn;
+    });
+};
+
+var restoreParams = { |d|
+    (paramStore[d.index.asSymbol] ? ()).keysValuesDo { |k, v|
+        if(d.params.includesKey(k), { d.params.put(k, v.asFloat.clip(0, 1)) });
+    };
+};
+
+// The one place a param changes. Unknown device or unknown key is
+// ignored rather than invented, so OSC cannot grow the model.
+var setParam = { |port, name, value|
+    var d = ~devices.at(port);
+    var key = name.asSymbol;
+    if(d.notNil and: { d.params.includesKey(key) }, {
+        var v = value.asFloat.clip(0, 1);
+        d.params.put(key, v);
+        paramStore[d.index.asSymbol] = (paramStore[d.index.asSymbol] ? ()).put(key, v);
+        paramsDirty = true;
+        NetAddr.new("127.0.0.1", 57120).sendMsg("/airkit/paramIs", port, key.asString, v);
+    });
+};
+
+//------------------------------------------------------------
 var addDevice = { |ip,port,index|
 
     var configPattern = "/%/Config".format(index);
@@ -374,6 +433,7 @@ var addDevice = { |ip,port,index|
     d.params = Event.new(proto:paramsProto);
     d.params.volume =  0.5;
     d.params.sensitivity =  0.5;
+    restoreParams.(d);
     d.sensors.digiInEvent = Array.fill(4,0); // must allocate for each instance
 
     // prefill colour     
@@ -428,6 +488,27 @@ var stopOSCListening = {
 //------------------------------------------------------------
 
 ~devices = Dictionary();
+
+loadParams.();
+
+//------------------------------------------------------------
+// Public, like /airkit/mute : the panel, the webapp and MIDI all drive
+// params through here. OSCdef so re-running main.sc replaces this rather
+// than stacking a second responder.
+OSCdef(\airkitParam, { |msg|
+    setParam.(msg[1].asInteger, msg[2], msg[3]);
+}, '/airkit/param');
+
+// A drag writes at mouse rate; the SD card should not. Coalesce and
+// flush at most every couple of seconds. Kept in topEnvironment so
+// re-running main.sc stops the old routine instead of orphaning it.
+~paramFlusher !? { ~paramFlusher.stop };
+~paramFlusher = Routine({
+    loop {
+        2.wait;
+        if(paramsDirty, { paramsDirty = false; saveParams.() });
+    }
+}).play(AppClock);
 
 //------------------------------------------------------------
 OSCFunc({ |msg, time, addr, recvPort|

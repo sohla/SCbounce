@@ -37,7 +37,7 @@ var placeholder = { |host, text|
 // so plugging HDMI in re-parents the surface instead of rebuilding the UI.
 var stack = {
 	var deviceView = Require("deviceView.scd");
-	// var controlView = Require("controlView.scd");
+	var controlView = Require("controlView.scd");
 	var systemView = Require("systemView.scd");
 	var visualView = Require("visualView.scd");
 	var pages = [deviceView.()];
@@ -47,6 +47,9 @@ var stack = {
 	visualHost = visualView.();
 	pages = pages.add(visualHost);
 	labels = labels.add("visual");
+
+	pages = pages ++ [controlView.()];
+	labels = labels ++ ["control"];
 
 	pages = pages ++ [systemView.()];
 	labels = labels ++ ["system"];

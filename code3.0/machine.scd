@@ -78,7 +78,12 @@ var defaults = (
 
 	listsDir: root +/+ "lists/",
 	personalityDir: root +/+ "personalities/",
-	versionPath: root +/+ "VERSION"
+	versionPath: root +/+ "VERSION",
+
+	// Runtime state the kit writes for itself. Deliberately NOT a
+	// release_dir: an update never rmtree's it, so it survives upgrades.
+	// No trailing slash - callers use +/+.
+	stateDir: root +/+ "state"
 );
 
 var readMachine = { |path|

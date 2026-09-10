@@ -25,19 +25,23 @@ var sliderView = {|lt="default", rt="", d|
         Pen.fill;
         lt.drawCenteredIn(Rect(pos,0,tw,40), Font(size:24), Color.black());
       })
+      // The slider sends a command and never writes the model : the
+      // controller owns the value, clamps it and echoes /airkit/paramIs,
+      // so the webapp and MIDI see panel moves and vice versa.
+      //
+      // There is no paramIs responder here on purpose - drawFunc reads
+      // d.params every frame, so this view is already synced from any
+      // source. titleView needs responders because a Button holds its
+      // own state; this one only renders the model.
       .mouseMoveAction_({|v,x,y|
-        var vw = v.bounds.width;
-        var vh = v.bounds.height;
-        if(x<0,{x=0});
-				d.params.put(lt.asSymbol, x/vw);
+        NetAddr.new("127.0.0.1", 57120)
+          .sendMsg("/airkit/param", d.port, lt, x / v.bounds.width);
       })
       .mouseUpAction_({|v,x,y|
       })
       .mouseDownAction_({|v,x,y|
-        var vw = v.bounds.width;
-        var vh = v.bounds.height;
-        if(x<0,{x=0});
-				d.params.put(lt.asSymbol, x/vw);
+        NetAddr.new("127.0.0.1", 57120)
+          .sendMsg("/airkit/param", d.port, lt, x / v.bounds.width);
       });
   ));
   

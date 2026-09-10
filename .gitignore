@@ -12,3 +12,7 @@ liveSession/mball1 Project/Samples/*
 
 *.png
 *.wav
+
+# Runtime state the kit writes for itself (device volume/sensitivity).
+# Outside release_dirs, so a web update never touches it either.
+/state/
