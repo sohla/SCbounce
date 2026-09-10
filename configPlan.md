@@ -233,6 +233,62 @@ today, and it fails silently.
 
 ---
 
+## Interaction with AirKitWebApp (the updater)
+
+Checked 2026-09-10 against `~/Develop/Web/Projects/AirKitWebApp` @ `6979644`.
+**No change is needed in the updater, and `machines/` is safe from it.**
+
+`release.config.json` ships `code3.0`, `personalities`, `lists` and a
+generated `VERSION` (`.github/workflows/release.yml`). `machines/` is *not* in
+that list, and `engine.py:107-171` backs up, `rmtree`s and replaces **only the
+top-level directories actually present in the zip** — "everything else in
+APP_DIR (`.git`, `synths`, `analysis`, …) is left untouched."
+
+So a web update replaces the core and the repertoire and **leaves the machine
+file alone**. That is exactly the right split and it comes for free: core code
+updates, site config survives. Do not "fix" it by adding `machines` to
+`release_dirs` — that would make every update `rmtree` the kit's own settings
+and replace them with whatever happened to be in the repo, which is the silent
+clobber this whole plan exists to prevent.
+
+Three continuity checks, all fine:
+
+- `APP_DIR` is `/home/pi/Develop/SuperCollider/Projects/AirKit`
+  (`config/settings.py:13`) — the same layout as the Mac, so `machine.scd`'s
+  `dirname.dirname` lands on the repo root and `machines/` sits beside
+  `code3.0/`. The derived `listsDir` / `personalityDir` / `versionPath` come
+  out identical to the old hardcoded `~/Develop/...` strings, because `~` is
+  `/home/pi` there. Nothing moves.
+- **`VERSION` still works.** The zip extracts it to the APP_DIR root and
+  `systemView.scd` now reads `<root>/VERSION` — the same file. The updater
+  keeps owning the version display.
+- **Restart re-reads config.** `_launch_startup_script()` (`app.py:328`) runs
+  `/home/pi/start_airkit.sh`, a full sclang relaunch, so `main.sc` re-`Require`s
+  `machine.scd`. Config is boot-time and the updater's restart is a real
+  restart.
+
+The updater reads nothing else that changed — no roster, no
+`personalityController.scd`, no `machines/`.
+
+### The one thing that needs doing per Pi
+
+`machines/` is tracked in git but **not in the release zip**, so it reaches a
+kit only by `git pull` (or one hand copy). A Pi that receives the new
+`code3.0` *by zip alone*, having never got `machines/`, will find no machine
+file and boot on built-in defaults: roster `list_dev.sc`, 5 devices, `outAddr`
+`127.0.0.1:5005`.
+
+It says so loudly — that is what the UNKNOWN MACHINE block is for — but it is
+still the wrong kit. **So each Pi needs `machines/rpi.scd` placed once, before
+or alongside the first release that contains `code3.0/machine.scd`.** After
+that it is permanent and self-maintaining, and survives every future update.
+
+This is the one ordering hazard in the whole change, and it is the same shape
+as "step 3 before step 2": the zip is happy to install a core that is looking
+for a file the zip does not carry.
+
+---
+
 ## Loose ends
 
 - `VERSION` currently reads `0.0.5` while the latest tag is `v0.0.7`, and

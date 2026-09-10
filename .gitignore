@@ -12,8 +12,3 @@ liveSession/mball1 Project/Samples/*
 
 *.png
 *.wav
-
-# Optional per-machine override naming which machines/*.scd to load. The
-# machine files themselves are tracked; this pointer is not, because it is
-# the one filename every kit would edit.
-/machines/CURRENT

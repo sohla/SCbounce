@@ -1,12 +1,13 @@
-// The laptop. Values carried from the AirKitDesktop branch.
-//
+// Steph's laptop. Not a router, so it identifies by hostname.
 // MU00157721X is an institution-managed asset name and may change on
-// reimage; if it does, the \platform fallback still picks this file while
-// it is the only macOS one.
+// reimage; add the replacement here if it does.
 
 (
 	label: "desktop",
+	user: "Steph",
+
 	hostnames: ["MU00157721X"],
+	macs: [],
 	platform: \osx,
 
 	outAddr: ["192.168.70.211", 5005],

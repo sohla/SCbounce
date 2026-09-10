@@ -1,5 +1,6 @@
 {
   "release_dirs": [
+    "machines",
     "code3.0",
     "personalities",
     "lists"
