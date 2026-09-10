@@ -40,8 +40,11 @@ macOS/Linux.
                                 └────────────────────────────┘
 ```
 
-- One AirKit instance can host up to 5 virtual devices on the same IP
-  (`numAirwareVirtualDevices = 5` in `oscController.scd`).
+- One AirKit instance hosts as many virtual devices on the same IP as its
+  machine file's `numDevices` key allows (9 on the kits, 5 on the laptop).
+  The device index comes from the OSC address pattern the stick sends on
+  (`/1/…`, `/2/…`), and its IP is read off the incoming packet — so sticks
+  may hold dynamic addresses and nothing needs to know them in advance.
 - Each device runs its own processing routine at ~30 Hz, with smoothed
   acceleration mass, rotation rate, and Euler angles derived from the incoming
   quaternion.
@@ -58,7 +61,7 @@ macOS/Linux.
 | Path | What's in it |
 |---|---|
 | `code3.0/` | **Current app.** `main.sc` is the entry point. |
-| `code2.0/`, `code1.0/` | Earlier iterations kept for reference. Not used by the current app. |
+| `machines/` | One tracked file per kit — roster, device count, timing, window, and the identifiers the kit recognises itself by. See **Machine configuration**. |
 | `personalities/` | ~170 personality files (`.sc`). Each is one sound/behavior. |
 | `lists/` | Curated personality playlists per device/performer (`list_*.sc`). |
 | `synths/` | Standalone `SynthDef`s and synth experiments. |
@@ -66,11 +69,16 @@ macOS/Linux.
 | `analysis/` | Python scripts and generated HTML for inspecting commit history, file networks, and personality code over time. |
 | `embed/` | Firmware-side artifacts (M5Stick, Wemos + BNO055, etc.) — the hardware that produces the OSC stream. |
 | `network/` | Network config files for the RPi setup. |
-| `sc_osx_standalone-3.7.0-template/` | Template for building AirKit as a self-contained macOS app. |
-| `airstickTemplate.sc` | Hand-rolled walkthrough of mapping raw AirStick OSC to a synth — good starting point for learning the protocol. |
 | `configureAirStickOSC.sc` | Snippets for configuring an AirStick over OSC (LED, ID, stream destination). |
+| `configPlan.md` | Why machines differ by file rather than by branch, and how the machine mechanism works. |
+| `gatePlan.md` | Release/rollback gating: what ships, what must never be a class file. |
+| `product_report.md` | Where the project stands as a product, and the sequenced moves. |
 | `personality_findings.md` | Detailed write-up of the patterns personalities use (Pdef vs Ndef vs direct Synth, sensor mapping, smoothing). |
 | `personality_provocations.md` | Design notes / open questions. |
+
+Not on this branch: `code2.0/`, `code1.0/`, `sc_osx_standalone-3.7.0-template/`
+and `airstickTemplate.sc` live on `AirKitDesktop` and return when that branch
+is folded in (`configPlan.md`, migration step 3).
 
 ---
 
@@ -111,14 +119,15 @@ Two controllers do the real work:
 
 ### `personalityController.scd` — personality lifecycle
 
-- Reads a list file from `lists/` (e.g. `list_ITR_Mel.sc`) — a plain array of
-  personality names.
+- Reads the list file named by the machine file's `list` key from `lists/`
+  (e.g. `list_ITR_Mel.sc`) — a plain array of personality names. `list` may
+  also be an array, one roster per device.
 - For a given device + index, loads `personalities/<name>.sc`, builds a fresh
   `Environment` with:
   - `~model` — per-personality state (filtered accel/gyro mass, pattern key,
     smoothing coefficients, etc.).
   - `~device` — back-reference to the OSC device.
-  - `~secs` — process tick (default 0.03 s ≈ 33 Hz).
+  - `~secs` — process tick, from the machine file's `secs` key (0.01 s).
   - `~processDeviceData` — pulls from `d.sensors`, applies attack/decay
     smoothing into `~model`.
   - Hooks the personality file overrides: `~init`, `~deinit`, `~next`,
@@ -131,7 +140,7 @@ Two controllers do the real work:
 
 ### Personality contract
 
-A personality file (see `personalities/template.sc` for the skeleton) runs
+A personality file (see `personalities/_TEMPLATE_ak_pfile.sc` for the skeleton) runs
 inside the personality Environment, so it sees:
 
 - `~model` (`m`), `~device` (`d`)
@@ -201,15 +210,14 @@ The AirStick configuration commands (`/Config/SetID`, `/Config/SetLED`,
 
 ### Running on macOS / Linux desktop
 
-1. Edit `code3.0/personalityController.scd` so `listsDir` and `personalityDir`
-   point at your local checkout. The current values assume:
-   ```
-   ~/Develop/SuperCollider/Projects/SCbounce/lists/
-   ~/Develop/SuperCollider/Projects/SCbounce/personalities/
-   ```
-   Commented alternatives for laptop / mac-mini setups are in the file.
-2. Pick a personality list by editing the `list` variable near the top of
-   `personalityController.scd` (e.g. `"list_ITR_Mel.sc"`).
+1. Nothing to configure for paths. `code3.0/machine.scd` derives `listsDir`,
+   `personalityDir` and the `VERSION` path from its own location, so a clone
+   anywhere works.
+2. Pick a personality list in your machine file — `machines/<name>.scd`, the
+   `list` key (e.g. `"list_ITR_Mel.sc"`). If no machine file claims this
+   machine it says so loudly at boot and falls back to `list_dev.sc`; add your
+   hostname to a file's `hostnames` to claim it. See **Machine configuration**
+   below.
 3. Launch the app. Either:
    - Open `code3.0/main.sc` in the SuperCollider IDE and evaluate the whole
      block, **or**
@@ -230,10 +238,50 @@ The `Airsticks-RPI` branch is wired for a Pi acting as a kiosk:
 - `systemView.scd` reads `hostname -I`, `/proc/loadavg`,
   `/sys/class/thermal/...` and exposes `sudo shutdown now` /
   `sudo systemctl restart NetworkManager` buttons.
-- Paths in `personalityController.scd` point at
-  `~/Develop/SuperCollider/Projects/SCbounce/...` — keep the repo at that
-  location on the Pi or update the constants.
+- Paths are derived from the checkout location, so the repo can live anywhere.
+- Each Pi is the router on its own AP network, and identifies itself by that
+  AP address — see **Machine configuration**.
 - Launch the same way (sclang on `main.sc`) at boot.
+
+### Machine configuration
+
+Machines differ by a **file**, not a branch. One small tracked file per kit in
+`machines/`, and the kit works out which one is its own at boot — there is
+nothing to select by hand.
+
+```
+machines/
+  airkit1.scd      AirKit1  MiM    192.168.100.1
+  airkit2.scd      AirKit2  Mel    192.168.200.1
+  airkit3.scd      AirKit3  Alon   192.168.150.1
+  airkit4.scd      AirKit4  Nic    192.168.50.1
+  development.scd  AirKitDevelopment  Steph  192.168.70.1
+  desktop.scd      the laptop (identified by hostname)
+```
+
+Each file returns an Event holding the roster, device count, timing and window
+settings, plus its own identifiers. `code3.0/machine.scd` resolves one of them
+and every core file reads it — nothing else hardcodes a path, an address or a
+roster.
+
+Identification is automatic, in order:
+
+| # | Signal | Why |
+|---|---|---|
+| 1 | `apAddr` | each Pi is the router at a fixed `.1` on its own AP network — survives a board swap, which a MAC does not |
+| 2 | `macs` | hardware addresses, if there is no AP |
+| 3 | `hostnames` | for machines that are not a router (the laptop) |
+| 4 | platform | the single file claiming this `platform`, if only one exists |
+| 5 | — | nothing matched: a loud block naming this machine's addresses, hostname and MACs, then built-in defaults |
+
+Because each file declares its own identifiers, there is no shared
+machine→identity table for two kits to conflict over — which is the whole
+point. To claim a machine, add its AP address, hostname or MAC to its file.
+
+`machines/` ships in the release (`release.config.json`), so config is
+versioned, reviewable and rolls back with the code.
+
+See `configPlan.md` for the reasoning and the migration history.
 
 ### Building a macOS standalone
 

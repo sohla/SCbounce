@@ -28,7 +28,7 @@ score. There is one device, one Environment, and a 100 Hz tick.
 
 A file of plain SuperCollider source in `personalities/`. On load it is read
 and `interpret`ed **into a fresh Environment**, one per device, one per load
-(`personalityController.scd:257`). All it does is assign a handful of `~`
+(`personalityController.scd:214`). All it does is assign a handful of `~`
 names into that Environment. That is the entire interface — there is no class,
 no superclass, no registration call.
 
@@ -63,7 +63,7 @@ Two consequences worth internalising straight away:
 ```
 
 and then, forever, once every `~secs` (default `0.01`, so ~100 Hz, best-effort
-on AppClock — `personalityController.scd:190`, `:294`):
+on AppClock — `personalityController.scd:147`, `:251`):
 
 ```
     if(File.mtime(~filePath) changed) -> re-fire /airkit/loadPersonality   :283
@@ -156,7 +156,7 @@ them from inside `~init` / `~next` is fine, because those run later.
 The Environment is built by `Environment.make` with no parent and no proto, so
 **`topEnvironment` is invisible from a p-file**. `~visuals`, `~devices` and
 anything else living up there resolve to `nil` — silently. (This is exactly
-why `personalityController.scd:77` captures `~visuals` into a lexical `var`
+why `personalityController.scd:34` captures `~visuals` into a lexical `var`
 before building the Environment.)
 
 Interpreter globals are unaffected: `s`, `w`, `z` and the class library work
@@ -166,7 +166,7 @@ normally. It is only `~names` that are scoped away.
 
 ## 5. The model, `m`
 
-`personalityController.scd:88`. Every field is writable; the filter constants
+`personalityController.scd:45`. Every field is writable; the filter constants
 are meant to be set at the top of your file.
 
 | Field | Computed | Typical range |
@@ -211,7 +211,7 @@ A fresh random 16-character string per load. Two things follow:
 
 ### `m.com` — the only cross-personality channel
 
-`personalityController.scd:51`. One Event, created once, **shared by every
+`personalityController.scd:8`. One Event, created once, **shared by every
 device's model**. Fields: `root`, `dur`, `accelMass`, `rrateMass`.
 
 That is the whole inter-device vocabulary. One p-file publishes, others read:
@@ -652,9 +652,21 @@ one-off.
 ## 13. Lists
 
 `lists/list_*.sc` is a file containing one parenthesised Array of file-name
-strings, `interpret`ed at load (`personalityController.scd:67`). Which list a
-device gets is `defaultLists[d.index - 1]`, set at the top of
-`personalityController.scd`.
+strings, `interpret`ed at load (`personalityController.scd:24`). Which list a
+device gets is `defaultLists[d.index - 1]`.
+
+`defaultLists` comes from **this kit's machine file** — `machines/<name>.scd`,
+the `list` key — not from `personalityController.scd`. Set it to a String to
+give every device the same roster, or to an Array for one roster per device:
+
+```supercollider
+list: "list_glenroy.sc",
+list: ["list_NZ_Mel.sc", "list_NZ_Mel.sc", "list_NZ_Suz.sc"],
+```
+
+The kit picks its own machine file at boot; see `configPlan.md`. The roster in
+force is posted on the `[machine]` line at startup, so if the sounds are not
+what you expected, read that line first.
 
 ```supercollider
 (

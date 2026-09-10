@@ -230,12 +230,15 @@ git tag v0.0.6 -> GH Action -> zip of release_dirs + VERSION -> GitHub Release
 ```
 
 - `.github/workflows/release.yml` reads the dir list from
-  `release.config.json` (`code3.0`, `personalities`, `lists`) and zips it.
-  Adding `"classes"` to that list is a one-line change.
+  `release.config.json` (`machines`, `code3.0`, `personalities`, `lists`) and
+  zips it. Adding `"classes"` to that list is a one-line change.
 - `src/updater/engine.py:137-143` derives its targets from the zip's own
   top-level dirs — there is **no** hardcoded dir list, so a new `classes/`
   dir is backed up, replaced and rolled back for free. No updater change
   needed for the zip half.
+- That same property is why `machines/` could be added to the release without
+  touching the updater: per-kit config is versioned, ships, and rolls back
+  with the code it was tested against. See `configPlan.md`.
 - `src/server/app.py:328-341` already shuts SC down and relaunches it via
   `start_airkit.sh`, which is exactly the restart a class extension needs.
 

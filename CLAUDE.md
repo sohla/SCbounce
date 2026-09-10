@@ -83,6 +83,8 @@ output is "a piece in the lineage of X", never "page 47 of X".
 | `code3.0/visualCore.scd` | Canvases, the device→canvas router, the `\customVisualEvent` type, and `drawCanvas` (the per-frame draw loop). |
 | `code3.0/vdefLib.scd` | The shared shape library, registered into `core.vdefs[\global]`: `circle arc square triangle hexagon star cross line wave spiral leaf blobby`. Every entry is a points func. |
 | `code3.0/personalityController.scd` | Builds each personality's Environment, injects `~vdef` / `~model` / `~device`, runs `~init` / `~next` / `~plot`. |
+| `code3.0/machine.scd` | Resolves which `machines/*.scd` this kit is, at boot. Paths, roster, device count, timing and window all come from it — nothing else hardcodes them. |
+| `machines/*.scd` | One tracked file per kit. Not something a visuals task ever needs to touch. |
 | `code3.0/plotterView.scd` | The per-device plotter driven by `~plot`. |
 | `personalities/*.sc` | The personality files ("p-files"). |
 | `visuals/graphic-scores-atlas.md` | Design source document for visual grammars. |
@@ -333,8 +335,8 @@ holes, text, images. Nothing in this repo currently needs it.
 var, the draw func reads it at frame rate. That var is the control bus; the
 assignment is the visual equivalent of `synth.set`.
 
-`clearEvents` (`visualCore.scd:289`, called from `personalityController.scd:299`
-and `:362`) is what removes held events when the personality unloads. Without
+`clearEvents` (`visualCore.scd:289`, called from `personalityController.scd:288`
+and `:351`) is what removes held events when the personality unloads. Without
 it they would outlive their vdef and degrade into a stray fallback circle.
 
 `applyScene` re-routes every live event when the scene changes, so a held

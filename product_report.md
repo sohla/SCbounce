@@ -97,13 +97,15 @@ Most of this was built in `AirKitWebApp` and is running:
 
 - **No fleet view.** You cannot answer "what version is Glenroy running?"
   without visiting Glenroy. At 300 units that is the first thing that breaks.
-- **No configuration story.** `configPlan.md` diagnoses this precisely and is
-  still unimplemented. Per-machine values live in files every machine edits;
-  the result is **29 remote branches**, of which at least four are
-  machine-identity branches (`Airsticks-RPI`, `Airsticks-RPI-Mel`,
-  `AirKitDesktop`, `AirConcert`). The report already documents a merge that
-  reported *"Automatic merge went well"* while silently handing one machine
-  another machine's settings.
+- ~~**No configuration story.**~~ **Resolved 2026-09-10.** `configPlan.md` is
+  implemented: per-machine values live in `machines/<kit>.scd`, one tracked
+  file per kit, and `code3.0/machine.scd` picks the right one at boot from the
+  kit's own AP address. No machine edits another machine's file, so the silent
+  merge documented in that report cannot recur. The machine branches
+  (`Airsticks-RPI-Mel`, `AirKitDesktop`) are now retirable; `AirConcert` stays,
+  being a different output rather than a machine variant.
+  Still open: the config ships, but there is no way to *see* what a given kit
+  is running without visiting it — see the fleet-view gap above.
 - **Version drift.** `VERSION` says `0.0.5`; the latest tag is `v0.0.13`.
   `systemView.scd` displays that file on the Pi, so **every unit in the field
   is currently reporting the wrong version.** That is a support problem the
@@ -269,11 +271,14 @@ proposal.
 ### Job 3 is where the Pi is weakest, and it is worth measuring
 
 You are running SuperCollider with per-device routines at **100 Hz**
-(`personalityController.scd:190`, `~secs = 0.01`), up to nine virtual devices,
-plus a Qt GUI with per-frame `Pen` drawing, on a Pi. `configPlan.md` records
-that the desktop runs the same loop at 33 Hz — a 3× difference that exists as
-a per-machine value, which suggests the rate is being tuned against available
-headroom rather than against a musical requirement.
+(`personalityController.scd:147`, `~secs` from the machine file), up to nine
+virtual devices, plus a Qt GUI with per-frame `Pen` drawing, on a Pi.
+`configPlan.md` records that the desktop once ran the same loop at 33 Hz — a 3×
+difference that existed as a per-machine value, which suggests the rate was
+being tuned against available headroom rather than against a musical
+requirement. The two have since converged on `0.01`, so the evidence for that
+reading is now weaker — but `secs` remains a per-machine key precisely so the
+question can be answered by measurement rather than by editing shared code.
 
 Before deciding anything: **measure it.** How much CPU headroom does a real
 kit have with two devices, a sample-heavy personality, and visuals on HDMI?
@@ -307,11 +312,12 @@ hazard and must not be written naively.
 ### The recommendation
 
 **Keep the Pi for now, but stop treating "Pi" as part of the identity.** The
-product is "a box that makes its own network and plays". `configPlan.md`
-already proposes the mechanism that makes the host swappable — per-machine
-config files instead of per-machine branches. Implement that and the choice of
-host stops being a branch and starts being a line in a file. That is the move
-that keeps this question open cheaply.
+product is "a box that makes its own network and plays". The mechanism that
+makes the host swappable is now **in place** — per-machine config files
+instead of per-machine branches — so the choice of host is a line in a file
+rather than a branch. `machine.scd` already defaults `latency`, `border` and
+`fullScreen` per platform, so a different host needs a machine file, not a
+port. This question is now open cheaply, as intended.
 
 **And separately: reconsider the screen.** The kiosk GUI is a performer's tool
 — device panels, orientation cubes, personality names, server stats, a shutdown
@@ -332,7 +338,7 @@ grounded in the code.
 ### The current shape
 
 ```
-oscController.scd:8    var oscMessageTag = "IMUFusedData";   // ONE packet shape
+oscController.scd:10   var oscMessageTag = "IMUFusedData";   // ONE packet shape
 oscController.scd:11   var numAirwareVirtualDevices = 9;
 oscController.scd:35   sensorsProto = ( gyroEvent, gyroMass, rrateEvent,
                                         rrateMass, accelEvent, accelMass,
@@ -342,7 +348,7 @@ oscController.scd:35   sensorsProto = ( gyroEvent, gyroMass, rrateEvent,
 oscController.scd:71   sensorBus = Bus.control(s, 7)         // ax ay az w x y z
 ```
 
-and the derivation in `personalityController.scd:194–229` is entirely
+and the derivation in `personalityController.scd:151–186` is entirely
 IMU-specific: `accelMass` from `accelEvent.sumabs`, `rrateMass` from
 `rrateEvent.sumabs`, three normalised filtered gyro axes.
 
@@ -440,10 +446,11 @@ The artefact already exists. A list is:
 ( [ "silence", "trainMove2", "trainBass3", "multiBeat1", ... ] )
 ```
 
-An array of names, selected today by editing `var list =` in
-`personalityController.scd:19`. There are 32 of them and they are named after
-performers, venues and workshops — which is to say **a list is already the unit
-of teacher-facing work.**
+An array of names, selected by the `list` key in the kit's machine file
+(`machines/<kit>.scd`) since 2026-09-10 — previously by hand-editing
+`var list =` in `personalityController.scd`. There are 32 of them and they are
+named after performers, venues and workshops — which is to say **a list is
+already the unit of teacher-facing work.**
 
 The move: put list selection and list editing in the web UI that is already
 running on the Pi. A teacher browses available instruments, drags them into an
@@ -460,9 +467,10 @@ Two prerequisites, both small:
   ideally a tag or two (loud/quiet, tonal/percussive, needs-stretch). Right now
   a p-file's identity is its filename. `bongo1` and `trainChooka2` mean nothing
   to a teacher.
-- Lists need to move out of `personalityController.scd`. `configPlan.md`
-  already proposes this and separates **platform** from **roster** for exactly
-  the right reason.
+- ~~Lists need to move out of `personalityController.scd`.~~ **Done.** The
+  roster is the `list` key in the kit's machine file, kept separate from the
+  platform values so one kit can run another's repertoire without inheriting
+  its platform settings. `list` accepts a String or a per-device Array.
 
 ### Tier 2 — **Tune.** Change how an instrument responds. *(moderate)*
 
@@ -479,7 +487,7 @@ codebase is already arguing with itself in favour of surfacing parameters.
 The move: let a p-file **declare** a small set of named, ranged, labelled
 parameters, and let the web UI render sliders for them. `ControlSpec` is
 already used for exactly this shape in commented-out model fields
-(`personalityController.scd:98, 106`). Per-student presets fall out of it.
+(`personalityController.scd:55, 63`). Per-student presets fall out of it.
 
 This should be **opt-in per personality**. Do not attempt to retrofit 226
 files. Add it to the template, use it on the next 20 files written, and let it
@@ -539,12 +547,14 @@ instinct. Make it explicit and versioned.
   than being taught about each new sensor.
 - **Freezing the schema.** Once there is a published personality format,
   changing it breaks the field. Version it from day one so it can change.
-- **Branch-per-machine.** Already costing you: **29 remote branches**, and
-  `gatePlan.md` was written on `AirConcert` referring to p-files
-  (`PERCUSSION.sc`, `SOPRANOVOICE.sc`, `BIRDY.sc`, `WindVoice.sc`) that do not
-  exist on this branch. Repertoire is diverging silently across branches. At
-  100+ units with several researchers this becomes unmanageable.
-  `configPlan.md` is the fix and it is written and unimplemented.
+- **Branch-per-machine.** ~~The fix is written and unimplemented.~~ **Fixed
+  2026-09-10** — machines differ by a file in `machines/`, identified
+  automatically, and that file ships and rolls back with the release. What
+  this does *not* yet fix is the symptom that prompted it: `gatePlan.md` was
+  written on `AirConcert` referring to p-files (`PERCUSSION.sc`,
+  `SOPRANOVOICE.sc`, `BIRDY.sc`, `WindVoice.sc`) that do not exist on this
+  branch. **Repertoire is still diverging** across the remaining branches, and
+  consolidating it is a separate job from consolidating config.
 
 ### The SensiLab loop
 
@@ -573,13 +583,17 @@ decision to be made first.
 
 1. **Fix the `VERSION` drift.** Units are reporting `0.0.5` against a `v0.0.13`
    tag. It is a two-line fix and it is a support blocker.
-2. **Implement `configPlan.md`.** It is diagnosed, measured, sequenced, and
-   sitting there. It unblocks: host swapping (§3), roster-as-product (§5),
-   branch consolidation (§6), and per-site configuration (all of it). Follow its
-   migration order — step 3 before step 2 fails silently.
+2. ~~**Implement `configPlan.md`.**~~ **Done 2026-09-10** (migration steps 1–2).
+   `machines/` + `code3.0/machine.scd`, shipped in the release, kits identify
+   themselves by AP address. This unblocked host swapping (§3),
+   roster-as-product (§5) and per-site configuration. **Not yet verified on a
+   Pi** — that is the remaining risk, and it is the step that can break boot.
 3. **Make the "never ship a class file with anything else" rule explicit** in
    the release process, per `gatePlan.md`.
-4. **Retire the machine branches** once 2 lands.
+4. **Fold `AirKitDesktop` into `Airsticks-RPI` and retire the machine
+   branches** — `configPlan.md` steps 3–5. Safe now that 2 has landed, because
+   the shared files no longer hold machine-specific values. `AirConcert` is
+   excluded by design.
 
 ### Phase 1 — Make a fleet possible *(the 100–300 unit prerequisite)*
 
