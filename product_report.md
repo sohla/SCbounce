@@ -694,3 +694,551 @@ Ordered by how much they change the plan.
    volume limits for hearing safety, and any duty-of-care requirements in
    specialist settings. Worth finding out before the enclosure is designed, not
    after.
+
+---
+---
+
+# Part II — the four-repo system
+
+Added 2026-09-10. Part I was written against `AirKit` alone. This part folds in
+`AirStick-ESP-Arduino`, `AirKitWebApp` and `PyOSCCam` as what they are — the
+same project — and answers four specific questions about them. §16 lists the
+Part I claims that change as a result.
+
+---
+
+## 11. The system is five repositories, and one of them has already shipped the product
+
+| Repo | Language | Role | State |
+|---|---|---|---|
+| `AirKit` | SuperCollider | Engine, device model, 226 personalities, visuals | Live |
+| `AirStick-ESP-Arduino` | C++ / ESP32-S3 | Instrument firmware, OSC schema, config protocol | Live, fw 0.4 |
+| `AirKitWebApp` | Python / Bottle | The appliance's HTTP surface: update, rollback, restart, device list | Live, 13 releases |
+| `PyOSCCam` | Python | Synchronised video + OSC record and playback | Working, unintegrated |
+| `CotF` | TS / Node / Unity | A production deployment of all of the above | **Ran Edinburgh Fringe, Aug 2026** |
+
+### The finding that reframes Part I
+
+**Concerts of the Future is not an adjacent project. It is AirKit in production
+at product scale, and it already built most of what §1 called missing.** 25
+AirSticks, five seats, three rooms, a fleet with battery and RSSI telemetry, a
+staff dashboard, a remote admin surface, an operator kill-switch, and a research
+data pipeline — running nightly for most of August in a venue with no
+sympathetic IT.
+
+It drives AirKit over an OSC vocabulary far larger than the one documented here:
+
+```
+/airkit/getState   /airkit/getRoster  /airkit/getSeats   /airkit/getLevels
+/airkit/state/reply  /airkit/roster/reply  /airkit/seats/reply  /airkit/levels/reply
+/airkit/masterLevel  /airkit/voiceMute  /airkit/outputMode  /airkit/resetSeat
+/airkit/testTone     /airkit/panic      /airkit/seek        /airkit/loadPersonality
+```
+
+**None of those exist on this branch.** `grep` across every `.sc`/`.scd` in this
+repo returns nothing for `voiceMute`, `masterLevel`, `getRoster`, `outputMode`,
+`testTone` or `panic`. `code3.0/API.md` here is 22 lines and documents five
+addresses. `CotF/server_backend/src/osc/airkit-control.ts:7` cites
+`/Users/m0/AirKit/code3.0/API.md` as the authority for per-room instance ports
+(Room 3 = 57120, Room 2 = 57121).
+
+So there is an AirKit fork on the venue Mac that has a real remote-control API,
+a level/mute model, a panic path and a roster — and it is not in this repository
+or in any of its 29 remote branches. §6 named branch-per-machine as a risk to
+R&D velocity. This is that risk realised on the most commercially valuable code
+in the system: **the entire answer to "remote control of the AirKit via a web
+interface" already exists, and nobody owns it.**
+
+### Move 0
+
+**Recover the `/Users/m0/AirKit` fork into this repo before anything else in
+this document.** Diff it against `Airsticks-RPI`, take the control API, the
+per-room port model and whatever `panic`/`voiceMute`/`masterLevel` turned out to
+need. It is cheaper than any of Phase 0–3, it is a prerequisite for §13, and it
+is the only item here with a real deadline: it lives on a machine that came back
+from Edinburgh.
+
+CotF is also the answer to §10 Q3 and Q5 — it is a live proof that people will
+pay for the intervention, and it produced the research pipeline (§15) that
+answers the evidence question.
+
+---
+
+## 12. AirStick middleware and configuring for different sensors
+
+### What is there today
+
+Firmware 0.4, ESP32-S3 Feather, `AirStick-ESP-Arduino-FW/`. Eight sensor/IO
+modules, each a header with a `setupX()` / `updateX()` pair:
+
+| Module | Hardware | OSC out | Notes |
+|---|---|---|---|
+| `BNO085.h` | BNO085 IMU over SPI | `/N/IMUFusedData` (7 floats) | `reportIntervalUs = 10000` — the 100 Hz |
+| `Air_Battery.h` | MAX17048 fuel gauge, I²C 0x36 | `/N/Battery` | |
+| `Air_I2CIn.h` | CAP1188 8-pad capacitive, I²C 0x29 | `/N/I2CIn` | proximity-tuned, ~28 Hz ceiling |
+| `Air_DigiIn.h` | 4 buttons, Bounce2 | `/N/DigiIn` | GPIO 1–4 |
+| `Air_AnalogIn.h` | flex/pressure, ADC | `/N/AnalogIn` | GPIO 1–4 |
+| `Air_I2COut.h` | I²C output | `/N/I2COut` | |
+| `Air_LED.h` | NeoPixel | — | colour persisted in NVS |
+| `WifiController.h` | — | `/N/Config` | the config protocol |
+
+**This is not middleware. It is a set of build variants selected by commenting
+lines out.** `AirStick-ESP-Arduino-FW.ino:68` is the whole configuration story:
+
+```cpp
+  // setupDigiIn();
+  // setupAnalogIn();
+  // setupI2COut();
+  setupI2CIn();
+```
+
+Three consequences worth naming:
+
+1. **Which sensors a stick has is decided at compile time and is invisible at
+   runtime.** Nothing in the OSC protocol says which of those `setup` calls ran.
+2. **`Air_DigiIn` and `Air_AnalogIn` both claim GPIO 1–4.** They are mutually
+   exclusive as written — not by policy but by pin. So "which sensors are
+   fitted" is partly a board question, not a firmware flag, and any capability
+   model has to say so rather than pretend every combination is buildable.
+3. A researcher bringing up a new sensor edits the `.ino`, which means the
+   `.ino` is a merge point every variant touches. Same failure mode as
+   `personalityController.scd:19` holding the set-list.
+
+### `Air_I2CIn.h` is the model to copy
+
+It is the best-engineered file in the firmware and it should be the template for
+every sensor added from here. It derives its own output rate from its tuning
+registers as compile-time constants, documents *why* (an earlier version gated
+at 41 ms against a chip producing data every 328 ms, so seven of every eight OSC
+frames were byte-identical duplicates), runs a 1 s health check, and on fault
+goes offline and retries rather than blocking the loop — because "if this
+blocks, the IMU stream stops and the config listener stops, and the stick is
+gone." That last property is the one that matters for a school kit: **a broken
+sensor must degrade to a missing sensor, never to a dead stick.**
+
+### The config protocol already exists, and AirKit throws most of it away
+
+Part I §4 said the `/Config/GetConfig` handshake "carries almost nothing".
+That is wrong. `WifiController.h:355 sendConfig()` replies with **eighteen
+values**:
+
+```
+ID, firmwareMajor, firmwareMinor,
+stickIP[4], localPort,
+oscIP[4], oscPort,
+frameDelay,
+r, g, b, a
+```
+
+And `oscController.scd:352` reads this:
+
+```supercollider
+var a = msg2.keep(-4)/255;
+```
+
+**The last four. The colour.** The stick ID, the firmware version, its IP, its
+frame delay — all on the wire, once per connect, all discarded. §1's "you cannot
+answer *what version is Glenroy running?*" is, for the sticks at least, a
+parsing problem rather than a protocol problem. Fixing it is one function, no
+firmware change, no personality change.
+
+The writable side is equally real and equally undocumented here:
+`/Config/SetLED`, `/Config/SetName`, `/Config/SetID`, `/Config/RequestStream`,
+`/Config/SetFrameDelay`, `/Config/RecalI2CIn` — all persisted to NVS via
+`Preferences`, all surviving a power cycle. A stick can already be renamed,
+re-pointed at a different host, throttled and recalibrated over the air.
+
+### What to build, then
+
+Additive on both sides, in this order:
+
+1. **Parse the whole config reply.** `d.config = (id:, fw:, ip:, port:,
+   frameDelay:, color:)`. Nothing else changes. This is a half-day and it
+   unblocks fleet reporting (§7 move 5) for the instrument half of the fleet.
+2. **Add a capability field to `sendConfig`.** A bitfield plus a variant string
+   (`"v0.4-imu-cap8"`). The firmware knows which `setup` calls it made; have it
+   say so. This is §4's capability descriptor, and the handshake to carry it is
+   already running.
+3. **Make the module set a runtime decision where the pins allow it.** One
+   binary, NVS flags, `/Config/SetModules`. Where the pins do not allow it
+   (DigiIn vs AnalogIn), the variant string is the honest answer.
+4. **Two one-line firmware fixes that are already diagnosed.**
+   `optimize_report.md` establishes that the 100 Hz is `reportIntervalUs =
+   10000` at `BNO085.h:17` — a sensor configuration default, not a headroom
+   artefact and not a musical decision. And `WifiController.h:76` has
+   `WiFi.setSleep(WIFI_PS_NONE)` commented out, so the radio parks between
+   beacons and `udp.endPacket()` can block 3–100 ms. That is a jitter source at
+   *any* rate. Measure max inter-packet gap before and after; the report tells
+   you exactly how.
+5. **Implement `Multi-Network-WiFi-Plan.md`.** Written, unimplemented. A kit
+   that must sometimes join its own AP and sometimes a venue network needs it,
+   and the non-blocking state machine it specifies is the right shape.
+
+### And there are two firmware trees
+
+`CotF/airstick/AirStick-CStickTest-FW/` is a restructured fork with modules this
+one does not have: `Air_Heartbeat.h` (a 2 s `/airstick/{id}/heartbeat` carrying
+battery %, RSSI and charging state, with a `-1` sentinel so a dropped I²C read
+does not flap the UI to 0 %), `Air_DeepSleep.h`, `Air_DigiOut.h`, and a
+`AirStick-ESP-Arduino-FW.h` that pulls the globals out of the `.ino`.
+
+That heartbeat is exactly §7 move 5 for the sticks, already written and already
+proven across a month of shows. It should come home with Move 0.
+
+---
+
+## 13. The WebApp — deploying samples, and remote control
+
+### What exists
+
+Bottle on `:8080`, SSE progress streaming, zip upload and install, automatic
+backup, one-click rollback, restart, a `/devices` route that queries AirKit over
+OSC (`/airkit/remote/devices` → `/airkitremote/devices`), generated end-user
+documentation, deploy scripts and a release builder. Zero pip dependencies on
+the Pi by design. This is good work and Part I §1 undersold it.
+
+The UI is 96 lines of HTML, 430 of JS, 404 of CSS, with `<meta name="viewport">`
+and one `@media (max-width: 600px)`. **Mobile-capable, not mobile-designed** —
+which is the right amount for an updater and not enough for a control surface.
+
+### Finding: the audio-deploy pipeline installs to a directory nothing reads
+
+`engine.py:320 _update_audio()` is complete. It downloads an
+independently-versioned `audio_vX.Y.zip` from the manifest, verifies the SHA256,
+backs up `/home/pi/audio` to `/home/pi/audio_backup`, extracts, and restores the
+backup on failure. Audio has its own version line in `version.json` and its own
+row in the manifest.
+
+**No personality file reads `/home/pi/audio`.** 107 p-files load samples, and
+every path is a literal:
+
+```
+92 × "~/Downloads/yourDNASamples/…"     18 × "~/Downloads/melSamples/…"
+14 × "~/Music/cotf_samples/…"            7 × "~/Downloads/openLabSamples/…"
+ 6 × "~/Downloads/alessioSamples/…"      5 × "~/Downloads/nicSamples/…"
+ … eleven distinct roots, none of them the managed one.
+```
+
+So the whole sample-distribution machine — R2 hosting, checksums, versioning,
+backup, rollback — is built, shipped, and connected to nothing. This is the
+cheapest large win available in the web app.
+
+**The fix, and the care it needs.** Introduce one indirection in the p-file
+contract — `~samples.("yourDNASamples/drums")` resolving against a configured
+root, defaulting to `/home/pi/audio` on the Pi and to the current locations on a
+laptop. Then:
+
+- Add it to `_TEMPLATE_ak_pfile.sc` and `ak_pfile_authoring.md`.
+- Use it on new files. Migrate old ones as they are touched.
+- **Do not flag-day 107 files.** And be precise about RULE ZERO: changing a
+  *path* is not changing the sound, but changing *which file loads* is. Any
+  migration must be name-for-name, and a mismatch will be silent — a
+  `Buffer.read` on a missing file fails asynchronously and the synth simply
+  never starts.
+- The audio root belongs in `configPlan.md`'s per-machine config, not in a
+  variable each machine edits.
+
+This also removes a real support hazard: today a fresh Pi with the right app
+version and the wrong `~/Downloads` contents runs 107 instruments that make no
+sound, with nothing on screen to say why.
+
+### Remote control
+
+Two things are true at once: this repo's AirKit has almost no control API, and
+the CotF fork has a good one. So the work is mostly recovery (Move 0) plus a UI.
+
+What the teacher-facing page needs, in the order §5 argues for:
+
+1. **Browse and choose a list** — the highest-value move in Part I, unchanged.
+2. **Per-device personality select** — `/airkit/loadPersonality` exists here and
+   is already public (no `NetAddr` filter, deliberately, per the comment at
+   `personalityController.scd:422`).
+3. **Volume ceiling, mute, panic** — `masterLevel`, `voiceMute`, `panic` in the
+   fork.
+4. **Calibrate** — `/airkit/calibrate` exists here.
+5. **Fleet/status** — `getState`, `getRoster` in the fork; stick firmware and
+   battery from §12's config parse and the CotF heartbeat.
+6. **Who is playing** — needed by §15, and nothing anywhere has it yet.
+
+Three constraints to write down before anyone starts:
+
+- **Extend the Bottle server; do not add a second one.** It is the only
+  always-on HTTP surface on the box and its dependency-free design is load-bearing
+  for the offline-install story.
+- **Respect `PERFORMANCE_TUNING.md`.** The Pi's WiFi IRQ must out-rank the audio
+  threads (FIFO 55 vs ≤ 40, NIC on core 0, audio on 1–3). That balance exists
+  because a priority inversion once took AP latency from 6 ms to 1300 ms.
+  A control UI adds network load to the same radio that makes zero-IT install
+  possible. Poll slowly, prefer SSE over polling, and re-run that document's
+  benchmark after the UI lands.
+- **The tablet is the control surface, not the panel.** §3's argument stands and
+  this is what makes it actionable: you cannot put a touchscreen in front of a
+  student who is meant to be moving.
+
+---
+
+## 14. Where PyOSCCam fits
+
+### What it is
+
+Synchronised video + OSC recorder and player. Records camera to `.mp4` while
+logging every incoming OSC message with a receive timestamp to `.jsonl`, plus a
+`.vtt` sidecar; on playback it re-fires each message at its original offset
+while the video plays. Headless mode, OSC transport control
+(`/pyosccam/record|stop|load|play|pause|seek|quit`), multi-camera, UVC PTZ,
+`picamera2` backend for RPi5.
+
+**It has already recorded AirSticks.** The two sample recordings committed in
+the repo are `/4/IMUFusedData` with the seven-float body, from 12 March 2026 —
+real packets in AirKit's own schema.
+
+### The integration is already half-wired, from both ends
+
+| Direction | Where it is written |
+|---|---|
+| AirKit → PyOSCCam | `oscController.scd:11` `outAddr = NetAddr("192.168.50.53", 5005)`; `:405` `if(oscThru, { outAddr.sendMsg(*msg) })`. 5005 is PyOSCCam's default listen port. |
+| PyOSCCam → AirKit | `config.yaml`: `send_port: 57120`, with `send_ip` commented `# playback OSC destination AirKit`. |
+
+`oscThru` is toggled by `/airkit/oscThru`. So the record path is one OSC message
+away from working, and it is a tee — it forwards the message verbatim without
+touching the device path.
+
+### The playback path has a specific trap, and it will look like a different bug
+
+AirKit's device listeners are **source-filtered and source-keyed**:
+
+```supercollider
+var address = NetAddr.new(d.ip, d.port - i);        // oscController.scd:239
+d.listeners.airware = OSCFunc({ ... }, pattern, address);
+…
+var d = addDevice.(addr.ip, addr.port + i, i + 1);  // :408 — keyed by SOURCE PORT
+```
+
+A replayed packet arrives from PyOSCCam's socket, not the stick's. AirKit will
+therefore auto-register a *new* device at the replay's source port — and then
+`addDevice` sends `/Config/GetConfig` back to that port (`:387`), which nothing
+answers. The one-shot config listener never fires, so `/airkit/addDevice` is
+never sent, so `visualCore` and `deviceView` never learn the device exists.
+`/airkit/loadPersonality` *is* sent unconditionally (`:382`).
+
+**Expected symptom: the replay makes sound, with no canvas and no device panel**
+— the exact "audio-with-no-picture" signature `CLAUDE.md` documents for a
+missing `viewID`, arriving from a completely different cause. Worth stating in
+advance so nobody spends a day in `visualCore`.
+
+*This is read off the code and needs confirming on hardware.* The fix is small
+and additive either way: pin PyOSCCam to a fixed source port and add a replay
+registration path that skips the handshake, rather than teaching the handshake
+to tolerate a silent peer.
+
+### Should it run on the AirKit Pi?
+
+The plan was to deploy it alongside AirKit. I would not, for the school build:
+
+- `PERFORMANCE_TUNING.md` documents a Pi 5 whose four cores are already
+  allocated — NIC on 0, audio on 1–3 — because getting that wrong broke the
+  access point. A camera thread plus an H.264 encoder plus disk writes has
+  nowhere to go that is not audio or WiFi.
+- PyOSCCam's own `rpi5_video_osc_plan.md` says "SD card I/O causes frame drops —
+  USB SSD required for reliable recording". That is another cable and another
+  failure mode in a classroom kit.
+- It makes §10 Q1 a harder question than it was. If Pi headroom is measured, it
+  should be measured *without* video, because the school configuration should
+  not have video.
+
+**Recommendation: PyOSCCam is a second box.** Fed by `oscThru` over the AirKit
+AP, it records the session without touching the appliance at all — which is the
+same containment principle CotF applied (§15) and the same two-speed release
+argument as §6. If it must be co-resident, that is a research-channel build.
+
+### The reason to do it anyway
+
+The classroom value of PyOSCCam is modest. The **engineering** value is large,
+and it is the thing this project is currently missing:
+
+> RULE ZERO says never change the sound. There is at present no way to *prove*
+> the sound did not change.
+
+A recorded `.jsonl` is a deterministic gesture input. Replay one session against
+a personality before and after an edit, against firmware at 100 Hz and 200 Hz,
+against the old sensor derivation and a new one — and the question "did that
+refactor retune 226 instruments?" becomes measurable instead of a matter of
+nerve. Every additive-only warning in §4 exists because there is no regression
+test. This is the regression test.
+
+That argues for prioritising the **playback** path over the video path, and for
+a small corpus of committed reference recordings — one per sound architecture —
+rather than a video archive.
+
+---
+
+## 15. Gesture profiles and engagement
+
+### CotF already built this, and the design document is the template
+
+`CotF/docs/superpowers/specs/2026-07-20-research-data-collection-design.md`
+specifies, and August shipped, a continuous movement-and-survey research
+pipeline running under a live show. Its architecture:
+
+```
+AirSticks ─UDP─▶ router ─▶ AirKit                    (show path, unchanged)
+                    └─ flag-gated tee ─▶ 127.0.0.1:950{2,3}
+                                              └─▶ separate process ─▶ separate SQLite
+```
+
+The constraint it opens with is the one to inherit verbatim:
+
+> Nothing in this subsystem may crash, lag, block, or otherwise perturb the show.
+
+Concretely: one extra localhost `send()` of an already-composed buffer in the
+hot path, default off, error handling is a counter increment. All decode and all
+computation in another process, on another database, which the show code never
+opens. No alerts, no preflight entry, nothing operationally load-bearing. Plus a
+runtime kill switch an operator can hit mid-show without a restart.
+
+Its feature battery — the eight to aim at:
+
+| | Feature |
+|---|---|
+| 1 | RMS linear acceleration |
+| 2 | RMS angular speed (quaternion successive-difference axis-angle / Δt) |
+| 3 | Active movement ratio |
+| 4 | Submovement rate (smoothed peak count per minute) |
+| 5 | Rotational smoothness (SPARC) |
+| 6 | Translational smoothness (LDLJ-A) |
+| 7 | Orientation coverage entropy |
+| 8 | Rotation / translation ratio |
+
+Each stored as a whole-phase value plus median and IQR across 5 s windows at
+50 % overlap, with QC columns (`sample_count`, `expected_sample_count`,
+`max_gap_ms`, `gap_count_over_100ms`, `phase_duration_s`) that are recorded but
+never used to exclude at write time. No raw movement data is kept. Identity is
+an HMAC pseudonym so a post-show survey can be joined without the research store
+holding a name.
+
+Two things follow for the product. First, §10 Q5 — "is there an evidence
+requirement?" — has an answer and a machine that produces it. Second, the ethics
+model, the survey instrument and the feature definitions are done work with a
+paper behind them; a school-facing version is a port, not a research project.
+
+### What has been added to AirKit now
+
+`code3.0/sessionProfile.scd` — a placeholder, wired into `main.sc` alongside the
+other `Require`s, **off by default**.
+
+- Samples `~devices` on its own clock at 20 Hz. Reads only; writes nothing back.
+  Touches no SynthDef, no mapping, no `~plot`, no `~next`.
+- Accumulates running sums per device, so memory is constant regardless of
+  session length and no raw movement data is retained.
+- On stop, writes one JSONL row per device to `~/AirKitSessions/`:
+  `rmsAccel`, `accelPeak`, `rmsAngSpeed`, `angSpeedPeak`, `activeRatio`,
+  `rotTransRatio`, plus `personality`, `label`, `durationSecs`, `sampleCount`
+  and `expectedSampleCount`.
+- Control, from sclang or over OSC:
+
+```supercollider
+~sessionProfile.enabled = true;
+~sessionProfile.startSession("glenroy-w1");
+~sessionProfile.stopSession;
+```
+```
+/airkit/profile/enable 1
+/airkit/profile/start "glenroy-w1"
+/airkit/profile/stop
+/airkit/profile/state   ->  /airkit/profile/state/reply
+```
+
+Four of CotF's eight features are there — the ones that fall out of running
+sums. The other four need a retained window and are deliberately absent.
+
+**`engagement` in that row is a stub.** It is the active-movement ratio under
+another name, present so the field exists and call sites can be written against
+it. It has no research behind it and must not be reported as a measure. CotF
+pointedly does *not* compute a single engagement number; it computes eight
+descriptors and leaves interpretation to analysis. That is the right instinct
+and the pressure to abandon it will come from buyers, not from researchers.
+
+### What it deliberately does not do yet
+
+- **It polls, rather than tees.** Sampling `~devices` at 20 Hz sees a decimated
+  view of a 100 Hz stream and cannot see the gaps — so `max_gap_ms`, the QC
+  column that tells you whether a stick dropped off the AP mid-session, is not
+  computable from it. The honest version tees the OSC the way CotF does. Polling
+  is the placeholder; teeing is the design.
+- **It has no notion of a person.** CotF got identity from its kiosk. A school
+  kit has no equivalent, so a "who is playing" selector has to come from the web
+  UI (§13) before a profile means anything beyond "this device, this session".
+- **It has no session boundary of its own.** Start and stop are manual. Phase
+  segmentation in CotF came from polling room occupancy; here the natural
+  boundary is probably personality load, or a teacher pressing a button.
+
+### Order of work
+
+1. Run it on hardware and check the cost is nil. It is 20 Hz of Event reads on
+   the language thread, which is a fraction of what `~next` already does at
+   100 Hz — but that is a prediction, not a measurement, and the language thread
+   is the one that also runs the draw loop.
+2. Replace polling with an OSC tee.
+3. Port the four window-based features (SPARC, LDLJ-A, entropy, submovement
+   rate) — or move computation out of sclang entirely, which is the CotF answer
+   and is what PyOSCCam's `.jsonl` format is already shaped for.
+4. Decide identity, with the web UI.
+5. Decide what is shown to a teacher, and resist showing a single number.
+
+---
+
+## 16. Amendments to Part I
+
+| § | Claim in Part I | Correction |
+|---|---|---|
+| §1 | "No fleet view" | CotF has one, in production. And the sticks already report firmware version, ID, IP and frame delay on every connect — AirKit discards them. |
+| §4 | "the handshake exists, it just carries almost nothing" | Wrong. `sendConfig` carries eighteen values. `oscController.scd:352` reads the last four. |
+| §4 | "the OSC layer is not the problem" | Still right, and better evidenced: four non-IMU sensor modules are already written and shipping. |
+| §3, §5 | "move the control GUI to the browser" | Most of the OSC API for it exists — in a fork outside this repository. |
+| §6 | "29 remote branches" | Understates it. Two firmware trees and an AirKit fork on the venue Mac as well. |
+| §7 | Phase 1 move 8, "measure Pi headroom" | Must now also settle the PyOSCCam question (§14) and be measured against the documented WiFi-IRQ/audio balance, not in isolation. |
+| §10 | Q2, "is 100 Hz musical or a headroom artefact?" | Neither. It is `reportIntervalUs = 10000` at `BNO085.h:17`, a sensor default. Changing it is one line, and `optimize_report.md` has the measurement plan. |
+
+---
+
+## 17. Revised move list
+
+Part I's Phases 0–4 stand. These insert into them.
+
+**Before Phase 0**
+
+0. **Recover the CotF AirKit fork** and the CotF firmware fork. Largest body of
+   unowned product work in the project, and it is on a laptop.
+
+**Into Phase 0**
+
+1. Parse the full `/Config` reply into `d.config`. Half a day; unblocks fleet
+   reporting for the sticks.
+2. `WiFi.setSleep(WIFI_PS_NONE)` and a max-inter-packet-gap counter. Measure
+   before and after.
+
+**Into Phase 1**
+
+3. Bring across the CotF `/airstick/{id}/heartbeat` module — battery, RSSI,
+   charging, with the `-1` sentinel.
+4. Point `AUDIO_DIR` at something. Introduce `~samples.()`, template first, no
+   flag day.
+
+**Into Phase 2**
+
+5. Capability field in `sendConfig`; runtime module enables where the pins allow.
+6. `Air_I2CIn.h`'s structure — derived rate, health check, offline-on-fault —
+   as the standing pattern for new sensor modules.
+
+**Into Phase 3**
+
+7. Teacher UI in the existing Bottle server: lists, personality select, volume
+   ceiling, calibrate, panic, who-is-playing.
+8. PyOSCCam on a second box, fed by `oscThru`; commit a small corpus of
+   reference recordings and use replay as the regression test for RULE ZERO.
+9. Grow `sessionProfile.scd` from poll to tee, and add the four window features.
+
+**Hardware test matrix** — everything above needs running on all of it, because
+each has been the thing that broke something before: Pi 5 kit (AP + audio +
+HDMI visuals), desktop/laptop AirKit, Mac mini, AirStick fw 0.4, the CotF
+firmware fork, and at least two sticks at once.
