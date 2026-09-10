@@ -41,3 +41,36 @@ the number in its OSC address), not by IP — AirStick leases are dynamic. They
 live in `state/deviceParams.scd`, which is gitignored and outside
 `release_dirs`, so a web update never overwrites them.
 
+---
+
+## TODO: a query endpoint for params
+
+**Not implemented.** There is currently no way to *ask* for a param's value —
+`/airkit/paramIs` only fires on change. The panel does not need one because
+`controlView`'s draw loop reads the model every frame, but **an out-of-process
+client does**: a webapp that loads after a change has no way to learn the
+current state, so its sliders would open at the wrong position and stay wrong
+until someone moved one.
+
+Wanted, matching `/airkit/remote/devices`, which already replies to the
+sender's `addr` rather than broadcasting:
+
+```
+/airkit/getParams  [port]   ->  one /airkit/paramIs per param, to addr
+```
+
+Replying with `paramIs` rather than a new reply address means the client has
+one handler for both "it changed" and "here is what it is", which is the whole
+point — a UI that subscribes on connect and then just listens.
+
+Two things to decide when it is built:
+
+- **Reply to `addr` or broadcast?** `/airkit/remote/devices` uses `addr`.
+  Broadcasting is simpler but re-notifies every listener on every query.
+- **Should `port` be optional**, so a client can ask for the whole rig at once
+  on connect rather than iterating devices it has to discover first?
+
+Consumer: the teacher UI in `product_report.md` §17 move 7 (lists, personality
+select, volume ceiling, calibrate, panic, who-is-playing) — all of which need
+to render current state on load.
+
