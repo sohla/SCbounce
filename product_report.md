@@ -1300,17 +1300,3 @@ retiring the machine branches, is unblocked by it.*
 each has been the thing that broke something before: Pi 5 kit (AP + audio +
 HDMI visuals), desktop/laptop AirKit, Mac mini, AirStick fw 0.4, the CotF
 firmware fork, and at least two sticks at once.
-
-**Every host in that matrix now needs a machine file, and one does not have
-one.** There is no `machines/macmini.scd`. On the Mac mini nothing matches by
-AP address, MAC or hostname, so selection falls to the platform rule — and
-`desktop.scd` is the only macOS file, so **the Mac mini is claimed as the
-laptop** and takes its roster (`list_BtB.sc`), its 5 devices and its `outAddr`.
-Verified by simulation, not assumed.
-
-It is declared rather than silent — the boot line reads *"via the only osx
-machine file"* — but it is still the wrong kit, and it stops being merely
-untidy the moment a second macOS host exists, because the platform rule then
-goes ambiguous and both fall through to defaults. Adding `machines/macmini.scd`
-is the fix; it needs that host's roster and device count, which are not
-recorded anywhere. Same applies to the venue Mac running the AirKit fork.
