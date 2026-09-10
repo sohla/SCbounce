@@ -764,32 +764,60 @@ It drives AirKit over an OSC vocabulary far larger than the one documented here:
 /airkit/testTone     /airkit/panic      /airkit/seek        /airkit/loadPersonality
 ```
 
-**None of those exist on this branch.** `grep` across every `.sc`/`.scd` in this
-repo returns nothing for `voiceMute`, `masterLevel`, `getRoster`, `outputMode`,
-`testTone` or `panic`. `code3.0/API.md` here is 22 lines and documents five
-addresses. `CotF/server_backend/src/osc/airkit-control.ts:7` cites
-`/Users/m0/AirKit/code3.0/API.md` as the authority for per-room instance ports
-(Room 3 = 57120, Room 2 = 57121).
+**None of those exist on `Airsticks-RPI`.** They live on `origin/AirConcert`,
+whose `code3.0/API.md` is a 161-line OSC contract against this branch's 22 lines,
+and whose `code3.0/cotf/` holds the deployment-specific entry point
+(`main_cotf.scd`, `config.scd`, `bind-check.scd`).
 
-So there is an AirKit fork on the venue Mac that has a real remote-control API,
-a level/mute model, a panic path and a roster — and it is not in this repository
-or in any of its 29 remote branches. §6 named branch-per-machine as a risk to
-R&D velocity. This is that risk realised on the most commercially valuable code
-in the system: **the entire answer to "remote control of the AirKit via a web
-interface" already exists, and nobody owns it.**
+### AirConcert stays separate, and should
 
-### Move 0
+That branch is not a superset of this one, and merging it would be destructive:
+it has **no `visualCore.scd` and no `vdefLib.scd`** — it carries the older
+`shapeLib.scd` line instead — and `code3.0/` differs by 6380 insertions against
+2217 deletions. It is a divergent fork carrying a season of show-specific tuning
+(`~cotfPatchTrims`, per-patch dB ear-tunes dated to individual nights). That
+work belongs to a production, not to the product line. §16 already excludes it
+from the config consolidation for the same reason.
 
-**Recover the `/Users/m0/AirKit` fork into this repo before anything else in
-this document.** Diff it against `Airsticks-RPI`, take the control API, the
-per-room port model and whatever `panic`/`voiceMute`/`masterLevel` turned out to
-need. It is cheaper than any of Phase 0–3, it is a prerequisite for §13, and it
-is the only item here with a real deadline: it lives on a machine that came back
-from Edinburgh.
+So what AirConcert holds for this document is **evidence and a contract, not
+code to take**. Two things cross the boundary, and neither is a merge.
 
-CotF is also the answer to §10 Q3 and Q5 — it is a live proof that people will
-pay for the intervention, and it produced the research pipeline (§15) that
-answers the evidence question.
+**1. The OSC contract discipline.** `AirConcert:code3.0/API.md` opens with rules
+this repo wants regardless of CotF:
+
+> This file is the single source of truth for every OSC address AirKit consumes
+> or emits. Any commit that changes OSC behaviour MUST update this file in the
+> same commit.
+>
+> 1. Additive only — add new addresses; never change or repurpose existing ones.
+> 2. New arguments are appended, with defaults preserving old behaviour.
+> 3. Defaults must preserve composer-machine behaviour exactly.
+> 4. Anything COTF-specific is marked **[COTF]**.
+
+That fourth rule is the one that makes the file portable: it was written to be
+read by someone who does not have CotF, and it already separates what is general
+from what is deployment-specific. It also records things nothing on this branch
+records — that `/airkit/mute` is a GUI unload/reload and **not** an audio mute
+("Do not repurpose"), and that devices are keyed by sender source port, so
+**senders must keep a stable source port**.
+
+Adopting that file and that rule here costs nothing, closes the gap between
+`API.md` (five addresses) and reality (at least fifteen on this branch alone),
+and is the thing that would have made the divergence visible while it was small.
+
+**2. Proof, for §8 and §10.** CotF is a live demonstration that the intervention
+sells (§2 Shape E), that a fleet at product scale is operable, and — via §15 —
+that §10 Q5's evidence question has a working answer. Read it for what it
+proves; do not plan to inherit its code.
+
+### What this changes in the plan
+
+Nothing in §13 waits on AirConcert. A control API that has been designed and
+proven once can be written again here, on this branch's terms, against a
+contract file — a smaller and far safer job than reconciling two forks of
+`code3.0/`. The only thing worth doing before designing it is reading
+`AirConcert:code3.0/API.md`, so the second implementation does not contradict
+the first where it has no reason to.
 
 ---
 
@@ -914,7 +942,9 @@ does not flap the UI to 0 %), `Air_DeepSleep.h`, `Air_DigiOut.h`, and a
 `AirStick-ESP-Arduino-FW.h` that pulls the globals out of the `.ino`.
 
 That heartbeat is exactly §7 move 5 for the sticks, already written and already
-proven across a month of shows. It should come home with Move 0.
+proven across a month of shows. Unlike the AirKit fork, that module is
+genuinely portable — a self-contained header with its own timer and its own OSC
+address, depending on nothing CotF-specific. Copying it is not merging a branch.
 
 ---
 
@@ -979,8 +1009,10 @@ sound, with nothing on screen to say why.
 
 ### Remote control
 
-Two things are true at once: this repo's AirKit has almost no control API, and
-the CotF fork has a good one. So the work is mostly recovery (Move 0) plus a UI.
+This branch's AirKit has almost no control API. AirConcert has a good one and is
+staying where it is (§11), so this is a design to write, not a merge to perform —
+read `AirConcert:code3.0/API.md` first so the two do not contradict each other,
+then build against a contract file of this branch's own.
 
 What the teacher-facing page needs, in the order §5 argues for:
 
@@ -988,11 +1020,13 @@ What the teacher-facing page needs, in the order §5 argues for:
 2. **Per-device personality select** — `/airkit/loadPersonality` exists here and
    is already public (no `NetAddr` filter, deliberately, per the comment at
    `personalityController.scd:379`).
-3. **Volume ceiling, mute, panic** — `masterLevel`, `voiceMute`, `panic` in the
-   fork.
+3. **Volume ceiling, mute, panic** — designed already as `masterLevel`,
+   `voiceMute`, `panic`. Note the trap AirConcert's contract records:
+   `/airkit/mute` on this branch is a GUI unload/reload, not an audio mute. Do
+   not repurpose it.
 4. **Calibrate** — `/airkit/calibrate` exists here.
-5. **Fleet/status** — `getState`, `getRoster` in the fork; stick firmware and
-   battery from §12's config parse and the CotF heartbeat.
+5. **Fleet/status** — `getState`, `getRoster`, `getSeats` as designed; stick
+   firmware and battery from §12's config parse and the heartbeat module.
 6. **Who is playing** — needed by §15, and nothing anywhere has it yet.
 
 Three constraints to write down before anyone starts:
@@ -1061,10 +1095,17 @@ never sent, so `visualCore` and `deviceView` never learn the device exists.
 missing `viewID`, arriving from a completely different cause. Worth stating in
 advance so nobody spends a day in `visualCore`.
 
-*This is read off the code and needs confirming on hardware.* The fix is small
-and additive either way: pin PyOSCCam to a fixed source port and add a replay
-registration path that skips the handshake, rather than teaching the handshake
-to tolerate a silent peer.
+*This is read off the code and needs confirming on hardware.* But the
+source-port half of it is already a known, documented constraint:
+`AirConcert:code3.0/API.md` states it as a rule — "Devices are keyed by sender
+source port + (N−1): senders must keep a stable source port" — and records that
+the CotF router binds a **fixed source port 9001**, addressing seats as
+9001..9005. So the fix has been found once already: pin PyOSCCam's send socket
+to a fixed source port, and add a replay registration path that skips the config
+handshake rather than teaching the handshake to tolerate a silent peer.
+
+This is a good illustration of §11's point. The constraint is real, it is
+written down, and it is written down somewhere this branch does not read.
 
 ### Should it run on the AirKit Pi?
 
@@ -1156,20 +1197,24 @@ requirement?" — has an answer and a machine that produces it. Second, the ethi
 model, the survey instrument and the feature definitions are done work with a
 paper behind them; a school-facing version is a port, not a research project.
 
-### What has been added to AirKit now
+### The shape a placeholder in AirKit should take
 
-`code3.0/sessionProfile.scd` — a placeholder, wired into `main.sc` alongside the
-other `Require`s, **off by default**.
+**No code written. This is the design, for a later decision.** Proposed as
+`code3.0/sessionProfile.scd`, Required from `main.sc` alongside the other
+modules, **off by default** — so an unset flag means it is inert, not merely
+idle.
 
-- Samples `~devices` on its own clock at 20 Hz. Reads only; writes nothing back.
-  Touches no SynthDef, no mapping, no `~plot`, no `~next`.
+- Samples `~devices` on its own clock at ~20 Hz. Reads only; writes nothing
+  back. Touches no SynthDef, no mapping, no `~plot`, no `~next`. RULE ZERO is
+  not at risk because the module has no path to the sound.
 - Accumulates running sums per device, so memory is constant regardless of
-  session length and no raw movement data is retained.
+  session length and no raw movement data is retained — CotF's "features only,
+  no raw archive" decision, for the same reason.
 - On stop, writes one JSONL row per device to `~/AirKitSessions/`:
   `rmsAccel`, `accelPeak`, `rmsAngSpeed`, `angSpeedPeak`, `activeRatio`,
   `rotTransRatio`, plus `personality`, `label`, `durationSecs`, `sampleCount`
   and `expectedSampleCount`.
-- Control, from sclang or over OSC:
+- Control from sclang, and over OSC so the web UI (§13) can drive it:
 
 ```supercollider
 ~sessionProfile.enabled = true;
@@ -1183,17 +1228,30 @@ other `Require`s, **off by default**.
 /airkit/profile/state   ->  /airkit/profile/state/reply
 ```
 
-Four of CotF's eight features are there — the ones that fall out of running
-sums. The other four need a retained window and are deliberately absent.
+That is four of CotF's eight features — the ones that fall out of running sums.
+The other four need a retained window and would be deliberately absent from a
+first cut.
 
-**`engagement` in that row is a stub.** It is the active-movement ratio under
-another name, present so the field exists and call sites can be written against
-it. It has no research behind it and must not be reported as a measure. CotF
-pointedly does *not* compute a single engagement number; it computes eight
-descriptors and leaves interpretation to analysis. That is the right instinct
-and the pressure to abandon it will come from buyers, not from researchers.
+Its output directory is the one thing here that should not be invented: it is a
+per-kit path, so it belongs as a key on the machine file (§16) alongside the
+other paths, not as a literal in the module.
 
-### What it deliberately does not do yet
+Two house rules it has to respect, both cheap to get wrong: functions on the
+returned Event take `self` as their first argument (`core.startSession = {
+|self, label| … }`, per `visualCore.scd:313`), and `stop` cannot be used as a
+key because it is a real method on Object — sclang warns and then calls the
+method instead. Use `OSCdef`, not `OSCFunc`, so re-running `main.sc` replaces
+the responders rather than stacking them.
+
+**`engagement` in that row would be a stub.** The active-movement ratio under
+another name, present only so the field exists and call sites can be written
+against it. It would have no research behind it and must not be reported as a
+measure. CotF pointedly does *not* compute a single engagement number; it
+computes eight descriptors and leaves interpretation to analysis. That is the
+right instinct, and the pressure to abandon it will come from buyers, not from
+researchers.
+
+### What it would deliberately not do yet
 
 - **It polls, rather than tees.** Sampling `~devices` at 20 Hz sees a decimated
   view of a 100 Hz stream and cannot see the gaps — so `max_gap_ms`, the QC
@@ -1209,10 +1267,10 @@ and the pressure to abandon it will come from buyers, not from researchers.
 
 ### Order of work
 
-1. Run it on hardware and check the cost is nil. It is 20 Hz of Event reads on
-   the language thread, which is a fraction of what `~next` already does at
-   100 Hz — but that is a prediction, not a measurement, and the language thread
-   is the one that also runs the draw loop.
+1. Write it, then run it on hardware and check the cost is nil. It is 20 Hz of
+   Event reads on the language thread, which is a fraction of what `~next`
+   already does at 100 Hz — but that is a prediction, not a measurement, and the
+   language thread is the one that also runs the draw loop.
 2. Replace polling with an OSC tee.
 3. Port the four window-based features (SPARC, LDLJ-A, entropy, submovement
    rate) — or move computation out of sclang entirely, which is the CotF answer
@@ -1230,7 +1288,7 @@ and the pressure to abandon it will come from buyers, not from researchers.
 | §4 | "the handshake exists, it just carries almost nothing" | Wrong. `sendConfig` carries eighteen values. `oscController.scd:355` reads the last four. |
 | §4 | "the OSC layer is not the problem" | Still right, and better evidenced: four non-IMU sensor modules are already written and shipping. |
 | §3, §5 | "move the control GUI to the browser" | Most of the OSC API for it exists — in a fork outside this repository. |
-| §6 | "29 remote branches" | Understates it. Two firmware trees and an AirKit fork on the venue Mac as well. **But the branch count is no longer the config problem** — see the config row below; what remains is repertoire and fork divergence, which `configPlan.md` never claimed to fix. |
+| §6 | "29 remote branches" | Understates it — there are two firmware trees as well. But `origin/AirConcert` is a deliberate separation, not drift: it is a production fork and it stays separate (§11). **The branch count is no longer the config problem** either — see the config row below. What remains is repertoire divergence, and an OSC contract that diverged invisibly; `configPlan.md` never claimed to fix either. |
 | §7 | Phase 1 move 8, "measure Pi headroom" | Must now also settle the PyOSCCam question (§14) and be measured against the documented WiFi-IRQ/audio balance, not in isolation. |
 | §10 | Q2, "is 100 Hz musical or a headroom artefact?" | Neither. It is `reportIntervalUs = 10000` at `BNO085.h:17` (a **firmware** repo, not this one — see §11), a sensor default. Changing it is one line, and `optimize_report.md` has the measurement plan. §3 has been corrected to defer to this. |
 
@@ -1263,13 +1321,13 @@ Part I's Phases 0–4 stand. These insert into them.
 still needs booting on a Pi before it counts as finished. Phase 0 move 4,
 retiring the machine branches, is unblocked by it.*
 
-**Before Phase 0**
-
-0. **Recover the CotF AirKit fork** and the CotF firmware fork. Largest body of
-   unowned product work in the project, and it is on a laptop.
-
 **Into Phase 0**
 
+0. **Adopt an OSC contract file**, on AirConcert's rules: one source of truth,
+   updated in the same commit as any OSC change, additive only, deployment
+   specifics tagged. `code3.0/API.md` documents five addresses against at least
+   fifteen that exist. AirConcert is not merged and does not become a
+   dependency — only its contract discipline crosses over (§11).
 1. Parse the full `/Config` reply into `d.config`. Half a day; unblocks fleet
    reporting for the sticks.
 2. `WiFi.setSleep(WIFI_PS_NONE)` and a max-inter-packet-gap counter. Measure
@@ -1277,8 +1335,9 @@ retiring the machine branches, is unblocked by it.*
 
 **Into Phase 1**
 
-3. Bring across the CotF `/airstick/{id}/heartbeat` module — battery, RSSI,
-   charging, with the `-1` sentinel.
+3. Port the `/airstick/{id}/heartbeat` module from the CotF firmware tree —
+   battery, RSSI, charging, with the `-1` sentinel. Self-contained header, no
+   CotF dependency.
 4. Point `AUDIO_DIR` at something. Introduce `~samples.()`, template first, no
    flag day.
 
@@ -1294,7 +1353,8 @@ retiring the machine branches, is unblocked by it.*
    ceiling, calibrate, panic, who-is-playing.
 8. PyOSCCam on a second box, fed by `oscThru`; commit a small corpus of
    reference recordings and use replay as the regression test for RULE ZERO.
-9. Grow `sessionProfile.scd` from poll to tee, and add the four window features.
+9. Build the session-profile module if §15 is wanted — poll first, then tee,
+   then the four window features.
 
 **Hardware test matrix** — everything above needs running on all of it, because
 each has been the thing that broke something before: Pi 5 kit (AP + audio +
