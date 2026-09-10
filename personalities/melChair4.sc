@@ -45,11 +45,12 @@ SynthDef(\simple, {|out=0, amp=0.0, freq=440, attack=0.001, decay=0.03, sustain=
 //------------------------------------------------------------
 ~next = {|d|
 
+	var sens = d.params.sensitivity;
 //   var dur = m.rrateMassFiltered.lincurve(0,0.1,0.4,0.04,-1);
-	var dur = m.accelMassFiltered.lincurve(0,0.5,4,12,-10).reciprocal;
+	var dur = m.accelMassFiltered.lincurve(0,2.5 * sens,4,12,-10).reciprocal;
 
   Pdef(m.ptn).set(\dur, dur);
- 	if(m.rrateMassFiltered > 0.008,{
+ 	if(m.rrateMassFiltered > (0.01 + (0.2 * sens)),{
 		if( Pdef(m.ptn).isPlaying.not,{
 			Pdef(m.ptn).resume(quant:dur);
 		});

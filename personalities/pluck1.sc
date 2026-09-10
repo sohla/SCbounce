@@ -128,15 +128,18 @@ SynthDef(\pluck1, { |out=0, amp=0, pch=30, frq=30, gate=0 |
 //------------------------------------------------------------
 ~next = {|d|
 
-	var pch = 40 + (m.accelMass * 150);
-	var frq= 110 + (m.accelMassFiltered * 100);
+	var sens = d.params.sensitivity;
+	var amp = m.accelMassFiltered.linlin(0,2.5 * sens,0.07,1);
+
+	var pch = 40 + ((m.accelMass * 150) * sens.linlin(0.0,1.0,1,0.0));
+	var frq= 110 + ((m.accelMassFiltered * 100) * sens.linlin(0.0,1.0,1,0.0));
 	synth.set(\pch,pch);
 	synth.set(\frq,frq);
 
-	if(m.accelMass < 0.06,{
+	if(m.accelMass < 0.1,{
 		synth.set(\amp,0);
 	},{
-		synth.set(\amp,0.35);
+		synth.set(\amp,amp);
 	});
 
 };

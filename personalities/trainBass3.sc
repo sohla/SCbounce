@@ -246,10 +246,11 @@ SynthDef(\versatilePerc, {
 //------------------------------------------------------------
 ~next = {|d|
 
-	var a = m.accelMassFiltered.lincurve(0,0.2,0.0,1,-1);
-	var filtSpeed = m.accelMassFiltered.lincurve(0,2.5,0.1,20,3);
+	var sens = d.params.sensitivity;
+	var a = m.accelMassFiltered.lincurve(0,2.2 * sens,0.0,1,-1);
+	var filtSpeed = m.accelMassFiltered.lincurve(0,2.5 * sens,0.1,20,3);
 	var ff = ((d.sensors.gyroEvent.x / pi).fold(-0.5,0.5) * 2).linexp(-1.0,1.0,700,1000);
-	var dist = m.accelMassFiltered.lincurve(0,2.5,1,2,1);
+	var dist = m.accelMassFiltered.lincurve(0,2.5 * sens,1,2,1);
 	var tension = ((d.sensors.gyroEvent.x / pi).fold(-0.5,0.5) * 2).lincurve(-1.0,1.0,0.01,1,2);
 
 	if(a<0.02,{a=0});
@@ -265,7 +266,7 @@ SynthDef(\versatilePerc, {
 	// read it, so this can flip as often as it likes.
 	// Pdef(m.ptn).set(\rateIdx, if(m.accelMassFiltered > doubleThresh, 2, 0));
 	// Pdef(m.ptn).set(\rateIdx,  ((d.sensors.gyroEvent.x / pi).fold(-0.5,0.5) * 2).lincurve(-1.0,1,0,3,-2).asInteger);
-	Pdef(m.ptn).set(\rateIdx, m.accelMassFiltered.lincurve(0.0,2.5,0,1,6).asInteger);
+	Pdef(m.ptn).set(\rateIdx, m.accelMassFiltered.lincurve(0.0,2.5 * sens,0,1,6).asInteger);
 	if(started.not and: { m.accelMass > doubleThresh }, {
 		started = true;
 		Pdef(m.ptn).play(quant:0.18);

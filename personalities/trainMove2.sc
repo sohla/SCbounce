@@ -377,9 +377,11 @@ SynthDef(\warmPadMove2, {
 //------------------------------------------------------------
 ~next = {|d|
 
-	var dur = 0.5 * 2.pow(m.accelMassFiltered.linlin(0,3,0,2).floor).reciprocal;
-	var a = m.accelMassFiltered.lincurve(0,1.5,0,1,-2);
-	var filtSpeed = m.accelMassFiltered.lincurve(0,2.5,0.1,30,3);
+	var sens = d.params.sensitivity;
+
+	var dur = 0.5 * 2.pow(m.accelMassFiltered.linlin(0,3 * sens,0,2).floor).reciprocal;
+	var a = m.accelMassFiltered.lincurve(0,1.5 * sens,0,1,-2);
+	var filtSpeed = m.accelMassFiltered.lincurve(0,2.5 * sens,0.1,30,3);
 	var lfoFreq = m.accelMassFiltered.lincurve(0,2.5,0.1,8,-1);
 	var fmin = (m.gyroZFiltered.fold(-0.5,0.5) * 2).linexp(-1.0,1.0,200,500);
 	var fmax = (m.gyroZFiltered.fold(-0.5,0.5) * 2).linexp(-1.0,1.0,200,8000);
@@ -401,7 +403,7 @@ SynthDef(\warmPadMove2, {
 	synth.set(\filtMax, fmax);
 
 
-	if(d.sensors.accelEvent.x > 1.0, {
+	if(d.sensors.accelEvent.x > (1.0 * sens), {
 
 		if(TempoClock.beats > (lastTime + 0.055),{
 			// same expression the bsynth below takes for its \amp, so the
@@ -423,10 +425,10 @@ SynthDef(\warmPadMove2, {
 
 			bsynth = Synth(\warmPadMove2, [
 				\freq, (note + m.com.root+ notes[idx]).midicps * 4, 
-				\amp, m.accelMassFiltered.lincurve(0,2.5,0.003,0.1,1),
+				\amp, m.accelMassFiltered.lincurve(0,2.5 * sens,0.003,0.1,1),
 				\gate, 1,
-				\atk, m.accelMassFiltered.lincurve(0,2.5,0.08,0.02,1),
-				\rel, m.accelMassFiltered.lincurve(0.5,2.5,0.2,8.03,-1),
+				\atk, m.accelMassFiltered.lincurve(0,2.5 * sens,0.08,0.02,1),
+				\rel, m.accelMassFiltered.lincurve(0.5,2.5 * sens,0.2,8.03,-1),
 				\filtMin, 8000,
 				\filtMax, 12000,
 				\filtSpeed, 0.1 * chorus,
