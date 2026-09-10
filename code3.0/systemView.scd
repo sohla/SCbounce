@@ -157,7 +157,7 @@ var freeAllBuffers = Button()
 		Buffer.freeAll(s);
 	});
 	
-var version = File.readAllString(("~/Develop/SuperCollider/Projects/AirKit/VERSION").asAbsolutePath).stripWhiteSpace;
+var version = File.readAllString(Require("machine.scd")[\versionPath]).stripWhiteSpace;
 
 var versionView = StaticText()
 	.font_(Font(size:14, bold:false))

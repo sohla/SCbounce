@@ -1,52 +1,9 @@
-var listsDir = "~/Develop/SuperCollider/Projects/AirKit/lists/";//RPI
-var personalityDir = "~/Develop/SuperCollider/Projects/AirKit/personalities/";//RPI
-// var personalityDir = "~/Develop/SuperCollider/Projects/scbounce/personalities/"; //laptop
-// var personalityDir = "~/Develop/SuperCollider/oscMusic/personalities/"; //mac mini cabin
+// Rosters and paths come from machines/<name>.scd - see machine.scd.
+var machine = Require("machine.scd");
 
-// var list = "list_ITR_Mel.sc";
-// var list = "list_SiS_Alessio.sc";
-// var list = "list_glenroy.sc";
-// var list = "list_dev.sc";
-// var list = "list_Mel_26.sc";
-// var list = "list_NZ.sc";
-// var list = "list_ITR_Nic.sc";
-// var list = "list_yourDNA25.sc";
-// var list = "list_workshop1.sc";
-
-// var list = "list_alon26.sc";
-// var list = "list_yourDNA26.sc";
-// var list = "list_BtB.sc";
-var list = "list_glenroy.sc";
-var defaultLists = list!9;
-
-
-// var defaultLists = [
-//     "list_NZ_Mel.sc",
-//     "list_NZ_Mel.sc",
-
-//     "list_NZ_Suz.sc",
-//     "list_NZ_Suz.sc",
-
-//     "list_NZ_Suz.sc",
-// ];
-
-// var defaultLists = [
-//     "list_MIM25_James.sc",
-//     "list_MIM25_Caz.sc",
-//     "list_MIM25_Tim.sc",
-//     "list_MIM25_Matt.sc",
-//     "list_MIM25_Heather.sc",
-// ];
-
-
-
-// var defaultLists = [
-//     "list_ITR_Mel.sc",
-//     "list_ITR_Nic.sc",
-//     "list_ITR_Brenton.sc",
-//     "list_ITR_Alessio.sc",
-//     "list_ITR_Mel.sc",
-// ];
+var listsDir = machine[\listsDir];
+var personalityDir = machine[\personalityDir];
+var defaultLists = machine[\list];
 
 var com = (
     \root: 0,
@@ -187,7 +144,7 @@ var interpretPersonality = {|d|
 
         //------------------------------------------------------------
         // frame rate of rout
-        ~secs = 0.01;
+        ~secs = machine[\secs];
 
         //------------------------------------------------------------
         // process data->model

@@ -2,7 +2,17 @@
 
 A plan for replacing per-machine **branches** with per-machine **config files**.
 
-Status: proposal, not implemented. Written 2026-08-11, on `Airsticks-RPI`.
+Written 2026-08-11, on `Airsticks-RPI`.
+
+Status, 2026-09-10: **steps 1 and 2 implemented** on `Airsticks-RPI`.
+`machines/rpi.scd` and `machines/desktop.scd` exist, `code3.0/machine.scd`
+resolves one of them at boot, and the four core files read it. Steps 3–5
+(the merge into `AirKitDesktop`, then `mel`/`alon`, then retiring the machine
+branches) are not done. `AirConcert` is deliberately out of scope — it is a
+different output with its own UI and mechanism, not a machine variant.
+
+The delta table below is the **2026-08-11 measurement and is now stale** — see
+the note under it for what actually differed on the day of implementation.
 
 ---
 
@@ -52,6 +62,25 @@ Measured, not guessed — this is the complete set of values that differ between
 | 5 | `~secs` (routine rate) | `personalityController.scd:187` | `0.01` | `0.03` |
 
 Five values. That is the entire permanent difference between a Pi and a laptop.
+
+**Re-measured 2026-09-10, at implementation time.** Three of the five had
+already been fixed on `Airsticks-RPI` and two new ones had appeared, so the
+machine files carry this set instead:
+
+| # | Value | 2026-08-11 | 2026-09-10 |
+|---|---|---|---|
+| 1 | window border / fullScreen | divergent | **fixed** — `main.sc` had become a `Platform.case`; now a config key so a Pi on a dev monitor can have a border |
+| 2 | `outAddr` | divergent | divergent — `192.168.50.53` vs `192.168.70.211`, both port 5005 |
+| 3 | config colour indices | divergent | **gone** — `oscController.scd:353` now reads `msg2.keep(-4)`, no indices |
+| 4 | `list` (roster) | divergent | divergent — `list_glenroy.sc` vs `list_alon26.sc` |
+| 5 | `~secs` | `0.01` vs `0.03` | **converged** on `0.01`; kept as a key anyway |
+| 6 | `numAirwareVirtualDevices` | not measured | **new** — 9 vs 5, and it must equal the roster count |
+| 7 | `s.latency` | not measured | **new** — `0.1` vs `0.03` |
+
+Item 6 is the one that would have bitten. It was never in the original table,
+it is a silent-clobber value exactly like item 3, and it has to stay in step
+with the roster length or `defaultLists[i]` returns nil for the high devices.
+It is therefore a single `\numDevices` key that drives both.
 
 Two things that are *not* in the table, and are worth knowing:
 
@@ -129,16 +158,29 @@ introduce rosters; it moves the *selection* out of a shared file.
 `systemView.scd:2` already shells out with `"hostname -I".unixCmdGetStdOut`, so
 the approach is proven in the codebase.
 
-**Open question — this needs checking before committing to it.** This laptop
-reports `MU00157721X`, an institution-managed asset name that may well change
-on reimage. The Pis' hostnames are unknown and unverified. If hostnames turn
-out to be unstable, the fallback is a one-line `machines/CURRENT` file naming
-the active machine — still tracked, still one file, but edited per machine and
-therefore capable of conflicting. Hostname selection is better if it holds.
+**Resolved 2026-09-10.** The open question was that this laptop reports
+`MU00157721X` (an institution-managed asset name that may change on reimage)
+and the Pis' hostnames were unknown and unverified. Rather than bet on
+hostnames, selection is a four-step ladder in `code3.0/machine.scd`:
 
-Whatever is chosen must have a **default** and must fail loudly, not silently:
-an unknown machine should say so at boot rather than quietly running someone
-else's settings.
+1. `machines/CURRENT` — one line naming a machine file. **Gitignored**: it is
+   the one filename every kit would edit, so tracking it would reintroduce
+   exactly the collision this plan removes. The values stay tracked in
+   `machines/*.scd`; only the pointer is local.
+2. **hostname** — matched against each file's own `\hostnames` list. The list
+   lives in the machine file, so there is no shared hostname→machine map to
+   conflict over.
+3. **platform** — the single file claiming this `\platform`. This is what lets
+   a freshly imaged Pi boot correctly with nobody knowing its hostname. It
+   holds only while one file per platform exists; the second Linux kit makes
+   it ambiguous, and ambiguous falls through to step 4.
+4. **nothing matched** — a loud multi-line block naming the hostname, the
+   platform and the fix, then built-in defaults.
+
+So it fails loudly, but it does not throw: an unrecognised Pi in the field
+still boots and still makes sound, and says why it is unsure. Throwing would
+brick a unit beyond the reach of the web rollback, which `gatePlan.md` argues
+against for class files and which applies just as well here.
 
 ---
 
@@ -159,10 +201,13 @@ One logical change. No new mechanism beyond "read a file at boot".
 
 ## Migration order
 
-1. Add `machines/` with `rpi.scd` and `desktop.scd`, carrying the exact values
-   in the table. Nothing reads them yet.
-2. Point the four core files at the machine file. Test on the Pi — this is the
-   step that can break boot.
+1. ~~Add `machines/` with `rpi.scd` and `desktop.scd`, carrying the exact values
+   in the table. Nothing reads them yet.~~ **Done** — plus `code3.0/machine.scd`,
+   the loader.
+2. ~~Point the four core files at the machine file.~~ **Done, but only verified
+   on macOS.** Parse-checked, and the loader and its four consumers were
+   evaluated under `sclang`; the Pi boot is still untested and is the step that
+   can break boot.
 3. **Then** merge `Airsticks-RPI` into `AirKitDesktop`. Safe at this point,
    because the shared files no longer contain anything machine-specific. This
    is also what stops the 17 p-file conflicts from merge 1 recurring.

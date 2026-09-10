@@ -1,6 +1,7 @@
 (
 
 var staker;
+var machine = Require("machine.scd");
 var personalityController = Require("personalityController.scd");
 var oscController = Require("oscController.scd");
 var visualCore = Require("visualCore.scd");
@@ -92,23 +93,13 @@ var initGUI = {
 
 	QtGUI.palette = QPalette.dark;
 
-	Platform.case(
-		\osx, {
-			w = Window("AirKit", border: true)
-				.bounds_(Rect(0,0,1280,800))
-				.layout_(mainView)
-				.front
-				.background_(Color.black.lighten(0.25));
-		},
-		\linux, {
-			w = Window("AirKit", border: false)
-				.bounds_(Rect(0,0,1280,800))
-				.layout_(mainView)
-				.front
-				.fullScreen
-				.background_(Color.black.lighten(0.25));
-		}
-	);
+	w = Window("AirKit", border: machine[\border])
+		.bounds_(Rect(0,0,1280,800))
+		.layout_(mainView)
+		.front
+		.background_(Color.black.lighten(0.25));
+
+	if(machine[\fullScreen], { w.fullScreen });
 
 	w.onClose = {
 		shutdown.();
@@ -130,7 +121,7 @@ s.options.blockSize = 128;
 s.options.numBuffers = 2048;  // more buffers
 s.options.memSize = 65536;    // more memory
 s.options.numOutputBusChannels = 2; // for quad output
-s.latency = 0.1; // in seconds
+s.latency = machine[\latency]; // in seconds
 
 MIDIIn.connectAll;
 
