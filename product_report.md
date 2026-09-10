@@ -45,7 +45,8 @@ Inputs assumed, from the brief:
 
 4. **Non-expert authoring has a much cheaper first step than anyone expects.**
    The teacher-facing artefact already exists and is already the right
-   granularity: a **list**. `lists/*.sc` is 32 curated set-lists, selected today
+   granularity: a **list**. `lists/*.sc` is 32 curated set-lists, selected by
+   the `list` key in the kit's own machine file since 2026-09-10 — previously
    by hand-editing a variable in `personalityController.scd`. Turning list
    selection and list editing into a web UI is one contained change and it is
    the highest-value single move in this document. §5.
@@ -82,7 +83,7 @@ already do, not inventing something new.
 
 Most of this was built in `AirKitWebApp` and is running:
 
-- **Release pipeline.** `git tag v*` → GitHub Action → zips
+- **Release pipeline.** `git tag v*` → GitHub Action → zips `machines/`,
   `code3.0/`, `personalities/`, `lists/` + `VERSION` → GitHub Release.
   Thirteen tags cut (`v0.0.1`–`v0.0.13`).
 - **Field updater.** Pi runs a Bottle server on `:8080`. Customer joins the
@@ -105,7 +106,11 @@ Most of this was built in `AirKitWebApp` and is running:
   (`Airsticks-RPI-Mel`, `AirKitDesktop`) are now retirable; `AirConcert` stays,
   being a different output rather than a machine variant.
   Still open: the config ships, but there is no way to *see* what a given kit
-  is running without visiting it — see the fleet-view gap above.
+  is running without visiting it. The machine file knows `label`, `user` and
+  the roster and posts them at boot — so the data a fleet view needs now exists
+  in one place and is named. Per §16, CotF already has a fleet view in
+  production, which makes this a matter of connecting two existing things
+  rather than building one.
 - **Version drift.** `VERSION` says `0.0.5`; the latest tag is `v0.0.13`.
   `systemView.scd` displays that file on the Pi, so **every unit in the field
   is currently reporting the wrong version.** That is a support problem the
@@ -128,8 +133,13 @@ schools across three states it is the end of the product.
 The mitigation is already written down in that document and it should become
 policy, not a preference: **the field-updatable surface and the
 non-recoverable surface must never be the same release.** Everything in
-`code3.0/`, `personalities/`, `lists/` is one-click recoverable. Anything else
-requires a visit. Design so that "anything else" changes approximately never.
+`machines/`, `code3.0/`, `personalities/`, `lists/` is one-click recoverable.
+Anything else requires a visit. Design so that "anything else" changes
+approximately never.
+
+`machines/` joining that list is the point of shipping it: per-kit config is
+now on the recoverable side of the line, so a bad roster or a wrong device
+count rolls back with the code rather than needing someone in the room.
 
 ---
 
@@ -274,11 +284,16 @@ You are running SuperCollider with per-device routines at **100 Hz**
 (`personalityController.scd:147`, `~secs` from the machine file), up to nine
 virtual devices, plus a Qt GUI with per-frame `Pen` drawing, on a Pi.
 `configPlan.md` records that the desktop once ran the same loop at 33 Hz — a 3×
-difference that existed as a per-machine value, which suggests the rate was
+difference that existed as a per-machine value, which suggested the rate was
 being tuned against available headroom rather than against a musical
-requirement. The two have since converged on `0.01`, so the evidence for that
-reading is now weaker — but `secs` remains a per-machine key precisely so the
-question can be answered by measurement rather than by editing shared code.
+requirement.
+
+**§16 supersedes that reading.** The 100 Hz is neither musical nor a headroom
+artefact: it is `reportIntervalUs = 10000`, a sensor default in the firmware.
+The two machine values have also since converged on `0.01`, so the per-machine
+evidence is gone as well. `secs` stays a machine-file key regardless — not
+because the rate is contested, but so the answer can be changed per host by
+measurement rather than by editing shared code.
 
 Before deciding anything: **measure it.** How much CPU headroom does a real
 kit have with two devices, a sample-heavy personality, and visuals on HDMI?
@@ -340,7 +355,7 @@ grounded in the code.
 ```
 oscController.scd:10   var oscMessageTag = "IMUFusedData";   // ONE packet shape
 oscController.scd:11   var numAirwareVirtualDevices = 9;
-oscController.scd:35   sensorsProto = ( gyroEvent, gyroMass, rrateEvent,
+oscController.scd:37   sensorsProto = ( gyroEvent, gyroMass, rrateEvent,
                                         rrateMass, accelEvent, accelMass,
                                         quatEvent, quatReference,
                                         quatCalibrated, velocity, ...,
@@ -816,7 +831,9 @@ Three consequences worth naming:
    model has to say so rather than pretend every combination is buildable.
 3. A researcher bringing up a new sensor edits the `.ino`, which means the
    `.ino` is a merge point every variant touches. Same failure mode as
-   `personalityController.scd:19` holding the set-list.
+   `personalityController.scd` holding the set-list — which has since been
+   fixed by giving each machine its own file (§16), and the same fix shape
+   applies here: one file per variant, none of them shared.
 
 ### `Air_I2CIn.h` is the model to copy
 
@@ -844,7 +861,7 @@ frameDelay,
 r, g, b, a
 ```
 
-And `oscController.scd:352` reads this:
+And `oscController.scd:354` reads this:
 
 ```supercollider
 var a = msg2.keep(-4)/255;
@@ -950,7 +967,11 @@ laptop. Then:
   `Buffer.read` on a missing file fails asynchronously and the synth simply
   never starts.
 - The audio root belongs in `configPlan.md`'s per-machine config, not in a
-  variable each machine edits.
+  variable each machine edits. **That config now exists**, so this is a key on
+  the machine file — `audioDir`, alongside `listsDir` and `personalityDir`.
+  Note those two are *derived* from the checkout rather than configured; if the
+  audio root can be derived the same way, it should be, and no machine file
+  needs to mention it at all.
 
 This also removes a real support hazard: today a fresh Pi with the right app
 version and the wrong `~/Downloads` contents runs 107 instruments that make no
@@ -966,7 +987,7 @@ What the teacher-facing page needs, in the order §5 argues for:
 1. **Browse and choose a list** — the highest-value move in Part I, unchanged.
 2. **Per-device personality select** — `/airkit/loadPersonality` exists here and
    is already public (no `NetAddr` filter, deliberately, per the comment at
-   `personalityController.scd:422`).
+   `personalityController.scd:379`).
 3. **Volume ceiling, mute, panic** — `masterLevel`, `voiceMute`, `panic` in the
    fork.
 4. **Calibrate** — `/airkit/calibrate` exists here.
@@ -1010,7 +1031,7 @@ real packets in AirKit's own schema.
 
 | Direction | Where it is written |
 |---|---|
-| AirKit → PyOSCCam | `oscController.scd:11` `outAddr = NetAddr("192.168.50.53", 5005)`; `:405` `if(oscThru, { outAddr.sendMsg(*msg) })`. 5005 is PyOSCCam's default listen port. |
+| AirKit → PyOSCCam | `oscController.scd:11` `outAddr` (the address itself now comes from the machine file, not a literal); `:407` `if(oscThru, { outAddr.sendMsg(*msg) })`. 5005 is PyOSCCam's default listen port. |
 | PyOSCCam → AirKit | `config.yaml`: `send_port: 57120`, with `send_ip` commented `# playback OSC destination AirKit`. |
 
 `oscThru` is toggled by `/airkit/oscThru`. So the record path is one OSC message
@@ -1022,7 +1043,7 @@ touching the device path.
 AirKit's device listeners are **source-filtered and source-keyed**:
 
 ```supercollider
-var address = NetAddr.new(d.ip, d.port - i);        // oscController.scd:239
+var address = NetAddr.new(d.ip, d.port - i);        // oscController.scd:241
 d.listeners.airware = OSCFunc({ ... }, pattern, address);
 …
 var d = addDevice.(addr.ip, addr.port + i, i + 1);  // :408 — keyed by SOURCE PORT
@@ -1206,18 +1227,41 @@ and the pressure to abandon it will come from buyers, not from researchers.
 | § | Claim in Part I | Correction |
 |---|---|---|
 | §1 | "No fleet view" | CotF has one, in production. And the sticks already report firmware version, ID, IP and frame delay on every connect — AirKit discards them. |
-| §4 | "the handshake exists, it just carries almost nothing" | Wrong. `sendConfig` carries eighteen values. `oscController.scd:352` reads the last four. |
+| §4 | "the handshake exists, it just carries almost nothing" | Wrong. `sendConfig` carries eighteen values. `oscController.scd:355` reads the last four. |
 | §4 | "the OSC layer is not the problem" | Still right, and better evidenced: four non-IMU sensor modules are already written and shipping. |
 | §3, §5 | "move the control GUI to the browser" | Most of the OSC API for it exists — in a fork outside this repository. |
-| §6 | "29 remote branches" | Understates it. Two firmware trees and an AirKit fork on the venue Mac as well. |
+| §6 | "29 remote branches" | Understates it. Two firmware trees and an AirKit fork on the venue Mac as well. **But the branch count is no longer the config problem** — see the config row below; what remains is repertoire and fork divergence, which `configPlan.md` never claimed to fix. |
 | §7 | Phase 1 move 8, "measure Pi headroom" | Must now also settle the PyOSCCam question (§14) and be measured against the documented WiFi-IRQ/audio balance, not in isolation. |
-| §10 | Q2, "is 100 Hz musical or a headroom artefact?" | Neither. It is `reportIntervalUs = 10000` at `BNO085.h:17`, a sensor default. Changing it is one line, and `optimize_report.md` has the measurement plan. |
+| §10 | Q2, "is 100 Hz musical or a headroom artefact?" | Neither. It is `reportIntervalUs = 10000` at `BNO085.h:17` (a **firmware** repo, not this one — see §11), a sensor default. Changing it is one line, and `optimize_report.md` has the measurement plan. §3 has been corrected to defer to this. |
+
+**Config, added 2026-09-10.** `configPlan.md` was implemented between Part I
+and this section, so several Part I claims about it are now historical:
+
+| § | Claim in Part I | Correction |
+|---|---|---|
+| §1 | "No configuration story" | Implemented. `machines/<kit>.scd`, one tracked file per unit, resolved at boot by the kit's own AP address. Ships in the release, so it is versioned and rolls back with the code. |
+| §3 | "`configPlan.md` already **proposes** the mechanism that makes the host swappable" | It is built. `machine.scd` defaults `latency`, `border` and `fullScreen` per platform, so a new host needs a machine file, not a port. |
+| §5 | "Lists need to move out of `personalityController.scd`" | Done — the `list` key, String or per-device Array. |
+| §6 | "`configPlan.md` is the fix and it is **written and unimplemented**" | Implemented, steps 1–3. Steps 4–5 (fold `AirKitDesktop` in, retire the machine branches) are open. `AirConcert` is excluded by design. |
+| §7 | Phase 0 move 2, "Implement `configPlan.md`" | Landed. **Not yet booted on a Pi** — that is the outstanding risk, and it is the step that can break boot. |
+
+Two things this did **not** fix, worth stating so nobody assumes otherwise:
+
+- **Repertoire divergence.** Config no longer differs per branch; p-files still
+  do. The `AirConcert` p-files named in `gatePlan.md` still do not exist here,
+  and §16's fork count makes that worse, not better.
+- **The fleet still cannot be seen.** The machine file names each kit and posts
+  it at boot, so the *data* exists — but nothing collects it.
 
 ---
 
 ## 17. Revised move list
 
 Part I's Phases 0–4 stand. These insert into them.
+
+*Phase 0 move 2, "Implement `configPlan.md`", has since landed — see §16. It
+still needs booting on a Pi before it counts as finished. Phase 0 move 4,
+retiring the machine branches, is unblocked by it.*
 
 **Before Phase 0**
 
@@ -1256,3 +1300,17 @@ Part I's Phases 0–4 stand. These insert into them.
 each has been the thing that broke something before: Pi 5 kit (AP + audio +
 HDMI visuals), desktop/laptop AirKit, Mac mini, AirStick fw 0.4, the CotF
 firmware fork, and at least two sticks at once.
+
+**Every host in that matrix now needs a machine file, and one does not have
+one.** There is no `machines/macmini.scd`. On the Mac mini nothing matches by
+AP address, MAC or hostname, so selection falls to the platform rule — and
+`desktop.scd` is the only macOS file, so **the Mac mini is claimed as the
+laptop** and takes its roster (`list_BtB.sc`), its 5 devices and its `outAddr`.
+Verified by simulation, not assumed.
+
+It is declared rather than silent — the boot line reads *"via the only osx
+machine file"* — but it is still the wrong kit, and it stops being merely
+untidy the moment a second macOS host exists, because the platform rule then
+goes ambiguous and both fall through to defaults. Adding `machines/macmini.scd`
+is the fix; it needs that host's roster and device count, which are not
+recorded anywhere. Same applies to the venue Mac running the AirKit fork.
